@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thử Thách Tri Thức Tin Học - Bài 3: Quản Lí Dữ Liệu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0f172a',
+                        cardbg: '#1e293b',
+                        bordercolor: '#334155',
+                        brandcyan: '#06b6d4',
+                        brandblue: '#3b82f6',
+                        brandemerald: '#10b981',
+                        brandpurple: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            user-select: none;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between custom-scrollbar bg-[#0b0f19] text-slate-100">
+
+    <!-- TOP NAVBAR -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-filter blur-md sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white tracking-wide leading-tight">BÀI KIỂM TRA TIN HỌC 7</h1>
+                    <p class="text-xs text-cyan-400 font-medium">Chủ đề: Quản lí dữ liệu trong máy tính</p>
+                </div>
+            </div>
+
+            <!-- Student Info Displayed on Top Right during Exam -->
+            <div class="flex items-center gap-4">
+                <div id="student-badge" class="hidden flex items-center gap-2 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-lg text-sm">
+                    <i class="fa-solid fa-user-graduate text-cyan-400"></i>
+                    <span id="display-student-name" class="font-semibold text-slate-200">--</span>
+                    <span class="text-slate-500">|</span>
+                    <span id="display-student-class" class="text-xs bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded font-mono">--</span>
+                </div>
+
+                <button onclick="openSettingsModal()" class="text-slate-400 hover:text-cyan-400 transition p-2 rounded-lg hover:bg-slate-800" title="Cấu hình hệ thống">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+        <!-- ==================== SCREEN 1: LOGIN / START SCREEN ==================== -->
+        <div id="screen-welcome" class="max-w-xl mx-auto w-full glass-card rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-800 my-auto">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-3">
+                    <i class="fa-solid fa-shield-halved text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-2">Thử Thách Tri Thức Số</h2>
+                <p class="text-sm text-slate-400">Hoàn thành bài kiểm tra để củng cố kiến thức Quản lí dữ liệu trong máy tính</p>
+            </div>
+
+            <form id="start-form" onsubmit="handleStartExam(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Họ và tên học sinh <span class="text-rose-400">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
+                        <input type="text" id="input-name" required placeholder="Nhập đầy đủ Họ và Tên..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Lớp học <span class="text-rose-400">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-users text-slate-500 absolute left-3.5 top-3.5 text-sm"></i>
+                        <input type="text" id="input-class" required placeholder="Ví dụ: 7A1, 7A2..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 text-xs space-y-2 text-slate-300 my-4">
+                    <div class="font-semibold text-cyan-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info"></i> Quy định làm bài kiểm tra:
+                    </div>
+                    <ul class="list-disc pl-4 space-y-1 text-slate-400">
+                        <li>Số lượng: <b class="text-slate-200">20 câu hỏi</b> (Phân hóa: 6 câu Dễ, 8 câu Vừa, 6 câu Khó).</li>
+                        <li>Tổng điểm: <b class="text-slate-200">10 điểm</b> (Mỗi câu trả lời đúng được <b class="text-emerald-400">0.5 điểm</b>).</li>
+                        <li>Thời gian làm bài: <b class="text-slate-200">20 phút</b> (Có đồng hồ đếm ngược).</li>
+                        <li>Có thể chuyển đổi qua lại giữa các câu để làm bài hoặc kiểm tra lại.</li>
+                        <li>Kết quả sẽ được tự động đồng bộ lưu trữ sau khi nộp bài.</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-cyan-600/30 transition flex items-center justify-center gap-2">
+                    <span>Bắt đầu làm bài</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- ==================== SCREEN 2: EXAM WORKSPACE ==================== -->
+        <div id="screen-exam" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6 my-auto">
+            
+            <!-- LEFT COLUMN: QUESTION CONTENT (3 cols) -->
+            <div class="lg:col-span-3 flex flex-col space-y-4">
+                
+                <!-- Question Card -->
+                <div class="glass-card rounded-2xl p-5 md:p-7 border border-slate-800 flex-1 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <!-- Header Question Metadata -->
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span id="question-number-badge" class="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-bold px-3 py-1 rounded-lg">
+                                    Câu 1 / 20
+                                </span>
+                                <span id="question-difficulty-badge" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800">
+                                    Mức độ: Dễ
+                                </span>
+                            </div>
+                            <button onclick="toggleBookmarkCurrentQuestion()" id="btn-bookmark" class="text-xs font-medium text-slate-400 hover:text-amber-400 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800">
+                                <i class="fa-regular fa-bookmark" id="bookmark-icon"></i>
+                                <span id="bookmark-text">Đánh dấu xem lại</span>
+                            </button>
+                        </div>
+
+                        <!-- Question Text -->
+                        <div class="mb-6">
+                            <h3 id="question-text" class="text-base md:text-lg font-medium text-slate-100 leading-relaxed">
+                                Đang tải câu hỏi...
+                            </h3>
+                        </div>
+
+                        <!-- Options ABCD (2 COLUMNS GRID) -->
+                        <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                            <!-- JS will inject 4 options here -->
+                        </div>
+                    </div>
+
+                    <!-- Question Navigation Footer Controls -->
+                    <div class="flex items-center justify-between border-t border-slate-800 pt-4 mt-8">
+                        <button onclick="navigateQuestion(-1)" id="btn-prev" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            <span>Câu trước</span>
+                        </button>
+
+                        <span class="text-xs text-slate-500 font-mono hidden sm:inline" id="progress-indicator">1 / 20</span>
+
+                        <button onclick="navigateQuestion(1)" id="btn-next" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-2">
+                            <span>Câu tiếp</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: TIMER, NAVIGATION PALETTE & SUBMIT BUTTON -->
+            <div class="lg:col-span-1 flex flex-col space-y-4">
+                
+                <!-- Countdown Timer Card -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-800 text-center shadow-lg">
+                    <p class="text-xs text-slate-400 font-medium mb-1">Thời gian còn lại</p>
+                    <div class="inline-flex items-center gap-2 font-mono text-2xl font-bold text-cyan-400" id="timer-display">
+                        <i class="fa-regular fa-clock text-xl"></i>
+                        <span id="timer-text">20:00</span>
+                    </div>
+                </div>
+
+                <!-- Question Grid Navigation Box -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-800 flex-1 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center justify-between">
+                            <span>Danh sách câu hỏi</span>
+                            <span class="text-xs font-normal text-slate-400" id="answered-count-text">0/20 đã chọn</span>
+                        </h4>
+
+                        <!-- Grid 20 question buttons -->
+                        <div id="questions-palette" class="grid grid-cols-5 gap-2 mb-4">
+                            <!-- Injected by JS: 20 buttons -->
+                        </div>
+
+                        <!-- Palette Legend -->
+                        <div class="space-y-1.5 text-xs text-slate-400 border-t border-slate-800 pt-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-md bg-cyan-600 inline-block"></span>
+                                <span>Đã chọn đáp án</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-md bg-slate-800 border border-slate-700 inline-block"></span>
+                                <span>Chưa chọn</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-md bg-amber-500/20 border border-amber-500 inline-block"></span>
+                                <span>Đã đánh dấu xem lại</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button Placed Directly Below Right Side Panel -->
+                    <div class="mt-5 pt-3 border-t border-slate-800">
+                        <button onclick="confirmSubmitExam()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>NỘP BÀI KIỂM TRA</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== SCREEN 3: RESULT & REVIEW ==================== -->
+        <div id="screen-result" class="hidden max-w-4xl mx-auto w-full space-y-6 my-6">
+            
+            <!-- Result Summary Card -->
+            <div class="glass-card rounded-2xl p-6 md:p-8 border border-slate-800 shadow-2xl relative overflow-hidden text-center">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-emerald-500 p-0.5 mb-4 shadow-xl">
+                    <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-trophy text-3xl text-amber-400"></i>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-1">Kết Quả Bài Kiểm Tra</h2>
+                <p class="text-sm text-slate-400 mb-6">Học sinh: <span id="res-student-info" class="text-cyan-400 font-semibold">--</span></p>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Điểm số</p>
+                        <p id="res-score" class="text-2xl md:text-3xl font-black text-emerald-400 font-mono">0.0 / 10</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Số câu đúng</p>
+                        <p id="res-correct" class="text-2xl md:text-3xl font-bold text-cyan-400 font-mono">0 / 20</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Thời gian làm bài</p>
+                        <p id="res-time-taken" class="text-lg md:text-xl font-bold text-slate-200 font-mono mt-1">00:00</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Số lần kiểm tra</p>
+                        <p id="res-attempts" class="text-lg md:text-xl font-bold text-purple-400 font-mono mt-1">Lần 1</p>
+                    </div>
+                </div>
+
+                <!-- Google Sheet Data Sync Status Banner -->
+                <div id="sync-status" class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-slate-300 mb-6">
+                    <i class="fa-solid fa-spinner fa-spin text-cyan-400"></i>
+                    <span>Đang đồng bộ kết quả lên máy chủ lưu trữ...</span>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    <button onclick="retakeExam()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-6 py-2.5 rounded-xl transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Làm lại bài kiểm tra</span>
+                    </button>
+                    <a href="#review-section" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-600/20 transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Xem đáp án chi tiết</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Detailed Answer Review Section -->
+            <div id="review-section" class="glass-card rounded-2xl p-6 border border-slate-800 shadow-xl space-y-6">
+                <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-square-check text-cyan-400"></i>
+                        <span>Chi Tiết Đáp Án Từng Câu Hỏi</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">Đã cập nhật đáp án đúng</span>
+                </div>
+
+                <!-- List of 20 reviewed questions -->
+                <div id="review-list" class="space-y-6">
+                    <!-- JS Injected Review Items -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL: SETTINGS & GOOGLE SHEET CONFIGURATION -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="glass-card rounded-2xl max-w-lg w-full p-6 border border-slate-700 shadow-2xl relative">
+            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 border-b border-slate-800 pb-3">
+                <i class="fa-solid fa-sliders text-cyan-400"></i>
+                <span>Cấu Hình Hệ Thống</span>
+            </h3>
+
+            <!-- Password Form if not authenticated -->
+            <div id="settings-auth-view" class="space-y-4">
+                <p class="text-sm text-slate-300">Vui lòng nhập mật khẩu quản trị để truy cập cấu hình:</p>
+                <div>
+                    <input type="password" id="input-admin-pass" placeholder="Nhập mật khẩu..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                    <p id="admin-pass-error" class="text-xs text-rose-400 mt-1 hidden">Mật khẩu không chính xác!</p>
+                </div>
+                <button onclick="authenticateAdmin()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 rounded-xl transition text-sm">
+                    Xác nhận
+                </button>
+            </div>
+
+            <!-- Settings Form after authenticated -->
+            <div id="settings-content-view" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Google Sheet Web App URL (doPost):</label>
+                    <input type="text" id="input-sheet-url" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-500">
+                    <p class="text-[11px] text-slate-500 mt-1">Dữ liệu kết quả sẽ được POST dạng mã hóa Base64 tới URL này.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Thời gian làm bài (Phút):</label>
+                        <input type="number" id="input-exam-duration" value="20" min="1" max="60" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tổng số câu trong ngân hàng:</label>
+                        <input type="text" value="100 câu" disabled class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono">
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
+                    <button onclick="saveAdminSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-3 px-4 text-center text-xs text-slate-500">
+        <p>Bản quyền nội dung &copy; Tin học 7 - Bài 3: Quản lí dữ liệu trong máy tính. Hệ thống bài kiểm tra trực tuyến.</p>
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           NGÂN HÀNG 100 CÂU HỎI TRẮC NGHIỆM TIN HỌC 7 - BÀI 3: QUẢN LÍ DỮ LIỆU
+           Phân hóa 3 mức độ: Dễ (Easy), Vừa (Medium), Khó (Hard)
+           ========================================================================== */
+        const QUESTION_BANK = [
+            // --- CÂU HỎI DỄ (EASY) ---
+            { id: 1, level: 'easy', question: "Khi đặt tên cho thư mục và tệp, em nên chọn tên như thế nào?", options: ["A. Đặt theo tên thú cưng", "B. Đặt sao cho dễ nhớ và biết trong đó chứa gì", "C. Đặt giống hệt ví dụ trong sách giáo khoa", "D. Đặt tùy ý không cần quy tắc"], answer: 1, explanation: "Tên tệp và thư mục nên ngắn gọn, dễ nhớ và thể hiện rõ nội dung chứa bên trong." },
+            { id: 2, level: 'easy', question: "Tệp có phần mở rộng .exe thuộc loại tệp nào?", options: ["A. Tệp văn bản Microsoft Word", "B. Tệp chương trình máy tính", "C. Tệp video ca nhạc", "D. Tệp hình ảnh chụp từ máy ảnh"], answer: 1, explanation: "Trong Windows, các tệp chương trình máy tính thường có phần mở rộng là .exe, .com, .bat, .msi." },
+            { id: 3, level: 'easy', question: "Sao lưu dữ liệu là gì?", options: ["A. Xoá các tệp dữ liệu cũ đi", "B. Tạo ra bản sao các tệp và thư mục rồi lưu lên thiết bị lưu trữ", "C. Đổi tên tệp thành tên mới", "D. Di chuyển tệp từ ổ C sang ổ D"], answer: 1, explanation: "Sao lưu dữ liệu là việc tạo ra bản sao để có thể phục hồi lại khi bản gốc gặp sự cố." },
+            { id: 4, level: 'easy', question: "Thiết bị lưu trữ nào sau đây có đặc điểm nhỏ gọn, tiện sử dụng nhưng dễ bị thất lạc?", options: ["A. Ổ cứng ngoài", "B. Thẻ nhớ USB", "C. Đĩa đĩa DVD", "D. Máy chủ đám mây"], answer: 1, explanation: "Thẻ nhớ USB nhỏ gọn, linh hoạt nhưng dễ bị thất lạc hoặc lây nhiễm virus." },
+            { id: 5, level: 'easy', question: "Phần mềm nào sau đây là phần mềm diệt virus có sẵn trên hệ điều hành Windows?", options: ["A. Windows Defender", "B. Microsoft Word", "C. File Explorer", "D. Mozilla Firefox"], answer: 0, explanation: "Windows Defender là phần mềm bảo mật diệt virus được tích hợp sẵn trong hệ điều hành Windows." },
+            { id: 6, level: 'easy', question: "Ứng dụng nào dùng để quản lí tệp và thư mục trong hệ điều hành Windows 10?", options: ["A. Internet Explorer", "B. Help", "C. Microsoft Word", "D. File Explorer"], answer: 3, explanation: "File Explorer (trước đây là Windows Explorer) giúp người dùng quản lí tệp và thư mục." },
+            { id: 7, level: 'easy', question: "Để tạo một thư mục mới trong File Explorer, em chọn lệnh nào sau khi nháy chuột phải?", options: ["A. New > Folder", "B. Open > Folder", "C. Cut > Folder", "D. Rename > Folder"], answer: 0, explanation: "Thao tác tạo thư mục mới là nháy chuột phải chọn New rồi chọn Folder." },
+            { id: 8, level: 'easy', question: "Lệnh nào dùng để đổi tên một thư mục hoặc tệp?", options: ["A. Delete", "B. Rename", "C. Copy", "D. Paste"], answer: 1, explanation: "Lệnh Rename cho phép đổi tên tệp hoặc thư mục." },
+            { id: 9, level: 'easy', question: "Để di chuyển thư mục sang vị trí khác, em kết hợp hai lệnh nào?", options: ["A. Copy và Paste", "B. Cut và Paste", "C. Delete và Paste", "D. Rename và Paste"], answer: 1, explanation: "Di chuyển dùng Cut (Cắt) và Paste (Dán)." },
+            { id: 10, level: 'easy', question: "Thao tác sao chép thư mục sử dụng cặp lệnh nào?", options: ["A. Cut và Paste", "B. Copy và Paste", "C. Delete và Copy", "D. Create shortcut và Cut"], answer: 1, explanation: "Sao chép thư mục sử dụng Copy và Paste." },
+            { id: 11, level: 'easy', question: "Để xoá một tệp không còn cần thiết, em nháy chuột phải vào tệp và chọn gì?", options: ["A. Cut", "B. Copy", "C. Delete", "D. Rename"], answer: 2, explanation: "Lệnh Delete dùng để xóa tệp hoặc thư mục." },
+            { id: 12, level: 'easy', question: "Nên làm gì để tránh việc truy cập trái phép vào tài khoản cá nhân?", options: ["A. Đặt mật khẩu bảo vệ tài khoản", "B. Tắt màn hình khi không dùng", "C. Rút dây nguồn máy tính", "D. Để tài khoản tự động đăng nhập ở máy công cộng"], answer: 0, explanation: "Đặt mật khẩu mạnh giúp bảo vệ tài khoản người dùng khỏi truy cập trái phép." },
+            { id: 13, level: 'easy', question: "Phần mở rộng nào sau đây KHÔNG PHẢI là đuôi tệp chương trình máy tính?", options: ["A. .exe", "B. .bat", "C. .docx", "D. .msi"], answer: 2, explanation: ".docx là tệp tài liệu văn bản Microsoft Word, không phải tệp chương trình." },
+            { id: 14, level: 'easy', question: "Dữ liệu máy tính có thể bị đe dọa bởi yếu tố nào?", options: ["A. Mất mát hay hỏng hóc thiết bị", "B. Virus và phần mềm độc hại", "C. Người khác truy cập trái phép", "D. Tất cả các ý trên"], answer: 3, explanation: "Dữ liệu có nhiều rủi ro bị mất, hỏng hoặc truy cập trái phép." },
+            { id: 15, level: 'easy', question: "Ổ cứng ngoài có ưu điểm nổi bật nào?", options: ["A. Rất nhỏ gọn bỏ vừa ví", "B. Dung lượng lưu trữ lớn, tiện sử dụng", "C. Không bao giờ bị hỏng khi va đập", "D. Giá thành rẻ nhất trong mọi thiết bị"], answer: 1, explanation: "Ổ cứng ngoài có dung lượng lớn và tiện lưu trữ bản sao lưu." },
+            { id: 16, level: 'easy', question: "Mật khẩu nào dưới đây là mật khẩu yếu?", options: ["A. 2n#M1nhKh0a", "B. 12345678", "C. K3T_n0i_Tr1_Thuc", "D. P@ssw0rd2026"], answer: 1, explanation: "Dãy số đơn giản 12345678 rất dễ bị đoán hoặc dò ra." },
+            { id: 17, level: 'easy', question: "Sao lưu cục bộ là sao lưu dữ liệu vào đâu?", options: ["A. Lưu trên thiết bị lưu trữ đặt cùng máy tính hoặc USB/Ổ cứng ngoài", "B. Lưu trên máy chủ đặt ở nước ngoài", "C. Đưa lên dịch vụ đám mây Google Drive", "D. Gửi qua email cho bạn"], answer: 0, explanation: "Sao lưu cục bộ được đặt trên cùng máy tính chứa bản gốc hoặc thiết bị lưu trữ kết nối trực tiếp." },
+            { id: 18, level: 'easy', question: "Lưu trữ đám mây có ưu điểm gì?", options: ["A. Không cần mạng Internet vẫn dùng được", "B. Có thể truy cập bằng bất kì máy tính nào có kết nối Internet", "C. Không bao giờ sợ bị lộ mật khẩu", "D. Miễn phí hoàn toàn dung lượng vô hạn"], answer: 1, explanation: "Lưu trữ đám mây giúp truy cập dữ liệu mọi lúc mọi nơi khi có Internet." },
+            { id: 19, level: 'easy', question: "Phần mềm diệt virus Bkav hay Avast được thiết kế nhằm mục đích gì?", options: ["A. Tăng tốc độ soạn thảo văn bản", "B. Phát hiện, diệt virus và ngăn chặn phần mềm độc hại", "C. Dọn dẹp bụi bẩn trong bàn phím", "D. Tự động vẽ sơ đồ cây thư mục"], answer: 1, explanation: "Phần mềm diệt virus phát hiện, chặn và diệt các loại phần mềm độc hại." },
+            { id: 20, level: 'easy', question: "Ví dụ nào sau đây là cách đặt tên thư mục hợp lí cho các bức ảnh chụp gia đình?", options: ["A. 123456", "B. Anh_GiaDinh", "C. ???", "D. ThuMucChuaRieu"], answer: 1, explanation: "Anh_GiaDinh phản ánh chính xác nội dung bên trong." },
+            { id: 21, level: 'easy', question: "Đĩa quang CD/DVD có nhược điểm gì?", options: ["A. Giá thành quá đắt", "B. Dung lượng nhỏ, dễ hỏng dữ liệu và khó ghi", "C. Rất nặng và cồng kềnh", "D. Dễ bị lây nhiễm virus nhất"], answer: 1, explanation: "Đĩa quang dung lượng nhỏ, dễ trầy xước hỏng và cần đầu ghi chuyên dụng." },
+            { id: 22, level: 'easy', question: "Nên bật chế độ nào của phần mềm diệt virus để đảm bảo an toàn?", options: ["A. Luôn bật chế độ bảo vệ và cập nhật thường xuyên", "B. Tắt đi khi dùng Internet", "C. Chỉ bật 1 tháng 1 lần", "D. Tắt khi tải tệp lạ"], answer: 0, explanation: "Phần mềm diệt virus phải luôn chạy và được cập nhật thường xuyên." },
+            { id: 23, level: 'easy', question: "Khi làm việc nhóm, tên tệp nên như thế nào?", options: ["A. Đặt tên bí ẩn chỉ mình hiểu", "B. Đặt tên đơn giản, dễ hiểu để mọi thành viên dễ tìm", "C. Đặt tên thật dài 100 ký tự", "D. Không cần đặt tên"], answer: 1, explanation: "Đặt tên rõ ràng giúp các thành viên nhóm tìm kiếm dữ liệu thuận tiện." },
+            { id: 24, level: 'easy', question: "Sâu máy tính (worm) hay phần mềm gián điệp thuộc nhóm nào?", options: ["A. Thiết bị phần cứng", "B. Phần mềm độc hại", "C. Hệ điều hành máy tính", "D. Phần mềm ứng dụng văn phòng"], answer: 1, explanation: "Sâu, phần mềm gián điệp, virus đều là phần mềm độc hại." },
+            { id: 25, level: 'easy', question: "Tệp chương trình máy tính có đặc điểm gì giống tệp dữ liệu?", options: ["A. Không thể xóa", "B. Cũng được lưu trữ dưới dạng tệp trên thiết bị nhớ", "C. Không tốn dung lượng", "D. Do người dùng gõ văn bản tạo ra"], answer: 1, explanation: "Chương trình máy tính cũng được lưu trữ dưới dạng tệp trên thiết bị lưu trữ." },
+            { id: 26, level: 'easy', question: "Vì sao không nên tùy tiện xóa các tệp .exe trong ổ C?", options: ["A. Vì sẽ làm tràn bộ nhớ", "B. Vì chúng có thể là tệp chương trình cần thiết cho máy tính hoạt động", "C. Vì máy tính sẽ tự động bị khóa", "D. Vì sẽ làm mất hết ảnh chụp"], answer: 1, explanation: "Xóa tệp chương trình hệ thống có thể gây lỗi hệ điều hành hoặc phần mềm." },
+            { id: 27, level: 'easy', question: "Giao diện cây thư mục giúp người dùng làm gì?", options: ["A. Quan sát cấu trúc tổ chức lưu trữ phân cấp", "B. Tự động diệt virus", "C. Soạn thảo văn bản", "D. Kết nối Wifi"], answer: 0, explanation: "Sơ đồ cây phản ánh cấu trúc thư mục cha - thư mục con trực quan." },
+            { id: 28, level: 'easy', question: "Yếu tố nào giúp mật khẩu có độ bảo mật cao hơn?", options: ["A. Càng ngắn càng tốt", "B. Chỉ dùng ngày sinh", "C. Kết hợp chữ hoa, chữ thường, chữ số và ký hiệu đặc biệt", "D. Dùng tên của chính mình"], answer: 2, explanation: "Mật khẩu mạnh kết hợp chữ hoa, chữ thường, số và ký hiệu đặc biệt." },
+            { id: 29, level: 'easy', question: "Khi rút USB khỏi máy tính, thao tác đúng là gì?", options: ["A. Rút trực tiếp thật nhanh", "B. Chọn ngắt kết nối an toàn (Eject) trước khi rút", "C. Bật phần mềm diệt virus rồi rút", "D. Tắt nguồn điện nhà"], answer: 1, explanation: "Chọn Eject giúp đảm bảo dữ liệu ghi xong, tránh hỏng tệp." },
+            { id: 30, level: 'easy', question: "Lưu trữ từ xa là bản sao được lưu ở đâu?", options: ["A. Ngay trong ổ C máy tính đó", "B. Bên ngoài máy tính chứa bản gốc (máy tính khác hoặc đám mây)", "C. Trên màn hình Desktop", "D. Trong thùng rác Recycle Bin"], answer: 1, explanation: "Sao lưu từ xa lưu trên máy tính khác hoặc trên Internet." },
+
+            // --- CÂU HỎI VỪA (MEDIUM) ---
+            { id: 31, level: 'medium', question: "Nếu bạn lưu bản sao lưu dữ liệu ngay trên cùng ổ đĩa với bản gốc, rủi ro lớn nhất là gì?", options: ["A. Không thể mở tệp", "B. Nếu ổ đĩa bị hỏng hoặc mất máy tính thì mất cả bản gốc lẫn bản sao", "C. Tốn quá ít dung lượng", "D. Tệp tự động đổi tên"], answer: 1, explanation: "Sao lưu cục bộ trên cùng thiết bị không bảo vệ được dữ liệu khi hỏng/mất thiết bị." },
+            { id: 32, level: 'medium', question: "So sánh nào sau đây ĐÚNG về sao lưu cục bộ và sao lưu từ xa?", options: ["A. Sao lưu cục bộ không thể khôi phục nhanh", "B. Sao lưu từ xa giúp dữ liệu an toàn ngay cả khi máy tính chứa bản gốc bị hỏng hóc", "C. Sao lưu từ xa không cần Internet", "D. Sao lưu cục bộ luôn bảo vệ an toàn tuyệt đối trước thiên tai"], answer: 1, explanation: "Sao lưu từ xa cách biệt về vị trí vật lý nên an toàn trước sự cố phần cứng tại chỗ." },
+            { id: 33, level: 'medium', question: "Nút lệnh 'Cut' trong File Explorer khác nút 'Copy' ở điểm nào?", options: ["A. Cut di chuyển tệp đến vị trí mới, Copy tạo thêm bản sao giữ nguyên bản cũ", "B. Cut xóa tệp vĩnh viễn", "C. Copy di chuyển tệp, Cut tạo bản sao", "D. Cả hai nút lệnh hoàn toàn giống nhau"], answer: 0, explanation: "Cut thực hiện di chuyển, Copy thực hiện nhân bản." },
+            { id: 34, level: 'medium', question: "Vì sao sử dụng USB lưu trữ dữ liệu lại có rủi ro lây nhiễm virus cao?", options: ["A. Vì USB chứa đĩa quay cơ học", "B. Vì USB hay được cắm vào nhiều máy tính khác nhau", "C. Vì USB không thể đặt mật khẩu", "D. Vì USB tự sinh ra virus khi dùng"], answer: 1, explanation: "Cắm USB qua nhiều máy tính công cộng dễ lan truyền virus giữa các thiết bị." },
+            { id: 35, level: 'medium', question: "Phát biểu nào sau đây SAI về lưu trữ đám mây?", options: ["A. Dữ liệu có thể bị truy cập nếu tài khoản bị lộ mật khẩu", "B. Phải có kết nối Internet mới truy cập được dữ liệu từ xa", "C. Luôn tuyệt đối miễn phí với dung lượng không giới hạn", "D. Giúp khôi phục dữ liệu khi máy tính cá nhân bị hỏng"], answer: 2, explanation: "Dịch vụ đám mây thường giới hạn dung lượng miễn phí, muốn dùng thêm phải trả phí." },
+            { id: 36, level: 'medium', question: "Trong các mật khẩu sau, đâu là mật khẩu CÓ ĐỘ BẢO MẬT MANH NHẤT?", options: ["A. HaNoi2026", "B. 123456789", "C. 2n#M1nhKh0a", "D. matkhau123"], answer: 2, explanation: "Mật khẩu 2n#M1nhKh0a chứa số, chữ hoa, chữ thường và ký tự đặc biệt #." },
+            { id: 37, level: 'medium', question: "Bạn Nam muốn sao lưu thư mục dự án gồm 15 GB hình ảnh. Thiết bị nào sau đây KHÔNG phù hợp do không đủ dung lượng?", options: ["A. Ổ cứng ngoài 1 TB", "B. Thẻ nhớ USB 32 GB", "C. Đĩa CD tiêu chuẩn (700 MB)", "D. Dịch vụ đám mây Google Drive (15 GB)"], answer: 2, explanation: "Đĩa CD chỉ có dung lượng khoảng 700 MB, không đủ chứa 15 GB." },
+            { id: 38, level: 'medium', question: "Biện pháp nào sau đây KHÔNG giúp bảo vệ dữ liệu máy tính?", options: ["A. Tắt hoàn toàn phần mềm diệt virus để máy chạy nhanh hơn", "B. Sao lưu dữ liệu định kỳ", "C. Đặt mật khẩu mạnh cho tài khoản người dùng", "D. Ngắt kết nối an toàn trước khi rút USB"], answer: 0, explanation: "Tắt phần mềm diệt virus sẽ khiến máy tính mất lớp bảo vệ trước độc hại." },
+            { id: 39, level: 'medium', question: "Khi tệp có phần mở rộng .bat, đây là loại tệp gì?", options: ["A. Tệp hình ảnh động", "B. Tệp chương trình thực thi dạng kịch bản lệnh trên Windows", "C. Tệp âm thanh chất lượng cao", "D. Tệp bảng tính Excel"], answer: 1, explanation: "Tệp .bat (Batch file) là tệp chứa kịch bản lệnh thực thi trong Windows." },
+            { id: 40, level: 'medium', question: "Điều gì sẽ xảy ra nếu em thực hiện lệnh Delete đối với một thư mục?", options: ["A. Chỉ các tệp bên trong bị xóa, thư mục giữ nguyên", "B. Thư mục và toàn bộ tệp, thư mục con bên trong đều bị xóa", "C. Thư mục đổi tên thành Thùng rác", "D. Máy tính yêu cầu khởi động lại"], answer: 1, explanation: "Xóa thư mục cha sẽ xóa toàn bộ nội dung bên trong nó." },
+            { id: 41, level: 'medium', question: "Khi muốn tạo cây thư mục chứa các bài học: TinHoc, Toan, Van nằm trong thư mục HọcTập, cây thư mục sẽ có dạng nào?", options: ["A. HọcTập là thư mục cha chứa 3 thư mục con TinHoc, Toan, Van", "B. TinHoc chứa HọcTập", "C. Cả 4 thư mục ngang hàng nhau không liên quan", "D. Van chứa Toan, Toan chứa TinHoc"], answer: 0, explanation: "HọcTập đóng vai trò thư mục gốc/cha chứa các thư mục con môn học." },
+            { id: 42, level: 'medium', question: "Nhược điểm lớn nhất của việc lưu trữ bằng ổ cứng ngoài là gì?", options: ["A. Dung lượng quá nhỏ", "B. Tốc độ đọc rất chậm", "C. Có thể hỏng dữ liệu nếu bị rơi vỡ hoặc va đập mạnh", "D. Không thể kết nối qua cổng USB"], answer: 2, explanation: "Ổ cứng cơ ngoài dễ hỏng linh kiện cơ khí khi va đập hoặc rơi." },
+            { id: 43, level: 'medium', question: "Trong cửa sổ File Explorer, nếu muốn chọn nhiều tệp không liên tiếp, em nhấn giữ phím nào khi nháy chuột?", options: ["A. Phím Shift", "B. Phím Ctrl", "C. Phím Alt", "D. Phím Tab"], answer: 1, explanation: "Giữ Ctrl để chọn các mục không liên tiếp; Shift chọn dãy liên tiếp." },
+            { id: 44, level: 'medium', question: "Thao tác Rename một thư mục nhưng gõ trùng tên với một thư mục đã có sẵn trong cùng vị trí sẽ dẫn đến điều gì?", options: ["A. Hệ điều hành cảnh báo hoặc không cho phép trùng tên", "B. Hai thư mục tự động nhập làm một không hỏi", "C. Thư mục cũ bị xóa ngay lập tức", "D. Máy tính bị ngắt nguồn"], answer: 0, explanation: "Trong cùng một thư mục cha, không được đặt hai thư mục con trùng tên." },
+            { id: 45, level: 'medium', question: "Khi tải một tệp có đuôi .msi từ trang web không rõ nguồn gốc về máy tính, rủi ro là gì?", options: ["A. Làm tăng dung lượng RAM", "B. Tệp có thể chứa mã độc/chương trình virus gây hại máy tính", "C. Màn hình tự động đổi màu", "D. Không có rủi ro nào"], answer: 1, explanation: ".msi là tệp cài đặt chương trình, nếu không rõ nguồn gốc dễ chứa mã độc." },
+            { id: 46, level: 'medium', question: "Phần mềm gián điệp (spyware) có tác hại chủ yếu là gì?", options: ["A. Âm thầm theo dõi và thu thập thông tin cá nhân, mật khẩu", "B. Làm hỏng quạt tản nhiệt", "C. Làm sáng màn hình hơn", "D. Tự động tắt máy ngay lập tức"], answer: 0, explanation: "Spyware theo dõi thao tác gõ phím, đánh cắp mật khẩu và thông tin cá nhân." },
+            { id: 47, level: 'medium', question: "Hành động nào sau đây là thói quen TỐT khi sử dụng máy tính công cộng?", options: ["A. Chọn 'Ghi nhớ đăng nhập' trên trình duyệt", "B. Không đăng xuất tài khoản sau khi dùng xong", "C. Đăng xuất tài khoản và không lưu mật khẩu trên máy", "D. Lưu bản sao lưu dữ liệu quan trọng lên màn hình Desktop"], answer: 2, explanation: "Đăng xuất tài khoản giúp ngăn ngừa người sử dụng sau truy cập trái phép." },
+            { id: 48, level: 'medium', question: "Tệp PhaoHoa01.jpg có phần mở rộng .jpg cho biết đây là loại tệp gì?", options: ["A. Tệp văn bản", "B. Tệp hình ảnh", "C. Tệp chương trình", "D. Tệp âm thanh"], answer: 1, explanation: ".jpg (hoặc .jpeg, .png) là định dạng tệp hình ảnh." },
+            { id: 49, level: 'medium', question: "Để khôi phục dữ liệu khi máy tính bị hỏng ổ cứng, điều kiện cần là gì?", options: ["A. Đã có bản sao lưu dữ liệu từ trước trên thiết bị khác", "B. Đã thay bàn phím mới", "C. Tắt máy tính đi bật lại", "D. Cài lại trình duyệt web"], answer: 0, explanation: "Việc khôi phục chỉ thực hiện được nếu đã chuẩn bị sẵn bản sao lưu." },
+            { id: 50, level: 'medium', question: "Khi đặt tên thư mục, ký tự nào sau đây KHÔNG NÊN/KHÔNG ĐƯỢC dùng trong Windows?", options: ["A. Chữ cái vần A-Z", "B. Dấu gạch dưới _", "C. Các ký tự đặc biệt như / \\ : * ? \" < > |", "D. Chữ số 0-9"], answer: 2, explanation: "Windows cấm dùng các ký tự đặc biệt hệ thống như / \\ : * ? \" < > | trong tên tệp/thư mục." },
+            { id: 51, level: 'medium', question: "Lợi ích của việc sao lưu dữ liệu thường xuyên là gì?", options: ["A. Giúp máy tính khởi động nhanh gấp 10 lần", "B. Giảm thiểu rủi ro mất dữ liệu khi gặp sự cố phần cứng hoặc virus", "C. Tự động sửa lỗi chính tả văn bản", "D. Giúp màn hình sắc nét hơn"], answer: 1, explanation: "Sao lưu thường xuyên đảm bảo an toàn dữ liệu trước các sự cố bất ngờ." },
+            { id: 52, level: 'medium', question: "Nếu em lỡ bấm Delete nhầm một tệp trong ổ đĩa C, tệp đó thường được chuyển tạm vào đâu?", options: ["A. Thùng rác (Recycle Bin)", "B. Thư mục Downloads", "C. USB", "D. Đám mây"], answer: 0, explanation: "Tệp bị xóa tạm thời nằm trong Thùng rác (Recycle Bin) và có thể khôi phục." },
+            { id: 53, level: 'medium', question: "Để xóa vĩnh viễn tệp không qua Thùng rác, em dùng tổ hợp phím nào?", options: ["A. Ctrl + C", "B. Shift + Delete", "C. Alt + F4", "D. Ctrl + Z"], answer: 1, explanation: "Shift + Delete sẽ xóa vĩnh viễn tệp/thư mục khỏi máy tính." },
+            { id: 54, level: 'medium', question: "Khi sử dụng phần mềm diệt virus Kaspersky, việc 'Cập nhật cơ sở dữ liệu' giúp ích gì?", options: ["A. Giúp phần mềm nhận biết và diệt được các loại virus mới xuất hiện", "B. Đổi giao diện phần mềm đẹp hơn", "C. Tăng dung lượng ổ cứng", "D. Tự động nâng cấp hệ điều hành"], answer: 0, explanation: "Cập nhật mẫu virus mới giúp phần mềm nhận diện các mối đe dọa mới nhất." },
+            { id: 55, level: 'medium', question: "Trong cây thư mục, thư mục chứa thư mục con gọi là gì?", options: ["A. Thư mục ông", "B. Thư mục cha", "C. Thư mục bạn", "D. Thư mục gốc duy nhất"], answer: 1, explanation: "Thư mục ở cấp trên chứa các thư mục bên trong được gọi là thư mục cha." },
+            { id: 56, level: 'medium', question: "Cụm từ 'Khôi phục dữ liệu' (Restore) có nghĩa là gì?", options: ["A. Xóa sạch dữ liệu", "B. Chép dữ liệu từ bản sao lưu trở lại máy tính khi bản gốc bị mất/hỏng", "C. Nén dữ liệu nhỏ lại", "D. Mã hóa mật khẩu"], answer: 1, explanation: "Khôi phục dữ liệu là đưa dữ liệu từ bản sao lưu trở lại trạng thái sử dụng." },
+            { id: 57, level: 'medium', question: "Vì sao không nên dùng họ tên hoặc ngày sinh làm mật khẩu?", options: ["A. Vì quá dài khó gõ", "B. Vì thông tin này dễ bị kẻ xấu thu thập và đoán ra", "C. Vì bàn phím không gõ được", "D. Vì hệ thống luôn báo lỗi"], answer: 1, explanation: "Thông tin cá nhân dễ bị suy đoán nên làm cho mật khẩu rất yếu." },
+            { id: 58, level: 'medium', question: "Tệp có biểu tượng ô vuông nhỏ .com là viết tắt của từ gì trong hệ thống?", options: ["A. Communication hoặc Command", "B. Computer", "C. Commercial", "D. Community"], answer: 0, explanation: "Đuôi .com viết tắt của Command/Executable lệnh chương trình." },
+            { id: 59, level: 'medium', question: "Ưu điểm của sao lưu cục bộ so với sao lưu đám mây là gì?", options: ["A. Có thể thực hiện và khôi phục nhanh chóng mà không phụ thuộc tốc độ Internet", "B. An toàn tuyệt đối khi cháy nổ", "C. Không cần mua thiết bị", "D. Tự động chia sẻ cho mọi người"], answer: 0, explanation: "Sao lưu cục bộ không cần kết nối mạng nên tốc độ sao chép rất nhanh." },
+            { id: 60, level: 'medium', question: "Khi làm dự án học tập gồm tài liệu Word, ảnh và video, cách sắp xếp nào khoa học nhất?", options: ["A. Để tất cả rải rác ngoài màn hình Desktop", "B. Tạo thư mục 'DuAn_HocTap', bên trong chia các thư mục con 'TaiLieu', 'HinhAnh', 'Video'", "C. Gom tất cả vào Thùng rác", "D. Tạo 100 thư mục không đặt tên"], answer: 1, explanation: "Phân loại dữ liệu theo thư mục chuyên biệt giúp quản lí chuyên nghiệp, dễ tìm." },
+            { id: 61, level: 'medium', question: "Tệp có đuôi .png khác tệp có đuôi .exe ở điểm cơ bản nào?", options: ["A. .png là dữ liệu hình ảnh, .exe là tệp chương trình chạy", "B. .png tốn nhiều dung lượng hơn .exe", "C. .exe là hình ảnh, .png là phần mềm", "D. Cả hai đều là tệp văn bản"], answer: 0, explanation: ".png lưu hình ảnh; .exe chứa mã lệnh thực thi chương trình." },
+            { id: 62, level: 'medium', question: "Khi cắm USB vào máy tính bị nhiễm virus, nguy cơ gì xảy ra với USB?", options: ["A. USB tăng dung lượng", "B. Virus có thể tự chép vào USB và biến USB thành vật truyền nhiễm", "C. USB bị cháy chip ngay", "D. USB tự đổi màu"], answer: 1, explanation: "Virus có cơ chế tự nhân bản lây nhiễm sang các thiết bị lưu trữ kết nối." },
+            { id: 63, level: 'medium', question: "Để chọn tất cả các tệp trong một thư mục nhanh nhất, em bấm tổ hợp phím nào?", options: ["A. Ctrl + C", "B. Ctrl + A", "C. Ctrl + V", "D. Alt + A"], answer: 1, explanation: "Ctrl + A chọn toàn bộ (Select All) các mục." },
+            { id: 64, level: 'medium', question: "Phần mềm AVG, Avira thuộc loại phần mềm nào?", options: ["A. Soạn thảo tài liệu", "B. Phần mềm diệt virus bảo vệ máy tính", "C. Luyện gõ bàn phím", "D. Trình duyệt web"], answer: 1, explanation: "AVG và Avira là hai phần mềm diệt virus phổ biến." },
+            { id: 65, level: 'medium', question: "Hành động nào sau đây dễ khiến máy tính bị lây nhiễm virus nhất?", options: ["A. Mở tệp đính kèm trong email lạ gửi tới", "B. Sao lưu dữ liệu lên Google Drive", "C. Quét virus định kỳ", "D. Đặt mật khẩu tài khoản"], answer: 0, explanation: "Mở tệp lạ từ email không rõ nguồn gốc là con đường lây nhiễm virus chủ yếu." },
+            { id: 66, level: 'medium', question: "Sơ đồ cây thư mục minh họa mối quan hệ gì giữa các thư mục?", options: ["A. Mối quan hệ phân cấp chứa đựng (Thư mục cha - Thư mục con)", "B. Tốc độ lưu trữ", "C. Giá tiền các thư mục", "D. Thời gian tạo tệp"], answer: 0, explanation: "Sơ đồ cây biểu diễn cấu trúc phân cấp chứa đựng." },
+            { id: 67, level: 'medium', question: "Thao tác Drag and Drop (Kéo và thả) tệp bằng chuột trái sang thư mục khác cùng ổ đĩa có tác dụng gì?", options: ["A. Xóa tệp", "B. Di chuyển tệp", "C. Đổi tên tệp", "D. Mở tệp"], answer: 1, explanation: "Kéo thả trong cùng ổ đĩa mặc định là thao tác di chuyển (Move)." },
+            { id: 68, level: 'medium', question: "Nếu không may máy tính bị tấn công bởi 'Phần mềm tống tiền' (Ransomware), điều nguy hiểm nhất là gì?", options: ["A. Màn hình bị mờ", "B. Toàn bộ dữ liệu bị mã hóa khóa lại và đòi tiền chuộc", "C. Bàn phím hỏng", "D. Chuột bị đơ"], answer: 1, explanation: "Ransomware mã hóa dữ liệu người dùng và tống tiền để lấy chìa khóa giải mã." },
+            { id: 69, level: 'medium', question: "Để hủy bỏ thao tác nhầm vừa làm trong Windows (như lỡ xóa hoặc di chuyển nhầm), em bấm phím nào?", options: ["A. Ctrl + Z", "B. Ctrl + Y", "C. Ctrl + X", "D. Shift + Z"], answer: 0, explanation: "Ctrl + Z thực hiện Undo (Hoàn tác) lệnh trước đó." },
+            { id: 70, level: 'medium', question: "Chức năng 'Create Shortcut' khi nháy chuột phải vào thư mục tạo ra cái gì?", options: ["A. Một bản sao đầy đủ dữ liệu", "B. Một lối tắt (đường dẫn nhanh) tới thư mục gốc", "C. Một tệp nén", "D. Một tài khoản người dùng"], answer: 1, explanation: "Shortcut là đường tắt chỉ trỏ đến vị trí tệp/thư mục gốc." },
+
+            // --- CÂU HỎI KHÓ (HARD) - 30% ---
+            { id: 71, level: 'hard', question: "Trường hợp nào sau đây thể hiện chiến lược sao lưu dữ liệu An Toàn Nhất (Quy tắc 3-2-1)?", options: ["A. Chỉ lưu duy nhất 1 bản trên ổ C máy tính", "B. Tạo 1 bản sao lưu trên USB và cắm liên tục vào máy tính đó", "C. Có ít nhất 3 bản sao, lưu trên 2 loại thiết bị khác nhau và 1 bản lưu ở xa (Đám mây)", "D. In tất cả tài liệu ra giấy rồi xóa trên máy tính"], answer: 2, explanation: "Quy tắc sao lưu 3-2-1 giúp đảm bảo phục hồi dữ liệu trước mọi thảm họa phần cứng hay thiên tai." },
+            { id: 72, level: 'hard', question: "Cho đường dẫn 'C:\\DuLich\\DiemDen\\PhaoHoa01.jpg'. Khẳng định nào sau đây là ĐÚNG?", options: ["A. PhaoHoa01.jpg là thư mục cha của DiemDen", "B. DiemDen là thư mục con của DuLich, chứa tệp PhaoHoa01.jpg", "C. C: là tệp dữ liệu văn bản", "D. DuLich và DiemDen là hai tệp chương trình .exe"], answer: 1, explanation: "Đường dẫn cho thấy PhaoHoa01.jpg nằm trong thư mục DiemDen, DiemDen lại nằm trong thư mục DuLich ở ổ C." },
+            { id: 73, level: 'hard', question: "Lý do quan trọng nhất giải thích tại sao Tệp Chương Trình (.exe, .dll) lại được coi là Dữ Liệu của máy tính?", options: ["A. Vì chúng có thể gõ nội dung vào được như Word", "B. Vì bản chất chúng là dãy bit mã lệnh được lưu trữ trên thiết bị nhớ giống như các tệp dữ liệu khác", "C. Vì chúng luôn có kích thước nhỏ hơn 1MB", "D. Vì người dùng tạo ra chúng mỗi ngày"], answer: 1, explanation: "Mọi chương trình về mặt vật lý đều là mã nhị phân được lưu trữ dưới dạng tệp dữ liệu trên bộ nhớ." },
+            { id: 74, level: 'hard', question: "Bạn An lưu bản sao dự án lên Google Drive. Khi ngắt kết nối Internet, An không mở được tệp để sửa. Nguyên nhân và giải pháp là gì?", options: ["A. Do tệp bị xóa vĩnh viễn; Giải pháp là mua máy tính mới", "B. Do lưu trữ đám mây cần kết nối mạng để truy cập từ xa; Giải pháp là kết nối lại mạng hoặc bật chế độ làm việc ngoại tuyến (Offline)", "C. Do Google Drive bị nhiễm virus; Giải pháp là cài lại Win", "D. Do tên tệp quá ngắn; Giải pháp là đổi tên tệp"], answer: 1, explanation: "Lưu trữ từ xa trên mây phụ thuộc kết nối Internet trừ khi đã đồng bộ bộ nhớ đệm ngoại tuyến." },
+            { id: 75, level: 'hard', question: "Phân tích rủi ro: Nếu một máy tính bị nhiễm Malware loại 'Worm' (Sâu máy tính) kết nối trong mạng LAN nội bộ trường học, nguy cơ nguy hiểm nhất là gì?", options: ["A. Sâu chỉ nằm yên ở 1 máy không làm gì", "B. Sâu có khả năng tự nhân bản và tự lây lan qua mạng sang tất cả các máy tính khác trong cùng mạng", "C. Màn hình máy tính chuyển thành màu xanh", "D. Bàn phím tự động gõ chữ"], answer: 1, explanation: "Sâu máy tính (Worm) đặc trưng bởi khả năng tự lây lan độc lập qua mạng máy tính." },
+            { id: 76, level: 'hard', question: "Một học sinh sao lưu thư mục ôn thi 5GB vào đĩa quang CD-R. Lần sau bạn muốn chép thêm 2GB bài tập vào đĩa đó nhưng hệ thống báo lỗi. Lý do tại sao?", options: ["A. Đĩa CD-R chỉ có dung lượng tối đa khoảng 700MB và loại CD-R thông thường không hỗ trợ ghi bổ sung dễ dàng khi đã đóng đĩa", "B. Do đĩa bị nhiễm virus", "C. Do ổ đĩa CD bị hỏng", "D. Do bài tập quá ngắn"], answer: 0, explanation: "Đĩa CD giới hạn dung lượng ~700MB nhỏ hơn nhiều so với 5GB và CD-R ghi một lần." },
+            { id: 77, level: 'hard', question: "Tình huống: Khi mở ứng dụng File Explorer, em thấy tệp 'Setup.exe.txt'. Đây thực chất là tệp gì và ẩn chứa nguy cơ gì?", options: ["A. Tệp hình ảnh chụp màn hình", "B. Tệp văn bản thuần túy nhưng có thể bị kẻ xấu đặt tên giả dạng .exe để lừa người dùng hoặc ngược lại bị ẩn phần mở rộng thật", "C. Tệp hệ thống Windows bắt buộc", "D. Tệp âm thanh MP3"], answer: 1, explanation: "Kỹ thuật đặt tên kép nhằm giả dạng loại tệp để đánh lừa người dùng mất cảnh giác." },
+            { id: 78, level: 'hard', question: "Sự khác biệt bản chất giữa 'Sao lưu dữ liệu' (Backup) và 'Di chuyển dữ liệu' (Move) là gì?", options: ["A. Sao lưu tạo ra bản sao mới và giữ nguyên bản gốc; Di chuyển chuyển bản gốc sang nơi mới và không còn ở nơi cũ", "B. Sao lưu làm giảm dung lượng tệp; Di chuyển làm tăng dung lượng", "C. Cả hai thao tác hoàn toàn giống nhau", "D. Di chuyển bảo vệ dữ liệu tốt hơn sao lưu"], answer: 0, explanation: "Sao lưu nhân bản tạo dữ liệu dự phòng; di chuyển chỉ đổi vị trí bản gốc." },
+            { id: 79, level: 'hard', question: "Tại sao việc chỉ cài phần mềm diệt virus nhưng KHÔNG bao giờ cập nhật cơ sở dữ liệu lại khiến máy tính vẫn nguy cơ cao bị nhiễm mã độc?", options: ["A. Vì phần mềm sẽ tự xóa", "B. Vì mỗi ngày xuất hiện hàng ngàn virus mới, cơ sở dữ liệu cũ không có dấu hiệu nhận dạng các loại virus mới này", "C. Vì phần mềm sẽ làm chậm máy", "D. Vì máy tính tự động ngắt kết nối Internet"], answer: 1, explanation: "Mẫu nhận diện virus cũ không thể phát hiện các biến thể phần mềm độc hại mới được tạo ra." },
+            { id: 80, level: 'hard', question: "Giả sử em có cây thư mục: `D:\\HocTap\\TinHoc\\BaiTap.docx`. Nếu em thực hiện lệnh `Cut` thư mục `HocTap` dán vào ổ `E:\\`, đường dẫn mới của tệp `BaiTap.docx` sẽ là gì?", options: ["A. E:\\BaiTap.docx", "B. E:\\HocTap\\TinHoc\\BaiTap.docx", "C. D:\\TinHoc\\BaiTap.docx", "D. E:\\TinHoc\\BaiTap.docx"], answer: 1, explanation: "Khi cắt thư mục cha, toàn bộ cấu trúc thư mục con và tệp bên trong giữ nguyên thứ tự phân cấp tại vị trí mới." },
+            { id: 81, level: 'hard', question: "Phân tích trường hợp: Tại sao đặt mật khẩu 'AnMinhKhoa2026' lại kém an toàn hơn mật khẩu 'aM3@K2026!' mặc dù độ dài tương đương?", options: ["A. Mật khẩu 1 chỉ gồm các từ từ điển ghép lại dễ bị tấn công vét cạn (Dictionary Attack); Mật khẩu 2 có ký tự đặc biệt và xen kẽ ngẫu nhiên", "B. Mật khẩu 1 chứa số", "C. Mật khẩu 2 ngắn hơn", "D. Cả hai an toàn như nhau"], answer: 0, explanation: "Mật khẩu ghép từ từ điển dễ bị công cụ dò tự động phá vỡ; chuỗi ngẫu nhiên có ký tự đặc biệt an toàn hơn." },
+            { id: 82, level: 'hard', question: "Trong hệ điều hành Windows, tại sao khi em xóa một tệp nằm trong thẻ nhớ USB thì tệp đó KHÔNG đi vào Thùng rác (Recycle Bin)?", options: ["A. Vì USB bị lỗi phần cứng", "B. Vì Thùng rác chỉ quản lí bộ nhớ trên các ổ đĩa cục bộ cố định của máy tính, thiết bị di động xóa sẽ mất vĩnh viễn", "C. Vì USB tự động sao lưu", "D. Vì tệp quá nhỏ"], answer: 1, explanation: "Xóa tệp trên thiết bị lưu trữ di động (như USB) mặc định sẽ xóa vĩnh viễn, không qua Recycle Bin." },
+            { id: 83, level: 'hard', question: "Nếu ổ đĩa C của máy tính bị đầy bộ nhớ, việc xóa tệp nào sau đây là AN TOÀN VÀ ĐÚNG ĐẮN nhất?", options: ["A. Xóa các tệp trong thư mục C:\\Windows\\System32", "B. Xóa các tệp chương trình .exe trong Program Files", "C. Dọn dẹp các tệp tạm (Temporary Files) và tệp trong thư mục Downloads cá nhân không dùng", "D. Xóa tệp driver bàn phím"], answer: 2, explanation: "Chỉ nên xóa tệp dữ liệu rác cá nhân/tệp tạm; tuyệt đối không xóa tệp hệ thống hoặc chương trình đang chạy." },
+            { id: 84, level: 'hard', question: "Tại sao nên ngắt kết nối Internet khi nghi ngờ máy tính vừa bị trúng mã độc nguy hiểm?", options: ["A. Để máy tính mát hơn", "B. Để ngăn chặn mã độc phát tán thông tin ra bên ngoài hoặc nhận lệnh từ máy chủ điều khiển của tin tặc", "C. Để tăng tốc độ diệt virus", "D. Để tự động sao lưu dữ liệu"], answer: 1, explanation: "Ngắt mạng ngăn mã độc đánh cắp dữ liệu gửi đi hoặc tải thêm mã độc phụ về máy." },
+            { id: 85, level: 'hard', question: "Tại sao việc nén thư mục (Zip/Rar) trước khi gửi qua Email hoặc lưu trữ đám mây lại là thói quen quản lí dữ liệu tốt?", options: ["A. Giúp giảm dung lượng tổng thể và gom nhiều tệp/thư mục thành 1 tệp duy nhất dễ quản lí, truyền tải", "B. Giúp đổi tên tệp tự động", "C. Giúp xóa virus trong tệp", "D. Giúp tăng độ phân giải của ảnh"], answer: 0, explanation: "Nén dữ liệu vừa tiết kiệm băng thông/dung lượng vừa giữ nguyên cấu trúc thư mục." },
+            { id: 86, level: 'hard', question: "Thao tác nào sau đây có thể khôi phục lại dữ liệu bị mất do virus xóa, nếu máy tính ĐÃ BẬT tính năng System Restore hoặc File History?", options: ["A. Đổi tên ổ đĩa", "B. Phục hồi về điểm khôi phục (Restore Point) hoặc phiên bản lịch sử tệp đã lưu trước đó", "C. Rút dây nguồn", "D. Đặt lại mật khẩu"], answer: 1, explanation: "File History / Restore Point lưu lại bản sao snapshot hệ thống để khôi phục khi gặp sự cố." },
+            { id: 87, level: 'hard', question: "Tại sao thiết bị lưu trữ SSD lại dần thay thế ổ cứng HDD truyền thống trong việc quản lí dữ liệu hiện đại?", options: ["A. Tốc độ truy xuất dữ liệu nhanh hơn nhiều, bền hơn do không có bộ phận cơ học quay", "B. Giá rẻ hơn 100 lần", "C. Không bao giờ hỏng", "D. Dung lượng vô tận"], answer: 0, explanation: "SSD dùng chip nhớ flash nên truy xuất siêu nhanh và chịu va đập tốt hơn đĩa cơ HDD." },
+            { id: 88, level: 'hard', question: "Biện pháp 'Xác thực 2 yếu tố' (2FA) bảo vệ tài khoản dữ liệu như thế nào?", options: ["A. Yêu cầu nhập 2 lần mật khẩu giống nhau", "B. Ngoài mật khẩu, yêu cầu thêm mã xác thực gửi về điện thoại hoặc ứng dụng xác thực", "C. Cho phép 2 người cùng đăng nhập 1 lúc", "D. Tự động đổi mật khẩu sau 2 phút"], answer: 1, explanation: "2FA tăng cường bảo mật bằng lớp mã xác thực thứ hai trên thiết bị tin cậy." },
+            { id: 89, level: 'hard', question: "Trong các tình huống sau, tình huống nào tiềm ẩn rủi ro BẤT KHẢ KHÁNG đối với dữ liệu chỉ sao lưu bằng USB?", options: ["A. USB bị ngấm nước, va đập gãy hỏng hoặc bị thất lạc", "B. Máy tính bị tắt màn hình", "C. Đổi tên thư mục trong USB", "D. Mở tệp Word trong USB"], answer: 0, explanation: "USB kích thước quá nhỏ rất dễ rơi thất lạc hoặc hỏng mạch điện tử khi dính nước." },
+            { id: 90, level: 'hard', question: "Điều gì xảy ra khi em chọn lệnh 'Paste Shortcut' thay vì 'Paste' thông thường sau khi Copy một tệp?", options: ["A. Tạo ra bản sao dữ liệu hoàn chỉnh", "B. Chỉ tạo ra tệp liên kết (Shortcut) dung lượng vài KB chỉ tới tệp gốc", "C. Xóa luôn tệp gốc", "D. Đổi phần mở rộng thành .exe"], answer: 1, explanation: "Paste Shortcut tạo liên kết chứ không nhân bản dữ liệu thật." },
+            { id: 91, level: 'hard', question: "Nếu một tệp dữ liệu quan trọng bị mã hóa thành ký tự lạ do virus, thao tác nào sau đây KHÔNG NÊN LÀM?", options: ["A. Cách ly máy tính khỏi mạng", "B. Thanh toán tiền cho tin tặc ngay lập tức theo yêu cầu trên màn hình", "C. Dùng phần mềm diệt virus quét mã độc", "D. Sử dụng bản sao lưu từ trước để khôi phục"], answer: 1, explanation: "Thanh toán tiền chuộc không đảm bảo lấy lại được dữ liệu và tiếp tay cho tội phạm." },
+            { id: 92, level: 'hard', question: "Ý nghĩa của phần mở rộng tệp (File Extension) trong hệ điều hành là gì?", options: ["A. Để trang trí tên tệp", "B. Giúp hệ điều hành nhận biết loại tệp và chọn phần mềm tương ứng để mở tệp đó", "C. Xác định giá tiền của tệp", "D. Đo độ dài của tệp"], answer: 1, explanation: "Phần mở rộng định danh định dạng tệp để Windows gán ứng dụng mở thích hợp." },
+            { id: 93, level: 'hard', question: "Khi chia sẻ một tệp tài liệu quan trọng trên Google Drive cho bạn học, tùy chọn phân quyền nào giúp bảo vệ nội dung không bị sửa xóa nhầm?", options: ["A. Quyền Người chỉnh sửa (Editor)", "B. Quyền Người xem (Viewer) hoặc Người bình luận (Commenter)", "C. Quyền Chủ sở hữu duy nhất", "D. Khóa tài khoản Google"], answer: 1, explanation: "Quyền Viewer cho phép đọc nhưng không thể chỉnh sửa làm thay đổi tệp gốc." },
+            { id: 94, level: 'hard', question: "Phân biệt sự khác nhau giữa Phishing (Lừa đảo) và Virus máy tính?", options: ["A. Phishing lừa người dùng tự cung cấp thông tin/mật khẩu qua trang web giả mạo; Virus là đoạn mã tự lây nhiễm phá hoại hệ thống", "B. Phishing là thiết bị phần cứng", "C. Virus không thể xóa được", "D. Cả hai là một"], answer: 0, explanation: "Phishing tấn công vào tâm lý người dùng; Virus tấn công kỹ thuật vào hệ thống." },
+            { id: 95, level: 'hard', question: "Tại sao việc đặt thuộc tính 'Read-only' (Chỉ đọc) cho tệp dữ liệu lại có thể giúp bảo vệ tệp?", options: ["A. Ngăn chặn việc vô tình sửa đổi hoặc ghi đè nội dung tệp", "B. Giúp tệp biến mất khỏi máy tính", "C. Tự động diệt virus", "D. Tăng dung lượng tệp"], answer: 0, explanation: "Thuộc tính Read-only khóa tệp ở chế độ xem, chống ghi đè dữ liệu." },
+            { id: 96, level: 'hard', question: "Một ổ cứng 500GB báo dung lượng còn trống 50MB. Hiện tượng gì sẽ xảy ra đối với máy tính?", options: ["A. Máy tính chạy nhanh hơn", "B. Máy tính hoạt động rất chậm, trì trệ, không thể lưu thêm tệp hay cập nhật phần mềm", "C. Tự động tăng thêm 500GB", "D. Màn hình tự động tắt"], answer: 1, explanation: "Hệ điều hành cần không gian đĩa trống (Virtual Memory/Temp) để vận hành mượt mà." },
+            { id: 97, level: 'hard', question: "Khi tạo cấu trúc thư mục quản lí tài chính cá nhân, cách tổ chức nào khoa học nhất?", options: ["A. Lần lượt tạo các thư mục năm (2025, 2026), bên trong chứa các thư mục tháng (Thang01, Thang02)", "B. Để tất cả hóa đơn ra Desktop", "C. Đặt tên các hóa đơn là 1, 2, 3...", "D. Gom chung vào Thùng rác"], answer: 0, explanation: "Phân loại theo Năm > Tháng giúp theo dõi và truy xuất dữ liệu thời gian cực kỳ chính xác." },
+            { id: 98, level: 'hard', question: "Chức năng 'Disk Cleanup' có sẵn trong Windows dùng để làm gì?", options: ["A. Lau chùi bụi bẩn bên ngoài vỏ máy", "B. Quét và xóa các tệp rác, tệp tạm không cần thiết để giải phóng không gian lưu trữ", "C. Định dạng lại toàn bộ ổ đĩa", "D. Đặt mật khẩu cho ổ C"], answer: 1, explanation: "Disk Cleanup tìm và dọn dẹp các tệp tạm an toàn cho hệ thống." },
+            { id: 99, level: 'hard', question: "Nếu em sao chép tệp `BaiTap.docx` từ thư mục A sang thư mục B, sau đó chỉnh sửa nội dung tệp ở thư mục B. Nội dung tệp ở thư mục A sẽ như thế nào?", options: ["A. Tự động cập nhật giống thư mục B", "B. Giữ nguyên nội dung ban đầu không bị thay đổi", "C. Bị xóa mất", "D. Bị lỗi không mở được"], answer: 1, explanation: "Hai tệp ở hai vị trí là hai bản sao độc lập hoàn toàn." },
+            { id: 100, level: 'hard', question: "Tổng kết bài học: Hành động nào kết hợp đầy đủ các nguyên tắc quản lí và bảo vệ dữ liệu an toàn?", options: ["A. Đặt tên tệp/thư mục rõ ràng + Định kỳ sao lưu từ xa + Đặt mật khẩu mạnh + Bật phần mềm diệt virus", "B. Chỉ cần đặt mật khẩu thật dài", "C. Không bao giờ bật máy tính", "D. Lưu tất cả dữ liệu vào 1 USB duy nhất"], answer: 0, explanation: "Quản lí dữ liệu an toàn đòi hỏi sự kết hợp đồng bộ giữa tổ chức khoa học và các giải pháp bảo mật." }
+        ];
+
+        /* ==========================================================================
+           STATE MANAGEMENT & APP VARIABLES
+           ========================================================================== */
+        let DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbytvcnTHmy-lUpgOctdGTHxCFP6ZAGUOWO_FevXXBjKYZe5kJtCXXtKHkPfxd_nDcgsXA/exec";
+        let examDurationMinutes = 20;
+
+        let currentStudent = { name: "", class: "" };
+        let selectedQuestions = []; // 20 questions picked randomly
+        let userAnswers = {}; // { questionId: optionIndex }
+        let bookmarkedQuestions = {}; // { questionId: true/false }
+        
+        let currentQuestionIndex = 0;
+        let timerInterval = null;
+        let remainingSeconds = 20 * 60;
+        let examStartTime = null;
+        let attemptCount = 1;
+
+        // Load saved attempt count or config
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('app_sheet_url');
+            if (savedUrl) DEFAULT_SHEET_URL = savedUrl;
+
+            // Render palette empty initial
+            renderPalette();
+        };
+
+        /* ==========================================================================
+           RANDOM SELECTION OF 20 QUESTIONS BASED ON DIFFICULTY RATIO
+           6 Easy (30%), 8 Medium (40%), 6 Hard (30%)
+           ========================================================================== */
+        function getRandomQuestions() {
+            const easyPool = QUESTION_BANK.filter(q => q.level === 'easy');
+            const mediumPool = QUESTION_BANK.filter(q => q.level === 'medium');
+            const hardPool = QUESTION_BANK.filter(q => q.level === 'hard');
+
+            // Helper shuffle
+            const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+            const pickedEasy = shuffle(easyPool).slice(0, 6);
+            const pickedMedium = shuffle(mediumPool).slice(0, 8);
+            const pickedHard = shuffle(hardPool).slice(0, 6);
+
+            // Combine and shuffle the 20 questions
+            return shuffle([...pickedEasy, ...pickedMedium, ...pickedHard]);
+        }
+
+        /* ==========================================================================
+           START EXAM HANDLER
+           ========================================================================== */
+        function handleStartExam(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('input-name').value.trim();
+            const classInput = document.getElementById('input-class').value.trim();
+
+            if (!nameInput || !classInput) {
+                alert("Vui lòng nhập đầy đủ Họ tên và Lớp học!");
+                return;
+            }
+
+            currentStudent.name = nameInput;
+            currentStudent.class = classInput;
+
+            // Check attempt count in session
+            const attemptKey = `attempts_${currentStudent.name}_${currentStudent.class}`;
+            let pastAttempts = parseInt(localStorage.getItem(attemptKey) || '0');
+            attemptCount = pastAttempts + 1;
+            localStorage.setItem(attemptKey, attemptCount);
+
+            // Update badge info
+            document.getElementById('display-student-name').innerText = currentStudent.name;
+            document.getElementById('display-student-class').innerText = currentStudent.class;
+            document.getElementById('student-badge').classList.remove('hidden');
+
+            // Select 20 random questions
+            selectedQuestions = getRandomQuestions();
+            userAnswers = {};
+            bookmarkedQuestions = {};
+            currentQuestionIndex = 0;
+
+            // Switch screens
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-exam').classList.remove('hidden');
+
+            // Start Timer
+            remainingSeconds = examDurationMinutes * 60;
+            examStartTime = new Date();
+            startTimer();
+
+            // Render first question & palette
+            renderQuestion(currentQuestionIndex);
+            renderPalette();
+        }
+
+        /* ==========================================================================
+           TIMER CONTROL
+           ========================================================================== */
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+                updateTimerDisplay();
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Đã hết thời gian làm bài! Hệ thống sẽ tự động nộp bài.");
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('timer-text').innerText = formatted;
+
+            const timerContainer = document.getElementById('timer-display');
+            if (remainingSeconds <= 180) { // < 3 mins warning
+                timerContainer.classList.add('text-rose-400', 'animate-pulse');
+                timerContainer.classList.remove('text-cyan-400');
+            } else {
+                timerContainer.classList.remove('text-rose-400', 'animate-pulse');
+                timerContainer.classList.add('text-cyan-400');
+            }
+        }
+
+        /* ==========================================================================
+           RENDER QUESTION & OPTIONS (2 COLUMNS)
+           ========================================================================== */
+        function renderQuestion(index) {
+            currentQuestionIndex = index;
+            const q = selectedQuestions[index];
+
+            // Question Header Meta
+            document.getElementById('question-number-badge').innerText = `Câu ${index + 1} / 20`;
+            document.getElementById('progress-indicator').innerText = `${index + 1} / 20`;
+
+            const diffBadge = document.getElementById('question-difficulty-badge');
+            if (q.level === 'easy') {
+                diffBadge.innerText = 'Mức độ: Dễ';
+                diffBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800';
+            } else if (q.level === 'medium') {
+                diffBadge.innerText = 'Mức độ: Vừa';
+                diffBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-cyan-950 text-cyan-400 border border-cyan-800';
+            } else {
+                diffBadge.innerText = 'Mức độ: Khó';
+                diffBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-950 text-purple-400 border border-purple-800';
+            }
+
+            // Bookmark Status
+            updateBookmarkButtonState();
+
+            // Question Text
+            document.getElementById('question-text').innerText = q.question;
+
+            // Render Options (2 COLUMNS GRID)
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const selectedOption = userAnswers[q.id];
+
+            q.options.forEach((optText, optIdx) => {
+                const isSelected = (selectedOption === optIdx);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectOption(q.id, optIdx);
+
+                // Styling for option button (Strict requirement: Do NOT show correct/incorrect during test)
+                let baseClasses = "w-full text-left p-4 rounded-xl border text-sm font-medium transition flex items-center justify-between ";
+                if (isSelected) {
+                    baseClasses += "bg-cyan-600/20 border-cyan-500 text-cyan-200 shadow-md shadow-cyan-500/10";
+                } else {
+                    baseClasses += "bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80";
+                }
+
+                btn.className = baseClasses;
+                btn.innerHTML = `
+                    <span class="leading-snug">${optText}</span>
+                    <span class="w-5 h-5 rounded-full border ${isSelected ? 'border-cyan-400 bg-cyan-500 text-slate-950' : 'border-slate-700'} flex items-center justify-center text-xs shrink-0 ml-2">
+                        ${isSelected ? '<i class="fa-solid fa-check"></i>' : ''}
+                    </span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Update prev/next button states
+            document.getElementById('btn-prev').disabled = (index === 0);
+            document.getElementById('btn-next').disabled = (index === selectedQuestions.length - 1);
+
+            // Update palette highlight
+            renderPalette();
+        }
+
+        function selectOption(questionId, optionIndex) {
+            userAnswers[questionId] = optionIndex;
+            renderQuestion(currentQuestionIndex);
+            renderPalette();
+        }
+
+        function navigateQuestion(step) {
+            const newIndex = currentQuestionIndex + step;
+            if (newIndex >= 0 && newIndex < selectedQuestions.length) {
+                renderQuestion(newIndex);
+            }
+        }
+
+        function toggleBookmarkCurrentQuestion() {
+            const q = selectedQuestions[currentQuestionIndex];
+            bookmarkedQuestions[q.id] = !bookmarkedQuestions[q.id];
+            updateBookmarkButtonState();
+            renderPalette();
+        }
+
+        function updateBookmarkButtonState() {
+            const q = selectedQuestions[currentQuestionIndex];
+            const isBookmarked = bookmarkedQuestions[q.id];
+            const icon = document.getElementById('bookmark-icon');
+            const text = document.getElementById('bookmark-text');
+
+            if (isBookmarked) {
+                icon.className = 'fa-solid fa-bookmark text-amber-400';
+                text.innerText = 'Đã đánh dấu';
+            } else {
+                icon.className = 'fa-regular fa-bookmark';
+                text.innerText = 'Đánh dấu xem lại';
+            }
+        }
+
+        /* ==========================================================================
+           RENDER QUESTION PALETTE (RIGHT PANEL)
+           ========================================================================== */
+        function renderPalette() {
+            const palette = document.getElementById('questions-palette');
+            palette.innerHTML = '';
+
+            let answeredCount = 0;
+
+            selectedQuestions.forEach((q, idx) => {
+                const isAnswered = userAnswers.hasOwnProperty(q.id);
+                const isCurrent = (idx === currentQuestionIndex);
+                const isBookmarked = bookmarkedQuestions[q.id];
+
+                if (isAnswered) answeredCount++;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => renderQuestion(idx);
+
+                let btnClasses = "w-full aspect-square rounded-lg text-xs font-bold transition flex items-center justify-center relative ";
+
+                if (isCurrent) {
+                    btnClasses += "ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-900 ";
+                }
+
+                if (isAnswered) {
+                    btnClasses += "bg-cyan-600 text-white ";
+                } else {
+                    btnClasses += "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 ";
+                }
+
+                if (isBookmarked) {
+                    btnClasses += "border-2 border-amber-400 ";
+                }
+
+                btn.className = btnClasses;
+                btn.innerHTML = `
+                    <span>${idx + 1}</span>
+                    ${isBookmarked ? '<span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400"></span>' : ''}
+                `;
+
+                palette.appendChild(btn);
+            });
+
+            document.getElementById('answered-count-text').innerText = `${answeredCount}/20 đã chọn`;
+        }
+
+        /* ==========================================================================
+           EXAM SUBMISSION & GOOGLE SHEET SYNC WITH BASE64 ENCODING
+           ========================================================================== */
+        function confirmSubmitExam() {
+            const total = selectedQuestions.length;
+            const answered = Object.keys(userAnswers).length;
+
+            let msg = `Bạn có chắc chắn muốn nộp bài kiềm tra không?`;
+            if (answered < total) {
+                msg = `Bạn còn ${total - answered} câu chưa chọn đáp án. Bạn vẫn muốn nộp bài?`;
+            }
+
+            if (window.confirm(msg)) {
+                submitExam();
+            }
+        }
+
+        function submitExam() {
+            clearInterval(timerInterval);
+
+            // Calculate score
+            let correctCount = 0;
+            selectedQuestions.forEach(q => {
+                if (userAnswers[q.id] === q.answer) {
+                    correctCount++;
+                }
+            });
+
+            const totalQuestions = selectedQuestions.length; // 20
+            const score = (correctCount * (10 / totalQuestions)).toFixed(1); // Scale to 10 points
+
+            // Calculate time taken
+            const timeTakenSeconds = (examDurationMinutes * 60) - remainingSeconds;
+            const minutesTaken = Math.floor(timeTakenSeconds / 60);
+            const secondsTaken = timeTakenSeconds % 60;
+            const timeTakenFormatted = `${minutesTaken} phút ${secondsTaken} giây`;
+            const sendTime = new Date().toLocaleString('vi-VN');
+
+            // Switch to result screen
+            document.getElementById('screen-exam').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            // Populate Summary
+            document.getElementById('res-student-info').innerText = `${currentStudent.name} (Lớp: ${currentStudent.class})`;
+            document.getElementById('res-score').innerText = `${score} / 10`;
+            document.getElementById('res-correct').innerText = `${correctCount} / ${totalQuestions}`;
+            document.getElementById('res-time-taken').innerText = timeTakenFormatted;
+            document.getElementById('res-attempts').innerText = `Lần ${attemptCount}`;
+
+            // Render Detailed Answers Review List
+            renderReviewList();
+
+            // Send payload to Google Sheets Apps Script
+            sendDataToGoogleSheet({
+                studentName: currentStudent.name,
+                studentClass: currentStudent.class,
+                totalQuestions: totalQuestions,
+                correctCount: correctCount,
+                score: parseFloat(score),
+                timeTaken: timeTakenFormatted,
+                sendTime: sendTime,
+                attemptCount: attemptCount
+            });
+        }
+
+        /* Base64 Encoding Payload function matching user's Apps Script Utilities.base64Decode */
+        function encodeBase64Utf8(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        function sendDataToGoogleSheet(payload) {
+            const statusBox = document.getElementById('sync-status');
+            statusBox.className = "bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-slate-300 mb-6";
+            statusBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> <span>Đang mã hóa dữ liệu & lưu kết quả lên Google Sheet...</span>`;
+
+            try {
+                // Mã hóa Base64 theo yêu cầu bảo mật
+                const jsonString = JSON.stringify(payload);
+                const encodedData = encodeBase64Utf8(jsonString);
+
+                const postBody = JSON.stringify({ data: encodedData });
+
+                fetch(DEFAULT_SHEET_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Standard CORS workaround for Apps Script
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: postBody
+                })
+                .then(() => {
+                    statusBox.className = "bg-emerald-950/60 border border-emerald-800/80 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-emerald-300 mb-6";
+                    statusBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>Đã lưu thành công kết quả bài kiểm tra lên Google Sheet!</span>`;
+                })
+                .catch(err => {
+                    console.error("Sheet Error:", err);
+                    statusBox.className = "bg-rose-950/60 border border-rose-800/80 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-rose-300 mb-6";
+                    statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> <span>Không thể kết nối đến máy chủ lưu trữ. Vui lòng kiểm tra lại cấu hình URL.</span>`;
+                });
+            } catch (err) {
+                console.error("Encoding error:", err);
+                statusBox.className = "bg-rose-950/60 border border-rose-800/80 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-rose-300 mb-6";
+                statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> <span>Lỗi mã hóa dữ liệu gửi đi.</span>`;
+            }
+        }
+
+        /* ==========================================================================
+           RENDER DETAILED REVIEW LIST
+           ========================================================================== */
+        function renderReviewList() {
+            const listContainer = document.getElementById('review-list');
+            listContainer.innerHTML = '';
+
+            selectedQuestions.forEach((q, idx) => {
+                const userChoice = userAnswers[q.id];
+                const isCorrect = (userChoice === q.answer);
+
+                const item = document.createElement('div');
+                item.className = `p-5 rounded-xl border ${isCorrect ? 'bg-emerald-950/20 border-emerald-900/50' : 'bg-rose-950/20 border-rose-900/50'} space-y-3`;
+
+                let optionsHtml = '';
+                q.options.forEach((opt, optIdx) => {
+                    let optStyle = "p-2.5 rounded-lg border text-xs font-medium flex items-center justify-between ";
+                    
+                    if (optIdx === q.answer) {
+                        // Correct Answer
+                        optStyle += "bg-emerald-500/20 border-emerald-500 text-emerald-200 font-bold";
+                    } else if (optIdx === userChoice && !isCorrect) {
+                        // Wrong Choice
+                        optStyle += "bg-rose-500/20 border-rose-500 text-rose-200 line-through";
+                    } else {
+                        optStyle += "bg-slate-900/60 border-slate-800 text-slate-400 opacity-70";
+                    }
+
+                    optionsHtml += `
+                        <div class="${optStyle}">
+                            <span>${opt}</span>
+                            ${optIdx === q.answer ? '<span class="text-xs text-emerald-400"><i class="fa-solid fa-check"></i> Đáp án đúng</span>' : ''}
+                            ${optIdx === userChoice && !isCorrect ? '<span class="text-xs text-rose-400"><i class="fa-solid fa-xmark"></i> Lựa chọn của bạn</span>' : ''}
+                        </div>
+                    `;
+                });
+
+                item.innerHTML = `
+                    <div class="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-slate-200">Câu ${idx + 1}:</span>
+                            <span class="text-xs px-2 py-0.5 rounded ${isCorrect ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+                                ${isCorrect ? 'Chính xác (+0.5 điểm)' : 'Chưa chính xác (0 điểm)'}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-100 font-medium">${q.question}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+                        ${optionsHtml}
+                    </div>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-1">
+                        <span class="font-bold text-cyan-400 flex items-center gap-1">
+                            <i class="fa-solid fa-lightbulb"></i> Giải thích chi tiết:
+                        </span>
+                        <p class="text-slate-400">${q.explanation}</p>
+                    </div>
+                `;
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        function retakeExam() {
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-welcome').classList.remove('hidden');
+        }
+
+        /* ==========================================================================
+           ADMIN SETTINGS MODAL & PASSWORD PROTECTION (minhtran)
+           ========================================================================== */
+        function openSettingsModal() {
+            document.getElementById('settings-auth-view').classList.remove('hidden');
+            document.getElementById('settings-content-view').classList.add('hidden');
+            document.getElementById('input-admin-pass').value = '';
+            document.getElementById('admin-pass-error').classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function authenticateAdmin() {
+            const pass = document.getElementById('input-admin-pass').value;
+            if (pass === 'minhtran') {
+                document.getElementById('settings-auth-view').classList.add('hidden');
+                document.getElementById('settings-content-view').classList.remove('hidden');
+                document.getElementById('input-sheet-url').value = DEFAULT_SHEET_URL;
+                document.getElementById('input-exam-duration').value = examDurationMinutes;
+            } else {
+                document.getElementById('admin-pass-error').classList.remove('hidden');
+            }
+        }
+
+        function saveAdminSettings() {
+            const newUrl = document.getElementById('input-sheet-url').value.trim();
+            const newDuration = parseInt(document.getElementById('input-exam-duration').value);
+
+            if (newUrl) {
+                DEFAULT_SHEET_URL = newUrl;
+                localStorage.setItem('app_sheet_url', newUrl);
+            }
+
+            if (newDuration && newDuration > 0) {
+                examDurationMinutes = newDuration;
+            }
+
+            alert("Đã lưu cấu hình thành công!");
+            closeSettingsModal();
+        }
+    </script>
+</body>
+</html>
