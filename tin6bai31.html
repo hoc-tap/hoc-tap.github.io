@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thử Thách Tri Thức Tin Học - Biểu Diễn Thông Tin Trong Máy Tính</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b0f19',
+                        cardbg: '#1e293b',
+                        bordercolor: '#334155',
+                        brandcyan: '#06b6d4',
+                        brandblue: '#3b82f6',
+                        brandemerald: '#10b981',
+                        brandpurple: '#8b5cf6'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            user-select: none;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between custom-scrollbar bg-[#0b0f19] text-slate-100">
+
+    <!-- TOP NAVBAR -->
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-filter blur-md sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white tracking-wide leading-tight uppercase">BÀI KIỂM TRA TIN HỌC 6</h1>
+                    <p class="text-xs text-cyan-400 font-medium">Mục 1: Biểu diễn thông tin trong máy tính</p>
+                </div>
+            </div>
+
+            <!-- Student Info Displayed on Top Right during Exam -->
+            <div class="flex items-center gap-4">
+                <div id="student-badge" class="hidden flex items-center gap-2 bg-slate-800/90 border border-cyan-500/30 px-3.5 py-1.5 rounded-xl text-sm shadow-md">
+                    <i class="fa-solid fa-user-graduate text-cyan-400"></i>
+                    <span id="display-student-name" class="font-semibold text-slate-100">--</span>
+                    <span class="text-slate-600">|</span>
+                    <span id="display-student-class" class="text-xs bg-cyan-950 text-cyan-300 border border-cyan-800 px-2 py-0.5 rounded-md font-mono font-bold">--</span>
+                </div>
+
+                <button onclick="openSettingsModal()" class="text-slate-400 hover:text-cyan-400 transition p-2 rounded-lg hover:bg-slate-800" title="Cấu hình hệ thống">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+        <!-- ==================== SCREEN 1: LOGIN / START SCREEN ==================== -->
+        <div id="screen-welcome" class="max-w-xl mx-auto w-full glass-card rounded-2xl p-6 md:p-8 shadow-2xl border border-slate-800 my-auto">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-3 shadow-inner">
+                    <i class="fa-solid fa-brain text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-1 tracking-tight">Thử Thách Tri Thức Số</h2>
+                <p class="text-sm text-slate-400">Bài kiểm tra kiến thức: <span class="text-cyan-300 font-medium">Biểu diễn thông tin trong máy tính</span></p>
+            </div>
+
+            <form id="start-form" onsubmit="handleStartExam(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Họ và tên học sinh <span class="text-rose-400">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-slate-500 text-sm"></i>
+                        <input type="text" id="input-name" required placeholder="Nhập đầy đủ Họ và Tên..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1">Lớp học <span class="text-rose-400">*</span></label>
+                    <div class="relative">
+                        <i class="fa-solid fa-users text-slate-500 absolute left-3.5 top-3.5 text-sm"></i>
+                        <input type="text" id="input-class" required placeholder="Ví dụ: 6A1, 6A2..." class="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition">
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-xs space-y-2 text-slate-300 my-4">
+                    <div class="font-semibold text-cyan-400 flex items-center gap-1.5 text-sm">
+                        <i class="fa-solid fa-circle-info"></i> Quy định bài kiểm tra:
+                    </div>
+                    <ul class="list-disc pl-4 space-y-1.5 text-slate-400">
+                        <li>Số lượng: <b class="text-slate-200">20 câu hỏi ngẫu nhiên</b> (Phân hóa: 6 câu Dễ, 8 câu Vừa, 6 câu Khó - chiếm 30%).</li>
+                        <li>Thang điểm: <b class="text-slate-200">10 điểm</b> (Mỗi câu trả lời đúng đạt <b class="text-emerald-400">0.5 điểm</b>).</li>
+                        <li>Thời gian làm bài: <b class="text-slate-200">20 phút</b> (Có đồng hồ đếm ngược).</li>
+                        <li>Học sinh có thể tự do chuyển đổi giữa các câu hỏi để xem và chỉnh sửa đáp án.</li>
+                        <li>Kết quả sẽ được tự động đồng bộ mã hóa bảo mật lưu vào Google Sheet hệ thống.</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-3 rounded-xl shadow-lg shadow-cyan-600/30 transition flex items-center justify-center gap-2 text-sm">
+                    <span>BẮT ĐẦU LÀM BÀI KIỂM TRA</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- ==================== SCREEN 2: EXAM WORKSPACE ==================== -->
+        <div id="screen-exam" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6 my-auto">
+            
+            <!-- LEFT COLUMN: QUESTION CONTENT (3 cols) -->
+            <div class="lg:col-span-3 flex flex-col space-y-4">
+                
+                <!-- Question Card -->
+                <div class="glass-card rounded-2xl p-5 md:p-7 border border-slate-800 flex-1 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <!-- Header Question Metadata -->
+                        <div class="flex items-center justify-between gap-2 border-b border-slate-800 pb-3 mb-4">
+                            <div class="flex items-center gap-2">
+                                <span id="question-number-badge" class="bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-bold px-3 py-1 rounded-lg">
+                                    Câu 1 / 20
+                                </span>
+                                <span id="question-difficulty-badge" class="text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800">
+                                    Mức độ: Dễ
+                                </span>
+                            </div>
+                            <button onclick="toggleBookmarkCurrentQuestion()" id="btn-bookmark" class="text-xs font-medium text-slate-400 hover:text-amber-400 transition flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800/80">
+                                <i class="fa-regular fa-bookmark" id="bookmark-icon"></i>
+                                <span id="bookmark-text">Đánh dấu xem lại</span>
+                            </button>
+                        </div>
+
+                        <!-- Question Text (Medium Font Size) -->
+                        <div class="mb-6">
+                            <h3 id="question-text" class="text-base md:text-lg font-medium text-slate-100 leading-relaxed">
+                                Đang tải nội dung câu hỏi...
+                            </h3>
+                        </div>
+
+                        <!-- Options ABCD (STRICT REQUIREMENT: 2 COLUMNS GRID) -->
+                        <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                            <!-- JS will inject 4 options here -->
+                        </div>
+                    </div>
+
+                    <!-- Question Navigation Footer Controls -->
+                    <div class="flex items-center justify-between border-t border-slate-800 pt-4 mt-8">
+                        <button onclick="navigateQuestion(-1)" id="btn-prev" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                            <i class="fa-solid fa-chevron-left"></i>
+                            <span>Câu trước</span>
+                        </button>
+
+                        <span class="text-xs text-slate-400 font-mono hidden sm:inline" id="progress-indicator">1 / 20</span>
+
+                        <button onclick="navigateQuestion(1)" id="btn-next" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center gap-2">
+                            <span>Câu tiếp</span>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: TIMER, NAVIGATION PALETTE & SUBMIT BUTTON -->
+            <div class="lg:col-span-1 flex flex-col space-y-4">
+                
+                <!-- Countdown Timer Card -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-800 text-center shadow-lg">
+                    <p class="text-xs text-slate-400 font-medium mb-1">Thời gian làm bài còn lại</p>
+                    <div class="inline-flex items-center gap-2 font-mono text-2xl font-bold text-cyan-400" id="timer-display">
+                        <i class="fa-regular fa-clock text-xl"></i>
+                        <span id="timer-text">20:00</span>
+                    </div>
+                </div>
+
+                <!-- Question Grid Navigation Box -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-800 flex-1 flex flex-col justify-between shadow-lg">
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center justify-between">
+                            <span>Danh sách câu hỏi</span>
+                            <span class="text-xs font-normal text-slate-400" id="answered-count-text">0/20 đã chọn</span>
+                        </h4>
+
+                        <!-- Grid 20 question buttons -->
+                        <div id="questions-palette" class="grid grid-cols-5 gap-2 mb-4">
+                            <!-- Injected by JS: 20 buttons -->
+                        </div>
+
+                        <!-- Palette Legend -->
+                        <div class="space-y-1.5 text-xs text-slate-400 border-t border-slate-800 pt-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-md bg-cyan-600 inline-block"></span>
+                                <span>Đã chọn đáp án</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-md bg-slate-800 border border-slate-700 inline-block"></span>
+                                <span>Chưa chọn</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-md bg-amber-500/20 border border-amber-500 inline-block"></span>
+                                <span>Đã đánh dấu xem lại</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button Placed Directly Below Right Side Panel -->
+                    <div class="mt-5 pt-3 border-t border-slate-800">
+                        <button onclick="confirmSubmitExam()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>NỘP BÀI KIỂM TRA</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== SCREEN 3: RESULT & REVIEW ==================== -->
+        <div id="screen-result" class="hidden max-w-4xl mx-auto w-full space-y-6 my-6">
+            
+            <!-- Result Summary Card -->
+            <div class="glass-card rounded-2xl p-6 md:p-8 border border-slate-800 shadow-2xl relative overflow-hidden text-center">
+                <div class="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-500 to-emerald-500 p-0.5 mb-4 shadow-xl">
+                    <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-award text-3xl text-amber-400"></i>
+                    </div>
+                </div>
+
+                <h2 class="text-2xl md:text-3xl font-extrabold text-white mb-1">Kết Quả Bài Kiểm Tra</h2>
+                <p class="text-sm text-slate-400 mb-6">Học sinh: <span id="res-student-info" class="text-cyan-400 font-semibold">--</span></p>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Tổng điểm đạt được</p>
+                        <p id="res-score" class="text-2xl md:text-3xl font-black text-emerald-400 font-mono">0.0 / 10</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Số câu đúng</p>
+                        <p id="res-correct" class="text-2xl md:text-3xl font-bold text-cyan-400 font-mono">0 / 20</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Thời gian hoàn thành</p>
+                        <p id="res-time-taken" class="text-lg md:text-xl font-bold text-slate-200 font-mono mt-1">00:00</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3.5">
+                        <p class="text-xs text-slate-400">Số lần kiểm tra</p>
+                        <p id="res-attempts" class="text-lg md:text-xl font-bold text-purple-400 font-mono mt-1">Lần 1</p>
+                    </div>
+                </div>
+
+                <!-- Google Sheet Data Sync Status Banner -->
+                <div id="sync-status" class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-slate-300 mb-6">
+                    <i class="fa-solid fa-spinner fa-spin text-cyan-400"></i>
+                    <span>Đang mã hóa dữ liệu & lưu kết quả lên Google Sheet...</span>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    <button onclick="retakeExam()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-6 py-2.5 rounded-xl transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>Làm lại bài kiểm tra</span>
+                    </button>
+                    <a href="#review-section" class="bg-cyan-600 hover:bg-cyan-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg shadow-cyan-600/20 transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Xem chi tiết đáp án</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Detailed Answer Review Section -->
+            <div id="review-section" class="glass-card rounded-2xl p-6 border border-slate-800 shadow-xl space-y-6">
+                <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-square-check text-cyan-400"></i>
+                        <span>Chi Tiết Đáp Án Từng Câu Hỏi</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">Đã cập nhật đáp án chuẩn</span>
+                </div>
+
+                <!-- List of 20 reviewed questions -->
+                <div id="review-list" class="space-y-6">
+                    <!-- JS Injected Review Items -->
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL: SETTINGS & GOOGLE SHEET CONFIGURATION -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="glass-card rounded-2xl max-w-lg w-full p-6 border border-slate-700 shadow-2xl relative">
+            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2 border-b border-slate-800 pb-3">
+                <i class="fa-solid fa-sliders text-cyan-400"></i>
+                <span>Cấu Hình Hệ Thống</span>
+            </h3>
+
+            <!-- Password Form if not authenticated -->
+            <div id="settings-auth-view" class="space-y-4">
+                <p class="text-sm text-slate-300">Vui lòng nhập mật khẩu quản trị để truy cập cài đặt:</p>
+                <div>
+                    <input type="password" id="input-admin-pass" placeholder="Nhập mật khẩu (minhtran)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-cyan-500">
+                    <p id="admin-pass-error" class="text-xs text-rose-400 mt-1 hidden">Mật khẩu không chính xác!</p>
+                </div>
+                <button onclick="authenticateAdmin()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-2.5 rounded-xl transition text-sm">
+                    Xác nhận
+                </button>
+            </div>
+
+            <!-- Settings Form after authenticated -->
+            <div id="settings-content-view" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Google Sheet Web App URL (doPost):</label>
+                    <input type="text" id="input-sheet-url" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-500">
+                    <p class="text-[11px] text-slate-500 mt-1">Dữ liệu kết quả sẽ được POST dạng mã hóa Base64 tới URL này.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Thời gian làm bài (Phút):</label>
+                        <input type="number" id="input-exam-duration" value="20" min="1" max="60" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Tổng số câu trong ngân hàng:</label>
+                        <input type="text" value="100 câu" disabled class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-400 font-mono">
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 flex justify-end gap-2">
+                    <button onclick="saveAdminSettings()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-3 px-4 text-center text-xs text-slate-500">
+        <p>Bản quyền nội dung &copy; Tin học 6 - Bài 3: Biểu diễn thông tin trong máy tính. Hệ thống kiểm tra trực tuyến.</p>
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           NGÂN HÀNG 100 CÂU HỎI TRẮC NGHIỆM TIN HỌC 6 - BÀI 3: BIỂU DIỄN THÔNG TIN TRONG MÁY TÍNH
+           Phân hóa 3 mức độ: Dễ (30 câu), Vừa (40 câu), Khó (30 câu)
+           ========================================================================== */
+        const QUESTION_BANK = [
+            // --- CÂU HỎI DỄ (EASY) - 30 câu ---
+            { id: 1, level: 'easy', question: "Đơn vị nhỏ nhất để đo dung lượng thông tin trong máy tính là gì?", options: ["A. Byte", "B. Bit", "C. Kilobyte", "D. Megabyte"], answer: 1, explanation: "Bit (Binary digit) là đơn vị nhỏ nhất lưu trữ thông tin trong máy tính, nhận giá trị 0 hoặc 1." },
+            { id: 2, level: 'easy', question: "Thẻ bit trong máy tính chỉ nhận một trong mấy giá trị?", options: ["A. 1 giá trị", "B. 2 giá trị", "C. 8 giá trị", "D. 10 giá trị"], answer: 1, explanation: "Mỗi bit chỉ nhận 1 trong 2 giá trị là 0 hoặc 1." },
+            { id: 3, level: 'easy', question: "Hai ký tự cơ bản được dùng để biểu diễn thông tin trong máy tính là gì?", options: ["A. Chữ A và B", "B. Ký hiệu + và -", "C. Hai số 0 và 1", "D. Số 1 và 2"], answer: 2, explanation: "Máy tính sử dụng hai ký hiệu 0 và 1 để mã hóa toàn bộ dữ liệu." },
+            { id: 4, level: 'easy', question: "Dãy gồm các ký hiệu 0 và 1 được gọi là gì?", options: ["A. Dãy số tự nhiên", "B. Dãy bit", "C. Dãy ký tự", "D. Dãy văn bản"], answer: 1, explanation: "Dãy các ký hiệu 0 và 1 nối tiếp nhau gọi là dãy bit (dãy nhị phân)." },
+            { id: 5, level: 'easy', question: "1 Byte bằng bao nhiêu Bit?", options: ["A. 2 bits", "B. 4 bits", "C. 8 bits", "D. 10 bits"], answer: 2, explanation: "Theo quy ước quốc tế: 1 Byte (B) = 8 bits (b)." },
+            { id: 6, level: 'easy', question: "Máy tính lưu trữ văn bản, hình ảnh, âm thanh dưới dạng nào?", options: ["A. Dạng chữ viết tay", "B. Dạng sóng âm thanh", "C. Dãy bit", "D. Dạng màu sắc tự nhiên"], answer: 2, explanation: "Mọi loại dữ liệu (văn bản, hình ảnh, âm thanh...) đều được máy tính chuyển thành dãy bit." },
+            { id: 7, level: 'easy', question: "Ký hiệu của đơn vị Byte trong đo lường dữ liệu là gì?", options: ["A. b", "B. B", "C. Byte", "D. bit"], answer: 1, explanation: "Byte viết tắt bằng chữ B hoa, còn bit viết tắt bằng chữ b thường." },
+            { id: 8, level: 'easy', question: "Đơn vị KB là viết tắt của từ nào?", options: ["A. Kilobit", "B. Kilobyte", "C. Keybyte", "D. Kingbyte"], answer: 1, explanation: "KB là viết tắt của Kilobyte." },
+            { id: 9, level: 'easy', question: "Đơn vị MB là viết tắt của từ nào?", options: ["A. Megabit", "B. Megabyte", "C. Maxbyte", "D. Multibyte"], answer: 1, explanation: "MB là viết tắt của Megabyte." },
+            { id: 10, level: 'easy', question: "Đơn vị GB là viết tắt của từ nào?", options: ["A. Gigabit", "B. Gigabyte", "C. Groupbyte", "D. Greatbyte"], answer: 1, explanation: "GB là viết tắt của Gigabyte." },
+            { id: 11, level: 'easy', question: "Đơn vị TB là viết tắt của từ nào?", options: ["A. Terabit", "B. Terabyte", "C. Totalbyte", "D. Topbyte"], answer: 1, explanation: "TB là viết tắt của Terabyte." },
+            { id: 12, level: 'easy', question: "Theo chuẩn xấp xỉ trong thực tế, 1 KB xấp xỉ bằng bao nhiêu Byte?", options: ["A. 10 Byte", "B. 100 Byte", "C. 1 000 Byte", "D. 1 000 000 Byte"], answer: 2, explanation: "1 KB = 1024 B, xấp xỉ khoảng 1 000 Byte (1 nghìn Byte)." },
+            { id: 13, level: 'easy', question: "1 MB xấp xỉ bằng bao nhiêu Byte?", options: ["A. 1 nghìn Byte", "B. 1 triệu Byte", "C. 1 tỷ Byte", "D. 1 nghìn tỷ Byte"], answer: 1, explanation: "1 MB = 1024 KB ≈ 1 000 000 Byte (1 triệu Byte)." },
+            { id: 14, level: 'easy', question: "1 GB xấp xỉ bằng bao nhiêu Byte?", options: ["A. 1 nghìn Byte", "B. 1 triệu Byte", "C. 1 tỷ Byte", "D. 1 nghìn tỷ Byte"], answer: 2, explanation: "1 GB ≈ 1 000 000 000 Byte (1 tỷ Byte)." },
+            { id: 15, level: 'easy', question: "Thẻ nhớ hoặc USB có dung lượng 16 GB có thể chứa loại dữ liệu nào?", options: ["A. Chỉ chứa bài hát", "B. Chỉ chứa hình ảnh", "C. Nhiều loại dữ liệu như văn bản, ảnh, nhạc", "D. Không thể lưu dữ liệu"], answer: 2, explanation: "Thiết bị nhớ mã hóa tất cả dữ liệu thành dãy bit nên có thể lưu mọi dạng dữ liệu." },
+            { id: 16, level: 'easy', question: "Quá trình chuyển đổi thông tin thành dãy bit gọi là gì?", options: ["A. Giải mã thông tin", "B. Mã hóa thông tin", "C. Nén thông tin", "D. In thông tin"], answer: 1, explanation: "Mã hóa thông tin là việc chuyển thông tin từ dạng gốc thành dạng dãy bit trong máy tính." },
+            { id: 17, level: 'easy', question: "Để máy tính hiểu được thông tin từ thế giới bên ngoài, thông tin đó phải làm gì?", options: ["A. Dịch sang tiếng Anh", "B. Mã hóa thành dãy bit", "C. In ra giấy", "D. Thu nhỏ kích thước"], answer: 1, explanation: "Máy tính chỉ xử lý được dãy bit, do đó thông tin cần được mã hóa thành dãy bit." },
+            { id: 18, level: 'easy', question: "Trong máy tính, văn bản được tạo thành từ các ký tự. Mỗi ký tự được chuyển thành gì?", options: ["A. Một hình ảnh", "B. Một dãy bit", "C. Một sóng âm", "D. Một con số thập phân"], answer: 1, explanation: "Mỗi ký tự (chữ cái, chữ số, dấu câu) được mã hóa thành một dãy bit xác định." },
+            { id: 19, level: 'easy', question: "Hình ảnh trong máy tính được chia thành các điểm nhỏ gọi là gì?", options: ["A. Byte", "B. Bit", "C. Điểm ảnh (Pixel)", "D. Ô vuông"], answer: 2, explanation: "Hình ảnh kỹ thuật số gồm các điểm ảnh nhỏ gọi là Pixel." },
+            { id: 20, level: 'easy', question: "Thông tin âm thanh được mã hóa thành dãy bit bằng cách nào?", options: ["A. Đếm số nốt nhạc", "B. Lấy mẫu và chuyển các giá trị âm thanh thành số rồi thành dãy bit", "C. Vẽ lại dạng sóng âm", "D. Gõ văn bản lời bài hát"], answer: 1, explanation: "Âm thanh được lấy mẫu tần số, chuyển thành các giá trị số và đổi thành dãy bit." },
+            { id: 21, level: 'easy', question: "Bộ nhớ trong của máy tính cá nhân thông thường có dung lượng khoảng bao nhiêu?", options: ["A. 2 bit đến 16 bit", "B. 2 KB đến 16 KB", "C. 2 GB đến 16 GB", "D. 2 TB đến 16 TB"], answer: 2, explanation: "RAM máy tính cá nhân phổ biến có dung lượng từ 2 GB đến 16 GB hoặc hơn." },
+            { id: 22, level: 'easy', question: "Tệp văn bản dài vài trang sách thường có dung lượng ở đơn vị nào?", options: ["A. Bit", "B. Kilobyte (KB)", "C. Gigabyte (GB)", "D. Terabyte (TB)"], answer: 1, explanation: "Văn bản chữ thuần túy khá nhẹ, thường có dung lượng vài KB đến vài chục KB." },
+            { id: 23, level: 'easy', question: "Một bức ảnh chụp bằng điện thoại thông minh thường có dung lượng khoảng bao nhiêu?", options: ["A. Vài Bit", "B. Vài Byte", "C. Vài Megabyte (MB)", "D. Vài Terabyte (TB)"], answer: 2, explanation: "Hình ảnh sắc nét thường có dung lượng khoảng 2 MB đến 8 MB." },
+            { id: 24, level: 'easy', question: "Ổ cứng máy tính hiện nay thường có dung lượng phổ biến ở đơn vị nào?", options: ["A. Byte", "B. KB", "C. Gigabyte (GB) hoặc Terabyte (TB)", "D. Bit"], answer: 2, explanation: "Ổ cứng HDD/SSD máy tính có dung lượng lớn, đo bằng GB hoặc TB (ví dụ 512 GB, 1 TB)." },
+            { id: 25, level: 'easy', question: "Dãy bit '01000001' có độ dài bao nhiêu bit?", options: ["A. 6 bits", "B. 7 bits", "C. 8 bits", "D. 9 bits"], answer: 2, explanation: "Đếm số lượng ký hiệu 0 và 1 trong chuỗi thu được đúng 8 ký tự = 8 bits." },
+            { id: 26, level: 'easy', question: "Dãy bit '01000001' tương ứng với dung lượng bao nhiêu Byte?", options: ["A. 1 Byte", "B. 2 Byte", "C. 8 Byte", "D. 16 Byte"], answer: 0, explanation: "8 bits chính là bằng 1 Byte." },
+            { id: 27, level: 'easy', question: "Thứ tự sắp xếp các đơn vị đo dung lượng từ NHỎ đến LỚN là gì?", options: ["A. B < KB < MB < GB < TB", "B. KB < B < MB < GB < TB", "C. TB < GB < MB < KB < B", "D. B < MB < KB < GB < TB"], answer: 0, explanation: "Thứ tự tăng dần: Byte (B) -> Kilobyte (KB) -> Megabyte (MB) -> Gigabyte (GB) -> Terabyte (TB)." },
+            { id: 28, level: 'easy', question: "Thiết bị nào sau đây dùng để lưu trữ dữ liệu dưới dạng dãy bit?", options: ["A. Thẻ nhớ", "B. Ổ cứng", "C. USB", "D. Tất cả các thiết bị trên"], answer: 3, explanation: "Mọi thiết bị lưu trữ kĩ thuật số đều lưu trữ dãy bit." },
+            { id: 29, level: 'easy', question: "Vì sao máy tính chỉ sử dụng dãy bit để biểu diễn thông tin?", options: ["A. Vì bit rất đẹp mắt", "B. Vì máy tính gồm các linh kiện điện tử chỉ có 2 trạng thái vật lý", "C. Vì chữ cái quá khó học", "D. Vì máy tính không biết tính toán"], answer: 1, explanation: "Linh kiện điện tử dễ dàng thể hiện 2 trạng thái: đóng/ngắt mạch, có/không có điện thế." },
+            { id: 30, level: 'easy', question: "Trạng thái 'Có điện' hoặc 'Đóng mạch' trong máy tính thường được quy ước tương ứng với ký hiệu nào?", options: ["A. Số 0", "B. Số 1", "C. Ký tự A", "D. Ký tự X"], answer: 1, explanation: "Quy ước thông thường: Có điện/Đóng mạch = 1; Không có điện/Ngắt mạch = 0." },
+
+            // --- CÂU HỎI VỪA (MEDIUM) - 40 câu ---
+            { id: 31, level: 'medium', question: "Đơn vị nào lớn hơn Megabyte (MB)?", options: ["A. Kilobyte (KB)", "B. Byte (B)", "C. Gigabyte (GB)", "D. Bit (b)"], answer: 2, explanation: "Gigabyte (GB) lớn hơn Megabyte (MB); 1 GB = 1024 MB." },
+            { id: 32, level: 'medium', question: "1 TB chính xác bằng bao nhiêu GB?", options: ["A. 100 GB", "B. 1000 GB", "C. 1024 GB", "D. 2048 GB"], answer: 2, explanation: "Theo cơ số 2 trong máy tính: 1 TB = 1024 GB (2^10 GB)." },
+            { id: 33, level: 'medium', question: "1 MB chính xác bằng bao nhiêu KB?", options: ["A. 512 KB", "B. 1000 KB", "C. 1024 KB", "D. 2000 KB"], answer: 2, explanation: "1 MB = 1024 KB." },
+            { id: 34, level: 'medium', question: "1 KB chính xác bằng bao nhiêu Byte?", options: ["A. 8 Byte", "B. 1000 Byte", "C. 1024 Byte", "D. 2048 Byte"], answer: 2, explanation: "1 KB = 1024 B." },
+            { id: 35, level: 'medium', question: "Nếu mỗi ký tự được mã hóa bằng 1 Byte, thì từ 'TIN HOC' (kể cả dấu cách) tốn bao nhiêu Byte?", options: ["A. 5 Bytes", "B. 6 Bytes", "C. 7 Bytes", "D. 8 Bytes"], answer: 2, explanation: "'T', 'I', 'N', ' ', 'H', 'O', 'C' gồm 7 ký tự = 7 Bytes." },
+            { id: 36, level: 'medium', question: "Từ 'LOCHAI' gồm 6 ký tự. Nếu mỗi ký tự cần 8 bits để mã hóa, toàn bộ từ này chiếm bao nhiêu bits?", options: ["A. 24 bits", "B. 32 bits", "C. 48 bits", "D. 64 bits"], answer: 2, explanation: "6 ký tự * 8 bits/ký tự = 48 bits." },
+            { id: 37, level: 'medium', question: "Biểu diễn số 2 từ hệ thập phân sang hệ nhị phân (dãy bit) là gì?", options: ["A. 00", "B. 01", "C. 10", "D. 11"], answer: 2, explanation: "Số 0 nhị phân là 0, số 1 là 1, số 2 là 10." },
+            { id: 38, level: 'medium', question: "Biểu diễn số 3 từ hệ thập phân sang dãy bit nhị phân là gì?", options: ["A. 01", "B. 10", "C. 11", "D. 100"], answer: 2, explanation: "Số 3 trong hệ nhị phân được biểu diễn là 11 (1*2^1 + 1*2^0 = 3)." },
+            { id: 39, level: 'medium', question: "Dãy bit '100' trong hệ nhị phân tương ứng với giá trị số nào trong hệ thập phân?", options: ["A. Số 3", "B. Số 4", "C. Số 5", "D. Số 8"], answer: 1, explanation: "100 nhị phân = 1*2^2 + 0*2^1 + 0*2^0 = 4." },
+            { id: 40, level: 'medium', question: "Dãy bit '101' trong hệ nhị phân tương ứng với giá trị số thập phân nào?", options: ["A. Số 4", "B. Số 5", "C. Số 6", "D. Số 7"], answer: 1, explanation: "101 nhị phân = 1*2^2 + 0*2^1 + 1*2^0 = 5." },
+            { id: 41, level: 'medium', question: "Một hình ảnh đen trắng có mỗi điểm ảnh chỉ nhận màu đen hoặc trắng. Để lưu 1 điểm ảnh này cần tối thiểu bao nhiêu bit?", options: ["A. 1 bit", "B. 2 bits", "C. 8 bits", "D. 16 bits"], answer: 0, explanation: "Chỉ có 2 màu (đen và trắng) nên dùng 1 bit (0 cho màu đen, 1 cho màu trắng)." },
+            { id: 42, level: 'medium', question: "Nếu sử dụng 2 bits để biểu diễn màu sắc cho một điểm ảnh, ta có thể biểu diễn tối đa bao nhiêu màu?", options: ["A. 2 màu", "B. 3 màu", "C. 4 màu", "D. 8 màu"], answer: 2, explanation: "2 bits tạo ra 2^2 = 4 kết hợp khác nhau (00, 01, 10, 11) tương ứng 4 màu." },
+            { id: 43, level: 'medium', question: "Nếu sử dụng 8 bits (1 Byte) cho mỗi điểm ảnh, bức ảnh đó có thể thể hiện tối đa bao nhiêu màu sắc khác nhau?", options: ["A. 8 màu", "B. 16 màu", "C. 128 màu", "D. 256 màu"], answer: 3, explanation: "8 bits tạo ra 2^8 = 256 giá trị màu khác nhau." },
+            { id: 44, level: 'medium', question: "Cho biết 1 GB = 1024 MB. Hỏi 2 GB bằng bao nhiêu MB?", options: ["A. 2000 MB", "B. 2048 MB", "C. 10240 MB", "D. 4096 MB"], answer: 1, explanation: "2 * 1024 MB = 2048 MB." },
+            { id: 45, level: 'medium', question: "Một đĩa CD có dung lượng khoảng 700 MB. Một tệp video có dung lượng 2 GB (2048 MB). Hỏi đĩa CD đó có chứa đủ tệp video không?", options: ["A. Chứa đủ dư thừa", "B. Không chứa đủ vì 700 MB nhỏ hơn 2048 MB", "C. Chứa vừa vặn", "D. Đĩa CD không lưu được video"], answer: 1, explanation: "2 GB = 2048 MB lớn hơn dung lượng 700 MB của đĩa CD nên không chứa đủ." },
+            { id: 46, level: 'medium', question: "Một thẻ nhớ 8 GB có thể chứa khoảng bao nhiêu bài hát MP3, biết mỗi bài hát có dung lượng trung bình khoảng 4 MB? (1 GB ≈ 1000 MB)", options: ["A. 20 bài", "B. 200 bài", "C. 2000 bài", "D. 20000 bài"], answer: 2, explanation: "8 GB ≈ 8000 MB. Số bài hát = 8000 / 4 = 2000 bài." },
+            { id: 47, level: 'medium', question: "Khái niệm 'Mã hóa' dữ liệu trong máy tính có nghĩa là gì?", options: ["A. Khóa dữ liệu bằng mật khẩu", "B. Chuyển đổi dữ liệu sang dạng dãy bit 0 và 1", "C. Xóa dữ liệu khỏi ổ đĩa", "D. Nén tệp nhỏ lại"], answer: 1, explanation: "Mã hóa là quá trình biến đổi thông tin thực tế thành dãy bit để máy tính xử lý." },
+            { id: 48, level: 'medium', question: "Khi em nhấn phím 'A' trên bàn phím, điều gì xảy ra bên trong máy tính?", options: ["A. Chữ A tự chạy vào màn hình", "B. Bàn phím tạo ra tín hiệu và máy tính nhận được dãy bit tương ứng với ký tự 'A'", "C. Máy tính vẽ hình chữ A bằng mực điện tử", "D. Máy tính phát ra tiếng kêu A"], answer: 1, explanation: "Nhấn phím 'A' sinh ra chuỗi bit mã hóa tương ứng gửi cho CPU xử lý." },
+            { id: 49, level: 'medium', question: "Vì sao hình ảnh phóng to trên màn hình máy tính lại bị 'vỡ hình' (rạn lưới)?", options: ["A. Do máy tính bị hỏng", "B. Do các điểm ảnh (Pixel) hình vuông bị phóng to ra", "C. Do virus ăn mất điểm ảnh", "D. Do đĩa cứng bị đầy"], answer: 1, explanation: "Hình ảnh tạo từ lưới các ô vuông điểm ảnh (pixel), khi phóng to ta nhìn rõ từng ô pixel." },
+            { id: 50, level: 'medium', question: "Độ phân giải của màn hình hoặc bức ảnh càng cao thì điều gì xảy ra?", options: ["A. Số lượng điểm ảnh càng nhiều, ảnh càng sắc nét và tốn nhiều dung lượng", "B. Ảnh càng mờ", "C. Dung lượng tệp càng nhẹ", "D. Không thay đổi gì"], answer: 0, explanation: "Càng nhiều điểm ảnh (pixel) thì chi tiết càng cao, sắc nét hơn và dãy bit biểu diễn càng dài (nặng)." },
+            { id: 51, level: 'medium', question: "Bảng mã Unicode được dùng rộng rãi trên thế giới nhằm mục đích gì?", options: ["A. Để máy tính chạy nhanh hơn", "B. Để mã hóa thống nhất ký tự của tất cả các ngôn ngữ trên thế giới thành dãy bit", "C. Để vẽ đồ họa 3D", "D. Để diệt virus"], answer: 1, explanation: "Unicode giúp biểu diễn đầy đủ ký tự của mọi ngôn ngữ (bao gồm tiếng Việt) dạng dãy bit." },
+            { id: 52, level: 'medium', question: "Có 4 thiết bị lưu trữ với dung lượng: A (500 MB), B (2 GB), C (1000 KB), D (1 TB). Thiết bị nào có dung lượng NHỎ NHẤT?", options: ["A. Thiết bị A", "B. Thiết bị B", "C. Thiết bị C", "D. Thiết bị D"], answer: 2, explanation: "1000 KB ≈ 1 MB, nhỏ hơn nhiều so với 500 MB, 2 GB và 1 TB." },
+            { id: 53, level: 'medium', question: "Sắp xếp các dung lượng sau theo thứ tự GIẢM DẦN: 1 TB, 1000 MB, 2 GB, 500 KB.", options: ["A. 1 TB > 2 GB > 1000 MB > 500 KB", "B. 500 KB > 1000 MB > 2 GB > 1 TB", "C. 1 TB > 1000 MB > 2 GB > 500 KB", "D. 2 GB > 1 TB > 1000 MB > 500 KB"], answer: 0, explanation: "1 TB (1024 GB) > 2 GB > 1000 MB (~1 GB) > 500 KB (~0.5 MB)." },
+            { id: 54, level: 'medium', question: "Một cuốn sách chữ không có hình ảnh tốn khoảng 1 MB. Một USB 4 GB (≈ 4000 MB) có thể chứa khoảng bao nhiêu cuốn sách như vậy?", options: ["A. 40 cuốn", "B. 400 cuốn", "C. 4000 cuốn", "D. 40000 cuốn"], answer: 2, explanation: "4000 MB / 1 MB = 4000 cuốn sách." },
+            { id: 55, level: 'medium', question: "Để mã hóa trạng thái bật/tắt của 8 bóng đèn độc lập, ta cần dãy bit có độ dài tối thiểu là bao nhiêu?", options: ["A. 2 bits", "B. 4 bits", "C. 8 bits", "D. 16 bits"], answer: 2, explanation: "Mỗi bóng đèn ứng với 1 bit (0 là tắt, 1 là bật). 8 bóng đèn cần 8 bits." },
+            { id: 56, level: 'medium', question: "Dãy bit '1111' trong hệ nhị phân bằng bao nhiêu trong hệ thập phân?", options: ["A. 7", "B. 8", "C. 15", "D. 16"], answer: 2, explanation: "1*2^3 + 1*2^2 + 1*2^1 + 1*2^0 = 8 + 4 + 2 + 1 = 15." },
+            { id: 57, level: 'medium', question: "Dãy bit '1000' trong hệ nhị phân ứng với giá trị thập phân nào?", options: ["A. Số 6", "B. Số 7", "C. Số 8", "D. Số 9"], answer: 2, explanation: "1*2^3 + 0 + 0 + 0 = 8." },
+            { id: 58, level: 'medium', question: "Một đoạn nhạc dài 1 phút có dung lượng 1 MB. Hỏi đoạn nhạc 5 phút cùng chất lượng có dung lượng khoảng bao nhiêu?", options: ["A. 1 MB", "B. 5 MB", "C. 10 MB", "D. 50 MB"], answer: 1, explanation: "Thời lượng tăng 5 lần thì số lượng mẫu âm thanh mã hóa thành dãy bit tăng 5 lần = 5 MB." },
+            { id: 59, level: 'medium', question: "Thiết bị nào sau đây lưu trữ dữ liệu bằng các rãnh đĩa quang biểu diễn dãy bit 0 và 1?", options: ["A. Đĩa CD/DVD", "B. Thẻ nhớ MicroSD", "C. Ổ cứng SSD", "D. Thanh RAM"], answer: 0, explanation: "Đĩa CD/DVD sử dụng tia laser đọc các điểm lõm/phẳng trên bề mặt quang học tương ứng bit 0 và 1." },
+            { id: 60, level: 'medium', question: "Phát biểu nào sau đây là SAI về biểu diễn thông tin trong máy tính?", options: ["A. Mọi thông tin đều biến đổi thành dãy bit", "B. Máy tính xử lý trực tiếp hình ảnh vẽ trên giấy", "C. Dãy bit gồm hai ký hiệu 0 và 1", "D. Byte là đơn vị đo dung lượng thông tin"], answer: 1, explanation: "Máy tính không xử lý trực tiếp ảnh giấy mà phải quét/chụp thành dữ liệu dãy bit số hóa." },
+            { id: 61, level: 'medium', question: "Tại sao âm thanh trong tự nhiên khi đưa vào máy tính lại cần qua quá trình 'Lấy mẫu' (Sampling)?", options: ["A. Để làm âm thanh to hơn", "B. Để chuyển tín hiệu âm thanh liên tục thành các giá trị số gián đoạn rồi đổi thành bit", "C. Để lọc bỏ tiếng ồn", "D. Để đổi giọng nói"], answer: 1, explanation: "Âm thanh tự nhiên là sóng liên tục, máy tính chỉ xử lý dữ liệu số gián đoạn nên phải lấy mẫu." },
+            { id: 62, level: 'medium', question: "Để biểu diễn 16 trạng thái khác nhau, ta cần một dãy bit gồm ít nhất bao nhiêu bit?", options: ["A. 2 bits", "B. 3 bits", "C. 4 bits", "D. 8 bits"], answer: 2, explanation: "2^4 = 16 kết hợp khác nhau, do đó cần ít nhất 4 bits." },
+            { id: 63, level: 'medium', question: "Để biểu diễn 8 trạng thái khác nhau, ta cần một dãy bit có độ dài ít nhất là bao nhiêu?", options: ["A. 2 bits", "B. 3 bits", "C. 4 bits", "D. 8 bits"], answer: 1, explanation: "2^3 = 8 kết hợp, cần dãy bit dài 3 bits." },
+            { id: 64, level: 'medium', question: "Một dãy bit có độ dài 5 bits có thể tạo ra tối đa bao nhiêu dãy bit khác nhau?", options: ["A. 5 dãy", "B. 10 dãy", "C. 25 dãy", "D. 32 dãy"], answer: 3, explanation: "Số khả năng kết hợp = 2^5 = 32 dãy bit." },
+            { id: 65, level: 'medium', question: "Nếu 1 KB = 1024 B, thì 10 KB chứa bao nhiêu Byte?", options: ["A. 10000 B", "B. 10240 B", "C. 10485 B", "D. 20480 B"], answer: 1, explanation: "10 * 1024 B = 10 240 B." },
+            { id: 66, level: 'medium', question: "Tốc độ đường truyền Internet ghi là '100 Mbps'. Từ 'Mb' ở đây là gì?", options: ["A. Megabyte", "B. Megabit", "C. Mainbit", "D. Masterbyte"], answer: 1, explanation: "Chữ 'b' viết thường trong Mb hay Mbps nghĩa là Megabit (đơn vị đo tốc độ truyền dữ liệu)." },
+            { id: 67, level: 'medium', question: "Mối quan hệ giữa bit (b) và Megabit (Mb) giống như mối quan hệ giữa Byte (B) và đơn vị nào?", options: ["A. Kilobyte (KB)", "B. Megabyte (MB)", "C. Gigabyte (GB)", "D. Terabyte (TB)"], answer: 1, explanation: "Tương ứng với tiền tố Mega: Mb liên quan bit thì MB liên quan Byte." },
+            { id: 68, level: 'medium', question: "Khi mở một thư mục trên máy tính, tệp nào sau đây thường có dung lượng LỚN NHẤT?", options: ["A. Tệp văn bản (.txt)", "B. Tệp bài hát (.mp3)", "C. Tệp phim hoạt hình chất lượng cao (.mp4)", "D. Tệp hình ảnh nhỏ (.png)"], answer: 2, explanation: "Tệp video (chứa cả chuỗi hình ảnh liên tục và âm thanh) luôn có dung lượng lớn nhất." },
+            { id: 69, level: 'medium', question: "Một ảnh lưới ô vuông kích thước 10 x 10 điểm ảnh. Tổng số điểm ảnh của bức ảnh đó là bao nhiêu?", options: ["A. 20 điểm ảnh", "B. 50 điểm ảnh", "C. 100 điểm ảnh", "D. 1000 điểm ảnh"], answer: 2, explanation: "10 hàng * 10 cột = 100 điểm ảnh (Pixel)." },
+            { id: 70, level: 'medium', question: "Nếu ảnh 10 x 10 điểm ảnh ở câu trên là ảnh đen trắng (mỗi điểm ảnh tốn 1 bit), dung lượng bức ảnh đó là bao nhiêu?", options: ["A. 10 bits", "B. 100 bits", "C. 100 Bytes", "D. 1000 bits"], answer: 1, explanation: "100 điểm ảnh * 1 bit/điểm ảnh = 100 bits." },
+
+            // --- CÂU HỎI KHÓ (HARD) - 30 câu (30%) ---
+            { id: 71, level: 'hard', question: "Một bức ảnh màu có kích thước 100 x 100 điểm ảnh. Mỗi điểm ảnh dùng 24 bits (3 Bytes) để mã hóa màu sắc. Hỏi dung lượng tệp ảnh đó xấp xỉ bao nhiêu KB?", options: ["A. 10 KB", "B. 30 KB", "C. 300 KB", "D. 3 MB"], answer: 1, explanation: "Tổng số điểm = 10 000. Dung lượng = 10 000 * 3 Bytes = 30 000 Bytes ≈ 30 KB." },
+            { id: 72, level: 'hard', question: "Cho bảng quy đổi: A -> 01000001, B -> 01000010, C -> 01000011. Hỏi từ 'CAB' mã hóa thành dãy bit nào?", options: ["A. 010000110100000101000010", "B. 010000010100001001000011", "C. 010000100100000101000011", "D. 010000110100001001000001"], answer: 0, explanation: "C (01000011) + A (01000001) + B (01000010)." },
+            { id: 73, level: 'hard', question: "Hệ điều hành 64-bit có khả năng xử lý cùng một lúc dãy bit có độ dài bao nhiêu bit?", options: ["A. 8 bits", "B. 16 bits", "C. 32 bits", "D. 64 bits"], answer: 3, explanation: "Kiến trúc 64-bit cho phép thanh ghi xử lý các từ dữ liệu dài 64 bits đồng thời." },
+            { id: 74, level: 'hard', question: "Chuyển đổi số 13 từ hệ thập phân sang dãy bit nhị phân 4 bits?", options: ["A. 1011", "B. 1100", "C. 1101", "D. 1110"], answer: 2, explanation: "13 = 8 + 4 + 0 + 1 = 1*2^3 + 1*2^2 + 0*2^1 + 1*2^0 -> Dãy bit: 1101." },
+            { id: 75, level: 'hard', question: "Dãy bit '11111111' (8 bits đều bằng 1) có giá trị thập phân bằng bao nhiêu?", options: ["A. 128", "B. 255", "C. 256", "D. 512"], answer: 1, explanation: "2^8 - 1 = 255 (giá trị lớn nhất biểu diễn bằng 1 Byte)." },
+            { id: 76, level: 'hard', question: "Thẻ nhớ 16 GB ghi tốc độ truyền dữ liệu là 10 MB/s. Thời gian lý thuyết để chép đầy dữ liệu vào thẻ nhớ này là khoảng bao nhiêu phút? (1 GB ≈ 1000 MB)", options: ["A. 16 phút", "B. 26.6 phút", "C. 160 phút", "D. 266 phút"], answer: 1, explanation: "16 GB ≈ 16000 MB. Thời gian = 16000 / 10 = 1600 giây = 26.6 phút." },
+            { id: 77, level: 'hard', question: "Lý do vì sao số nguyên âm hoặc số thực trong máy tính lại biểu diễn phức tạp hơn số nguyên dương?", options: ["A. Vì máy tính không biết số âm", "B. Vì phải dành riêng bit dấu (như bit 0/1 ở đầu) và quy tắc mã hóa bù 2 hoặc dấu phẩy động", "C. Vì số âm tốn nhiều bộ nhớ gấp 100 lần", "D. Vì số thực không thể chuyển thành bit"], answer: 1, explanation: "Máy tính dùng bit cao nhất làm bit dấu (0 là dương, 1 là âm) và mã chuẩn IEEE 754 cho số thực." },
+            { id: 78, level: 'hard', question: "Phân biệt sự khác nhau giữa 'Nén không mất dữ liệu' (Lossless) và 'Nén có mất dữ liệu' (Lossy) khi biểu diễn hình ảnh/âm thanh?", options: ["A. Lossless giữ nguyên 100% dãy bit gốc khi giải nén; Lossy loại bỏ các chi tiết mắt/tai người khó nhận biết để giảm dung lượng sâu hơn", "B. Lossy không thể mở tệp được", "C. Lossless làm tăng gấp đôi dung lượng", "D. Hai phương pháp hoàn toàn giống nhau"], answer: 0, explanation: "Nén Lossless phục hồi chính xác dữ liệu gốc; Lossy chấp nhận bỏ thông tin thừa để dung lượng siêu nhỏ (như MP3, JPEG)." },
+            { id: 79, level: 'hard', question: "Cho dãy bit '01001000 01001001'. Nếu quy ước mỗi Byte là 1 ký tự ASCII (01001000 = 'H', 01001001 = 'I'). Dãy bit này biểu diễn từ nào?", options: ["A. AH", "B. HI", "C. HA", "D. OK"], answer: 1, explanation: "Byte 1 mã hóa chữ 'H', Byte 2 mã hóa chữ 'I' -> Từ 'HI'." },
+            { id: 80, level: 'hard', question: "Tại sao trong quy chuẩn quốc tế IEC, người ta đặt ra các đơn vị KiB, MiB, GiB bên cạnh KB, MB, GB?", options: ["A. Để phân biệt chính xác chuẩn nhị phân (1 KiB = 1024 B) và chuẩn thập phân (1 KB = 1000 B)", "B. Để làm người dùng rối trí", "C. Vì đơn vị cũ bị lỗi", "D. Để bán thiết bị đắt hơn"], answer: 0, explanation: "Chuẩn IEC dùng KiB (Kibibyte = 1024 Byte) để tránh nhầm lẫn với hệ thập phân SI (1 KB = 1000 Byte)." },
+            { id: 81, level: 'hard', question: "Một đoạn phim dài 10 giây có tần số 30 khung hình/giây. Mỗi khung hình là ảnh dung lượng 100 KB. Âm thanh đi kèm tốn 500 KB. Tổng dung lượng đợt phim này là bao nhiêu MB?", options: ["A. 3 MB", "B. 30.5 MB", "C. 300 MB", "D. 3000 MB"], answer: 1, explanation: "300 khung hình * 100 KB = 30 000 KB. Âm thanh = 500 KB. Tổng = 30 500 KB ≈ 30.5 MB." },
+            { id: 82, level: 'hard', question: "Một máy quay phim lưu trữ 1 phút video tốn 60 MB. Một thẻ nhớ 32 GB (≈ 32 000 MB) có thể quay liên tục tối đa khoảng bao nhiêu giờ?", options: ["A. 5.3 giờ", "B. 8.8 giờ", "C. 533 phút (≈ 8.8 giờ)", "D. Cả B và C đều đúng"], answer: 3, explanation: "32 000 MB / 60 MB/phút = 533.3 phút ≈ 8.88 giờ." },
+            { id: 83, level: 'hard', question: "Khi máy tính hiển thị thông báo ổ đĩa 1 TB chỉ có thực tế khoảng 931 GB khả dụng trên Windows, nguyên nhân chính do đâu?", options: ["A. Ổ đĩa bị nhà sản xuất làm thiếu", "B. Do nhà sản xuất tính 1 TB = 10^12 Byte, trong khi Windows tính 1 GB = 2^30 Byte (1024^3 Byte)", "C. Do Windows chiếm mất 100 GB chứa phần mềm", "D. Do đĩa bị virus ăn mất bộ nhớ"], answer: 1, explanation: "10^12 / 1024^3 ≈ 931.32 GB. Sự khác biệt giữa hệ thập phân (1000) và hệ nhị phân (1024)." },
+            { id: 84, level: 'hard', question: "Một tín hiệu số truyền qua mạng với tốc độ 8 Mbps. Thời gian lý thuyết để tải một tệp dung lượng 10 MB là bao nhiêu giây?", options: ["A. 1.25 giây", "B. 8 giây", "C. 10 giây", "D. 80 giây"], answer: 2, explanation: "10 MB = 80 Mb (vì 1 Byte = 8 bits). Thời gian = 80 Mb / 8 Mbps = 10 giây." },
+            { id: 85, level: 'hard', question: "Phép tính nhị phân 1011 + 0101 thu được kết quả dãy bit nào?", options: ["A. 10000", "B. 11110", "C. 1000", "D. 11000"], answer: 0, explanation: "1011 (11) + 0101 (5) = 16 thập phân -> Dãy bit 16 là 10000." },
+            { id: 86, level: 'hard', question: "Phương pháp lấy mẫu âm thanh (Sampling rate) 44.1 kHz có ý nghĩa gì trong số hóa âm thanh?", options: ["A. Âm thanh đo được 44.1 độ C", "B. Đo và lấy mẫu độ lớn sóng âm thanh 44 100 lần trong mỗi giây", "C. Âm thanh truyền đi xa 44.1 km", "D. Tệp âm thanh tốn 44.1 MB"], answer: 1, explanation: "Tần số lấy mẫu 44.1 kHz nghĩa là máy tính đo giá trị tín hiệu âm thanh 44 100 lần mỗi giây (chuẩn Audio CD)." },
+            { id: 87, level: 'hard', question: "Nếu mỗi vị trí điểm ảnh dùng 3 Bytes để lưu màu R (Red), G (Green), B (Blue). Mã màu RGB (255, 0, 0) tương ứng với dãy bit nào?", options: ["A. 00000000 00000000 00000000", "B. 11111111 00000000 00000000", "C. 00000000 11111111 00000000", "D. 11111111 11111111 11111111"], answer: 1, explanation: "255 = 11111111 (Kênh R), 0 = 00000000 (Kênh G), 0 = 00000000 (Kênh B)." },
+            { id: 88, level: 'hard', question: "Trong mã màu RGB ở câu trên, giá trị mã màu (255, 255, 255) biểu diễn màu sắc nào?", options: ["A. Màu Đen", "B. Màu Trắng", "C. Màu Đỏ", "D. Màu Xanh lá"], answer: 1, explanation: "Sự kết hợp tối đa độ sáng của 3 màu gốc Đỏ, Xanh lá, Xanh dương tạo ra Màu Trắng thuần khiết." },
+            { id: 89, level: 'hard', question: "Giá trị mã màu RGB (0, 0, 0) biểu diễn màu sắc nào?", options: ["A. Màu Trắng", "B. Màu Đen", "C. Màu Xám", "D. Màu Vàng"], answer: 1, explanation: "Tắt hoàn toàn cường độ cả 3 màu tạo nên màu Đen." },
+            { id: 90, level: 'hard', question: "Một bảng hỏi gồm 4 câu hỏi Trắc nghiệm Đúng/Sai. Toàn bộ câu trả lời của 1 học sinh có thể lưu trữ nhỏ gọn nhất bằng dãy bit dài bao nhiêu?", options: ["A. 1 bit", "B. 2 bits", "C. 4 bits", "D. 8 bits"], answer: 2, explanation: "Mỗi câu Đúng/Sai tốn 1 bit (1: Đúng, 0: Sai). 4 câu cần 4 bits." },
+            { id: 91, level: 'hard', question: "Nếu mã hóa 100 học sinh, mỗi học sinh được gán một mã số nhị phân riêng biệt. Hỏi độ dài dãy bit ngắn nhất cần dùng là bao nhiêu bit?", options: ["A. 6 bits", "B. 7 bits", "C. 8 bits", "D. 10 bits"], answer: 1, explanation: "2^6 = 64 (chưa đủ cho 100 học sinh); 2^7 = 128 (đủ chứa 100 mã riêng biệt). Cần ít nhất 7 bits." },
+            { id: 92, level: 'hard', question: "Tại sao việc quét virus lại tốn nhiều thời gian đối với các ổ đĩa chứa hàng triệu tệp nhỏ hơn là 1 tệp video lớn cùng dung lượng?", options: ["A. Vì virus chỉ trốn trong tệp nhỏ", "B. Vì phần mềm phải thực hiện thao tác mở, đọc tiêu đề mã hóa và đóng tệp hàng triệu lần trên bảng chỉ mục ổ đĩa", "C. Vì tệp video không thể quét được", "D. Do màn hình hiển thị chậm"], answer: 1, explanation: "Mỗi tệp tin đòi hỏi chi phí đọc/ghi chỉ mục tệp (File System Metadata overhead) nên nhiều tệp nhỏ mất nhiều thời gian hơn." },
+            { id: 93, level: 'hard', question: "Sự chênh lệch giữa tín hiệu Tương tự (Analog) và tín hiệu Số (Digital) khi lưu trữ là gì?", options: ["A. Analog biến đổi liên tục; Digital là các giá trị số rời rạc dạng dãy bit", "B. Digital dễ bị nhiễu và suy giảm chất lượng hơn Analog khi sao chép", "C. Analog lưu trên USB, Digital lưu trên đĩa than", "D. Hai loại tín hiệu là một"], answer: 0, explanation: "Tín hiệu Analog liên tục trong tự nhiên, Digital rời rạc hóa thành chuỗi bit 0 và 1 giúp sao chép không giảm chất lượng." },
+            { id: 94, level: 'hard', question: "Phép nhân nhị phân 101 (số 5) x 11 (số 3) thu được kết quả dãy bit nào?", options: ["A. 1000", "B. 1111", "C. 10001", "D. 10101"], answer: 1, explanation: "5 x 3 = 15 thập phân -> Biểu diễn nhị phân của 15 là 1111." },
+            { id: 95, level: 'hard', question: "Ý nghĩa của khái niệm 'Băng thông' (Bandwidth) trong mạng máy tính liên quan đến biểu diễn dữ liệu là gì?", options: ["A. Dung lượng tối đa của ổ cứng", "B. Lượng dữ liệu (tính bằng bit/Byte) có thể truyền qua kết nối mạng trong 1 giây", "C. Chiều dài của dây cáp mạng", "D. Kích thước màn hình"], answer: 1, explanation: "Băng thông đo khả năng truyền tải số lượng bit dữ liệu trên một đơn vị thời gian (bps, Mbps, Gbps)." },
+            { id: 96, level: 'hard', question: "Nếu dung lượng bộ nhớ RAM là 8 GB, điều này nghĩa là RAM chứa tối đa bao nhiêu bit dữ liệu?", options: ["A. 8 tỷ bits", "B. 64 tỷ bits (8 GB * 8 bits/Byte)", "C. 8 triệu bits", "D. 64 triệu bits"], answer: 1, explanation: "8 GB = 8 * 10^9 Bytes xấp xỉ = 64 * 10^9 bits (64 tỷ bits)." },
+            { id: 97, level: 'hard', question: "Một tệp hình ảnh có độ phân giải Full HD (1920 x 1080 điểm ảnh). Tổng số điểm ảnh của tệp này xấp xỉ bao nhiêu Megapixel (MP)?", options: ["A. 1 MP", "B. 2 MP (≈ 2.07 triệu điểm ảnh)", "C. 5 MP", "D. 10 MP"], answer: 1, explanation: "1920 * 1080 = 2 073 600 điểm ảnh ≈ 2.07 Megapixel." },
+            { id: 98, level: 'hard', question: "Bộ nhớ Đệm (Cache) của CPU thường có dung lượng nhỏ (vài MB) nhưng lại cực kỳ đắt tiền. Vai trò của nó là gì?", options: ["A. Để lưu ảnh chụp cá nhân", "B. Lưu trữ tạm thời các dãy bit dữ liệu/lệnh mà CPU thường xuyên truy xuất với tốc độ siêu nhanh", "C. Thay thế ổ cứng lưu phim", "D. Chống ngấm nước cho máy tính"], answer: 1, explanation: "Cache dùng công nghệ SRAM đắt đỏ lưu dữ liệu dãy bit tốc độ cực cao cho CPU." },
+            { id: 99, level: 'hard', question: "Khi một bản tin được mã hóa bằng thuật toán đối xứng, dữ liệu dạng dãy bit ban đầu (Plaintext) trở thành gì?", options: ["A. Dãy bit mã hóa (Ciphertext) không thể đọc trực tiếp nếu không có khóa giải mã", "B. Tệp video", "C. Bị xóa mất hoàn toàn", "D. Tệp âm thanh"], answer: 0, explanation: "Mã hóa biến dãy bit thông thường thành dãy bit xáo trộn (Ciphertext) bảo mật." },
+            { id: 100, level: 'hard', question: "Tổng kết bài học: Biểu diễn thông tin trong máy tính là quá trình nào?", options: ["A. Chuyển đổi mọi dạng thông tin đa dạng thực tế thành dãy bit 0 và 1 để máy tính lưu trữ và xử lý", "B. Chỉ chuyển đổi các con số", "C. Chỉ dùng để viết email", "D. Tự động in ấn tài liệu"], answer: 0, explanation: "Biểu diễn thông tin là nền tảng cốt lõi của tin học, biến mọi thông tin thành dạng dãy bit 0 và 1." }
+        ];
+
+        /* ==========================================================================
+           STATE MANAGEMENT & APP VARIABLES
+           ========================================================================== */
+        let DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbytvcnTHmy-lUpgOctdGTHxCFP6ZAGUOWO_FevXXBjKYZe5kJtCXXtKHkPfxd_nDcgsXA/exec";
+        let examDurationMinutes = 20;
+
+        let currentStudent = { name: "", class: "" };
+        let selectedQuestions = []; // 20 questions picked randomly
+        let userAnswers = {}; // { questionId: optionIndex }
+        let bookmarkedQuestions = {}; // { questionId: true/false }
+        
+        let currentQuestionIndex = 0;
+        let timerInterval = null;
+        let remainingSeconds = 20 * 60;
+        let examStartTime = null;
+        let attemptCount = 1;
+
+        // Load saved attempt count or config
+        window.onload = function() {
+            const savedUrl = localStorage.getItem('app_sheet_url_bin');
+            if (savedUrl) DEFAULT_SHEET_URL = savedUrl;
+
+            // Render empty initial palette
+            renderPalette();
+        };
+
+        /* ==========================================================================
+           RANDOM SELECTION OF 20 QUESTIONS BASED ON DIFFICULTY RATIO
+           6 Easy (30%), 8 Medium (40%), 6 Hard (30%)
+           ========================================================================== */
+        function getRandomQuestions() {
+            const easyPool = QUESTION_BANK.filter(q => q.level === 'easy');
+            const mediumPool = QUESTION_BANK.filter(q => q.level === 'medium');
+            const hardPool = QUESTION_BANK.filter(q => q.level === 'hard');
+
+            // Helper shuffle
+            const shuffle = (array) => [...array].sort(() => Math.random() - 0.5);
+
+            const pickedEasy = shuffle(easyPool).slice(0, 6);
+            const pickedMedium = shuffle(mediumPool).slice(0, 8);
+            const pickedHard = shuffle(hardPool).slice(0, 6);
+
+            // Combine and shuffle the 20 questions
+            return shuffle([...pickedEasy, ...pickedMedium, ...pickedHard]);
+        }
+
+        /* ==========================================================================
+           START EXAM HANDLER
+           ========================================================================== */
+        function handleStartExam(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('input-name').value.trim();
+            const classInput = document.getElementById('input-class').value.trim();
+
+            if (!nameInput || !classInput) {
+                alert("Vui lòng nhập đầy đủ Họ tên và Lớp học!");
+                return;
+            }
+
+            currentStudent.name = nameInput;
+            currentStudent.class = classInput;
+
+            // Check attempt count in session storage
+            const attemptKey = `attempts_bin_${currentStudent.name}_${currentStudent.class}`;
+            let pastAttempts = parseInt(localStorage.getItem(attemptKey) || '0');
+            attemptCount = pastAttempts + 1;
+            localStorage.setItem(attemptKey, attemptCount);
+
+            // Update badge info at top right
+            document.getElementById('display-student-name').innerText = currentStudent.name;
+            document.getElementById('display-student-class').innerText = currentStudent.class;
+            document.getElementById('student-badge').classList.remove('hidden');
+
+            // Select 20 random questions
+            selectedQuestions = getRandomQuestions();
+            userAnswers = {};
+            bookmarkedQuestions = {};
+            currentQuestionIndex = 0;
+
+            // Switch screens
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-exam').classList.remove('hidden');
+
+            // Start Timer (20 mins)
+            remainingSeconds = examDurationMinutes * 60;
+            examStartTime = new Date();
+            startTimer();
+
+            // Render first question & palette
+            renderQuestion(currentQuestionIndex);
+            renderPalette();
+        }
+
+        /* ==========================================================================
+           TIMER CONTROL
+           ========================================================================== */
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+                updateTimerDisplay();
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Đã hết thời gian làm bài! Hệ thống sẽ tự động nộp bài kiểm tra.");
+                    submitExam();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('timer-text').innerText = formatted;
+
+            const timerContainer = document.getElementById('timer-display');
+            if (remainingSeconds <= 180) { // < 3 mins warning
+                timerContainer.classList.add('text-rose-400', 'animate-pulse');
+                timerContainer.classList.remove('text-cyan-400');
+            } else {
+                timerContainer.classList.remove('text-rose-400', 'animate-pulse');
+                timerContainer.classList.add('text-cyan-400');
+            }
+        }
+
+        /* ==========================================================================
+           RENDER QUESTION & OPTIONS (STRICT MANDATE: 2 COLUMNS)
+           ========================================================================== */
+        function renderQuestion(index) {
+            currentQuestionIndex = index;
+            const q = selectedQuestions[index];
+
+            // Question Header Meta
+            document.getElementById('question-number-badge').innerText = `Câu ${index + 1} / 20`;
+            document.getElementById('progress-indicator').innerText = `${index + 1} / 20`;
+
+            const diffBadge = document.getElementById('question-difficulty-badge');
+            if (q.level === 'easy') {
+                diffBadge.innerText = 'Mức độ: Dễ';
+                diffBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800';
+            } else if (q.level === 'medium') {
+                diffBadge.innerText = 'Mức độ: Vừa';
+                diffBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-cyan-950 text-cyan-400 border border-cyan-800';
+            } else {
+                diffBadge.innerText = 'Mức độ: Khó (30%)';
+                diffBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-md bg-purple-950 text-purple-400 border border-purple-800';
+            }
+
+            // Bookmark Status
+            updateBookmarkButtonState();
+
+            // Question Text
+            document.getElementById('question-text').innerText = q.question;
+
+            // Render Options (2 COLUMNS GRID)
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const selectedOption = userAnswers[q.id];
+
+            q.options.forEach((optText, optIdx) => {
+                const isSelected = (selectedOption === optIdx);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => selectOption(q.id, optIdx);
+
+                // Styling for option button (Do NOT reveal correct/incorrect during test)
+                let baseClasses = "w-full text-left p-4 rounded-xl border text-sm font-medium transition flex items-center justify-between ";
+                if (isSelected) {
+                    baseClasses += "bg-cyan-600/20 border-cyan-500 text-cyan-200 shadow-md shadow-cyan-500/10 font-semibold";
+                } else {
+                    baseClasses += "bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80";
+                }
+
+                btn.className = baseClasses;
+                btn.innerHTML = `
+                    <span class="leading-snug">${optText}</span>
+                    <span class="w-5 h-5 rounded-full border ${isSelected ? 'border-cyan-400 bg-cyan-500 text-slate-950' : 'border-slate-700'} flex items-center justify-center text-xs shrink-0 ml-2">
+                        ${isSelected ? '<i class="fa-solid fa-check"></i>' : ''}
+                    </span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Update prev/next button states
+            document.getElementById('btn-prev').disabled = (index === 0);
+            document.getElementById('btn-next').disabled = (index === selectedQuestions.length - 1);
+
+            // Update palette highlight
+            renderPalette();
+        }
+
+        function selectOption(questionId, optionIndex) {
+            userAnswers[questionId] = optionIndex;
+            renderQuestion(currentQuestionIndex);
+            renderPalette();
+        }
+
+        function navigateQuestion(step) {
+            const newIndex = currentQuestionIndex + step;
+            if (newIndex >= 0 && newIndex < selectedQuestions.length) {
+                renderQuestion(newIndex);
+            }
+        }
+
+        function toggleBookmarkCurrentQuestion() {
+            const q = selectedQuestions[currentQuestionIndex];
+            bookmarkedQuestions[q.id] = !bookmarkedQuestions[q.id];
+            updateBookmarkButtonState();
+            renderPalette();
+        }
+
+        function updateBookmarkButtonState() {
+            const q = selectedQuestions[currentQuestionIndex];
+            const isBookmarked = bookmarkedQuestions[q.id];
+            const icon = document.getElementById('bookmark-icon');
+            const text = document.getElementById('bookmark-text');
+
+            if (isBookmarked) {
+                icon.className = 'fa-solid fa-bookmark text-amber-400';
+                text.innerText = 'Đã đánh dấu';
+            } else {
+                icon.className = 'fa-regular fa-bookmark';
+                text.innerText = 'Đánh dấu xem lại';
+            }
+        }
+
+        /* ==========================================================================
+           RENDER QUESTION PALETTE (RIGHT PANEL)
+           ========================================================================== */
+        function renderPalette() {
+            const palette = document.getElementById('questions-palette');
+            palette.innerHTML = '';
+
+            let answeredCount = 0;
+
+            selectedQuestions.forEach((q, idx) => {
+                const isAnswered = userAnswers.hasOwnProperty(q.id);
+                const isCurrent = (idx === currentQuestionIndex);
+                const isBookmarked = bookmarkedQuestions[q.id];
+
+                if (isAnswered) answeredCount++;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.onclick = () => renderQuestion(idx);
+
+                let btnClasses = "w-full aspect-square rounded-lg text-xs font-bold transition flex items-center justify-center relative ";
+
+                if (isCurrent) {
+                    btnClasses += "ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-900 ";
+                }
+
+                if (isAnswered) {
+                    btnClasses += "bg-cyan-600 text-white ";
+                } else {
+                    btnClasses += "bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 ";
+                }
+
+                if (isBookmarked) {
+                    btnClasses += "border-2 border-amber-400 ";
+                }
+
+                btn.className = btnClasses;
+                btn.innerHTML = `
+                    <span>${idx + 1}</span>
+                    ${isBookmarked ? '<span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-400"></span>' : ''}
+                `;
+
+                palette.appendChild(btn);
+            });
+
+            document.getElementById('answered-count-text').innerText = `${answeredCount}/20 đã chọn`;
+        }
+
+        /* ==========================================================================
+           EXAM SUBMISSION & GOOGLE SHEET SYNC WITH BASE64 ENCODING
+           ========================================================================== */
+        function confirmSubmitExam() {
+            const total = selectedQuestions.length;
+            const answered = Object.keys(userAnswers).length;
+
+            let msg = `Bạn có chắc chắn muốn nộp bài kiểm tra không?`;
+            if (answered < total) {
+                msg = `Bạn còn ${total - answered} câu chưa chọn đáp án. Bạn vẫn muốn nộp bài?`;
+            }
+
+            if (window.confirm(msg)) {
+                submitExam();
+            }
+        }
+
+        function submitExam() {
+            clearInterval(timerInterval);
+
+            // Calculate score (10 points divided evenly across 20 questions = 0.5 per question)
+            let correctCount = 0;
+            selectedQuestions.forEach(q => {
+                if (userAnswers[q.id] === q.answer) {
+                    correctCount++;
+                }
+            });
+
+            const totalQuestions = selectedQuestions.length; // 20
+            const score = (correctCount * (10 / totalQuestions)).toFixed(1); // Scale to 10 points
+
+            // Calculate time taken
+            const timeTakenSeconds = (examDurationMinutes * 60) - remainingSeconds;
+            const minutesTaken = Math.floor(timeTakenSeconds / 60);
+            const secondsTaken = timeTakenSeconds % 60;
+            const timeTakenFormatted = `${minutesTaken} phút ${secondsTaken} giây`;
+            const sendTime = new Date().toLocaleString('vi-VN');
+
+            // Switch to result screen
+            document.getElementById('screen-exam').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            // Populate Summary
+            document.getElementById('res-student-info').innerText = `${currentStudent.name} (Lớp: ${currentStudent.class})`;
+            document.getElementById('res-score').innerText = `${score} / 10`;
+            document.getElementById('res-correct').innerText = `${correctCount} / ${totalQuestions}`;
+            document.getElementById('res-time-taken').innerText = timeTakenFormatted;
+            document.getElementById('res-attempts').innerText = `Lần ${attemptCount}`;
+
+            // Render Detailed Answers Review List
+            renderReviewList();
+
+            // Send payload to Google Sheets Apps Script
+            sendDataToGoogleSheet({
+                studentName: currentStudent.name,
+                studentClass: currentStudent.class,
+                totalQuestions: totalQuestions,
+                correctCount: correctCount,
+                score: parseFloat(score),
+                timeTaken: timeTakenFormatted,
+                sendTime: sendTime,
+                attemptCount: attemptCount
+            });
+        }
+
+        /* Base64 Encoding Payload function matching user's Apps Script Utilities.base64Decode */
+        function encodeBase64Utf8(str) {
+            return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        function sendDataToGoogleSheet(payload) {
+            const statusBox = document.getElementById('sync-status');
+            statusBox.className = "bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-slate-300 mb-6";
+            statusBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-cyan-400"></i> <span>Đang mã hóa dữ liệu & lưu kết quả lên Google Sheet...</span>`;
+
+            try {
+                // Mã hóa Base64 chuỗi JSON dữ liệu
+                const jsonString = JSON.stringify(payload);
+                const encodedData = encodeBase64Utf8(jsonString);
+
+                const postBody = JSON.stringify({ data: encodedData });
+
+                fetch(DEFAULT_SHEET_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Standard CORS workaround for Apps Script
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: postBody
+                })
+                .then(() => {
+                    statusBox.className = "bg-emerald-950/60 border border-emerald-800/80 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-emerald-300 mb-6";
+                    statusBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400"></i> <span>Đã lưu thành công kết quả bài kiểm tra lên Google Sheet!</span>`;
+                })
+                .catch(err => {
+                    console.error("Sheet Error:", err);
+                    statusBox.className = "bg-rose-950/60 border border-rose-800/80 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-rose-300 mb-6";
+                    statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> <span>Không thể kết nối đến máy chủ lưu trữ. Vui lòng kiểm tra lại URL.</span>`;
+                });
+            } catch (err) {
+                console.error("Encoding error:", err);
+                statusBox.className = "bg-rose-950/60 border border-rose-800/80 rounded-xl p-3 text-xs flex items-center justify-center gap-2 text-rose-300 mb-6";
+                statusBox.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i> <span>Lỗi mã hóa dữ liệu gửi đi.</span>`;
+            }
+        }
+
+        /* ==========================================================================
+           RENDER DETAILED REVIEW LIST WITH EXPLANATIONS
+           ========================================================================== */
+        function renderReviewList() {
+            const listContainer = document.getElementById('review-list');
+            listContainer.innerHTML = '';
+
+            selectedQuestions.forEach((q, idx) => {
+                const userChoice = userAnswers[q.id];
+                const isCorrect = (userChoice === q.answer);
+
+                const item = document.createElement('div');
+                item.className = `p-5 rounded-xl border ${isCorrect ? 'bg-emerald-950/20 border-emerald-900/50' : 'bg-rose-950/20 border-rose-900/50'} space-y-3`;
+
+                let optionsHtml = '';
+                q.options.forEach((opt, optIdx) => {
+                    let optStyle = "p-2.5 rounded-lg border text-xs font-medium flex items-center justify-between ";
+                    
+                    if (optIdx === q.answer) {
+                        // Correct Answer
+                        optStyle += "bg-emerald-500/20 border-emerald-500 text-emerald-200 font-bold";
+                    } else if (optIdx === userChoice && !isCorrect) {
+                        // Wrong Choice
+                        optStyle += "bg-rose-500/20 border-rose-500 text-rose-200 line-through";
+                    } else {
+                        optStyle += "bg-slate-900/60 border-slate-800 text-slate-400 opacity-70";
+                    }
+
+                    optionsHtml += `
+                        <div class="${optStyle}">
+                            <span>${opt}</span>
+                            ${optIdx === q.answer ? '<span class="text-xs text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Đáp án đúng</span>' : ''}
+                            ${optIdx === userChoice && !isCorrect ? '<span class="text-xs text-rose-400 font-bold"><i class="fa-solid fa-xmark"></i> Lựa chọn của bạn</span>' : ''}
+                        </div>
+                    `;
+                });
+
+                item.innerHTML = `
+                    <div class="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-sm text-slate-200">Câu ${idx + 1}:</span>
+                            <span class="text-xs px-2 py-0.5 rounded font-semibold ${isCorrect ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+                                ${isCorrect ? 'Chính xác (+0.5 điểm)' : 'Chưa chính xác (0 điểm)'}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-100 font-medium">${q.question}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+                        ${optionsHtml}
+                    </div>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-1">
+                        <span class="font-bold text-cyan-400 flex items-center gap-1">
+                            <i class="fa-solid fa-lightbulb"></i> Giải thích chi tiết:
+                        </span>
+                        <p class="text-slate-400">${q.explanation}</p>
+                    </div>
+                `;
+
+                listContainer.appendChild(item);
+            });
+        }
+
+        function retakeExam() {
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-welcome').classList.remove('hidden');
+        }
+
+        /* ==========================================================================
+           ADMIN SETTINGS MODAL & PASSWORD PROTECTION (minhtran)
+           ========================================================================== */
+        function openSettingsModal() {
+            document.getElementById('settings-auth-view').classList.remove('hidden');
+            document.getElementById('settings-content-view').classList.add('hidden');
+            document.getElementById('input-admin-pass').value = '';
+            document.getElementById('admin-pass-error').classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function authenticateAdmin() {
+            const pass = document.getElementById('input-admin-pass').value;
+            if (pass === 'minhtran') {
+                document.getElementById('settings-auth-view').classList.add('hidden');
+                document.getElementById('settings-content-view').classList.remove('hidden');
+                document.getElementById('input-sheet-url').value = DEFAULT_SHEET_URL;
+                document.getElementById('input-exam-duration').value = examDurationMinutes;
+            } else {
+                document.getElementById('admin-pass-error').classList.remove('hidden');
+            }
+        }
+
+        function saveAdminSettings() {
+            const newUrl = document.getElementById('input-sheet-url').value.trim();
+            const newDuration = parseInt(document.getElementById('input-exam-duration').value);
+
+            if (newUrl) {
+                DEFAULT_SHEET_URL = newUrl;
+                localStorage.setItem('app_sheet_url_bin', newUrl);
+            }
+
+            if (newDuration && newDuration > 0) {
+                examDurationMinutes = newDuration;
+            }
+
+            alert("Đã lưu cấu hình thành công!");
+            closeSettingsModal();
+        }
+    </script>
+</body>
+</html>
