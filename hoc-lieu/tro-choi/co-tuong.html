@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cờ Tướng Online - Xiangqi Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        xiangqi: {
+                            board: '#e8c382',
+                            boardDark: '#2c221e',
+                            boardLine: '#5c3a21',
+                            boardLineDark: '#a88054',
+                            red: '#dc2626',
+                            black: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@700;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .font-hanzi {
+            font-family: 'Noto Serif TC', serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+
+        @keyframes checkPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.9)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 22px rgba(239, 68, 68, 1)); }
+        }
+
+        .animate-check {
+            animation: checkPulse 1.2s infinite ease-in-out;
+        }
+
+        .piece-shadow {
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+        }
+
+        .board-container {
+            max-height: calc(100vh - 2rem);
+            max-width: calc((100vh - 2rem) * 0.9);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+    <div class="h-full w-full flex flex-col md:flex-row overflow-hidden">
+        
+        <!-- ==================== CỘT TRÁI (LEFT PANEL) ==================== -->
+        <div class="w-full md:w-1/4 lg:w-[28%] h-full p-3 md:p-4 flex flex-col gap-3 bg-amber-50/70 dark:bg-slate-900/80 border-r border-amber-200 dark:border-slate-800 shrink-0 overflow-y-auto">
+            <!-- Header Title -->
+            <div class="flex items-center gap-3 pb-2 border-b border-amber-200 dark:border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-amber-700 flex items-center justify-center text-white font-black text-xl shadow-md font-hanzi">
+                    帥
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg md:text-xl tracking-tight text-amber-950 dark:text-amber-400">
+                        CỜ TƯỚNG ONLINE
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Xiangqi Master Engine</p>
+                </div>
+            </div>
+
+            <!-- Mode Selection -->
+            <div class="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-amber-200/60 dark:border-slate-700/60 shadow-sm space-y-2">
+                <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Chế độ chơi</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="modePvE" onclick="setGameMode('pve')" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Người vs Máy
+                    </button>
+                    <button id="modePvP" onclick="setGameMode('pvp')" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        2 Người chơi
+                    </button>
+                </div>
+
+                <!-- Dynamic Inputs -->
+                <div id="pvpInputs" class="space-y-2 pt-1 hidden">
+                    <div>
+                        <label class="text-[11px] font-semibold text-red-600 dark:text-red-400">Người chơi 1 (Bên Đỏ):</label>
+                        <input type="text" id="p1Name" value="Kỳ Thủ Đỏ" class="w-full mt-0.5 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-red-500">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Người chơi 2 (Bên Đen):</label>
+                        <input type="text" id="p2Name" value="Kỳ Thủ Đen" class="w-full mt-0.5 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-amber-500">
+                    </div>
+                </div>
+
+                <div id="pveInputs" class="space-y-2 pt-1">
+                    <div>
+                        <label class="text-[11px] font-semibold text-red-600 dark:text-red-400">Tên người chơi:</label>
+                        <input type="text" id="playerName" value="Kỳ Thủ Đỏ" class="w-full mt-0.5 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-red-500">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">Cấp độ Máy AI:</label>
+                        <select id="aiLevel" class="w-full mt-0.5 px-2.5 py-1.5 text-xs rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-amber-500 font-medium">
+                            <option value="1">Dễ (Tân Thủ)</option>
+                            <option value="2" selected>Trung bình (Cao Thủ)</option>
+                            <option value="3">Khó (Đại Sư AI)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Status & Captured Pieces Panel -->
+            <div class="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-amber-200/60 dark:border-slate-700/60 shadow-sm flex-1 flex flex-col gap-3 min-h-[160px]">
+                <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700/60 pb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Trạng Thái</span>
+                    <div id="turnBadge" class="px-2.5 py-1 rounded-full text-xs font-black bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300 border border-red-200 dark:border-red-800 flex items-center gap-1.5 animate-pulse">
+                        <span class="w-2 h-2 rounded-full bg-red-600"></span>
+                        ĐỎ ĐI
+                    </div>
+                </div>
+
+                <!-- Captured Tally -->
+                <div class="space-y-2 flex-1 flex flex-col justify-around">
+                    <!-- Red Captured Pieces -->
+                    <div>
+                        <div class="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                            <span>Đỏ ăn được (<span id="redCapturedCount">0</span>):</span>
+                        </div>
+                        <div id="redCapturedBox" class="flex flex-wrap gap-1 min-h-[28px] p-1.5 rounded-lg bg-amber-100/50 dark:bg-slate-900/50 border border-amber-200/40 dark:border-slate-800">
+                            <!-- SVG Mini Icons injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Black Captured Pieces -->
+                    <div>
+                        <div class="flex justify-between items-center text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                            <span>Đen ăn được (<span id="blackCapturedCount">0</span>):</span>
+                        </div>
+                        <div id="blackCapturedBox" class="flex flex-wrap gap-1 min-h-[28px] p-1.5 rounded-lg bg-amber-100/50 dark:bg-slate-900/50 border border-amber-200/40 dark:border-slate-800">
+                            <!-- SVG Mini Icons injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button onclick="resetGame()" class="col-span-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs shadow-md active:scale-[0.98] transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    VÁN MỚI
+                </button>
+                <button onclick="undoMove()" class="py-2 px-3 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 font-bold text-xs active:scale-[0.98] transition flex items-center justify-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                    Đi Lại
+                </button>
+                <button onclick="confirmResign()" class="py-2 px-3 rounded-lg bg-red-100 dark:bg-red-950/60 hover:bg-red-200 text-red-700 dark:text-red-300 font-bold text-xs active:scale-[0.98] transition flex items-center justify-center gap-1.5 border border-red-200 dark:border-red-900">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
+                    Đầu Hàng
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== CỘT GIỮA (CENTER PANEL - BOARD) ==================== -->
+        <div class="w-full md:w-1/2 lg:w-[46%] h-full p-2 flex flex-col items-center justify-center relative overflow-hidden bg-amber-100/30 dark:bg-slate-950/60">
+            <!-- Scaling Board Container -->
+            <div class="board-container w-full h-full flex items-center justify-center p-2 relative">
+                <div class="relative aspect-[9/10] w-full max-h-full bg-[#f3d399] dark:bg-[#231a15] rounded-xl border-[6px] md:border-[8px] border-[#5a381e] dark:border-[#7c4d29] shadow-2xl flex items-center justify-center overflow-hidden">
+                    
+                    <!-- SVG Interactive Xiangqi Board -->
+                    <svg id="xiangqiBoard" viewBox="0 0 900 1000" class="w-full h-full select-none cursor-pointer">
+                        <!-- Definitions (Gradients & Filters) -->
+                        <defs>
+                            <linearGradient id="woodBg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f6dcad" />
+                                <stop offset="50%" stop-color="#ebd099" />
+                                <stop offset="100%" stop-color="#dfbe82" />
+                            </linearGradient>
+                            <radialGradient id="redPieceGrad" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#fff5f5" />
+                                <stop offset="40%" stop-color="#fee2e2" />
+                                <stop offset="85%" stop-color="#fca5a5" />
+                                <stop offset="100%" stop-color="#f87171" />
+                            </radialGradient>
+                            <radialGradient id="blackPieceGrad" cx="35%" cy="35%" r="65%">
+                                <stop offset="0%" stop-color="#475569" />
+                                <stop offset="50%" stop-color="#1e293b" />
+                                <stop offset="90%" stop-color="#0f172a" />
+                                <stop offset="100%" stop-color="#020617" />
+                            </radialGradient>
+                            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feDropShadow dx="3" dy="5" stdDeviation="4" flood-opacity="0.35"/>
+                            </filter>
+                        </defs>
+
+                        <!-- Background -->
+                        <rect x="0" y="0" width="900" height="1000" fill="url(#woodBg)" class="dark:opacity-15 transition-opacity" />
+
+                        <!-- Grid Group -->
+                        <g id="gridLines" stroke="#5c3a21" class="dark:stroke-amber-600/80" stroke-width="3" stroke-linecap="square">
+                            <!-- Outer Border -->
+                            <rect x="50" y="50" width="800" height="900" stroke-width="5" fill="none" />
+
+                            <!-- Horizontal Grid Lines (10 lines) -->
+                            <line x1="50" y1="150" x2="850" y2="150" />
+                            <line x1="50" y1="250" x2="850" y2="250" />
+                            <line x1="50" y1="350" x2="850" y2="350" />
+                            <line x1="50" y1="450" x2="850" y2="450" />
+                            <line x1="50" y1="550" x2="850" y2="550" />
+                            <line x1="50" y1="650" x2="850" y2="650" />
+                            <line x1="50" y1="750" x2="850" y2="750" />
+                            <line x1="50" y1="850" x2="850" y2="850" />
+
+                            <!-- Vertical Grid Lines Top Side (r=0..4) -->
+                            <line x1="150" y1="50" x2="150" y2="450" />
+                            <line x1="250" y1="50" x2="250" y2="450" />
+                            <line x1="350" y1="50" x2="350" y2="450" />
+                            <line x1="450" y1="50" x2="450" y2="450" />
+                            <line x1="550" y1="50" x2="550" y2="450" />
+                            <line x1="650" y1="50" x2="650" y2="450" />
+                            <line x1="750" y1="50" x2="750" y2="450" />
+
+                            <!-- Vertical Grid Lines Bottom Side (r=5..9) -->
+                            <line x1="150" y1="550" x2="150" y2="950" />
+                            <line x1="250" y1="550" x2="250" y2="950" />
+                            <line x1="350" y1="550" x2="350" y2="950" />
+                            <line x1="450" y1="550" x2="450" y2="950" />
+                            <line x1="550" y1="550" x2="550" y2="950" />
+                            <line x1="650" y1="550" x2="650" y2="950" />
+                            <line x1="750" y1="550" x2="750" y2="950" />
+
+                            <!-- Top Palace Diagonals -->
+                            <line x1="350" y1="50" x2="550" y2="250" stroke-width="2.5" />
+                            <line x1="550" y1="50" x2="350" y2="250" stroke-width="2.5" />
+
+                            <!-- Bottom Palace Diagonals -->
+                            <line x1="350" y1="750" x2="550" y2="950" stroke-width="2.5" />
+                            <line x1="550" y1="750" x2="350" y2="950" stroke-width="2.5" />
+                        </g>
+
+                        <!-- Chu River & Han Border Text -->
+                        <g font-family="'Noto Serif TC', serif" font-weight="900" font-size="44" fill="#5c3a21" class="dark:fill-amber-500/80" text-anchor="middle" dominant-baseline="central">
+                            <text x="250" y="500">楚  河</text>
+                            <text x="650" y="500">漢  界</text>
+                        </g>
+
+                        <!-- Layer for Highlights (Last move, Selected, Valid Targets) -->
+                        <g id="layerHighlights"></g>
+
+                        <!-- Layer for Game Pieces -->
+                        <g id="layerPieces"></g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== CỘT PHẢI (RIGHT PANEL) ==================== -->
+        <div class="w-full md:w-1/4 lg:w-[26%] h-full p-3 md:p-4 flex flex-col gap-3 bg-amber-50/70 dark:bg-slate-900/80 border-l border-amber-200 dark:border-slate-800 shrink-0 overflow-y-auto">
+            
+            <!-- Quick Settings -->
+            <div class="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-amber-200/60 dark:border-slate-700/60 shadow-sm space-y-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Cài Đặt Hệ Thống</span>
+                <div class="grid grid-cols-3 gap-2 pt-1">
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-semibold flex flex-col items-center gap-1 transition">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <span>Giao diện</span>
+                    </button>
+                    <button onclick="toggleSound()" id="soundBtn" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-semibold flex flex-col items-center gap-1 transition">
+                        <svg id="soundIcon" class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path></svg>
+                        <span id="soundText">Bật âm</span>
+                    </button>
+                    <button onclick="toggleFullscreen()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-xs font-semibold flex flex-col items-center gap-1 transition">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        <span>Toàn màn</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Move History -->
+            <div class="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-amber-200/60 dark:border-slate-700/60 shadow-sm flex-1 flex flex-col min-h-[180px] overflow-hidden">
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Biên Bản Nước Đi</span>
+                    <span id="moveCountBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-slate-700 text-amber-800 dark:text-amber-300">0 nước</span>
+                </div>
+                <div id="moveHistoryList" class="flex-1 overflow-y-auto space-y-1 text-xs pr-1 font-mono">
+                    <div class="text-slate-400 dark:text-slate-500 text-center py-6 italic">Chưa có nước đi nào</div>
+                </div>
+            </div>
+
+            <!-- Rules Summary Accordion -->
+            <div class="bg-white/80 dark:bg-slate-800/80 p-3 rounded-xl border border-amber-200/60 dark:border-slate-700/60 shadow-sm space-y-2">
+                <button onclick="toggleRules()" class="w-full flex justify-between items-center text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <span>Hướng Dẫn Luật Đi Quân</span>
+                    <svg id="rulesArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="rulesContent" class="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300 space-y-1.5 pt-1 hidden max-h-48 overflow-y-auto pr-1">
+                    <p><b>• Tướng:</b> Đi 1 ô ngang/dọc trong Cung (3x3). Hai Tướng không được nhìn mặt nhau trên 1 cột trống (Chống tướng).</p>
+                    <p><b>• Sĩ:</b> Đi 1 ô chéo trong Cung.</p>
+                    <p><b>• Tượng:</b> Đi 2 ô chéo, không qua sông. Bị cản nếu có quân đứng ở tâm (cản mắt Tượng).</p>
+                    <p><b>• Xe:</b> Đi & ăn ngang/dọc tự do nếu không bị quân cản.</p>
+                    <p><b>• Pháo:</b> Di chuyển giống Xe; khi ĂN quân phải nhảy qua đúng 1 quân cờ (ngòi Pháo).</p>
+                    <p><b>• Mã:</b> Đi hình chữ L (1 ô thẳng + 1 ô chéo). Bị cản chân nếu có quân đứng ngay trước mặt.</p>
+                    <p><b>• Tốt:</b> Chưa qua sông đi tiến 1 ô; Qua sông được đi tiến hoặc đi ngang 1 ô.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        /* ==================== WEB AUDIO SYNTHESIZER ==================== */
+        let soundEnabled = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const now = audioCtx.currentTime;
+
+            if (type === 'move') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(280, now);
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.08);
+                gain.gain.setValueAtTime(0.35, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'capture') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(45, now + 0.12);
+                gain.gain.setValueAtTime(0.45, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'check') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, now); // D5
+                osc.frequency.setValueAtTime(880, now + 0.08); // A5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'win') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + i * 0.09);
+                    gain.gain.setValueAtTime(0.25, now + i * 0.09);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + i * 0.09);
+                    osc.stop(now + i * 0.09 + 0.25);
+                });
+            }
+        }
+
+        /* ==================== XIANGQI GAME STATE & DATA ==================== */
+        // Piece Notation Mapping
+        // Red (Uppercase): K=Tướng, A=Sĩ, B=Tượng, N=Mã, R=Xe, C=Pháo, P=Tốt
+        // Black (Lowercase): k=Tướng, a=Sĩ, b=Tượng, n=Mã, r=Xe, c=Pháo, p=Tốt
+        
+        const PIECE_NAMES = {
+            'K': { hanzi: '帥', name: 'Tướng', color: 'red' },
+            'A': { hanzi: '仕', name: 'Sĩ', color: 'red' },
+            'B': { hanzi: '相', name: 'Tượng', color: 'red' },
+            'N': { hanzi: '傌', name: 'Mã', color: 'red' },
+            'R': { hanzi: '俥', name: 'Xe', color: 'red' },
+            'C': { hanzi: '炮', name: 'Pháo', color: 'red' },
+            'P': { hanzi: '兵', name: 'Tốt', color: 'red' },
+            
+            'k': { hanzi: '將', name: 'Tướng', color: 'black' },
+            'a': { hanzi: '士', name: 'Sĩ', color: 'black' },
+            'b': { hanzi: '象', name: 'Tượng', color: 'black' },
+            'n': { hanzi: '馬', name: 'Mã', color: 'black' },
+            'r': { hanzi: '車', name: 'Xe', color: 'black' },
+            'c': { hanzi: '砲', name: 'Pháo', color: 'black' },
+            'p': { hanzi: '卒', name: 'Tốt', color: 'black' }
+        };
+
+        // Standard Initial Board 10 rows x 9 cols
+        const INITIAL_BOARD = [
+            ['r', 'n', 'b', 'a', 'k', 'a', 'b', 'n', 'r'],
+            ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', 'c', '.', '.', '.', '.', '.', 'c', '.'],
+            ['p', '.', 'p', '.', 'p', '.', 'p', '.', 'p'],
+            ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+            ['P', '.', 'P', '.', 'P', '.', 'P', '.', 'P'],
+            ['.', 'C', '.', '.', '.', '.', '.', 'C', '.'],
+            ['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+            ['R', 'N', 'B', 'A', 'K', 'A', 'B', 'N', 'R']
+        ];
+
+        let board = [];
+        let currentTurn = 'red'; // 'red' or 'black'
+        let selectedCell = null; // {r, c}
+        let validMoves = []; // Array of {r, c}
+        let lastMove = null; // {from: {r,c}, to: {r,c}}
+        let moveHistory = []; // {moveStr, boardState, captured}
+        let capturedPieces = { red: [], black: [] };
+        let gameMode = 'pve'; // 'pve' or 'pvp'
+        let isGameOver = false;
+
+        /* ==================== XIANGQI RULES & MOVE GENERATION ==================== */
+        
+        function isRed(piece) {
+            return piece !== '.' && piece === piece.toUpperCase();
+        }
+
+        function isBlack(piece) {
+            return piece !== '.' && piece === piece.toLowerCase();
+        }
+
+        function isSameColor(piece1, piece2) {
+            if (piece1 === '.' || piece2 === '.') return false;
+            return (isRed(piece1) && isRed(piece2)) || (isBlack(piece1) && isBlack(piece2));
+        }
+
+        // Generate pseudo-legal moves without King check safety
+        function getPseudoMoves(r, c, bd) {
+            const piece = bd[r][c];
+            if (piece === '.') return [];
+
+            const moves = [];
+            const isR = isRed(piece);
+            const type = piece.toUpperCase();
+
+            // Helper to push if empty or opponent
+            const addMove = (tr, tc) => {
+                if (tr < 0 || tr > 9 || tc < 0 || tc > 8) return false;
+                const dest = bd[tr][tc];
+                if (dest === '.') {
+                    moves.push({ r: tr, c: tc });
+                    return true;
+                }
+                if (!isSameColor(piece, dest)) {
+                    moves.push({ r: tr, c: tc });
+                }
+                return false; // hit piece
+            };
+
+            switch (type) {
+                case 'K': { // King / Tướng
+                    const minR = isR ? 7 : 0, maxR = isR ? 9 : 2;
+                    const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+                    for (let [dr, dc] of dirs) {
+                        let tr = r + dr, tc = c + dc;
+                        if (tr >= minR && tr <= maxR && tc >= 3 && tc <= 5) {
+                            addMove(tr, tc);
+                        }
+                    }
+                    break;
+                }
+                case 'A': { // Advisor / Sĩ
+                    const minR = isR ? 7 : 0, maxR = isR ? 9 : 2;
+                    const dirs = [[-1,-1], [-1,1], [1,-1], [1,1]];
+                    for (let [dr, dc] of dirs) {
+                        let tr = r + dr, tc = c + dc;
+                        if (tr >= minR && tr <= maxR && tc >= 3 && tc <= 5) {
+                            addMove(tr, tc);
+                        }
+                    }
+                    break;
+                }
+                case 'B': { // Elephant / Tượng (Cannot cross river, check eye)
+                    const minR = isR ? 5 : 0, maxR = isR ? 9 : 4;
+                    const dirs = [
+                        { dr: -2, dc: -2, er: -1, ec: -1 },
+                        { dr: -2, dc: 2,  er: -1, ec: 1 },
+                        { dr: 2,  dc: -2, er: 1,  ec: -1 },
+                        { dr: 2,  dc: 2,  er: 1,  ec: 1 }
+                    ];
+                    for (let d of dirs) {
+                        let tr = r + d.dr, tc = c + d.dc;
+                        let eyeR = r + d.er, eyeC = c + d.ec;
+                        if (tr >= minR && tr <= maxR && tc >= 0 && tc <= 8) {
+                            // Check elephant eye block
+                            if (bd[eyeR][eyeC] === '.') {
+                                addMove(tr, tc);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 'N': { // Knight / Mã (Check horse leg)
+                    const dirs = [
+                        { dr: -2, dc: -1, lr: -1, lc: 0 },
+                        { dr: -2, dc: 1,  lr: -1, lc: 0 },
+                        { dr: 2,  dc: -1, lr: 1,  lc: 0 },
+                        { dr: 2,  dc: 1,  lr: 1,  lc: 0 },
+                        { dr: -1, dc: -2, lr: 0,  lc: -1 },
+                        { dr: 1,  dc: -2, lr: 0,  lc: -1 },
+                        { dr: -1, dc: 2,  lr: 0,  lc: 1 },
+                        { dr: 1,  dc: 2,  lr: 0,  lc: 1 }
+                    ];
+                    for (let d of dirs) {
+                        let tr = r + d.dr, tc = c + d.dc;
+                        let legR = r + d.lr, legC = c + d.lc;
+                        if (tr >= 0 && tr <= 9 && tc >= 0 && tc <= 8) {
+                            // Check horse leg block
+                            if (bd[legR][legC] === '.') {
+                                addMove(tr, tc);
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 'R': { // Rook / Xe
+                    const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+                    for (let [dr, dc] of dirs) {
+                        let tr = r + dr, tc = c + dc;
+                        while (tr >= 0 && tr <= 9 && tc >= 0 && tc <= 8) {
+                            if (bd[tr][tc] === '.') {
+                                moves.push({ r: tr, c: tc });
+                            } else {
+                                if (!isSameColor(piece, bd[tr][tc])) {
+                                    moves.push({ r: tr, c: tc });
+                                }
+                                break;
+                            }
+                            tr += dr; tc += dc;
+                        }
+                    }
+                    break;
+                }
+                case 'C': { // Cannon / Pháo
+                    const dirs = [[-1,0], [1,0], [0,-1], [0,1]];
+                    for (let [dr, dc] of dirs) {
+                        let tr = r + dr, tc = c + dc;
+                        let jumped = false;
+                        while (tr >= 0 && tr <= 9 && tc >= 0 && tc <= 8) {
+                            if (!jumped) {
+                                if (bd[tr][tc] === '.') {
+                                    moves.push({ r: tr, c: tc });
+                                } else {
+                                    jumped = true; // found screen
+                                }
+                            } else {
+                                if (bd[tr][tc] !== '.') {
+                                    if (!isSameColor(piece, bd[tr][tc])) {
+                                        moves.push({ r: tr, c: tc });
+                                    }
+                                    break;
+                                }
+                            }
+                            tr += dr; tc += dc;
+                        }
+                    }
+                    break;
+                }
+                case 'P': { // Pawn / Tốt
+                    const fwd = isR ? -1 : 1;
+                    addMove(r + fwd, c); // Always advance
+                    // If across river, can move sideways
+                    const crossed = isR ? (r <= 4) : (r >= 5);
+                    if (crossed) {
+                        addMove(r, c - 1);
+                        addMove(r, c + 1);
+                    }
+                    break;
+                }
+            }
+
+            return moves;
+        }
+
+        // Check if two Kings directly face each other without obstacle
+        function isFlyingGeneral(bd) {
+            let kPos = null, KPos = null;
+            for (let r = 0; r <= 2; r++) {
+                for (let c = 3; c <= 5; c++) {
+                    if (bd[r][c] === 'k') kPos = { r, c };
+                }
+            }
+            for (let r = 7; r <= 9; r++) {
+                for (let c = 3; c <= 5; c++) {
+                    if (bd[r][c] === 'K') KPos = { r, c };
+                }
+            }
+            if (!kPos || !KPos) return false;
+            if (kPos.c !== KPos.c) return false;
+
+            // Check if column between them is clear
+            for (let r = kPos.r + 1; r < KPos.r; r++) {
+                if (bd[r][kPos.c] !== '.') return false;
+            }
+            return true;
+        }
+
+        // Find King location
+        function findKing(color, bd) {
+            const target = color === 'red' ? 'K' : 'k';
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    if (bd[r][c] === target) return { r, c };
+                }
+            }
+            return null;
+        }
+
+        // Test if color is currently under attack (Check)
+        function isKingInCheck(color, bd) {
+            if (isFlyingGeneral(bd)) return true;
+
+            const kingPos = findKing(color, bd);
+            if (!kingPos) return true;
+
+            const oppColor = color === 'red' ? 'black' : 'red';
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const piece = bd[r][c];
+                    if (piece !== '.' && ((oppColor === 'red' && isRed(piece)) || (oppColor === 'black' && isBlack(piece)))) {
+                        const pmoves = getPseudoMoves(r, c, bd);
+                        if (pmoves.some(m => m.r === kingPos.r && m.c === kingPos.c)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        // Strict legal move generator
+        function getValidMoves(r, c, bd) {
+            const piece = bd[r][c];
+            if (piece === '.') return [];
+            const pieceColor = isRed(piece) ? 'red' : 'black';
+            const pseudo = getPseudoMoves(r, c, bd);
+            const legal = [];
+
+            for (let m of pseudo) {
+                // Clone board
+                const nextBd = bd.map(row => [...row]);
+                nextBd[m.r][m.c] = nextBd[r][c];
+                nextBd[r][c] = '.';
+
+                // Verify King safety
+                if (!isKingInCheck(pieceColor, nextBd)) {
+                    legal.push(m);
+                }
+            }
+            return legal;
+        }
+
+        // Get all legal moves for a player
+        function getAllLegalMoves(color, bd) {
+            const allMoves = [];
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const p = bd[r][c];
+                    if (p !== '.' && ((color === 'red' && isRed(p)) || (color === 'black' && isBlack(p)))) {
+                        const moves = getValidMoves(r, c, bd);
+                        moves.forEach(m => {
+                            allMoves.push({ from: { r, c }, to: m });
+                        });
+                    }
+                }
+            }
+            return allMoves;
+        }
+
+        /* ==================== MOVE NOTATION GENERATOR ==================== */
+        function generateMoveNotation(from, to, piece, bd) {
+            const pInfo = PIECE_NAMES[piece];
+            const name = pInfo.name;
+            const isR = isRed(piece);
+
+            // Convert columns to Xiangqi standard (Red 1-9 right to left; Black 1-9 right to left)
+            const fromCol = isR ? (9 - from.c) : (from.c + 1);
+            const toCol = isR ? (9 - to.c) : (to.c + 1);
+
+            let action = '';
+            let target = '';
+
+            if (from.r === to.r) {
+                action = 'bình';
+                target = toCol.toString();
+            } else if ((isR && to.r < from.r) || (!isR && to.r > from.r)) {
+                action = 'tiến';
+                if (['Xe', 'Pháo', 'Tốt', 'Tướng'].includes(name)) {
+                    target = Math.abs(to.r - from.r).toString();
+                } else {
+                    target = toCol.toString();
+                }
+            } else {
+                action = 'thoái';
+                if (['Xe', 'Pháo', 'Tốt', 'Tướng'].includes(name)) {
+                    target = Math.abs(to.r - from.r).toString();
+                } else {
+                    target = toCol.toString();
+                }
+            }
+
+            return `${name} ${fromCol} ${action} ${target}`;
+        }
+
+        /* ==================== AI ENGINE (MINIMAX WITH ALPHA-BETA) ==================== */
+        const PIECE_VALUES = {
+            'K': 10000, 'k': 10000,
+            'R': 900,   'r': 900,
+            'C': 450,   'c': 450,
+            'N': 400,   'n': 400,
+            'B': 200,   'b': 200,
+            'A': 200,   'a': 200,
+            'P': 100,   'p': 100
+        };
+
+        function evaluateBoard(bd) {
+            let score = 0;
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const p = bd[r][c];
+                    if (p === '.') continue;
+                    let val = PIECE_VALUES[p] || 0;
+                    
+                    // Positional Bonuses
+                    if (p === 'P' && r <= 4) val += 50; // Red pawn crossed river
+                    if (p === 'p' && r >= 5) val += 50; // Black pawn crossed river
+                    if (p === 'N' || p === 'n') val += (4 - Math.abs(4 - c)) * 10; // Center knight bonus
+
+                    if (isRed(p)) score += val;
+                    else score -= val;
+                }
+            }
+            return score;
+        }
+
+        function minimax(bd, depth, alpha, beta, isMaximizing) {
+            if (depth === 0) return evaluateBoard(bd);
+
+            const color = isMaximizing ? 'red' : 'black';
+            const moves = getAllLegalMoves(color, bd);
+
+            if (moves.length === 0) {
+                return isMaximizing ? -9999 : 9999;
+            }
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let m of moves) {
+                    const nextBd = bd.map(row => [...row]);
+                    nextBd[m.to.r][m.to.c] = nextBd[m.from.r][m.from.c];
+                    nextBd[m.from.r][m.from.c] = '.';
+                    const evalVal = minimax(nextBd, depth - 1, alpha, beta, false);
+                    maxEval = Math.max(maxEval, evalVal);
+                    alpha = Math.max(alpha, evalVal);
+                    if (beta <= alpha) break;
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let m of moves) {
+                    const nextBd = bd.map(row => [...row]);
+                    nextBd[m.to.r][m.to.c] = nextBd[m.from.r][m.from.c];
+                    nextBd[m.from.r][m.from.c] = '.';
+                    const evalVal = minimax(nextBd, depth - 1, alpha, beta, true);
+                    minEval = Math.min(minEval, evalVal);
+                    beta = Math.min(beta, evalVal);
+                    if (beta <= alpha) break;
+                }
+                return minEval;
+            }
+        }
+
+        function triggerAIMove() {
+            if (isGameOver) return;
+            
+            const level = parseInt(document.getElementById('aiLevel').value);
+            const moves = getAllLegalMoves('black', board);
+            
+            if (moves.length === 0) {
+                handleGameOver(currentTurn === 'red' ? 'black' : 'red', 'Chiếu hết! Đen không còn nước đi.');
+                return;
+            }
+
+            let bestMove = null;
+
+            if (level === 1) { // Easy: Random / Simple
+                bestMove = moves[Math.floor(Math.random() * moves.length)];
+            } else { // Medium (depth 2) or Hard (depth 3)
+                const searchDepth = level === 2 ? 2 : 3;
+                let bestVal = Infinity;
+                
+                for (let m of moves) {
+                    const nextBd = board.map(row => [...row]);
+                    nextBd[m.to.r][m.to.c] = nextBd[m.from.r][m.from.c];
+                    nextBd[m.from.r][m.from.c] = '.';
+                    
+                    const val = minimax(nextBd, searchDepth - 1, -Infinity, Infinity, true);
+                    if (val < bestVal) {
+                        bestVal = val;
+                        bestMove = m;
+                    }
+                }
+            }
+
+            if (bestMove) {
+                executeMove(bestMove.from, bestMove.to);
+            }
+        }
+
+        /* ==================== BOARD RENDERER & INTERACTION ==================== */
+        
+        function getCellCoords(r, c) {
+            return { x: 50 + c * 100, y: 50 + r * 100 };
+        }
+
+        function renderBoard() {
+            const piecesLayer = document.getElementById('layerPieces');
+            const highlightsLayer = document.getElementById('layerHighlights');
+            piecesLayer.innerHTML = '';
+            highlightsLayer.innerHTML = '';
+
+            // 1. Render Highlights
+            // Last move highlight
+            if (lastMove) {
+                const fPos = getCellCoords(lastMove.from.r, lastMove.from.c);
+                const tPos = getCellCoords(lastMove.to.r, lastMove.to.c);
+                highlightsLayer.innerHTML += `
+                    <rect x="${fPos.x - 42}" y="${fPos.y - 42}" width="84" height="84" rx="12" fill="none" stroke="#eab308" stroke-width="4" stroke-dasharray="6,4" opacity="0.8"/>
+                    <rect x="${tPos.x - 42}" y="${tPos.y - 42}" width="84" height="84" rx="12" fill="#fef08a" fill-opacity="0.25" stroke="#eab308" stroke-width="4"/>
+                `;
+            }
+
+            // King under Check animation
+            const redCheck = isKingInCheck('red', board);
+            const blackCheck = isKingInCheck('black', board);
+
+            if (redCheck) {
+                const kPos = findKing('red', board);
+                if (kPos) {
+                    const coords = getCellCoords(kPos.r, kPos.c);
+                    highlightsLayer.innerHTML += `
+                        <circle cx="${coords.x}" cy="${coords.y}" r="48" fill="#ef4444" fill-opacity="0.3" class="animate-check"/>
+                    `;
+                }
+            }
+
+            if (blackCheck) {
+                const kPos = findKing('black', board);
+                if (kPos) {
+                    const coords = getCellCoords(kPos.r, kPos.c);
+                    highlightsLayer.innerHTML += `
+                        <circle cx="${coords.x}" cy="${coords.y}" r="48" fill="#ef4444" fill-opacity="0.3" class="animate-check"/>
+                    `;
+                }
+            }
+
+            // Selected cell glow
+            if (selectedCell) {
+                const coords = getCellCoords(selectedCell.r, selectedCell.c);
+                highlightsLayer.innerHTML += `
+                    <circle cx="${coords.x}" cy="${coords.y}" r="46" fill="none" stroke="#2563eb" stroke-width="5" opacity="0.9"/>
+                `;
+            }
+
+            // Valid move dots & rings
+            validMoves.forEach(m => {
+                const coords = getCellCoords(m.r, m.c);
+                const targetPiece = board[m.r][m.c];
+                if (targetPiece === '.') {
+                    highlightsLayer.innerHTML += `
+                        <circle cx="${coords.x}" cy="${coords.y}" r="14" fill="#16a34a" fill-opacity="0.7" class="cursor-pointer hover:scale-125 transition-transform"/>
+                    `;
+                } else {
+                    highlightsLayer.innerHTML += `
+                        <circle cx="${coords.x}" cy="${coords.y}" r="44" fill="none" stroke="#dc2626" stroke-width="5" stroke-dasharray="8,4" class="cursor-pointer"/>
+                    `;
+                }
+            });
+
+            // 2. Render Pieces
+            for (let r = 0; r < 10; r++) {
+                for (let c = 0; c < 9; c++) {
+                    const piece = board[r][c];
+                    if (piece === '.') continue;
+
+                    const coords = getCellCoords(r, c);
+                    const pInfo = PIECE_NAMES[piece];
+                    const isRedPiece = pInfo.color === 'red';
+
+                    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    group.setAttribute('class', 'cursor-pointer hover:opacity-90 transition-all');
+                    group.onclick = (e) => {
+                        e.stopPropagation();
+                        handleCellClick(r, c);
+                    };
+
+                    const gradId = isRedPiece ? 'url(#redPieceGrad)' : 'url(#blackPieceGrad)';
+                    const strokeColor = isRedPiece ? '#b91c1c' : '#e2e8f0';
+                    const textColor = isRedPiece ? '#991b1b' : '#f8fafc';
+
+                    group.innerHTML = `
+                        <circle cx="${coords.x}" cy="${coords.y}" r="42" fill="${gradId}" filter="url(#shadow)"/>
+                        <circle cx="${coords.x}" cy="${coords.y}" r="36" fill="none" stroke="${strokeColor}" stroke-width="2.5"/>
+                        <text x="${coords.x}" y="${coords.y + 1}" font-family="'Noto Serif TC', serif" font-weight="900" font-size="38" fill="${textColor}" text-anchor="middle" dominant-baseline="central">${pInfo.hanzi}</text>
+                    `;
+
+                    piecesLayer.appendChild(group);
+                }
+            }
+        }
+
+        function handleCellClick(r, c) {
+            if (isGameOver) return;
+            if (gameMode === 'pve' && currentTurn === 'black') return; // Wait for AI
+
+            const clickedPiece = board[r][c];
+            const isTurnRed = currentTurn === 'red';
+
+            // Selecting a piece of own color
+            if (clickedPiece !== '.' && ((isTurnRed && isRed(clickedPiece)) || (!isTurnRed && isBlack(clickedPiece)))) {
+                selectedCell = { r, c };
+                validMoves = getValidMoves(r, c, board);
+                renderBoard();
+                return;
+            }
+
+            // Moving selected piece to target cell
+            if (selectedCell) {
+                const targetMove = validMoves.find(m => m.r === r && m.c === c);
+                if (targetMove) {
+                    executeMove(selectedCell, { r, c });
+                } else {
+                    selectedCell = null;
+                    validMoves = [];
+                    renderBoard();
+                }
+            }
+        }
+
+        // SVG Grid Canvas click fallback for empty spaces
+        document.getElementById('xiangqiBoard').onclick = (e) => {
+            if (!selectedCell || isGameOver) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (900 / rect.width);
+            const y = (e.clientY - rect.top) * (1000 / rect.height);
+
+            const c = Math.round((x - 50) / 100);
+            const r = Math.round((y - 50) / 100);
+
+            if (r >= 0 && r <= 9 && c >= 0 && c <= 8) {
+                handleCellClick(r, c);
+            }
+        };
+
+        function executeMove(from, to) {
+            const piece = board[from.r][from.c];
+            const captured = board[to.r][to.to_c || to.c];
+
+            // Update board
+            board[to.r][to.c] = piece;
+            board[from.r][from.c] = '.';
+
+            // Record History & Sound
+            const moveStr = generateMoveNotation(from, to, piece, board);
+            moveHistory.push({
+                from, to, piece, captured,
+                boardState: board.map(row => [...row]),
+                moveStr
+            });
+
+            if (captured !== '.') {
+                if (isRed(captured)) capturedPieces.black.push(captured);
+                else capturedPieces.red.push(captured);
+                playSound('capture');
+            } else {
+                playSound('move');
+            }
+
+            lastMove = { from, to };
+            selectedCell = null;
+            validMoves = [];
+
+            // Switch Turn
+            currentTurn = currentTurn === 'red' ? 'black' : 'red';
+
+            // Check conditions
+            const opponentColor = currentTurn;
+            const inCheck = isKingInCheck(opponentColor, board);
+
+            if (inCheck) {
+                playSound('check');
+            }
+
+            // Verify opponent legal moves
+            const nextLegalMoves = getAllLegalMoves(opponentColor, board);
+            if (nextLegalMoves.length === 0) {
+                if (inCheck) {
+                    handleGameOver(opponentColor === 'red' ? 'black' : 'red', `CHIẾU HẾT! ${opponentColor === 'red' ? 'Đen' : 'Đỏ'} Thắng!`);
+                } else {
+                    handleGameOver(opponentColor === 'red' ? 'black' : 'red', `HẾT NƯỚC ĐI! ${opponentColor === 'red' ? 'Đen' : 'Đỏ'} Thắng!`);
+                }
+            }
+
+            updateUI();
+            renderBoard();
+
+            // Trigger AI if PvE
+            if (!isGameOver && gameMode === 'pve' && currentTurn === 'black') {
+                setTimeout(triggerAIMove, 250);
+            }
+        }
+
+        /* ==================== UI CONTROLLER ==================== */
+        
+        function updateUI() {
+            // Update Turn Badge
+            const turnBadge = document.getElementById('turnBadge');
+            if (currentTurn === 'red') {
+                turnBadge.className = "px-2.5 py-1 rounded-full text-xs font-black bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300 border border-red-200 dark:border-red-800 flex items-center gap-1.5 animate-pulse";
+                turnBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-600"></span> ĐỎ ĐI`;
+            } else {
+                turnBadge.className = "px-2.5 py-1 rounded-full text-xs font-black bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 flex items-center gap-1.5 animate-pulse";
+                turnBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-800 dark:bg-slate-200"></span> ĐEN ĐI`;
+            }
+
+            // Update Captured Counters & Chips
+            document.getElementById('redCapturedCount').innerText = capturedPieces.red.length;
+            document.getElementById('blackCapturedCount').innerText = capturedPieces.black.length;
+
+            const renderCapturedBox = (boxId, pieces) => {
+                const box = document.getElementById(boxId);
+                box.innerHTML = pieces.map(p => {
+                    const info = PIECE_NAMES[p];
+                    const color = info.color === 'red' ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50' : 'text-slate-800 dark:text-slate-200 bg-slate-200 dark:bg-slate-700';
+                    return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${color} font-hanzi border border-black/10">${info.hanzi}</span>`;
+                }).join('');
+            };
+
+            renderCapturedBox('redCapturedBox', capturedPieces.red);
+            renderCapturedBox('blackCapturedBox', capturedPieces.black);
+
+            // Update Move History
+            const historyList = document.getElementById('moveHistoryList');
+            document.getElementById('moveCountBadge').innerText = `${moveHistory.length} nước`;
+
+            if (moveHistory.length === 0) {
+                historyList.innerHTML = `<div class="text-slate-400 dark:text-slate-500 text-center py-6 italic">Chưa có nước đi nào</div>`;
+            } else {
+                let html = '';
+                for (let i = 0; i < moveHistory.length; i += 2) {
+                    const moveNum = Math.floor(i / 2) + 1;
+                    const redMove = moveHistory[i].moveStr;
+                    const blackMove = moveHistory[i + 1] ? moveHistory[i + 1].moveStr : '';
+
+                    html += `
+                        <div class="flex items-center justify-between py-1 px-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 text-[11px]">
+                            <span class="w-7 text-slate-400 font-bold">${moveNum}.</span>
+                            <span class="flex-1 text-red-600 dark:text-red-400 font-medium">${redMove}</span>
+                            <span class="flex-1 text-slate-700 dark:text-slate-300 font-medium text-right">${blackMove}</span>
+                        </div>
+                    `;
+                }
+                historyList.innerHTML = html;
+                historyList.scrollTop = historyList.scrollHeight;
+            }
+        }
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            const btnPvE = document.getElementById('modePvE');
+            const btnPvP = document.getElementById('modePvP');
+            const pvpInputs = document.getElementById('pvpInputs');
+            const pveInputs = document.getElementById('pveInputs');
+
+            if (mode === 'pve') {
+                btnPvE.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow-sm";
+                btnPvP.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
+                pveInputs.classList.remove('hidden');
+                pvpInputs.classList.add('hidden');
+            } else {
+                btnPvP.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow-sm";
+                btnPvE.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300";
+                pvpInputs.classList.remove('hidden');
+                pveInputs.classList.add('hidden');
+            }
+            resetGame();
+        }
+
+        function undoMove() {
+            if (moveHistory.length === 0 || isGameOver) return;
+
+            // In PvE, pop 2 moves (Player + AI)
+            const popCount = (gameMode === 'pve' && moveHistory.length >= 2) ? 2 : 1;
+
+            for (let i = 0; i < popCount; i++) {
+                const last = moveHistory.pop();
+                if (last && last.captured !== '.') {
+                    if (isRed(last.captured)) capturedPieces.black.pop();
+                    else capturedPieces.red.pop();
+                }
+            }
+
+            if (moveHistory.length > 0) {
+                const prev = moveHistory[moveHistory.length - 1];
+                board = prev.boardState.map(row => [...row]);
+                lastMove = { from: prev.from, to: prev.to };
+            } else {
+                board = INITIAL_BOARD.map(row => [...row]);
+                lastMove = null;
+            }
+
+            currentTurn = moveHistory.length % 2 === 0 ? 'red' : 'black';
+            selectedCell = null;
+            validMoves = [];
+            isGameOver = false;
+
+            updateUI();
+            renderBoard();
+        }
+
+        function resetGame() {
+            board = INITIAL_BOARD.map(row => [...row]);
+            currentTurn = 'red';
+            selectedCell = null;
+            validMoves = [];
+            lastMove = null;
+            moveHistory = [];
+            capturedPieces = { red: [], black: [] };
+            isGameOver = false;
+
+            updateUI();
+            renderBoard();
+        }
+
+        function confirmResign() {
+            if (isGameOver) return;
+            const loser = currentTurn === 'red' ? 'Đỏ' : 'Đen';
+            const winner = currentTurn === 'red' ? 'Đen' : 'Đỏ';
+            handleGameOver(winner, `Bên ${loser} đã xin đầu hàng!`);
+        }
+
+        function handleGameOver(winnerColor, reason) {
+            isGameOver = true;
+            playSound('win');
+
+            setTimeout(() => {
+                alert(`TRẬN ĐẤU KẾT THÚC!\n\n${reason}\nBên Thắng: ${winnerColor === 'red' ? 'ĐỎ' : 'ĐEN'}`);
+            }, 100);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundText = document.getElementById('soundText');
+            const soundIcon = document.getElementById('soundIcon');
+
+            if (soundEnabled) {
+                soundText.innerText = "Bật âm";
+                soundIcon.setAttribute('class', 'w-4 h-4 text-emerald-500');
+            } else {
+                soundText.innerText = "Tắt âm";
+                soundIcon.setAttribute('class', 'w-4 h-4 text-slate-400');
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function toggleRules() {
+            const rulesContent = document.getElementById('rulesContent');
+            const rulesArrow = document.getElementById('rulesArrow');
+            rulesContent.classList.toggle('hidden');
+            rulesArrow.classList.toggle('rotate-180');
+        }
+
+        // Initialize App on window load
+        window.onload = () => {
+            resetGame();
+        };
+    </script>
+</body>
+</html>
