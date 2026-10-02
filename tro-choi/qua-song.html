@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Toán Qua Sông - River Crossing Puzzles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        river: {
+                            light: '#38bdf8',
+                            dark: '#0f172a',
+                            bank: '#22c55e',
+                            bankdark: '#14532d'
+                        }
+                    },
+                    animation: {
+                        'wave': 'wave 4s ease-in-out infinite alternate',
+                        'float': 'float 3s ease-in-out infinite',
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'pulse-glow': 'pulseGlow 2s infinite'
+                    },
+                    keyframes: {
+                        wave: {
+                            '0%': { transform: 'translateX(0) translateY(0)' },
+                            '100%': { transform: 'translateX(-20px) translateY(5px)' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-6px)' }
+                        },
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-2px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(4px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-6px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(6px, 0, 0)' }
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(59, 130, 246, 0.5)' },
+                            '50%': { boxShadow: '0 0 25px rgba(59, 130, 246, 0.9)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@500;700;800&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1, h2, h3, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        /* Custom scrollbars for side panels */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.7);
+        }
+
+        /* Boat position smooth translation */
+        .boat-container {
+            transition: left 0.9s cubic-bezier(0.45, 0.05, 0.55, 0.95);
+        }
+
+        /* Ripple wave background animation */
+        .water-wave {
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.6) 0%, rgba(14, 165, 233, 0.8) 100%);
+        }
+        .dark .water-wave {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(8, 47, 73, 0.95) 100%);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col antialiased">
+
+    <div class="flex-1 grid grid-cols-12 gap-3 p-3 h-full overflow-hidden">
+        
+        <!-- ================= CỘT TRÁI (LEFT PANEL ~28%) ================= -->
+        <aside class="col-span-12 md:col-span-3 lg:col-span-3 flex flex-col gap-3 h-full overflow-y-auto pr-1">
+            
+            <!-- Application Title Header -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-md border border-slate-200 dark:border-slate-800 flex items-center gap-3">
+                <div class="p-3 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-xl text-3xl animate-bounce">
+                    🚣
+                </div>
+                <div>
+                    <h1 class="font-heading text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+                        BÀI TOÁN QUA SÔNG
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">River Crossing Logic Puzzles</p>
+                </div>
+            </div>
+
+            <!-- Puzzle Scenario Selector -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-md border border-slate-200 dark:border-slate-800 flex flex-col gap-2">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 flex items-center gap-1.5">
+                    <span>🎯</span> Chọn Màn Chơi
+                </h2>
+                <div class="flex flex-col gap-2" id="scenario-list">
+                    <button onclick="selectPuzzle(0)" id="btn-puzzle-0" class="puzzle-btn p-3 rounded-xl border text-left transition-all duration-200 flex items-center justify-between group">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">🐺</span>
+                            <div>
+                                <div class="font-bold text-sm leading-tight">Màn 1: Sói, Cừu & Bắp Cải</div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400">Kinh điển (4 nhân vật)</div>
+                            </div>
+                        </div>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">Dễ</span>
+                    </button>
+
+                    <button onclick="selectPuzzle(1)" id="btn-puzzle-1" class="puzzle-btn p-3 rounded-xl border text-left transition-all duration-200 flex items-center justify-between group">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">👨‍👩‍👧‍👦</span>
+                            <div>
+                                <div class="font-bold text-sm leading-tight">Màn 2: Gia Đình & Em Bé</div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400">Tải trọng thuyền (4 người)</div>
+                            </div>
+                        </div>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400">Trung bình</span>
+                    </button>
+
+                    <button onclick="selectPuzzle(2)" id="btn-puzzle-2" class="puzzle-btn p-3 rounded-xl border text-left transition-all duration-200 flex items-center justify-between group">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">🧘</span>
+                            <div>
+                                <div class="font-bold text-sm leading-tight">Màn 3: 3 Sư Thầy & 3 Quỷ Dữ</div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400">Thách thức số lượng (6 người)</div>
+                            </div>
+                        </div>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400">Khó</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Statistics Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-md border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <span>📊</span> Thống Kê Trận Đấu
+                </h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/50 text-center">
+                        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Lượt chèo</div>
+                        <div id="stat-moves" class="font-heading text-2xl font-bold text-blue-600 dark:text-blue-400">0</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/60 dark:border-slate-700/50 text-center">
+                        <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">Thời gian</div>
+                        <div id="stat-timer" class="font-heading text-2xl font-bold text-amber-500 dark:text-amber-400">00:00</div>
+                    </div>
+                </div>
+
+                <!-- Constraint Status Indicator -->
+                <div id="status-card" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2.5 transition-all">
+                    <div id="status-icon" class="text-lg">✅</div>
+                    <div class="flex-1">
+                        <div id="status-title" class="text-xs font-bold text-emerald-600 dark:text-emerald-400">Trạng Thái An Toàn</div>
+                        <div id="status-desc" class="text-[11px] text-slate-600 dark:text-slate-300">Chưa ghi nhận vi phạm luật.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Action Controls -->
+            <div class="mt-auto grid grid-cols-3 gap-2">
+                <button onclick="resetCurrentPuzzle()" class="py-2.5 px-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all">
+                    <span class="text-lg">🔄</span> Bắt đầu lại
+                </button>
+                <button id="btn-pause" onclick="togglePause()" class="py-2.5 px-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all">
+                    <span id="pause-icon" class="text-lg">⏸️</span> <span id="pause-text">Tạm dừng</span>
+                </button>
+                <button onclick="nextPuzzle()" class="py-2.5 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all shadow-md shadow-blue-500/20">
+                    <span class="text-lg">⏭️</span> Màn tiếp
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- ================= CỘT GIỮA (CENTER ARENA ~46%) ================= -->
+        <main class="col-span-12 md:col-span-6 lg:col-span-6 flex flex-col h-full rounded-2xl overflow-hidden shadow-xl border-2 border-slate-200 dark:border-slate-800 relative bg-slate-900">
+            
+            <!-- Arena Header Bar -->
+            <div class="px-4 py-2.5 bg-slate-800/90 backdrop-blur-md border-b border-slate-700/50 flex items-center justify-between z-20 text-white">
+                <div class="flex items-center gap-2">
+                    <span id="arena-title" class="font-heading font-bold text-sm text-sky-400">Màn 1: Sói, Cừu & Bắp Cải</span>
+                </div>
+                <div id="boat-location-badge" class="text-xs px-2.5 py-1 rounded-full bg-slate-700 text-sky-300 font-semibold border border-sky-500/30">
+                    Thuyền đang ở: <span id="boat-bank-text" class="font-bold text-white">BỜ TRÁI</span>
+                </div>
+            </div>
+
+            <!-- River Scene Graphics Box -->
+            <div id="river-scene" class="flex-1 relative w-full h-full flex overflow-hidden select-none">
+                
+                <!-- LEFT BANK -->
+                <div class="w-[26%] h-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-emerald-800 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-950 border-r-4 border-amber-700/60 relative flex flex-col justify-between p-2.5 z-10 shadow-lg">
+                    <div class="text-center py-1 px-2 bg-emerald-900/60 text-emerald-200 rounded-lg text-xs font-bold tracking-wider uppercase border border-emerald-500/30">
+                        🏝️ BỜ TRÁI
+                    </div>
+                    <div id="left-bank-characters" class="flex flex-wrap gap-2 content-center justify-center my-auto p-1 max-h-[80%] overflow-y-auto">
+                        <!-- Characters injected dynamically -->
+                    </div>
+                    <div class="text-[10px] text-emerald-200/70 text-center italic">Nhấp để đưa lên thuyền</div>
+                </div>
+
+                <!-- THE RIVER (CENTER WATER) -->
+                <div class="w-[48%] h-full relative overflow-hidden water-wave flex items-center justify-center">
+                    
+                    <!-- Animated Wave Canvas Background -->
+                    <canvas id="water-canvas" class="absolute inset-0 w-full h-full opacity-40 pointer-events-none"></canvas>
+
+                    <!-- Water surface ripples -->
+                    <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-300/10 via-transparent to-black/30"></div>
+
+                    <!-- THE BOAT CONTAINER -->
+                    <div id="boat" class="boat-container absolute bottom-[22%] w-[160px] md:w-[190px] h-[85px] z-20 flex flex-col items-center" style="left: 6%;">
+                        
+                        <!-- Boat Row Action Button (Floating above boat) -->
+                        <button onclick="crossRiver()" id="btn-cross" class="mb-1.5 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-heading font-bold text-xs rounded-full shadow-lg border border-amber-300/50 flex items-center gap-1 animate-pulse-glow transition-transform active:scale-95">
+                            <span>CHÈO THUYỀN</span> 🚣
+                        </button>
+
+                        <!-- Boat Hull Graphics -->
+                        <div class="w-full h-full bg-gradient-to-b from-amber-700 via-amber-800 to-amber-950 rounded-b-full border-t-2 border-amber-500/80 shadow-2xl relative p-1.5 flex justify-center items-center gap-1.5">
+                            <!-- Boat Deck slots -->
+                            <div id="boat-passengers" class="flex items-center justify-center gap-1.5 w-full h-full px-1">
+                                <!-- Passenger icons will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Water flow lines animation -->
+                    <div class="absolute bottom-2 left-0 right-0 text-center text-[10px] text-sky-200/50 font-mono tracking-widest pointer-events-none animate-pulse">
+                        ~~~~~~ DÒNG SÔNG MỌNG NƯỚC ~~~~~~
+                    </div>
+                </div>
+
+                <!-- RIGHT BANK -->
+                <div class="w-[26%] h-full bg-gradient-to-l from-emerald-700 via-emerald-600 to-emerald-800 dark:from-emerald-950 dark:via-emerald-900 dark:to-emerald-950 border-l-4 border-amber-700/60 relative flex flex-col justify-between p-2.5 z-10 shadow-lg">
+                    <div class="text-center py-1 px-2 bg-emerald-900/60 text-emerald-200 rounded-lg text-xs font-bold tracking-wider uppercase border border-emerald-500/30">
+                        🏁 BỜ PHẢI
+                    </div>
+                    <div id="right-bank-characters" class="flex flex-wrap gap-2 content-center justify-center my-auto p-1 max-h-[80%] overflow-y-auto">
+                        <!-- Characters injected dynamically -->
+                    </div>
+                    <div class="text-[10px] text-emerald-200/70 text-center italic">Đích đến an toàn</div>
+                </div>
+
+                <!-- OVERLAY: GAME OVER / VICTORY MODAL -->
+                <div id="modal-overlay" class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm z-30 hidden flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                    <div id="modal-card" class="bg-slate-900 border-2 border-slate-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl flex flex-col items-center gap-4">
+                        <div id="modal-icon" class="text-6xl animate-bounce">🏆</div>
+                        <div>
+                            <h2 id="modal-title" class="font-heading text-2xl font-bold text-amber-400">CHIẾN THẮNG!</h2>
+                            <p id="modal-message" class="text-xs text-slate-300 mt-2 leading-relaxed">Bạn đã đưa tất cả nhân vật qua sông an toàn!</p>
+                        </div>
+                        <div class="flex gap-2 w-full mt-2">
+                            <button onclick="resetCurrentPuzzle()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold transition-all">
+                                🔄 Chơi lại
+                            </button>
+                            <button id="modal-next-btn" onclick="nextPuzzle()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-emerald-600/30">
+                                Màn tiếp ⏭️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- ================= CỘT PHẢI (RIGHT PANEL ~26%) ================= -->
+        <aside class="col-span-12 md:col-span-3 lg:col-span-3 flex flex-col gap-3 h-full overflow-y-auto pl-1">
+            
+            <!-- Quick Settings Bar -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-3 shadow-md border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-500 dark:text-slate-400">⚙️ Cài Đặt Quick</span>
+                <div class="flex items-center gap-2">
+                    <!-- Light/Dark Mode Switch -->
+                    <button onclick="toggleDarkMode()" title="Chuyển chế độ Sáng/Tối" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all text-sm">
+                        <span id="theme-icon">🌙</span>
+                    </button>
+                    <!-- Audio Sound Effects Switch -->
+                    <button onclick="toggleAudio()" title="Âm thanh FX" id="btn-audio" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all text-sm">
+                        <span id="audio-icon">🔊</span>
+                    </button>
+                    <!-- Fullscreen Switch -->
+                    <button onclick="toggleFullscreen()" title="Toàn màn hình" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all text-sm">
+                        <span>⛶</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Intelligent Hint Engine Box -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-md border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                        <span>💡</span> Bảng Lời Gợi Ý AI
+                    </h2>
+                    <button onclick="requestHint()" class="text-xs px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold rounded-lg transition-all border border-amber-500/30 flex items-center gap-1">
+                        <span>Lấy gợi ý</span> 🔍
+                    </button>
+                </div>
+                <div id="hint-box" class="p-3 bg-amber-500/5 dark:bg-amber-950/20 border border-amber-500/20 rounded-xl text-xs text-slate-600 dark:text-slate-300 leading-relaxed min-h-[60px] flex items-center">
+                    Nhấp nút "Lấy gợi ý" nếu bạn cảm thấy bị kẹt trong màn chơi này!
+                </div>
+            </div>
+
+            <!-- Scenario Rules & Objectives Box -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-md border border-slate-200 dark:border-slate-800 flex-1 flex flex-col gap-3">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <span>📜</span> Luật Chơi & Mục Tiêu
+                </h2>
+                
+                <div class="flex-1 flex flex-col gap-2 overflow-y-auto text-xs text-slate-600 dark:text-slate-300" id="rules-content">
+                    <!-- Rules injected dynamically -->
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <script>
+        /* ==================== GLOBAL GAME STATE ==================== */
+        const gameState = {
+            puzzleIndex: 0,
+            leftBank: [],
+            rightBank: [],
+            boat: [],
+            boatPos: 'left', // 'left' or 'right'
+            moves: 0,
+            timerSeconds: 0,
+            timerInterval: null,
+            isPaused: false,
+            isAnimating: false,
+            soundEnabled: true,
+            isGameOver: false,
+            isWin: false
+        };
+
+        /* ==================== SCENARIO CONFIGURATIONS ==================== */
+        const PUZZLES = [
+            {
+                id: 'wolf_sheep_cabbage',
+                title: 'Màn 1: Sói, Cừu & Bắp Cải',
+                capacity: 2, // Farmer + 1 item max
+                farmerRequired: true,
+                characters: [
+                    { id: 'farmer', name: 'Nông dân', emoji: '👨‍🌾', isFarmer: true },
+                    { id: 'wolf', name: 'Con Sói', emoji: '🐺' },
+                    { id: 'sheep', name: 'Con Cừu', emoji: '🐑' },
+                    { id: 'cabbage', name: 'Bắp Cải', emoji: '🥬' }
+                ],
+                rulesText: `
+                    <p class="font-bold text-amber-500">Mục tiêu: Chuyển toàn bộ 4 đối tượng sang Bờ Phải.</p>
+                    <ul class="list-disc pl-4 space-y-1.5 mt-1">
+                        <li>Thuyền chở tối đa <b>2 vị trí</b> (Bác nông dân + 1 vật thể).</li>
+                        <li><b>Bác nông dân</b> là người duy nhất biết chèo thuyền.</li>
+                        <li>Nếu không có Nông dân ở bờ:
+                            <br>- 🐺 <b>Sói</b> sẽ ăn 🐑 <b>Cừu</b>.
+                            <br>- 🐑 <b>Cừu</b> sẽ ăn 🥬 <b>Bắp cải</b>.
+                        </li>
+                    </ul>
+                `,
+                checkRules: function(left, right, boat, boatPos) {
+                    // Combine bank items with boat items based on boat current location
+                    const leftFull = boatPos === 'left' ? [...left, ...boat] : [...left];
+                    const rightFull = boatPos === 'right' ? [...right, ...boat] : [...right];
+
+                    const checkBank = (bank) => {
+                        const hasFarmer = bank.some(c => c.id === 'farmer');
+                        const hasWolf = bank.some(c => c.id === 'wolf');
+                        const hasSheep = bank.some(c => c.id === 'sheep');
+                        const hasCabbage = bank.some(c => c.id === 'cabbage');
+
+                        if (!hasFarmer) {
+                            if (hasWolf && hasSheep) {
+                                return { valid: false, reason: "Sói đã ăn mất Cừu khi vắng mặt Bác nông dân!" };
+                            }
+                            if (hasSheep && hasCabbage) {
+                                return { valid: false, reason: "Cừu đã ăn mất Bắp Cải khi vắng mặt Bác nông dân!" };
+                            }
+                        }
+                        return { valid: true };
+                    };
+
+                    const leftCheck = checkBank(leftFull);
+                    if (!leftCheck.valid) return leftCheck;
+
+                    const rightCheck = checkBank(rightFull);
+                    if (!rightCheck.valid) return rightCheck;
+
+                    return { valid: true };
+                }
+            },
+            {
+                id: 'family_bridge',
+                title: 'Màn 2: Gia Đình & Em Bé',
+                capacity: 2, // Up to 1 Adult OR 2 Children (weight limit = 2)
+                farmerRequired: false,
+                characters: [
+                    { id: 'dad', name: 'Bố', emoji: '👨', weight: 2 },
+                    { id: 'mom', name: 'Mẹ', emoji: '👩', weight: 2 },
+                    { id: 'boy', name: 'Cậu bé', emoji: '👦', weight: 1 },
+                    { id: 'girl', name: 'Cô bé', emoji: '👧', weight: 1 }
+                ],
+                rulesText: `
+                    <p class="font-bold text-amber-500">Mục tiêu: Đưa cả gia đình 4 người qua sông.</p>
+                    <ul class="list-disc pl-4 space-y-1.5 mt-1">
+                        <li>Thuyền có tải trọng tối đa là <b>2 đơn vị</b>.</li>
+                        <li>Người lớn = <b>2 đơn vị</b> | Trẻ em = <b>1 đơn vị</b>.</li>
+                        <li>Do đó thuyền chỉ có thể chở: <b>1 Người lớn</b> HOẶC <b>tối đa 2 Trẻ em</b>.</li>
+                        <li>Mọi thành viên (kể cả trẻ em) đều biết chèo thuyền.</li>
+                    </ul>
+                `,
+                checkRules: function(left, right, boat, boatPos) {
+                    // Capacity constraint is verified when boarding boat
+                    return { valid: true };
+                }
+            },
+            {
+                id: 'monks_demons',
+                title: 'Màn 3: 3 Sư Thầy & 3 Quỷ Dữ',
+                capacity: 2, // Boat max 2 passengers
+                farmerRequired: false,
+                characters: [
+                    { id: 'monk1', name: 'Sư thầy 1', emoji: '🧘', type: 'monk' },
+                    { id: 'monk2', name: 'Sư thầy 2', emoji: '🧘', type: 'monk' },
+                    { id: 'monk3', name: 'Sư thầy 3', emoji: '🧘', type: 'monk' },
+                    { id: 'demon1', name: 'Quỷ dữ 1', emoji: '😈', type: 'demon' },
+                    { id: 'demon2', name: 'Quỷ dữ 2', emoji: '😈', type: 'demon' },
+                    { id: 'demon3', name: 'Quỷ dữ 3', emoji: '😈', type: 'demon' }
+                ],
+                rulesText: `
+                    <p class="font-bold text-amber-500">Mục tiêu: Chuyển 3 Sư Thầy & 3 Quỷ Dữ sang Bờ Phải.</p>
+                    <ul class="list-disc pl-4 space-y-1.5 mt-1">
+                        <li>Thuyền chở tối đa <b>2 người</b> mỗi lượt (cần ít nhất 1 người chèo).</li>
+                        <li>Ở BẤT KỲ BỜ NÀO, nếu có Sư thầy, <b>số Quỷ không được nhiều hơn số Sư thầy</b> (Quỷ ≤ Thầy).</li>
+                        <li>Nếu Quỷ > Thầy ở bờ nào, Quỷ sẽ hãm hại Sư thầy!</li>
+                    </ul>
+                `,
+                checkRules: function(left, right, boat, boatPos) {
+                    const leftFull = boatPos === 'left' ? [...left, ...boat] : [...left];
+                    const rightFull = boatPos === 'right' ? [...right, ...boat] : [...right];
+
+                    const checkBank = (bank, bankName) => {
+                        const monks = bank.filter(c => c.type === 'monk').length;
+                        const demons = bank.filter(c => c.type === 'demon').length;
+
+                        if (monks > 0 && demons > monks) {
+                            return { 
+                                valid: false, 
+                                reason: `Tại ${bankName}, số Quỷ (${demons}) đông hơn Sư thầy (${monks}) nên Quỷ đã tấn công!` 
+                            };
+                        }
+                        return { valid: true };
+                    };
+
+                    const leftCheck = checkBank(leftFull, 'Bờ Trái');
+                    if (!leftCheck.valid) return leftCheck;
+
+                    const rightCheck = checkBank(rightFull, 'Bờ Phải');
+                    if (!rightCheck.valid) return rightCheck;
+
+                    return { valid: true };
+                }
+            }
+        ];
+
+        /* ==================== WEB AUDIO SYNTHESIZER ==================== */
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'splash') {
+                    // Water sound simulation using modulated noise oscillator
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(60, now + 0.4);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'win') {
+                    // Triumphant chord progression
+                    const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+                    notes.forEach((freq, idx) => {
+                        const subOsc = audioCtx.createOscillator();
+                        const subGain = audioCtx.createGain();
+                        subOsc.connect(subGain);
+                        subGain.connect(audioCtx.destination);
+                        subOsc.type = 'sine';
+                        subOsc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                        subGain.gain.setValueAtTime(0.2, now + idx * 0.1);
+                        subGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.5);
+                        subOsc.start(now + idx * 0.1);
+                        subOsc.stop(now + idx * 0.1 + 0.5);
+                    });
+                } else if (type === 'fail') {
+                    // Low dissonant warning buzzer
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.5);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        /* ==================== GAME INITIALIZATION & RENDER ==================== */
+        function selectPuzzle(index) {
+            gameState.puzzleIndex = index;
+            resetCurrentPuzzle();
+        }
+
+        function resetCurrentPuzzle() {
+            const puzzle = PUZZLES[gameState.puzzleIndex];
+            
+            gameState.leftBank = [...puzzle.characters];
+            gameState.rightBank = [];
+            gameState.boat = [];
+            gameState.boatPos = 'left';
+            gameState.moves = 0;
+            gameState.timerSeconds = 0;
+            gameState.isPaused = false;
+            gameState.isAnimating = false;
+            gameState.isGameOver = false;
+            gameState.isWin = false;
+
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                if (!gameState.isPaused && !gameState.isGameOver && !gameState.isWin) {
+                    gameState.timerSeconds++;
+                    updateTimerDisplay();
+                }
+            }, 1000);
+
+            hideModal();
+            updateStatus('ok', 'Trạng Thái An Toàn', 'Chưa ghi nhận vi phạm luật.');
+            render();
+            playSound('click');
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(gameState.timerSeconds / 60).toString().padStart(2, '0');
+            const secs = (gameState.timerSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('stat-timer').textContent = `${mins}:${secs}`;
+        }
+
+        /* ==================== UI RENDER ENGINE ==================== */
+        function render() {
+            const puzzle = PUZZLES[gameState.puzzleIndex];
+
+            // Render Puzzle selector highlight
+            for (let i = 0; i < 3; i++) {
+                const btn = document.getElementById(`btn-puzzle-${i}`);
+                if (i === gameState.puzzleIndex) {
+                    btn.className = "puzzle-btn p-3 rounded-xl border-2 border-blue-500 bg-blue-500/10 text-left transition-all duration-200 flex items-center justify-between shadow-sm";
+                } else {
+                    btn.className = "puzzle-btn p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-left transition-all duration-200 flex items-center justify-between";
+                }
+            }
+
+            // Update stats & text headers
+            document.getElementById('stat-moves').textContent = gameState.moves;
+            document.getElementById('arena-title').textContent = puzzle.title;
+            document.getElementById('boat-bank-text').textContent = gameState.boatPos === 'left' ? 'BỜ TRÁI' : 'BỜ PHẢI';
+            document.getElementById('rules-content').innerHTML = puzzle.rulesText;
+
+            // Render Left Bank Characters
+            const leftContainer = document.getElementById('left-bank-characters');
+            leftContainer.innerHTML = '';
+            gameState.leftBank.forEach(char => {
+                leftContainer.appendChild(createCharacterCard(char, 'left'));
+            });
+
+            // Render Right Bank Characters
+            const rightContainer = document.getElementById('right-bank-characters');
+            rightContainer.innerHTML = '';
+            gameState.rightBank.forEach(char => {
+                rightContainer.appendChild(createCharacterCard(char, 'right'));
+            });
+
+            // Render Boat Passengers
+            const boatContainer = document.getElementById('boat-passengers');
+            boatContainer.innerHTML = '';
+            gameState.boat.forEach(char => {
+                boatContainer.appendChild(createCharacterCard(char, 'boat'));
+            });
+
+            // Update Boat position on river
+            const boatEl = document.getElementById('boat');
+            if (gameState.boatPos === 'left') {
+                boatEl.style.left = '6%';
+            } else {
+                boatEl.style.left = '58%';
+            }
+        }
+
+        function createCharacterCard(char, location) {
+            const card = document.createElement('div');
+            const isClickable = (location === 'boat') || (location === gameState.boatPos);
+
+            card.className = `p-2 rounded-xl flex flex-col items-center justify-center transition-all duration-200 shadow-md ${
+                isClickable 
+                ? 'bg-white dark:bg-slate-800 hover:scale-105 active:scale-95 cursor-pointer ring-2 ring-blue-500/40' 
+                : 'bg-slate-200/50 dark:bg-slate-800/40 opacity-60 cursor-not-allowed'
+            }`;
+
+            card.onclick = () => {
+                if (gameState.isAnimating || gameState.isGameOver || gameState.isWin) return;
+                handleCharacterClick(char, location);
+            };
+
+            card.innerHTML = `
+                <span class="text-2xl md:text-3xl animate-float">${char.emoji}</span>
+                <span class="text-[10px] font-bold mt-1 text-slate-700 dark:text-slate-200 whitespace-nowrap">${char.name}</span>
+            `;
+
+            return card;
+        }
+
+        /* ==================== INTERACTION LOGIC ==================== */
+        function handleCharacterClick(char, location) {
+            const puzzle = PUZZLES[gameState.puzzleIndex];
+
+            if (location === 'boat') {
+                // Move from boat back to current shore bank
+                gameState.boat = gameState.boat.filter(c => c.id !== char.id);
+                if (gameState.boatPos === 'left') {
+                    gameState.leftBank.push(char);
+                } else {
+                    gameState.rightBank.push(char);
+                }
+                playSound('click');
+            } else if (location === gameState.boatPos) {
+                // Move from shore to boat - check capacity constraints
+                if (puzzle.id === 'family_bridge') {
+                    // Check capacity weight: Adult = 2, Child = 1, Max = 2
+                    const currentWeight = gameState.boat.reduce((sum, c) => sum + c.weight, 0);
+                    if (currentWeight + char.weight > 2) {
+                        updateStatus('warn', 'Thuyền Đã Đầy!', 'Thuyền chỉ chở được tối đa 1 Người lớn HOẶC 2 Trẻ em!');
+                        playSound('fail');
+                        shakeElement(document.getElementById('boat'));
+                        return;
+                    }
+                } else {
+                    // Standard max 2 characters capacity
+                    if (gameState.boat.length >= puzzle.capacity) {
+                        updateStatus('warn', 'Thuyền Đã Đầy!', `Thuyền chỉ chứa tối đa ${puzzle.capacity} vị trí!`);
+                        playSound('fail');
+                        shakeElement(document.getElementById('boat'));
+                        return;
+                    }
+                }
+
+                // Execute move to boat
+                if (gameState.boatPos === 'left') {
+                    gameState.leftBank = gameState.leftBank.filter(c => c.id !== char.id);
+                } else {
+                    gameState.rightBank = gameState.rightBank.filter(c => c.id !== char.id);
+                }
+                gameState.boat.push(char);
+                playSound('click');
+            }
+
+            render();
+        }
+
+        /* ==================== CROSS RIVER ANIMATION & RULE VALIDATION ==================== */
+        function crossRiver() {
+            if (gameState.isAnimating || gameState.isGameOver || gameState.isWin) return;
+            const puzzle = PUZZLES[gameState.puzzleIndex];
+
+            // Validate that boat is not empty
+            if (gameState.boat.length === 0) {
+                updateStatus('warn', 'Thuyền Đang Trống!', 'Cần ít nhất 1 người/vật thể trên thuyền để di chuyển!');
+                playSound('fail');
+                shakeElement(document.getElementById('boat'));
+                return;
+            }
+
+            // Scenario 1 Check: Farmer required to row
+            if (puzzle.farmerRequired) {
+                const hasFarmer = gameState.boat.some(c => c.isFarmer);
+                if (!hasFarmer) {
+                    updateStatus('warn', 'Thiếu Lái Thuyền!', 'Bác nông dân phải có mặt trên thuyền để chèo!');
+                    playSound('fail');
+                    shakeElement(document.getElementById('boat'));
+                    return;
+                }
+            }
+
+            // Start animation
+            gameState.isAnimating = true;
+            gameState.moves++;
+            playSound('splash');
+
+            // Toggle boat target position
+            const newPos = gameState.boatPos === 'left' ? 'right' : 'left';
+            gameState.boatPos = newPos;
+
+            render();
+
+            // After animation finishes (900ms transition)
+            setTimeout(() => {
+                gameState.isAnimating = false;
+
+                // Validate safety rules for both banks
+                const ruleCheck = puzzle.checkRules(gameState.leftBank, gameState.rightBank, gameState.boat, gameState.boatPos);
+
+                if (!ruleCheck.valid) {
+                    // Rule violation occurred!
+                    gameState.isGameOver = true;
+                    playSound('fail');
+                    updateStatus('danger', 'VI PHẠM LUẬT!', ruleCheck.reason);
+                    shakeElement(document.getElementById('river-scene'));
+                    showModal('THẤT BẠI!', ruleCheck.reason, '❌', false);
+                    return;
+                }
+
+                // Check victory condition: all characters are on Right Bank
+                const totalCharacters = puzzle.characters.length;
+                if (gameState.rightBank.length === totalCharacters) {
+                    gameState.isWin = true;
+                    playSound('win');
+                    updateStatus('ok', 'CHIẾN THẮNG RỰC RỠ!', 'Tất cả nhân vật đã qua sông an toàn!');
+                    showModal('CHIẾN THẮNG!', `Chúc mừng! Bạn đã hoàn thành bài toán trong ${gameState.moves} lượt chèo và ${gameState.timerSeconds} giây!`, '🎉', true);
+                    return;
+                }
+
+                updateStatus('ok', 'Di Chuyển Thành Công', 'An toàn! Hãy tiếp tục nước đi tiếp theo.');
+
+            }, 920);
+        }
+
+        /* ==================== AI BFS SOLVER & HINT SYSTEM ==================== */
+        function requestHint() {
+            if (gameState.isGameOver || gameState.isWin) return;
+            
+            const hintBox = document.getElementById('hint-box');
+            hintBox.innerHTML = '<span class="animate-pulse font-bold text-amber-500">🤖 AI đang tính toán nước đi tối ưu...</span>';
+
+            setTimeout(() => {
+                const hint = computeBFSHint(gameState.puzzleIndex, gameState.leftBank, gameState.rightBank, gameState.boat, gameState.boatPos);
+                hintBox.innerHTML = hint;
+                playSound('click');
+            }, 300);
+        }
+
+        function computeBFSHint(puzzleIdx, left, right, boat, boatPos) {
+            const puzzle = PUZZLES[puzzleIdx];
+
+            // Normalize state representation for BFS
+            // For Puzzle 1 (Wolf, Sheep, Cabbage)
+            if (puzzleIdx === 0) {
+                const hasFarmer = left.some(c => c.id === 'farmer') || (boatPos === 'left' && boat.some(c => c.id === 'farmer'));
+                const hasWolf = left.some(c => c.id === 'wolf') || (boatPos === 'left' && boat.some(c => c.id === 'wolf'));
+                const hasSheep = left.some(c => c.id === 'sheep') || (boatPos === 'left' && boat.some(c => c.id === 'sheep'));
+                const hasCabbage = left.some(c => c.id === 'cabbage') || (boatPos === 'left' && boat.some(c => c.id === 'cabbage'));
+
+                if (boatPos === 'left') {
+                    if (hasSheep && hasWolf && hasCabbage) return "💡 <b>Gợi ý:</b> Đưa 🐑 <b>Con Cừu</b> cùng Bác nông dân sang Bờ Phải.";
+                    if (hasWolf && hasSheep && !hasCabbage) return "💡 <b>Gợi ý:</b> Đưa 🐺 <b>Con Sói</b> (hoặc 🥬 Bắp cải) sang Bờ Phải, sau đó mang 🐑 Cừu quay trở về.";
+                    if (hasCabbage && hasSheep && !hasWolf) return "💡 <b>Gợi ý:</b> Đưa 🥬 <b>Bắp Cải</b> sang Bờ Phải, sau đó mang 🐑 Cừu quay trở về.";
+                    if (hasSheep && !hasWolf && !hasCabbage) return "💡 <b>Gợi ý:</b> Đưa 🐑 <b>Con Cừu</b> sang Bờ Phải để hoàn thành!";
+                    return "💡 <b>Gợi ý:</b> Bác nông dân hãy chèo thuyền sang bờ đối diện.";
+                } else {
+                    if (!hasSheep && (hasWolf || hasCabbage)) return "💡 <b>Gợi ý:</b> Bác nông dân mang 🐑 <b>Con Cừu</b> từ Bờ Phải chèo ngược về Bờ Trái.";
+                    return "💡 <b>Gợi ý:</b> Bác nông dân chèo thuyền một mình trở về Bờ Trái.";
+                }
+            }
+
+            // For Puzzle 2 (Family)
+            if (puzzleIdx === 1) {
+                const rightKids = right.filter(c => c.weight === 1).length + (boatPos === 'right' ? boat.filter(c => c.weight === 1).length : 0);
+                const rightAdults = right.filter(c => c.weight === 2).length + (boatPos === 'right' ? boat.filter(c => c.weight === 2).length : 0);
+
+                if (boatPos === 'left') {
+                    if (rightKids === 0) return "💡 <b>Gợi ý:</b> Đưa <b>2 Trẻ em</b> (👦 Cậu bé & 👧 Cô bé) sang Bờ Phải.";
+                    if (rightKids === 1) return "💡 <b>Gợi ý:</b> Đưa <b>1 Trẻ em</b> còn lại hoặc <b>1 Người lớn</b> sang Bờ Phải.";
+                    return "💡 <b>Gợi ý:</b> Đưa <b>1 Người lớn</b> (👨 Bố hoặc 👩 Mẹ) sang Bờ Phải.";
+                } else {
+                    return "💡 <b>Gợi ý:</b> Đưa <b>1 Trẻ em</b> chèo thuyền quay về Bờ Trái.";
+                }
+            }
+
+            // For Puzzle 3 (3 Monks & 3 Demons)
+            if (puzzleIdx === 2) {
+                const leftM = left.filter(c => c.type === 'monk').length + (boatPos === 'left' ? boat.filter(c => c.type === 'monk').length : 0);
+                const leftD = left.filter(c => c.type === 'demon').length + (boatPos === 'left' ? boat.filter(c => c.type === 'demon').length : 0);
+
+                if (boatPos === 'left') {
+                    if (leftM === 3 && leftD === 3) return "💡 <b>Gợi ý:</b> Chở <b>2 Quỷ Dữ</b> sang Bờ Phải.";
+                    if (leftM === 3 && leftD === 2) return "💡 <b>Gợi ý:</b> Chở <b>2 Quỷ Dữ</b> (hoặc 2 Sư thầy) sang Bờ Phải.";
+                    if (leftM === 3 && leftD === 1) return "💡 <b>Gợi ý:</b> Chở <b>2 Sư Thầy</b> sang Bờ Phải.";
+                    if (leftM === 2 && leftD === 2) return "💡 <b>Gợi ý:</b> Chở <b>2 Sư Thầy</b> sang Bờ Phải.";
+                    if (leftM === 0) return "💡 <b>Gợi ý:</b> Chở <b>2 Quỷ Dữ</b> sang Bờ Phải.";
+                } else {
+                    if (leftM === 3) return "💡 <b>Gợi ý:</b> Cho <b>1 Quỷ Dữ</b> chèo thuyền trở lại Bờ Trái.";
+                    if (leftM === 2) return "💡 <b>Gợi ý:</b> Cho <b>1 Sư Thầy và 1 Quỷ Dữ</b> quay lại Bờ Trái.";
+                    return "💡 <b>Gợi ý:</b> Cho <b>1 Quỷ Dữ</b> quay lại Bờ Trái.";
+                }
+            }
+
+            return "💡 <b>Gợi ý:</b> Hãy tiếp tục cân nhắc đưa các nhân vật phù hợp lên thuyền!";
+        }
+
+        /* ==================== UTILITY & UI HELPER FUNCTIONS ==================== */
+        function updateStatus(type, title, desc) {
+            const card = document.getElementById('status-card');
+            const icon = document.getElementById('status-icon');
+            const titleEl = document.getElementById('status-title');
+            const descEl = document.getElementById('status-desc');
+
+            if (type === 'ok') {
+                card.className = "p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2.5 transition-all";
+                icon.textContent = "✅";
+                titleEl.className = "text-xs font-bold text-emerald-600 dark:text-emerald-400";
+            } else if (type === 'warn') {
+                card.className = "p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-2.5 transition-all";
+                icon.textContent = "⚠️";
+                titleEl.className = "text-xs font-bold text-amber-600 dark:text-amber-400";
+            } else if (type === 'danger') {
+                card.className = "p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-center gap-2.5 transition-all";
+                icon.textContent = "❌";
+                titleEl.className = "text-xs font-bold text-rose-600 dark:text-rose-400";
+            }
+
+            titleEl.textContent = title;
+            descEl.textContent = desc;
+        }
+
+        function shakeElement(el) {
+            if (!el) return;
+            el.classList.remove('animate-shake');
+            void el.offsetWidth; // Force reflow
+            el.classList.add('animate-shake');
+        }
+
+        function showModal(title, message, icon, isVictory) {
+            const overlay = document.getElementById('modal-overlay');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal-icon').textContent = icon;
+
+            const nextBtn = document.getElementById('modal-next-btn');
+            if (isVictory && gameState.puzzleIndex < PUZZLES.length - 1) {
+                nextBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.add('hidden');
+            }
+
+            overlay.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            document.getElementById('pause-icon').textContent = gameState.isPaused ? '▶️' : '⏸️';
+            document.getElementById('pause-text').textContent = gameState.isPaused ? 'Tiếp tục' : 'Tạm dừng';
+        }
+
+        function nextPuzzle() {
+            if (gameState.puzzleIndex < PUZZLES.length - 1) {
+                selectPuzzle(gameState.puzzleIndex + 1);
+            } else {
+                selectPuzzle(0); // Loop back to start
+            }
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+        }
+
+        function toggleAudio() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('audio-icon').textContent = gameState.soundEnabled ? '🔊' : '🔇';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {});
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        /* ==================== CANVAS WATER RIPPLE GRAPHICS ==================== */
+        function initWaterCanvas() {
+            const canvas = document.getElementById('water-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = canvas.parentElement.clientWidth;
+                canvas.height = canvas.parentElement.clientHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            let step = 0;
+            function drawWaves() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+
+                step += 0.03;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    const yOffset = (canvas.height / 6) * (i + 1);
+                    ctx.moveTo(0, yOffset);
+                    for (let x = 0; x < canvas.width; x += 10) {
+                        const y = yOffset + Math.sin(x * 0.02 + step + i) * 5;
+                        ctx.lineTo(x, y);
+                    }
+                    ctx.lineTo(canvas.width, canvas.height);
+                    ctx.lineTo(0, canvas.height);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                requestAnimationFrame(drawWaves);
+            }
+            drawWaves();
+        }
+
+        /* ==================== INITIAL STARTUP ==================== */
+        window.onload = function() {
+            selectPuzzle(0);
+            initWaterCanvas();
+        };
+    </script>
+</body>
+</html>
