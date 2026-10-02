@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sudoku Master - Trò Chơi Sudoku Đỉnh Cao</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Chống hiện thanh cuộn trình duyệt để giữ ứng dụng gọn gàng trong 100vh */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Kích thước tỷ lệ vuông 1:1 cho bàn cờ Sudoku */
+    .sudoku-container {
+      max-height: min(calc(100vh - 190px), 100%);
+      max-width: min(calc(100vh - 190px), 100%);
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+
+    /* Viền đậm phân chia 9 vùng 3x3 trong lưới Sudoku */
+    .cell-thick-right {
+      border-right: 2px solid currentColor !important;
+    }
+    .cell-thick-bottom {
+      border-bottom: 2px solid currentColor !important;
+    }
+
+    /* Hiệu ứng hoạt họa cho chiến thắng và xuất hiện */
+    @keyframes pop-in {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: pop-in 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Ngăn bôi đen chọn văn bản vô ý */
+    .select-none {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans h-screen w-screen overflow-hidden select-none transition-colors duration-300">
+
+  <!-- Canvas Pháo Hoa Chiến Thắng (Confetti) -->
+  <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- DASHBOARD BỐ CỤC 3 CỘT NẰM NGANG CỐ ĐỊNH -->
+  <div class="h-screen w-screen flex flex-row p-2.5 sm:p-3.5 gap-2.5 sm:gap-3.5 overflow-hidden box-border">
+
+    <!-- ==========================================
+         CỘT TRÁI (LEFT PANEL): Thông tin & Mức độ (25% Chiều rộng)
+         ========================================== -->
+    <aside class="w-1/4 min-w-[210px] max-w-[320px] flex flex-col justify-between gap-2.5 bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-200 dark:border-slate-800 overflow-y-auto no-scrollbar shrink-0 shadow-sm">
+      
+      <!-- Tiêu đề App (Không có Navbar trên) -->
+      <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-base shadow-md shadow-indigo-500/30">
+            S
+          </div>
+          <div>
+            <h1 class="text-base font-black tracking-tight leading-none bg-gradient-to-r from-indigo-600 to-violet-500 bg-clip-text text-transparent">
+              SUDOKU MASTER
+            </h1>
+            <p class="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-0.5">Thách thức trí tuệ</p>
+          </div>
+        </div>
+        <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-200 dark:border-indigo-800">
+          v3.0
+        </span>
+      </div>
+
+      <!-- Chọn Mức Độ Chơi -->
+      <div class="flex flex-col gap-1.5">
+        <label class="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
+          <i class="fa-solid fa-layer-group text-indigo-500"></i> Mức độ chơi
+        </label>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button onclick="setDifficulty('easy')" id="btn-diff-easy" class="diff-btn py-1.5 px-2 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400">
+            <span>Dễ</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          </button>
+          <button onclick="setDifficulty('medium')" id="btn-diff-medium" class="diff-btn py-1.5 px-2 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400">
+            <span>T.Bình</span>
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          </button>
+          <button onclick="setDifficulty('hard')" id="btn-diff-hard" class="diff-btn py-1.5 px-2 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400">
+            <span>Khó</span>
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+          </button>
+          <button onclick="setDifficulty('expert')" id="btn-diff-expert" class="diff-btn py-1.5 px-2 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400">
+            <span>Chuyên gia</span>
+            <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bảng Thống Kê Trực Tiếp -->
+      <div class="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-2.5 border border-slate-200/80 dark:border-slate-700/60 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs">
+              <i class="fa-regular fa-clock"></i>
+            </div>
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Thời gian</span>
+          </div>
+          <span id="timer-display" class="font-mono text-sm font-bold tracking-wider text-slate-800 dark:text-slate-100">00:00</span>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-slate-200/50 dark:border-slate-700/50 pt-1.5">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Số lỗi</span>
+          </div>
+          <span id="mistakes-display" class="text-xs font-bold text-slate-800 dark:text-slate-100">0/3</span>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-slate-200/50 dark:border-slate-700/50 pt-1.5">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-trophy"></i>
+            </div>
+            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Điểm số</span>
+          </div>
+          <span id="score-display" class="text-xs font-black text-indigo-600 dark:text-indigo-400">0</span>
+        </div>
+      </div>
+
+      <!-- Các Nút Điều Khiển -->
+      <div class="flex flex-col gap-1.5 mt-auto pt-1">
+        <button onclick="promptNewGame()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus"></i> Ván mới
+        </button>
+        <div class="grid grid-cols-2 gap-1.5">
+          <button onclick="togglePause()" id="btn-pause" class="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition-all flex items-center justify-center gap-1 border border-slate-200 dark:border-slate-700">
+            <i class="fa-solid fa-pause text-xs" id="icon-pause"></i>
+            <span id="text-pause">Tạm dừng</span>
+          </button>
+          <button onclick="promptRestart()" class="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs transition-all flex items-center justify-center gap-1 border border-slate-200 dark:border-slate-700">
+            <i class="fa-solid fa-rotate-left text-xs"></i> Chơi lại
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ==========================================
+         CỘT GIỮA (CENTER PANEL): Bàn Cờ & Công Cụ (50% Chiều rộng)
+         ========================================== -->
+    <main class="flex-1 min-w-0 flex flex-col items-center justify-between bg-white dark:bg-slate-900 rounded-2xl p-2.5 sm:p-3.5 border border-slate-200 dark:border-slate-800 overflow-hidden relative shadow-sm">
+      
+      <!-- Khung Bàn Cờ Sudoku 9x9 Trung Tâm -->
+      <div class="w-full flex-1 flex items-center justify-center p-0.5 relative overflow-hidden">
+        <div id="sudoku-board-wrapper" class="sudoku-container relative rounded-xl border-2 border-slate-800 dark:border-slate-200 overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-lg">
+          <div id="sudoku-grid" class="sudoku-grid w-full h-full bg-white dark:bg-slate-900 grid grid-cols-9 grid-rows-9">
+            <!-- 81 ô được khởi tạo tự động bằng JS -->
+          </div>
+
+          <!-- Layover Tạm Dừng -->
+          <div id="pause-overlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center gap-2 text-white hidden z-30 transition-all">
+            <div class="w-12 h-12 rounded-full bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-xl text-indigo-400">
+              <i class="fa-solid fa-pause"></i>
+            </div>
+            <h3 class="text-base font-bold">Trò chơi đang tạm dừng</h3>
+            <button onclick="togglePause()" class="mt-1 py-1.5 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all">
+              Tiếp tục chơi
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Công cụ hỗ trợ thao tác -->
+      <div class="w-full max-w-md my-1.5 grid grid-cols-4 gap-1.5 shrink-0">
+        <button onclick="undoMove()" class="tool-btn py-1.5 px-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex flex-col items-center justify-center gap-0.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95">
+          <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
+          <span class="text-[10px] font-semibold">Hoàn tác</span>
+        </button>
+        
+        <button onclick="eraseCell()" class="tool-btn py-1.5 px-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex flex-col items-center justify-center gap-0.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95">
+          <i class="fa-solid fa-eraser text-xs"></i>
+          <span class="text-[10px] font-semibold">Xóa</span>
+        </button>
+        
+        <button onclick="toggleNoteMode()" id="btn-pencil" class="tool-btn py-1.5 px-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex flex-col items-center justify-center gap-0.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95 relative">
+          <i class="fa-solid fa-pencil text-xs" id="pencil-icon"></i>
+          <span class="text-[10px] font-semibold">Ghi chú</span>
+          <span id="pencil-badge" class="absolute top-1 right-1.5 text-[8px] font-extrabold px-1 rounded-full bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200">OFF</span>
+        </button>
+        
+        <button onclick="useHint()" class="tool-btn py-1.5 px-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex flex-col items-center justify-center gap-0.5 border border-slate-200 dark:border-slate-700 transition-all active:scale-95 relative">
+          <i class="fa-regular fa-lightbulb text-xs text-amber-500"></i>
+          <span class="text-[10px] font-semibold">Gợi ý</span>
+          <span id="hint-count" class="absolute top-1 right-1.5 text-[8px] font-extrabold px-1 rounded-full bg-amber-500 text-white">3</span>
+        </button>
+      </div>
+
+      <!-- Bàn Phím Số Từ 1-9 -->
+      <div class="w-full max-w-md grid grid-cols-9 gap-1 shrink-0">
+        <button onclick="inputNumber(1)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">1</button>
+        <button onclick="inputNumber(2)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">2</button>
+        <button onclick="inputNumber(3)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">3</button>
+        <button onclick="inputNumber(4)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">4</button>
+        <button onclick="inputNumber(5)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">5</button>
+        <button onclick="inputNumber(6)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">6</button>
+        <button onclick="inputNumber(7)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">7</button>
+        <button onclick="inputNumber(8)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">8</button>
+        <button onclick="inputNumber(9)" class="num-key h-9 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 text-slate-800 dark:text-slate-100 font-black text-sm sm:text-base transition-all border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm active:scale-95">9</button>
+      </div>
+
+    </main>
+
+    <!-- ==========================================
+         CỘT PHẢI (RIGHT PANEL): Cài Đặt & Hướng Dẫn (25% Chiều rộng)
+         ========================================== -->
+    <aside class="w-1/4 min-w-[210px] max-w-[320px] flex flex-col justify-between gap-2.5 bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-200 dark:border-slate-800 overflow-y-auto no-scrollbar shrink-0 shadow-sm">
+      
+      <!-- Bảng Cài Đặt Tùy Chỉnh -->
+      <div class="flex flex-col gap-2">
+        <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
+          <i class="fa-solid fa-sliders text-indigo-500"></i> Cài đặt hệ thống
+        </h3>
+
+        <div class="space-y-1 text-xs">
+          <!-- Chế độ Tối/Sáng -->
+          <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+            <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 text-[11px]">
+              <i class="fa-solid fa-moon text-indigo-400"></i> Chế độ Tối
+            </span>
+            <button onclick="toggleDarkMode()" id="btn-dark-toggle" class="w-9 h-4.5 rounded-full bg-slate-300 dark:bg-indigo-600 transition-colors relative p-0.5">
+              <div id="dot-dark-toggle" class="w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4 dark:translate-x-4"></div>
+            </button>
+          </div>
+
+          <!-- Âm thanh -->
+          <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+            <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 text-[11px]">
+              <i class="fa-solid fa-volume-high text-indigo-400"></i> Âm thanh
+            </span>
+            <button onclick="toggleSound()" id="btn-sound-toggle" class="w-9 h-4.5 rounded-full bg-indigo-600 transition-colors relative p-0.5">
+              <div id="dot-sound-toggle" class="w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4"></div>
+            </button>
+          </div>
+
+          <!-- Toàn màn hình -->
+          <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+            <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 text-[11px]">
+              <i class="fa-solid fa-expand text-indigo-400"></i> Fullscreen
+            </span>
+            <button onclick="toggleFullscreen()" class="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold px-1.5 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60">
+              Bật/Tắt
+            </button>
+          </div>
+
+          <!-- Tự động kiểm tra lỗi -->
+          <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+            <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 text-[11px]">
+              <i class="fa-solid fa-circle-check text-indigo-400"></i> Báo lỗi tự động
+            </span>
+            <button onclick="toggleAutoCheck()" id="btn-autocheck-toggle" class="w-9 h-4.5 rounded-full bg-indigo-600 transition-colors relative p-0.5">
+              <div id="dot-autocheck-toggle" class="w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4"></div>
+            </button>
+          </div>
+
+          <!-- Highlight số giống nhau -->
+          <div class="flex items-center justify-between p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+            <span class="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5 text-[11px]">
+              <i class="fa-solid fa-highlighter text-indigo-400"></i> Highlight trùng số
+            </span>
+            <button onclick="toggleHighlightSame()" id="btn-highlight-toggle" class="w-9 h-4.5 rounded-full bg-indigo-600 transition-colors relative p-0.5">
+              <div id="dot-highlight-toggle" class="w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4"></div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khung Kỷ Lục Thời Gian -->
+      <div class="flex flex-col gap-1.5">
+        <h3 class="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 uppercase tracking-wider">
+          <i class="fa-solid fa-medal text-amber-500"></i> Kỷ lục tốt nhất
+        </h3>
+        <div class="grid grid-cols-2 gap-1 text-[11px]">
+          <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Dễ:</span>
+            <span id="best-easy" class="font-bold font-mono">--:--</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between">
+            <span class="text-slate-500 font-medium">T.Bình:</span>
+            <span id="best-medium" class="font-bold font-mono">--:--</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Khó:</span>
+            <span id="best-hard" class="font-bold font-mono">--:--</span>
+          </div>
+          <div class="p-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between">
+            <span class="text-slate-500 font-medium">C.Gia:</span>
+            <span id="best-expert" class="font-bold font-mono">--:--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tóm Tắt Luật Chơi Nhanh -->
+      <div class="bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl p-2.5 border border-indigo-100 dark:border-indigo-900/40">
+        <h4 class="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1 mb-1">
+          <i class="fa-solid fa-circle-info"></i> Luật Sudoku cơ bản
+        </h4>
+        <ul class="text-[10px] text-slate-600 dark:text-slate-400 space-y-1 list-disc pl-3 leading-tight">
+          <li>Điền các số từ <b>1 đến 9</b> vào các ô trống.</li>
+          <li>Mỗi <b>hàng</b>, <b>cột</b> và ô <b>3x3</b> không trùng lặp số.</li>
+          <li>Dùng nút <b>Ghi chú</b> để điền dự đoán số nhỏ.</li>
+        </ul>
+      </div>
+
+    </aside>
+
+  </div>
+
+  <!-- MODAL THẮNG TRẬN (VICTORY MODAL) -->
+  <div id="victory-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 text-center shadow-2xl animate-pop">
+      <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-500 flex items-center justify-center text-2xl mx-auto mb-2">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-1">XUẤT SẮC!</h2>
+      <p class="text-xs text-slate-500 mb-3">Bạn đã giải thành công bàn cờ Sudoku này</p>
+      
+      <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3 space-y-1.5 mb-4">
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-500">Mức độ:</span>
+          <span id="vic-diff" class="font-bold uppercase text-indigo-600 dark:text-indigo-400">Dễ</span>
+        </div>
+        <div class="flex justify-between text-xs border-t border-slate-200 dark:border-slate-700 pt-1">
+          <span class="text-slate-500">Thời gian hoàn thành:</span>
+          <span id="vic-time" class="font-mono font-bold">00:00</span>
+        </div>
+        <div class="flex justify-between text-xs border-t border-slate-200 dark:border-slate-700 pt-1">
+          <span class="text-slate-500">Tổng điểm đạt được:</span>
+          <span id="vic-score" class="font-extrabold text-amber-500">0</span>
+        </div>
+      </div>
+
+      <button onclick="closeVictoryModal(); promptNewGame();" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-indigo-600/30 transition-all">
+        Thử ván tiếp theo
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL THUA TRẬN (GAME OVER MODAL) -->
+  <div id="gameover-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-800 text-center shadow-2xl animate-pop">
+      <div class="w-14 h-14 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-500 flex items-center justify-center text-2xl mx-auto mb-2">
+        <i class="fa-solid fa-heart-crack"></i>
+      </div>
+      <h2 class="text-xl font-black text-slate-800 dark:text-slate-100 mb-1">THUA CUỘC!</h2>
+      <p class="text-xs text-slate-500 mb-4">Bạn đã phạm quá 3 lỗi trong ván chơi này</p>
+
+      <div class="flex gap-2">
+        <button onclick="closeGameOverModal(); restartGame();" class="flex-1 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 font-bold text-xs transition-all">
+          Thử lại ván này
+        </button>
+        <button onclick="closeGameOverModal(); startNewGame();" class="flex-1 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition-all shadow-md shadow-indigo-600/20">
+          Ván mới
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL XÁC NHẬN (CONFIRM MODAL) -->
+  <div id="confirm-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 max-w-xs w-full border border-slate-200 dark:border-slate-800 text-center shadow-2xl animate-pop">
+      <h3 id="confirm-title" class="text-sm font-bold mb-1">Tạo ván chơi mới?</h3>
+      <p id="confirm-desc" class="text-xs text-slate-500 mb-3">Tiến trình ván chơi hiện tại sẽ bị hủy bỏ.</p>
+      <div class="flex gap-2">
+        <button onclick="closeConfirmModal()" class="flex-1 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs">
+          Hủy
+        </button>
+        <button id="confirm-action-btn" class="flex-1 py-1.5 rounded-xl bg-indigo-600 text-white font-bold text-xs">
+          Đồng ý
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       LOGIC THUẬT TOÁN & TƯƠNG TÁC (JAVASCRIPT)
+       ========================================== -->
+  <script>
+    
+    // --- CẤU HÌNH TRẠNG THÁI TRÒ CHƠI ---
+    const STATE = {
+      difficulty: 'easy',       // easy | medium | hard | expert
+      solution: [],             // Mảng 9x9 lưu đáp án đúng
+      initialBoard: [],         // Mảng 9x9 lưu đề bài ban đầu
+      currentBoard: [],         // Mảng 9x9 lưu trạng thái ô hiện tại
+      pencilNotes: [],          // Mảng 9x9 chứa Set() các ghi chú
+      selectedCell: null,       // { row, col } ô đang chọn
+      history: [],              // Hoàn tác Undo
+      mistakes: 0,
+      maxMistakes: 3,
+      score: 0,
+      hintsLeft: 3,
+      timer: 0,
+      timerInterval: null,
+      isPaused: false,
+      isGameOver: false,
+      isGameWon: false,
+      noteMode: false,          // Chế độ bút chì
+      settings: {
+        darkMode: true,
+        sound: true,
+        autoCheck: true,
+        highlightSame: true
+      },
+      bestTimes: {
+        easy: null,
+        medium: null,
+        hard: null,
+        expert: null
+      }
+    };
+
+    // --- BỘ PHÁT ÂM THANH WEB AUDIO API (KHÔNG FILE NGOÀI) ---
+    class WebAudioEngine {
+      constructor() {
+        this.ctx = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playSelect() {
+        if (!STATE.settings.sound) return;
+        this.init();
+        if (!this.ctx) return;
+        
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+
+      playFill() {
+        if (!STATE.settings.sound) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(523.25, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(659.25, this.ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      }
+
+      playError() {
+        if (!STATE.settings.sound) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(130, this.ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.18);
+      }
+
+      playErase() {
+        if (!STATE.settings.sound) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, this.ctx.currentTime + 0.05);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.05);
+      }
+
+      playVictory() {
+        if (!STATE.settings.sound) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+          gain.gain.setValueAtTime(0.1, this.ctx.currentTime + idx * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + idx * 0.1);
+          osc.stop(this.ctx.currentTime + idx * 0.1 + 0.25);
+        });
+      }
+    }
+
+    const soundAudio = new WebAudioEngine();
+
+
+    // --- THUẬT TOÁN SINH BÀN CỜ SUDOKU (BACKTRACKING) ---
+    class SudokuGenerator {
+      static generateFullBoard() {
+        const board = Array.from({ length: 9 }, () => Array(9).fill(0));
+        this.solve(board);
+        return board;
+      }
+
+      static isValid(board, row, col, num) {
+        for (let i = 0; i < 9; i++) {
+          if (board[row][i] === num && i !== col) return false;
+          if (board[i][col] === num && i !== row) return false;
+        }
+        const startRow = Math.floor(row / 3) * 3;
+        const startCol = Math.floor(col / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 3; j++) {
+            const r = startRow + i;
+            const c = startCol + j;
+            if (board[r][c] === num && (r !== row || c !== col)) return false;
+          }
+        }
+        return true;
+      }
+
+      static solve(board) {
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            if (board[r][c] === 0) {
+              const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(() => Math.random() - 0.5);
+              for (const num of numbers) {
+                if (this.isValid(board, r, c, num)) {
+                  board[r][c] = num;
+                  if (this.solve(board)) return true;
+                  board[r][c] = 0;
+                }
+              }
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      static generatePuzzle(difficulty) {
+        const fullSolution = this.generateFullBoard();
+        const puzzle = fullSolution.map(row => [...row]);
+
+        let cluesCount;
+        switch (difficulty) {
+          case 'easy': cluesCount = 42; break;
+          case 'medium': cluesCount = 34; break;
+          case 'hard': cluesCount = 28; break;
+          case 'expert': cluesCount = 24; break;
+          default: cluesCount = 38;
+        }
+
+        let cellsToRemove = 81 - cluesCount;
+        const positions = [];
+        for (let r = 0; r < 9; r++) {
+          for (let c = 0; c < 9; c++) {
+            positions.push([r, c]);
+          }
+        }
+        positions.sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < positions.length && cellsToRemove > 0; i++) {
+          const [r, c] = positions[i];
+          puzzle[r][c] = 0;
+          cellsToRemove--;
+        }
+
+        return { solution: fullSolution, puzzle };
+      }
+    }
+
+
+    // --- KHỞI TẠO VÀ RENDER GIAO DIỆN BÀN CỜ ---
+    function initBoardUI() {
+      const gridContainer = document.getElementById('sudoku-grid');
+      gridContainer.innerHTML = '';
+
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          const cellEl = document.createElement('div');
+          cellEl.id = `cell-${r}-${c}`;
+          cellEl.dataset.row = r;
+          cellEl.dataset.col = c;
+          
+          let borderClasses = 'border-slate-200 dark:border-slate-800 border-r border-b ';
+          if (c === 2 || c === 5) borderClasses += 'cell-thick-right ';
+          if (r === 2 || r === 5) borderClasses += 'cell-thick-bottom ';
+
+          cellEl.className = `relative flex items-center justify-center font-bold text-base sm:text-lg transition-colors duration-100 cursor-pointer select-none ${borderClasses}`;
+          
+          cellEl.onclick = () => selectCell(r, c);
+          gridContainer.appendChild(cellEl);
+        }
+      }
+    }
+
+    function renderBoard() {
+      const selected = STATE.selectedCell;
+      const selectedValue = selected ? STATE.currentBoard[selected.row][selected.col] : null;
+
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          const cellEl = document.getElementById(`cell-${r}-${c}`);
+          const val = STATE.currentBoard[r][c];
+          const isInitial = STATE.initialBoard[r][c] !== 0;
+          const notes = STATE.pencilNotes[r][c];
+
+          let bgClass = 'bg-white dark:bg-slate-900';
+          let textClass = 'text-slate-800 dark:text-slate-100';
+
+          if (selected) {
+            const isSelected = selected.row === r && selected.col === c;
+            const inSameRow = selected.row === r;
+            const inSameCol = selected.col === c;
+            const inSameBox = Math.floor(selected.row / 3) === Math.floor(r / 3) && Math.floor(selected.col / 3) === Math.floor(c / 3);
+            const isSameValue = selectedValue && val === selectedValue;
+
+            if (isSelected) {
+              bgClass = 'bg-indigo-600 text-white dark:bg-indigo-600 dark:text-white shadow-inner';
+            } else if (STATE.settings.highlightSame && isSameValue) {
+              bgClass = 'bg-indigo-100 dark:bg-indigo-900/60 font-extrabold';
+            } else if (inSameRow || inSameCol || inSameBox) {
+              bgClass = 'bg-slate-100 dark:bg-slate-800/60';
+            }
+          }
+
+          if (val !== 0) {
+            cellEl.innerHTML = val;
+            if (isInitial) {
+              textClass = selected && selected.row === r && selected.col === c 
+                ? 'text-white font-black' 
+                : 'text-slate-900 dark:text-slate-100 font-extrabold';
+            } else {
+              const isCorrect = val === STATE.solution[r][c];
+              if (STATE.settings.autoCheck && !isCorrect) {
+                textClass = 'text-rose-600 dark:text-rose-400 font-bold';
+                if (!selected || selected.row !== r || selected.col !== c) {
+                  bgClass = 'bg-rose-50 dark:bg-rose-950/40';
+                }
+              } else {
+                textClass = selected && selected.row === r && selected.col === c 
+                  ? 'text-white' 
+                  : 'text-indigo-600 dark:text-indigo-400 font-bold';
+              }
+            }
+          } else if (notes && notes.size > 0) {
+            let noteHTML = '<div class="grid grid-cols-3 grid-rows-3 w-full h-full p-0.5 text-[8px] leading-none text-slate-400 dark:text-slate-500 font-semibold pointer-events-none">';
+            for (let i = 1; i <= 9; i++) {
+              noteHTML += `<div class="flex items-center justify-center">${notes.has(i) ? i : ''}</div>`;
+            }
+            noteHTML += '</div>';
+            cellEl.innerHTML = noteHTML;
+          } else {
+            cellEl.innerHTML = '';
+          }
+
+          let borderClasses = 'border-slate-200 dark:border-slate-800 border-r border-b ';
+          if (c === 2 || c === 5) borderClasses += 'cell-thick-right ';
+          if (r === 2 || r === 5) borderClasses += 'cell-thick-bottom ';
+
+          cellEl.className = `relative flex items-center justify-center font-bold text-base sm:text-lg transition-colors duration-100 cursor-pointer select-none ${borderClasses} ${bgClass} ${textClass}`;
+        }
+      }
+    }
+
+    // --- TƯƠNG TÁC ĐIỀN SỐ & GHI CHÚ ---
+    function selectCell(row, col) {
+      if (STATE.isPaused || STATE.isGameOver || STATE.isGameWon) return;
+      STATE.selectedCell = { row, col };
+      soundAudio.playSelect();
+      renderBoard();
+    }
+
+    function inputNumber(num) {
+      if (!STATE.selectedCell || STATE.isPaused || STATE.isGameOver || STATE.isGameWon) return;
+      const { row, col } = STATE.selectedCell;
+
+      if (STATE.initialBoard[row][col] !== 0) return;
+
+      const prevValue = STATE.currentBoard[row][col];
+      const prevNotes = new Set(STATE.pencilNotes[row][col]);
+
+      if (STATE.noteMode) {
+        if (STATE.pencilNotes[row][col].has(num)) {
+          STATE.pencilNotes[row][col].delete(num);
+        } else {
+          STATE.pencilNotes[row][col].add(num);
+        }
+        STATE.currentBoard[row][col] = 0;
+        soundAudio.playSelect();
+      } else {
+        if (prevValue === num) return;
+
+        STATE.currentBoard[row][col] = num;
+        STATE.pencilNotes[row][col].clear();
+
+        STATE.history.push({
+          row, col, prevValue, newValue: num, prevNotes, newNotes: new Set()
+        });
+
+        const isCorrect = num === STATE.solution[row][col];
+        if (isCorrect) {
+          soundAudio.playFill();
+          STATE.score += getPointsForDifficulty(STATE.difficulty);
+          autoClearNotes(row, col, num);
+          checkVictory();
+        } else {
+          soundAudio.playError();
+          if (STATE.settings.autoCheck) {
+            STATE.mistakes++;
+            STATE.score = Math.max(0, STATE.score - 50);
+            updateStatsUI();
+            if (STATE.mistakes >= STATE.maxMistakes) {
+              triggerGameOver();
+            }
+          }
+        }
+      }
+
+      updateStatsUI();
+      renderBoard();
+    }
+
+    function autoClearNotes(row, col, num) {
+      for (let i = 0; i < 9; i++) {
+        STATE.pencilNotes[row][i].delete(num);
+        STATE.pencilNotes[i][col].delete(num);
+      }
+      const startRow = Math.floor(row / 3) * 3;
+      const startCol = Math.floor(col / 3) * 3;
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          STATE.pencilNotes[startRow + r][startCol + c].delete(num);
+        }
+      }
+    }
+
+    function eraseCell() {
+      if (!STATE.selectedCell || STATE.isPaused || STATE.isGameOver || STATE.isGameWon) return;
+      const { row, col } = STATE.selectedCell;
+
+      if (STATE.initialBoard[row][col] !== 0) return;
+
+      const prevValue = STATE.currentBoard[row][col];
+      const prevNotes = new Set(STATE.pencilNotes[row][col]);
+
+      if (prevValue !== 0 || prevNotes.size > 0) {
+        STATE.history.push({
+          row, col, prevValue, newValue: 0, prevNotes, newNotes: new Set()
+        });
+        STATE.currentBoard[row][col] = 0;
+        STATE.pencilNotes[row][col].clear();
+        soundAudio.playErase();
+        renderBoard();
+      }
+    }
+
+    function undoMove() {
+      if (STATE.history.length === 0 || STATE.isPaused || STATE.isGameOver || STATE.isGameWon) return;
+      const lastMove = STATE.history.pop();
+      const { row, col, prevValue, prevNotes } = lastMove;
+
+      STATE.currentBoard[row][col] = prevValue;
+      STATE.pencilNotes[row][col] = new Set(prevNotes);
+      STATE.selectedCell = { row, col };
+      soundAudio.playSelect();
+      renderBoard();
+    }
+
+    function toggleNoteMode() {
+      STATE.noteMode = !STATE.noteMode;
+      const badge = document.getElementById('pencil-badge');
+      const btn = document.getElementById('btn-pencil');
+
+      if (STATE.noteMode) {
+        badge.innerText = 'ON';
+        badge.className = 'absolute top-1 right-1.5 text-[8px] font-extrabold px-1 rounded-full bg-indigo-600 text-white';
+        btn.classList.add('border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-950/50');
+      } else {
+        badge.innerText = 'OFF';
+        badge.className = 'absolute top-1 right-1.5 text-[8px] font-extrabold px-1 rounded-full bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200';
+        btn.classList.remove('border-indigo-500', 'bg-indigo-50', 'dark:bg-indigo-950/50');
+      }
+      soundAudio.playSelect();
+    }
+
+    function useHint() {
+      if (STATE.hintsLeft <= 0 || !STATE.selectedCell || STATE.isPaused || STATE.isGameOver || STATE.isGameWon) return;
+      const { row, col } = STATE.selectedCell;
+
+      if (STATE.initialBoard[row][col] !== 0 || STATE.currentBoard[row][col] === STATE.solution[row][col]) return;
+
+      const correctNum = STATE.solution[row][col];
+      STATE.currentBoard[row][col] = correctNum;
+      STATE.pencilNotes[row][col].clear();
+      STATE.hintsLeft--;
+
+      soundAudio.playFill();
+      document.getElementById('hint-count').innerText = STATE.hintsLeft;
+
+      autoClearNotes(row, col, correctNum);
+      renderBoard();
+      checkVictory();
+    }
+
+
+    // --- ĐỒNG HỒ & ĐIỂM SỐ ---
+    function startTimer() {
+      clearInterval(STATE.timerInterval);
+      STATE.timerInterval = setInterval(() => {
+        if (!STATE.isPaused && !STATE.isGameOver && !STATE.isGameWon) {
+          STATE.timer++;
+          updateTimerUI();
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(STATE.timer / 60).toString().padStart(2, '0');
+      const secs = (STATE.timer % 60).toString().padStart(2, '0');
+      document.getElementById('timer-display').innerText = `${mins}:${secs}`;
+    }
+
+    function updateStatsUI() {
+      document.getElementById('mistakes-display').innerText = `${STATE.mistakes}/${STATE.maxMistakes}`;
+      document.getElementById('score-display').innerText = STATE.score.toLocaleString();
+    }
+
+    function getPointsForDifficulty(diff) {
+      switch (diff) {
+        case 'easy': return 50;
+        case 'medium': return 100;
+        case 'hard': return 150;
+        case 'expert': return 200;
+        default: return 50;
+      }
+    }
+
+    function togglePause() {
+      if (STATE.isGameOver || STATE.isGameWon) return;
+      STATE.isPaused = !STATE.isPaused;
+
+      const overlay = document.getElementById('pause-overlay');
+      const textPause = document.getElementById('text-pause');
+      const iconPause = document.getElementById('icon-pause');
+
+      if (STATE.isPaused) {
+        overlay.classList.remove('hidden');
+        textPause.innerText = 'Tiếp tục';
+        iconPause.className = 'fa-solid fa-play text-xs';
+      } else {
+        overlay.classList.add('hidden');
+        textPause.innerText = 'Tạm dừng';
+        iconPause.className = 'fa-solid fa-pause text-xs';
+      }
+      soundAudio.playSelect();
+    }
+
+    // --- THIẾT LẬP VÁN MỚI ---
+    function setDifficulty(diff) {
+      if (STATE.difficulty === diff) return;
+      STATE.difficulty = diff;
+      updateDifficultyButtonsUI();
+      startNewGame();
+    }
+
+    function updateDifficultyButtonsUI() {
+      const diffs = ['easy', 'medium', 'hard', 'expert'];
+      diffs.forEach(d => {
+        const btn = document.getElementById(`btn-diff-${d}`);
+        if (d === STATE.difficulty) {
+          btn.className = 'diff-btn py-1.5 px-2 rounded-xl text-xs font-bold border-2 border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-between shadow-sm';
+        } else {
+          btn.className = 'diff-btn py-1.5 px-2 rounded-xl text-xs font-semibold border transition-all text-left flex items-center justify-between bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-400';
+        }
+      });
+    }
+
+    function startNewGame() {
+      const { solution, puzzle } = SudokuGenerator.generatePuzzle(STATE.difficulty);
+
+      STATE.solution = solution;
+      STATE.initialBoard = puzzle.map(r => [...r]);
+      STATE.currentBoard = puzzle.map(r => [...r]);
+      STATE.pencilNotes = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => new Set()));
+      
+      STATE.selectedCell = null;
+      STATE.history = [];
+      STATE.mistakes = 0;
+      STATE.score = 0;
+      STATE.hintsLeft = 3;
+      STATE.timer = 0;
+      STATE.isPaused = false;
+      STATE.isGameOver = false;
+      STATE.isGameWon = false;
+
+      document.getElementById('hint-count').innerText = STATE.hintsLeft;
+      document.getElementById('pause-overlay').classList.add('hidden');
+      document.getElementById('text-pause').innerText = 'Tạm dừng';
+      document.getElementById('icon-pause').className = 'fa-solid fa-pause text-xs';
+
+      updateStatsUI();
+      updateTimerUI();
+      renderBoard();
+      startTimer();
+    }
+
+    function restartGame() {
+      STATE.currentBoard = STATE.initialBoard.map(r => [...r]);
+      STATE.pencilNotes = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => new Set()));
+      STATE.selectedCell = null;
+      STATE.history = [];
+      STATE.mistakes = 0;
+      STATE.timer = 0;
+      STATE.isPaused = false;
+      STATE.isGameOver = false;
+      STATE.isGameWon = false;
+
+      document.getElementById('pause-overlay').classList.add('hidden');
+      updateStatsUI();
+      updateTimerUI();
+      renderBoard();
+      startTimer();
+    }
+
+    // --- KIỂM TRA KẾT QUẢ ---
+    function checkVictory() {
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          if (STATE.currentBoard[r][c] !== STATE.solution[r][c]) {
+            return false;
+          }
+        }
+      }
+
+      STATE.isGameWon = true;
+      clearInterval(STATE.timerInterval);
+      soundAudio.playVictory();
+      triggerConfetti();
+
+      const currentBest = STATE.bestTimes[STATE.difficulty];
+      if (!currentBest || STATE.timer < currentBest) {
+        STATE.bestTimes[STATE.difficulty] = STATE.timer;
+        localStorage.setItem(`sudoku_best_${STATE.difficulty}`, STATE.timer);
+        updateBestTimesUI();
+      }
+
+      const mins = Math.floor(STATE.timer / 60).toString().padStart(2, '0');
+      const secs = (STATE.timer % 60).toString().padStart(2, '0');
+      document.getElementById('vic-diff').innerText = STATE.difficulty;
+      document.getElementById('vic-time').innerText = `${mins}:${secs}`;
+      document.getElementById('vic-score').innerText = STATE.score.toLocaleString();
+      document.getElementById('victory-modal').classList.remove('hidden');
+    }
+
+    function triggerGameOver() {
+      STATE.isGameOver = true;
+      clearInterval(STATE.timerInterval);
+      soundAudio.playError();
+      document.getElementById('gameover-modal').classList.remove('hidden');
+    }
+
+    // --- CÀI ĐẶT HỆ THỐNG ---
+    function toggleDarkMode() {
+      STATE.settings.darkMode = !STATE.settings.darkMode;
+      const html = document.documentElement;
+      const dot = document.getElementById('dot-dark-toggle');
+      if (STATE.settings.darkMode) {
+        html.classList.add('dark');
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4';
+      } else {
+        html.classList.remove('dark');
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-0';
+      }
+    }
+
+    function toggleSound() {
+      STATE.settings.sound = !STATE.settings.sound;
+      const btn = document.getElementById('btn-sound-toggle');
+      const dot = document.getElementById('dot-sound-toggle');
+      if (STATE.settings.sound) {
+        btn.className = 'w-9 h-4.5 rounded-full bg-indigo-600 transition-colors relative p-0.5';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4';
+      } else {
+        btn.className = 'w-9 h-4.5 rounded-full bg-slate-300 dark:bg-slate-700 transition-colors relative p-0.5';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-0';
+      }
+    }
+
+    function toggleAutoCheck() {
+      STATE.settings.autoCheck = !STATE.settings.autoCheck;
+      const btn = document.getElementById('btn-autocheck-toggle');
+      const dot = document.getElementById('dot-autocheck-toggle');
+      if (STATE.settings.autoCheck) {
+        btn.className = 'w-9 h-4.5 rounded-full bg-indigo-600 transition-colors relative p-0.5';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4';
+      } else {
+        btn.className = 'w-9 h-4.5 rounded-full bg-slate-300 dark:bg-slate-700 transition-colors relative p-0.5';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-0';
+      }
+      renderBoard();
+    }
+
+    function toggleHighlightSame() {
+      STATE.settings.highlightSame = !STATE.settings.highlightSame;
+      const btn = document.getElementById('btn-highlight-toggle');
+      const dot = document.getElementById('dot-highlight-toggle');
+      if (STATE.settings.highlightSame) {
+        btn.className = 'w-9 h-4.5 rounded-full bg-indigo-600 transition-colors relative p-0.5';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-4';
+      } else {
+        btn.className = 'w-9 h-4.5 rounded-full bg-slate-300 dark:bg-slate-700 transition-colors relative p-0.5';
+        dot.className = 'w-3.5 h-3.5 rounded-full bg-white transition-transform translate-x-0';
+      }
+      renderBoard();
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    function updateBestTimesUI() {
+      const diffs = ['easy', 'medium', 'hard', 'expert'];
+      diffs.forEach(d => {
+        const saved = localStorage.getItem(`sudoku_best_${d}`);
+        if (saved) {
+          STATE.bestTimes[d] = parseInt(saved);
+          const mins = Math.floor(saved / 60).toString().padStart(2, '0');
+          const secs = (saved % 60).toString().padStart(2, '0');
+          document.getElementById(`best-${d}`).innerText = `${mins}:${secs}`;
+        }
+      });
+    }
+
+    // --- MODAL DIALOGS ---
+    function promptNewGame() {
+      const modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-title').innerText = 'Tạo ván mới?';
+      document.getElementById('confirm-desc').innerText = 'Tiến trình hiện tại của bạn sẽ bị hủy.';
+      document.getElementById('confirm-action-btn').onclick = () => {
+        closeConfirmModal();
+        startNewGame();
+      };
+      modal.classList.remove('hidden');
+    }
+
+    function promptRestart() {
+      const modal = document.getElementById('confirm-modal');
+      document.getElementById('confirm-title').innerText = 'Chơi lại ván này?';
+      document.getElementById('confirm-desc').innerText = 'Tất cả các số đã điền sẽ được xóa sạch.';
+      document.getElementById('confirm-action-btn').onclick = () => {
+        closeConfirmModal();
+        restartGame();
+      };
+      modal.classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirm-modal').classList.add('hidden');
+    }
+
+    function closeVictoryModal() {
+      document.getElementById('victory-modal').classList.add('hidden');
+    }
+
+    function closeGameOverModal() {
+      document.getElementById('gameover-modal').classList.add('hidden');
+    }
+
+    // --- BÀN PHÍM VẬT LÝ ---
+    window.addEventListener('keydown', (e) => {
+      if (STATE.isGameOver || STATE.isGameWon) return;
+
+      if (e.key >= '1' && e.key <= '9') {
+        inputNumber(parseInt(e.key));
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        eraseCell();
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleNoteMode();
+      } else if (e.key.toLowerCase() === 'u' || (e.ctrlKey && e.key.toLowerCase() === 'z')) {
+        undoMove();
+      } else if (e.key.toLowerCase() === 'h') {
+        useHint();
+      } else if (e.key === ' ') {
+        togglePause();
+      } else if (STATE.selectedCell) {
+        let { row, col } = STATE.selectedCell;
+        if (e.key === 'ArrowUp') row = Math.max(0, row - 1);
+        if (e.key === 'ArrowDown') row = Math.min(8, row + 1);
+        if (e.key === 'ArrowLeft') col = Math.max(0, col - 1);
+        if (e.key === 'ArrowRight') col = Math.min(8, col + 1);
+        selectCell(row, col);
+      }
+    });
+
+    // --- HIỆU ỨNG PHÁO HOA ---
+    function triggerConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6'];
+
+      for (let i = 0; i < 120; i++) {
+        particles.push({
+          x: canvas.width / 2,
+          y: canvas.height / 2,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.8) * 12,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.25;
+          p.rotation += p.vRot;
+
+          if (p.y < canvas.height) {
+            alive = true;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        });
+
+        if (alive) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      animate();
+    }
+
+    // --- KHỞI CHẠY KHI TRANG TẢI XONG ---
+    window.onload = function() {
+      initBoardUI();
+      updateDifficultyButtonsUI();
+      updateBestTimesUI();
+      startNewGame();
+    };
+  </script>
+</body>
+</html>
