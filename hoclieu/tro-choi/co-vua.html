@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cờ Vua Online - Chess Master</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            boardLight: '#f0d9b5',
+            boardDark: '#b58863',
+            highlightMove: 'rgba(105, 200, 110, 0.5)',
+            highlightSelect: 'rgba(245, 230, 90, 0.65)',
+            highlightCheck: 'rgba(235, 75, 75, 0.7)'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Chess.js CDN for official chess rules engine -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+  <style>
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(150, 150, 150, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(150, 150, 150, 0.5);
+    }
+
+    /* Glassmorphism utility */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .dark .glass-card {
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Chess Board Square Styling */
+    .square {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease;
+    }
+
+    /* Piece Drag styling */
+    .chess-piece {
+      cursor: grab;
+      transition: transform 0.1s ease;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+    }
+    .chess-piece:active {
+      cursor: grabbing;
+      transform: scale(1.1);
+    }
+
+    /* Coordinate Labels inside squares */
+    .square .coord-file {
+      position: absolute;
+      bottom: 2px;
+      right: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      opacity: 0.75;
+      pointer-events: none;
+    }
+    .square .coord-rank {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      opacity: 0.75;
+      pointer-events: none;
+    }
+
+    /* Valid move dot & target circle */
+    .valid-dot {
+      width: 28%;
+      height: 28%;
+      border-radius: 50%;
+      background-color: rgba(16, 185, 129, 0.6);
+      pointer-events: none;
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+    }
+    .valid-capture-ring {
+      width: 85%;
+      height: 85%;
+      border-radius: 50%;
+      border: 4px solid rgba(239, 68, 68, 0.7);
+      pointer-events: none;
+    }
+
+    /* Pulse animation for active turn indicator */
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.05); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .active-turn-pulse {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+
+  <!-- MAIN 3-COLUMN DASHBOARD CONTAINER -->
+  <div class="h-full w-full flex flex-col md:flex-row overflow-hidden p-2 md:p-4 gap-3">
+
+    <!-- ================= CỘT TRÁI (LEFT PANEL) ================= -->
+    <aside class="w-full md:w-1/4 lg:w-[28%] flex flex-col gap-3 h-full overflow-y-auto pr-1">
+      
+      <!-- App Header & Title -->
+      <div class="glass-card rounded-2xl p-4 shadow-sm flex items-center justify-between border-l-4 border-emerald-500">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md text-xl">
+            <i class="fa-solid me-0 fa-chess-king"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">Chess Master</h1>
+            <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Cờ Vua Trực Tuyến & AI</p>
+          </div>
+        </div>
+        <span class="px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">v2.5</span>
+      </div>
+
+      <!-- Mode Selection Card -->
+      <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-gamepad text-emerald-500"></i> Chế Độ Chơi
+        </h2>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <button id="modePvAIBtn" onclick="setGameMode('pve')" class="py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-emerald-600 text-white border-emerald-600 shadow-md">
+            <i class="fa-solid fa-robot"></i> Với Máy (AI)
+          </button>
+          <button id="modePvPBtn" onclick="setGameMode('pvp')" class="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 hover:border-emerald-500 transition-all">
+            <i class="fa-solid fa-users"></i> 2 Người Chơi
+          </button>
+        </div>
+
+        <!-- AI Difficulty Level (Visible in PvE mode) -->
+        <div id="aiDifficultySection" class="flex flex-col gap-1.5 mt-1">
+          <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Độ khó AI:</label>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button onclick="setAIDifficulty('easy')" id="diffEasy" class="py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-500">Dễ</button>
+            <button onclick="setAIDifficulty('medium')" id="diffMedium" class="py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">Vừa</button>
+            <button onclick="setAIDifficulty('hard')" id="diffHard" class="py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">Khó</button>
+          </div>
+        </div>
+
+        <!-- Player Name Inputs -->
+        <div class="flex flex-col gap-2 mt-1">
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-200 border border-slate-400 inline-block"></span>
+              Người chơi 1 (Trắng):
+            </label>
+            <input type="text" id="playerWhiteName" value="Người Chơi 1" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+          <div class="flex flex-col gap-1">
+            <label id="playerBlackLabel" class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-600 inline-block"></span>
+              Máy (Đen):
+            </label>
+            <input type="text" id="playerBlackName" value="Chess AI (Trung bình)" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 focus:ring-2 focus:ring-emerald-500 outline-none">
+          </div>
+        </div>
+      </div>
+
+      <!-- Match Info & Status Card -->
+      <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-info-circle text-emerald-500"></i> Thông Tin Trận Đấu
+        </h2>
+
+        <!-- Current Turn Display -->
+        <div id="turnBadge" class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between border border-slate-200 dark:border-slate-700">
+          <div class="flex items-center gap-2.5">
+            <div id="turnIndicatorDot" class="w-4 h-4 rounded-full bg-white border-2 border-slate-800 shadow-sm active-turn-pulse"></div>
+            <span id="turnText" class="text-xs font-bold text-slate-800 dark:text-slate-100">Lượt đi: Trắng</span>
+          </div>
+          <span id="gameStatusTag" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Đang chơi</span>
+        </div>
+
+        <!-- Captured Pieces List -->
+        <div class="flex flex-col gap-2 pt-1">
+          <!-- White Captured Pieces (Taken by Black) -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-400">Quân Trắng bị ăn:</span>
+            <div id="capturedByBlack" class="min-h-[28px] p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 flex flex-wrap gap-1 items-center text-lg">
+              <span class="text-xs text-slate-400 italic">Chưa có</span>
+            </div>
+          </div>
+          <!-- Black Captured Pieces (Taken by White) -->
+          <div class="flex flex-col gap-1">
+            <span class="text-[10px] font-semibold text-slate-400">Quân Đen bị ăn:</span>
+            <div id="capturedByWhite" class="min-h-[28px] p-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 flex flex-wrap gap-1 items-center text-lg">
+              <span class="text-xs text-slate-400 italic">Chưa có</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-auto grid grid-cols-2 gap-2 pt-1">
+        <button onclick="resetGame()" class="py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-rotate-right"></i> Ván Mới
+        </button>
+        <button onclick="undoMove()" class="py-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-arrow-rotate-left"></i> Đi Lại
+        </button>
+      </div>
+
+    </aside>
+
+
+    <!-- ================= CỘT GIỮA (CENTER PANEL - CHESS BOARD) ================= -->
+    <main class="w-full md:w-2/4 lg:w-[44%] h-full flex flex-col items-center justify-center relative p-1 md:p-2">
+      
+      <!-- Chessboard Aspect Ratio Wrapper -->
+      <div class="w-full h-full flex flex-col items-center justify-center">
+        
+        <!-- Top Player Bar (Black) -->
+        <div class="w-full max-w-[560px] mb-2 flex items-center justify-between px-3 py-1.5 rounded-xl glass-card text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center text-white text-xs">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <span id="topPlayerDisplayName" class="font-bold text-slate-800 dark:text-slate-200">Chess AI (Trung bình)</span>
+          </div>
+          <div id="topPlayerScore" class="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">+0</div>
+        </div>
+
+        <!-- Main Board Box (Auto-scales based on available screen height) -->
+        <div class="relative w-full flex items-center justify-center flex-1 max-h-[calc(100vh-140px)]">
+          <div id="chessboard" class="aspect-square w-full max-w-[560px] max-h-[560px] grid grid-cols-8 grid-rows-8 rounded-xl shadow-2xl overflow-hidden border-4 border-slate-700 dark:border-slate-800 relative">
+            <!-- Squares generated dynamically via JS -->
+          </div>
+        </div>
+
+        <!-- Bottom Player Bar (White) -->
+        <div class="w-full max-w-[560px] mt-2 flex items-center justify-between px-3 py-1.5 rounded-xl glass-card text-xs">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-800 text-xs">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <span id="bottomPlayerDisplayName" class="font-bold text-slate-800 dark:text-slate-200">Người Chơi 1</span>
+          </div>
+          <div id="bottomPlayerScore" class="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">+0</div>
+        </div>
+
+      </div>
+
+    </main>
+
+
+    <!-- ================= CỘT PHẢI (RIGHT PANEL) ================= -->
+    <aside class="w-full md:w-1/4 lg:w-[28%] flex flex-col gap-3 h-full overflow-y-auto pl-1">
+      
+      <!-- Settings Panel -->
+      <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-emerald-500"></i> Cài Đặt Hệ Thống
+        </h2>
+
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Theme Toggle Button -->
+          <button onclick="toggleTheme()" class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-all group">
+            <i id="themeIcon" class="fa-solid fa-moon text-lg text-slate-600 dark:text-amber-400 mb-1 group-hover:scale-110 transition-transform"></i>
+            <span id="themeText" class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Giao diện</span>
+          </button>
+
+          <!-- Fullscreen Toggle Button -->
+          <button onclick="toggleFullscreen()" class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-all group">
+            <i class="fa-solid fa-expand text-lg text-emerald-600 dark:text-emerald-400 mb-1 group-hover:scale-110 transition-transform"></i>
+            <span class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Toàn màn hình</span>
+          </button>
+
+          <!-- Audio FX Toggle Button -->
+          <button id="soundToggleBtn" onclick="toggleSound()" class="flex flex-col items-center justify-center p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 hover:bg-emerald-50 dark:hover:bg-slate-700 transition-all group">
+            <i id="soundIcon" class="fa-solid fa-volume-high text-lg text-emerald-600 dark:text-emerald-400 mb-1 group-hover:scale-110 transition-transform"></i>
+            <span id="soundText" class="text-[10px] font-semibold text-slate-600 dark:text-slate-300">Âm thanh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Move History (PGN Notation List) -->
+      <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col flex-1 min-h-[180px] max-h-[300px]">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+            <i class="fa-solid fa-list-ol text-emerald-500"></i> Bảng Nước Đi (PGN)
+          </h2>
+          <span id="moveCountBadge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300">0 nước</span>
+        </div>
+
+        <!-- Scrollable Move Container -->
+        <div id="moveHistoryList" class="flex-1 overflow-y-auto pr-1 border border-slate-200/80 dark:border-slate-800 rounded-xl p-2 bg-white/50 dark:bg-slate-900/50 space-y-1 font-mono text-xs">
+          <div class="text-center text-slate-400 italic text-[11px] pt-4">Chưa có nước đi nào</div>
+        </div>
+      </div>
+
+      <!-- Quick Instructions / Rules Guide -->
+      <div class="glass-card rounded-2xl p-4 shadow-sm flex flex-col gap-2">
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-graduation-cap text-emerald-500"></i> Hướng Dẫn & Quy Tắc
+        </h2>
+        <ul class="text-[11px] text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside leading-snug">
+          <li><strong>Thao tác:</strong> Bấm chọn quân cờ để xem gợi ý ô di chuyển hợp lệ, hoặc kéo - thả trực tiếp.</li>
+          <li><strong>Đặc biệt:</strong> Hỗ trợ đầy đủ Nhập thành (Castling), Bắt Tốt qua đường (En Passant), Phong cấp Tốt.</li>
+          <li><strong>Phím tắt:</strong> Phím <kbd class="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px]">Ctrl+Z</kbd> để đi lại, <kbd class="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-[10px]">F</kbd> để bật toàn màn hình.</li>
+        </ul>
+      </div>
+
+    </aside>
+
+  </div>
+
+
+  <!-- ================= PAWN PROMOTION MODAL ================= -->
+  <div id="promotionModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-2xl border border-emerald-500/30 flex flex-col items-center gap-4 max-w-xs w-full animate-bounce-in">
+      <h3 class="text-base font-bold text-slate-800 dark:text-white">Chọn quân phong cấp</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 text-center">Tốt của bạn đã tới hàng cuối cùng!</p>
+      
+      <div id="promotionChoices" class="grid grid-cols-4 gap-3 w-full pt-2">
+        <!-- Generated dynamically with SVG pieces -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= GAME OVER NOTIFICATION DIALOG ================= -->
+  <div id="gameOverModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass-card bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-2xl border border-emerald-500/40 flex flex-col items-center gap-4 max-w-sm w-full text-center">
+      <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shadow-inner">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div>
+        <h3 id="gameOverTitle" class="text-xl font-black text-slate-900 dark:text-white mb-1">Kết Thúc Trận Đấu</h3>
+        <p id="gameOverReason" class="text-xs font-medium text-slate-500 dark:text-slate-400">Chiếu hết! Người chơi Trắng chiến thắng.</p>
+      </div>
+      <button onclick="closeGameOverModal(); resetGame();" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95">
+        Chơi Ván Mới
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    
+    // SVG Vectors for Crisp Chess Pieces in any scale
+    const pieceSVGs = {
+      'w': {
+        'p': `<svg viewBox="0 0 45 45" class="w-full h-full"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#ffffff" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        'r': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#ffffff" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36h21l-1.5-4H13.5l-1.5 4zM11 14h23l-2 18H13l-2-18zM11 14V9h4v3h5V9h5v3h5V9h4v5H11z"/><path d="M12 36v-4h21v4H12z"/></g></svg>`,
+        'n': `<svg viewBox="0 0 45 45" class="w-full h-full"><path d="M22 10c1.05 0 8.02 2.06 7 13 0 2.5-1.5 6-3 7h7c0-2 2.5-4 2.5-4s1.5 1.5 1.5 4-1.5 3.5-3 4c-3.5 1-13 1-16 0-1.5-.5-2.5-2-2.5-4 0-3.2 2.5-6 2.5-6s-1.5-3.5-1.5-6c0-4.5 4-8 8-8z" fill="#ffffff" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="16" r="1.5" fill="#1e293b"/></svg>`,
+        'b': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#ffffff" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 36h27c0 0 0-3-2-3H11c-2 0-2 3-2 3zM15 32c2.5-2.5 12.5-2.5 15 0H15zM22.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17.5 26c0-2.5 2-8 5-13 3 5 5 10.5 5 13 0 4.5-5 5-5 5s-5-.5-5-5z"/><path d="M20 18h5M22.5 15.5v5"/></g></svg>`,
+        'q': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#ffffff" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM15 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM22.5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM30 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM37 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 .5 3.5-1.5 1-1.5 2.5-1.5 2.5h24s0-1.5-1.5-2.5c-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4 0-3-2.5-13-2.5-13l-5.5 8.5-5.5-11.5-5.5 11.5L9.5 13S7 23 7 26z"/></g></svg>`,
+        'k': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#ffffff" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5M22.5 25c-4 0-7 2.5-7 6.5h14c0-4-3-6.5-7-6.5zM11.5 37h22M11.5 33h22"/><path d="M11.5 30c0-4.5 6-6 11-6s11 1.5 11 6H11.5z"/><path d="M20 15a2.5 2.5 0 1 1 5 0c0 3-2.5 5-2.5 5s-2.5-2-2.5-5z"/></g></svg>`
+      },
+      'b': {
+        'p': `<svg viewBox="0 0 45 45" class="w-full h-full"><path d="M22.5 9c-2.21 0-4 1.79-4 4 0 .89.29 1.71.78 2.38C17.33 16.5 16 18.59 16 21c0 2.03.94 3.84 2.41 5.03-3 1.06-7.41 5.55-7.41 13.47h23c0-7.92-4.41-12.41-7.41-13.47 1.47-1.19 2.41-3 2.41-5.03 0-2.41-1.33-4.5-3.28-5.62.49-.67.78-1.49.78-2.38 0-2.21-1.79-4-4-4z" fill="#334155" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+        'r': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#334155" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 39h27v-3H9v3zM12 36h21l-1.5-4H13.5l-1.5 4zM11 14h23l-2 18H13l-2-18zM11 14V9h4v3h5V9h5v3h5V9h4v5H11z"/><path d="M12 36v-4h21v4H12z"/></g></svg>`,
+        'n': `<svg viewBox="0 0 45 45" class="w-full h-full"><path d="M22 10c1.05 0 8.02 2.06 7 13 0 2.5-1.5 6-3 7h7c0-2 2.5-4 2.5-4s1.5 1.5 1.5 4-1.5 3.5-3 4c-3.5 1-13 1-16 0-1.5-.5-2.5-2-2.5-4 0-3.2 2.5-6 2.5-6s-1.5-3.5-1.5-6c0-4.5 4-8 8-8z" fill="#334155" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="16" r="1.5" fill="#f8fafc"/></svg>`,
+        'b': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#334155" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 36h27c0 0 0-3-2-3H11c-2 0-2 3-2 3zM15 32c2.5-2.5 12.5-2.5 15 0H15zM22.5 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17.5 26c0-2.5 2-8 5-13 3 5 5 10.5 5 13 0 4.5-5 5-5 5s-5-.5-5-5z"/><path d="M20 18h5M22.5 15.5v5"/></g></svg>`,
+        'q': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#334155" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM15 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM22.5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM30 9a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM37 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M9 26c0 2 1.5 2 2.5 4 1 1.5 1 1 0 3.5-1.5 1-1.5 2.5-1.5 2.5h24s0-1.5-1.5-2.5c-.5-2.5-.5-2 .5-3.5 1-2 2.5-2 2.5-4 0-3-2.5-13-2.5-13l-5.5 8.5-5.5-11.5-5.5 11.5L9.5 13S7 23 7 26z"/></g></svg>`,
+        'k': `<svg viewBox="0 0 45 45" class="w-full h-full"><g fill="#334155" stroke="#f8fafc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 11.63V6M20 8h5M22.5 25c-4 0-7 2.5-7 6.5h14c0-4-3-6.5-7-6.5zM11.5 37h22M11.5 33h22"/><path d="M11.5 30c0-4.5 6-6 11-6s11 1.5 11 6H11.5z"/><path d="M20 15a2.5 2.5 0 1 1 5 0c0 3-2.5 5-2.5 5s-2.5-2-2.5-5z"/></g></svg>`
+      }
+    };
+
+    // State Variables
+    let game = new Chess();
+    let selectedSquare = null;
+    let validMoves = [];
+    let gameMode = 'pve'; // 'pve' or 'pvp'
+    let aiDifficulty = 'medium'; // 'easy', 'medium', 'hard'
+    let soundEnabled = true;
+    let pendingPromotionMove = null;
+    let lastMove = null;
+
+    // Web Audio Synthesizer for SFX
+    const AudioEngine = {
+      ctx: null,
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      playMove() {
+        if (!soundEnabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(140, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.08);
+      },
+      playCapture() {
+        if (!soundEnabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.12);
+      },
+      playCheck() {
+        if (!soundEnabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.setValueAtTime(800, now + 0.08);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(now + 0.2);
+      }
+    };
+
+
+
+    // Render Chessboard Squares & Pieces
+    function renderBoard() {
+      const boardElement = document.getElementById('chessboard');
+      boardElement.innerHTML = '';
+      const board = game.board();
+
+      // Check state detection
+      let inCheckSquare = null;
+      if (game.in_check()) {
+        const turn = game.turn();
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const p = board[r][c];
+            if (p && p.type === 'k' && p.color === turn) {
+              inCheckSquare = `${String.fromCharCode(97 + c)}${8 - r}`;
+            }
+          }
+        }
+      }
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const squareName = `${String.fromCharCode(97 + c)}${8 - r}`;
+          const isDarkSquare = (r + c) % 2 === 1;
+          
+          const sqDiv = document.createElement('div');
+          sqDiv.className = `square w-full h-full ${isDarkSquare ? 'bg-boardDark dark:bg-slate-700' : 'bg-boardLight dark:bg-slate-300'}`;
+          sqDiv.dataset.square = squareName;
+
+          // Highlight selected square
+          if (selectedSquare === squareName) {
+            sqDiv.style.backgroundColor = 'rgba(245, 230, 90, 0.75)';
+          } else if (lastMove && (lastMove.from === squareName || lastMove.to === squareName)) {
+            sqDiv.style.backgroundColor = isDarkSquare ? '#9ba350' : '#cdd26a';
+          }
+
+          // Highlight King in Check
+          if (inCheckSquare === squareName) {
+            sqDiv.style.backgroundColor = 'rgba(239, 68, 68, 0.75)';
+          }
+
+          // Ranks and Files Labels
+          if (c === 0) {
+            const rankSpan = document.createElement('span');
+            rankSpan.className = `coord-rank ${isDarkSquare ? 'text-boardLight dark:text-slate-300' : 'text-boardDark dark:text-slate-700'}`;
+            rankSpan.innerText = 8 - r;
+            sqDiv.appendChild(rankSpan);
+          }
+          if (r === 7) {
+            const fileSpan = document.createElement('span');
+            fileSpan.className = `coord-file ${isDarkSquare ? 'text-boardLight dark:text-slate-300' : 'text-boardDark dark:text-slate-700'}`;
+            fileSpan.innerText = String.fromCharCode(97 + c);
+            sqDiv.appendChild(fileSpan);
+          }
+
+          // Render Piece
+          const piece = board[r][c];
+          if (piece) {
+            const pieceDiv = document.createElement('div');
+            pieceDiv.className = 'chess-piece w-[85%] h-[85%] relative z-10';
+            pieceDiv.innerHTML = pieceSVGs[piece.color][piece.type];
+            pieceDiv.draggable = true;
+
+            // Drag Events
+            pieceDiv.addEventListener('dragstart', (e) => {
+              if (game.game_over() || (gameMode === 'pve' && game.turn() === 'b')) return;
+              e.dataTransfer.setData('text/plain', squareName);
+              handleSquareClick(squareName);
+            });
+
+            sqDiv.appendChild(pieceDiv);
+          }
+
+          // Highlight Valid Move
+          const moveTarget = validMoves.find(m => m.to === squareName);
+          if (moveTarget) {
+            if (piece) {
+              const ring = document.createElement('div');
+              ring.className = 'valid-capture-ring absolute z-20';
+              sqDiv.appendChild(ring);
+            } else {
+              const dot = document.createElement('div');
+              dot.className = 'valid-dot z-20';
+              sqDiv.appendChild(dot);
+            }
+          }
+
+          // Dragover & Drop
+          sqDiv.addEventListener('dragover', (e) => e.preventDefault());
+          sqDiv.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const fromSquare = e.dataTransfer.getData('text/plain');
+            if (fromSquare) {
+              executeMove(fromSquare, squareName);
+            }
+          });
+
+          // Click handler
+          sqDiv.addEventListener('click', () => handleSquareClick(squareName));
+
+          boardElement.appendChild(sqDiv);
+        }
+      }
+
+      updateUI();
+    }
+
+    // Handle Click Selection and Moving
+    function handleSquareClick(squareName) {
+      if (game.game_over()) return;
+      if (gameMode === 'pve' && game.turn() === 'b') return;
+
+      if (selectedSquare === null) {
+        // Select piece
+        const piece = game.get(squareName);
+        if (piece && piece.color === game.turn()) {
+          selectedSquare = squareName;
+          validMoves = game.moves({ square: squareName, verbose: true });
+        }
+      } else {
+        // Check if clicked destination is valid
+        if (selectedSquare === squareName) {
+          selectedSquare = null;
+          validMoves = [];
+        } else {
+          const move = validMoves.find(m => m.to === squareName);
+          if (move) {
+            executeMove(selectedSquare, squareName);
+          } else {
+            // Check if clicking another own piece
+            const piece = game.get(squareName);
+            if (piece && piece.color === game.turn()) {
+              selectedSquare = squareName;
+              validMoves = game.moves({ square: squareName, verbose: true });
+            } else {
+              selectedSquare = null;
+              validMoves = [];
+            }
+          }
+        }
+      }
+      renderBoard();
+    }
+
+    // Execute Move Function
+    function executeMove(from, to, promotion = null) {
+      // Check for pawn promotion requirement
+      const piece = game.get(from);
+      if (piece && piece.type === 'p') {
+        if ((piece.color === 'w' && to[1] === '8') || (piece.color === 'b' && to[1] === '1')) {
+          if (!promotion) {
+            pendingPromotionMove = { from, to };
+            showPromotionModal(piece.color);
+            return;
+          }
+        }
+      }
+
+      const moveResult = game.move({ from, to, promotion: promotion || 'q' });
+
+      if (moveResult) {
+        lastMove = { from, to };
+        selectedSquare = null;
+        validMoves = [];
+
+        // Audio Effect
+        if (moveResult.captured) {
+          AudioEngine.playCapture();
+        } else {
+          AudioEngine.playMove();
+        }
+
+        if (game.in_check()) {
+          AudioEngine.playCheck();
+        }
+
+        renderBoard();
+
+        // AI Turn Trigger
+        if (!game.game_over() && gameMode === 'pve' && game.turn() === 'b') {
+          setTimeout(makeAIMove, 350);
+        }
+      }
+    }
+
+
+
+    // AI Move Logic (Easy, Medium, Hard with Minimax & Alpha-Beta)
+    function makeAIMove() {
+      if (game.game_over()) return;
+
+      const moves = game.moves({ verbose: true });
+      if (moves.length === 0) return;
+
+      let chosenMove = null;
+
+      if (aiDifficulty === 'easy') {
+        // Random move with slight preference for captures
+        const captures = moves.filter(m => m.captured);
+        if (captures.length > 0 && Math.random() > 0.4) {
+          chosenMove = captures[Math.floor(Math.random() * captures.length)];
+        } else {
+          chosenMove = moves[Math.floor(Math.random() * moves.length)];
+        }
+      } else if (aiDifficulty === 'medium') {
+        // Depth 2 minimax
+        chosenMove = minimaxRoot(2, true);
+      } else if (aiDifficulty === 'hard') {
+        // Depth 3 minimax with alpha-beta
+        chosenMove = minimaxRoot(3, true);
+      }
+
+      if (chosenMove) {
+        executeMove(chosenMove.from, chosenMove.to, chosenMove.promotion);
+      }
+    }
+
+    // Minimax Root Engine
+    function minimaxRoot(depth, isMaximizing) {
+      const moves = game.moves({ verbose: true });
+      let bestMove = null;
+      let bestValue = -9999;
+
+      // Shuffle moves to avoid repetitive play
+      moves.sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < moves.length; i++) {
+        const move = moves[i];
+        game.move(move);
+        const value = minimax(depth - 1, -10000, 10000, !isMaximizing);
+        game.undo();
+        if (value >= bestValue) {
+          bestValue = value;
+          bestMove = move;
+        }
+      }
+      return bestMove || moves[0];
+    }
+
+    // Minimax Recursive Evaluation
+    function minimax(depth, alpha, beta, isMaximizing) {
+      if (depth === 0 || game.game_over()) {
+        return evaluateBoard();
+      }
+
+      const moves = game.moves({ verbose: true });
+
+      if (isMaximizing) {
+        let maxEval = -9999;
+        for (let i = 0; i < moves.length; i++) {
+          game.move(moves[i]);
+          const evaluation = minimax(depth - 1, alpha, beta, false);
+          game.undo();
+          maxEval = Math.max(maxEval, evaluation);
+          alpha = Math.max(alpha, evaluation);
+          if (beta <= alpha) break;
+        }
+        return maxEval;
+      } else {
+        let minEval = 9999;
+        for (let i = 0; i < moves.length; i++) {
+          game.move(moves[i]);
+          const evaluation = minimax(depth - 1, alpha, beta, true);
+          game.undo();
+          minEval = Math.min(minEval, evaluation);
+          beta = Math.min(beta, evaluation);
+          if (beta <= alpha) break;
+        }
+        return minEval;
+      }
+    }
+
+    // Piece Evaluation Values
+    const pieceValues = { p: 10, n: 30, b: 35, r: 50, q: 90, k: 1000 };
+
+    function evaluateBoard() {
+      let totalEval = 0;
+      const board = game.board();
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          const p = board[r][c];
+          if (p) {
+            const val = pieceValues[p.type] || 0;
+            // Black perspective for AI
+            if (p.color === 'b') {
+              totalEval += val;
+            } else {
+              totalEval -= val;
+            }
+          }
+        }
+      }
+      return totalEval;
+    }
+
+
+
+    // UI Updates (Turns, Captured Pieces, Scores, History)
+    function updateUI() {
+      const turn = game.turn();
+      const isWhiteTurn = turn === 'w';
+
+      // Turn Badge
+      const turnText = document.getElementById('turnText');
+      const turnDot = document.getElementById('turnIndicatorDot');
+      turnText.innerText = `Lượt đi: ${isWhiteTurn ? 'Trắng' : 'Đen'}`;
+      turnDot.className = `w-4 h-4 rounded-full border-2 border-slate-800 shadow-sm active-turn-pulse ${isWhiteTurn ? 'bg-white' : 'bg-slate-900'}`;
+
+      // Player Display Names
+      const whiteName = document.getElementById('playerWhiteName').value || 'Người Chơi 1';
+      const blackName = document.getElementById('playerBlackName').value || 'Máy';
+      document.getElementById('bottomPlayerDisplayName').innerText = whiteName;
+      document.getElementById('topPlayerDisplayName').innerText = blackName;
+
+      // Captured Pieces Calculation
+      const history = game.history({ verbose: true });
+      const capturedW = []; // Captured white pieces
+      const capturedB = []; // Captured black pieces
+
+      let whiteScore = 0;
+      let blackScore = 0;
+
+      history.forEach(m => {
+        if (m.captured) {
+          if (m.color === 'w') {
+            capturedB.push(m.captured);
+            whiteScore += pieceValues[m.captured] || 0;
+          } else {
+            capturedW.push(m.captured);
+            blackScore += pieceValues[m.captured] || 0;
+          }
+        }
+      });
+
+      // Render Captured Icons
+      const capByWhiteContainer = document.getElementById('capturedByWhite');
+      const capByBlackContainer = document.getElementById('capturedByBlack');
+
+      capByWhiteContainer.innerHTML = capturedB.length > 0 
+        ? capturedB.map(p => `<span class="w-5 h-5 flex items-center justify-center">${pieceSVGs['b'][p]}</span>`).join('') 
+        : `<span class="text-xs text-slate-400 italic">Chưa có</span>`;
+
+      capByBlackContainer.innerHTML = capturedW.length > 0 
+        ? capturedW.map(p => `<span class="w-5 h-5 flex items-center justify-center">${pieceSVGs['w'][p]}</span>`).join('') 
+        : `<span class="text-xs text-slate-400 italic">Chưa có</span>`;
+
+      // Material Advantage Scores
+      const diff = whiteScore - blackScore;
+      document.getElementById('bottomPlayerScore').innerText = diff > 0 ? `+${diff}` : `0`;
+      document.getElementById('topPlayerScore').innerText = diff < 0 ? `+${Math.abs(diff)}` : `0`;
+
+      // Render PGN History List
+      renderMoveHistory();
+
+      // Check Game Over
+      if (game.game_over()) {
+        showGameOverModal();
+      }
+    }
+
+    // Render PGN Move History
+    function renderMoveHistory() {
+      const historyList = document.getElementById('moveHistoryList');
+      const history = game.history();
+      const moveCountBadge = document.getElementById('moveCountBadge');
+
+      moveCountBadge.innerText = `${history.length} nước`;
+
+      if (history.length === 0) {
+        historyList.innerHTML = `<div class="text-center text-slate-400 italic text-[11px] pt-4">Chưa có nước đi nào</div>`;
+        return;
+      }
+
+      let html = '';
+      for (let i = 0; i < history.length; i += 2) {
+        const moveNum = Math.floor(i / 2) + 1;
+        const whiteMove = history[i] || '';
+        const blackMove = history[i + 1] || '';
+
+        html += `
+          <div class="flex items-center justify-between py-1 px-2 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800/50">
+            <span class="w-8 text-slate-400 font-semibold">${moveNum}.</span>
+            <span class="w-20 font-bold text-slate-800 dark:text-slate-200">${whiteMove}</span>
+            <span class="w-20 font-bold text-slate-600 dark:text-slate-400">${blackMove}</span>
+          </div>
+        `;
+      }
+
+      historyList.innerHTML = html;
+      historyList.scrollTop = historyList.scrollHeight;
+    }
+
+    // Pawn Promotion Modal
+    function showPromotionModal(color) {
+      const modal = document.getElementById('promotionModal');
+      const choices = document.getElementById('promotionChoices');
+      modal.classList.remove('hidden');
+
+      const pieces = ['q', 'r', 'b', 'n'];
+      choices.innerHTML = pieces.map(p => `
+        <button onclick="selectPromotion('${p}')" class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-950 transition-all flex items-center justify-center">
+          <div class="w-10 h-10">${pieceSVGs[color][p]}</div>
+        </button>
+      `).join('');
+    }
+
+    function selectPromotion(pieceType) {
+      document.getElementById('promotionModal').classList.add('hidden');
+      if (pendingPromotionMove) {
+        executeMove(pendingPromotionMove.from, pendingPromotionMove.to, pieceType);
+        pendingPromotionMove = null;
+      }
+    }
+
+    // Game Over Dialog
+    function showGameOverModal() {
+      const modal = document.getElementById('gameOverModal');
+      const title = document.getElementById('gameOverTitle');
+      const reason = document.getElementById('gameOverReason');
+
+      if (game.in_checkmate()) {
+        const winner = game.turn() === 'w' ? 'Đen' : 'Trắng';
+        title.innerText = 'Chiếu Hết!';
+        reason.innerText = `Trận đấu kết thúc. Bên ${winner} dành chiến thắng!`;
+      } else if (game.in_draw()) {
+        title.innerText = 'Hòa Cờ!';
+        if (game.in_stalemate()) {
+          reason.innerText = 'Trận đấu hòa do Bế tắc (Stalemate).';
+        } else if (game.in_threefold_repetition()) {
+          reason.innerText = 'Trận đấu hòa do lặp lại vị trí 3 lần.';
+        } else if (game.insufficient_material()) {
+          reason.innerText = 'Trận đấu hòa do không đủ lực lượng chiếu hết.';
+        } else {
+          reason.innerText = 'Trận đấu kết thúc với kết quả hòa.';
+        }
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeGameOverModal() {
+      document.getElementById('gameOverModal').classList.add('hidden');
+    }
+
+    // Controls & Settings Functions
+    function resetGame() {
+      game.reset();
+      selectedSquare = null;
+      validMoves = [];
+      lastMove = null;
+      renderBoard();
+    }
+
+    function undoMove() {
+      if (gameMode === 'pve') {
+        game.undo(); // Undo AI move
+        game.undo(); // Undo Player move
+      } else {
+        game.undo();
+      }
+      selectedSquare = null;
+      validMoves = [];
+      lastMove = null;
+      renderBoard();
+    }
+
+    function setGameMode(mode) {
+      gameMode = mode;
+      const pveBtn = document.getElementById('modePvAIBtn');
+      const pvpBtn = document.getElementById('modePvPBtn');
+      const aiDiffSection = document.getElementById('aiDifficultySection');
+      const blackLabel = document.getElementById('playerBlackLabel');
+      const blackNameInput = document.getElementById('playerBlackName');
+
+      if (mode === 'pve') {
+        pveBtn.className = 'py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-emerald-600 text-white border-emerald-600 shadow-md';
+        pvpBtn.className = 'py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 hover:border-emerald-500 transition-all';
+        aiDiffSection.classList.remove('hidden');
+        blackLabel.innerText = 'Máy (Đen):';
+        blackNameInput.value = `Chess AI (${aiDifficulty === 'easy' ? 'Dễ' : aiDifficulty === 'medium' ? 'Trung bình' : 'Khó'})`;
+      } else {
+        pvpBtn.className = 'py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-emerald-600 text-white border-emerald-600 shadow-md';
+        pveBtn.className = 'py-2.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-2 hover:border-emerald-500 transition-all';
+        aiDiffSection.classList.add('hidden');
+        blackLabel.innerText = 'Người chơi 2 (Đen):';
+        blackNameInput.value = 'Người Chơi 2';
+      }
+      resetGame();
+    }
+
+    function setAIDifficulty(diff) {
+      aiDifficulty = diff;
+      ['easy', 'medium', 'hard'].forEach(d => {
+        const btn = document.getElementById(`diff${d.charAt(0).toUpperCase() + d.slice(1)}`);
+        if (d === diff) {
+          btn.className = 'py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-500';
+        } else {
+          btn.className = 'py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800';
+        }
+      });
+      document.getElementById('playerBlackName').value = `Chess AI (${diff === 'easy' ? 'Dễ' : diff === 'medium' ? 'Trung bình' : 'Khó'})`;
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const themeIcon = document.getElementById('themeIcon');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        themeIcon.className = 'fa-solid fa-sun text-lg text-amber-500 mb-1 group-hover:scale-110 transition-transform';
+      } else {
+        html.classList.add('dark');
+        themeIcon.className = 'fa-solid fa-moon text-lg text-amber-400 mb-1 group-hover:scale-110 transition-transform';
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => console.log(err));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const soundIcon = document.getElementById('soundIcon');
+      if (soundEnabled) {
+        soundIcon.className = 'fa-solid fa-volume-high text-lg text-emerald-600 dark:text-emerald-400 mb-1 group-hover:scale-110 transition-transform';
+      } else {
+        soundIcon.className = 'fa-solid fa-volume-xmark text-lg text-slate-400 mb-1 group-hover:scale-110 transition-transform';
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undoMove();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      }
+    });
+
+    // Handle Window Resize for fluid board fitting
+    window.addEventListener('resize', renderBoard);
+
+    // Initial Load Setup
+    window.onload = function() {
+      renderBoard();
+    };
+  </script>
+</body>
+</html>
