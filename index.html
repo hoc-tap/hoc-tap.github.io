@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f6f7fb">
-  <title>Góc trò chơi học tập</title>
+  <meta name="theme-color" content="#edf2f8">
+  <title>Kho học liệu Thầy Minh</title>
   <style>
     :root {
       color-scheme: light;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: #20243a;
-      background: #f6f7fb;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: #17251f;
+      background: #edf2f8;
       font-synthesis: none;
       text-rendering: optimizeLegibility;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      font-optical-sizing: auto;
     }
 
     * { box-sizing: border-box; }
@@ -23,228 +24,495 @@
       min-width: 320px;
       min-height: 100vh;
       margin: 0;
-      background:
-        radial-gradient(ellipse at 8% 0%, rgba(112, 91, 255, .10), transparent 34rem),
-        radial-gradient(ellipse at 100% 35%, rgba(35, 190, 164, .08), transparent 30rem),
-        #f6f7fb;
+      background: linear-gradient(135deg, #f2f6fa 0%, #e9eff6 100%);
     }
 
-    .page {
-      width: min(1080px, calc(100% - 40px));
-      margin: 0 auto;
-      padding: 64px 0 48px;
-    }
+    button, input { font: inherit; }
+    button { color: inherit; }
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 18px;
-      color: #6254d8;
-      font-size: .78rem;
-      font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow::before {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #6254d8;
-      content: "";
-    }
-
-    h1 {
-      max-width: 700px;
-      margin: 0;
-      font-size: clamp(2.25rem, 6vw, 4.4rem);
-      letter-spacing: -.055em;
-      line-height: 1.05;
-    }
-
-    .intro {
-      max-width: 590px;
-      margin: 20px 0 32px;
-      color: #697087;
-      font-size: 1.05rem;
-      line-height: 1.7;
-    }
-
-    .toolbar {
+    .app {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .count {
-      margin: 0;
-      color: #737a8f;
-      font-size: .92rem;
-    }
-
-    .search {
-      width: min(100%, 300px);
-      padding: 12px 15px;
-      border: 1px solid #e4e6ef;
-      border-radius: 12px;
-      outline: none;
-      background: rgba(255, 255, 255, .85);
-      color: #20243a;
-      font: inherit;
-      transition: border-color .2s, box-shadow .2s;
-    }
-
-    .search:focus {
-      border-color: #8175ef;
-      box-shadow: 0 0 0 4px rgba(112, 91, 255, .12);
-    }
-
-    .games {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 245px), 1fr));
-      gap: 18px;
-    }
-
-    .game-card {
-      display: flex;
-      min-height: 220px;
+      min-height: 100vh;
       flex-direction: column;
-      padding: 22px;
-      border: 1px solid rgba(225, 228, 239, .9);
-      border-radius: 20px;
-      background: rgba(255, 255, 255, .88);
-      box-shadow: 0 12px 32px rgba(40, 45, 80, .045);
-      transition: transform .2s, box-shadow .2s, border-color .2s;
+      overflow: hidden;
     }
 
-    .game-card:hover {
-      transform: translateY(-4px);
-      border-color: #d5d0ff;
-      box-shadow: 0 18px 38px rgba(53, 48, 112, .10);
-    }
-
-    .game-icon {
+    .topbar {
+      position: relative;
+      z-index: 2;
       display: grid;
-      width: 52px;
-      height: 52px;
-      place-items: center;
-      margin-bottom: 20px;
-      border-radius: 16px;
-      background: #f0eeff;
-      font-size: 1.65rem;
-    }
-
-    .game-card h2 {
-      margin: 0 0 8px;
-      font-size: 1.12rem;
-      letter-spacing: -.02em;
-    }
-
-    .game-card p {
-      margin: 0;
-      color: #737a8f;
-      font-size: .92rem;
-      line-height: 1.55;
-    }
-
-    .play-link {
-      display: flex;
+      min-height: 94px;
+      grid-template-columns: minmax(210px, 1fr) minmax(240px, 420px) minmax(240px, 1fr);
       align-items: center;
-      justify-content: space-between;
-      margin-top: auto;
-      padding-top: 22px;
-      color: #6254d8;
-      font-size: .92rem;
-      font-weight: 750;
+      gap: 24px;
+      padding: 16px clamp(20px, 4vw, 58px);
+      border-bottom: 1px solid #dce4ed;
+      background: rgba(248, 250, 253, .92);
+      box-shadow: 0 3px 12px rgba(30, 50, 74, .035);
+    }
+
+    .brand {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 12px;
+      color: #173c27;
       text-decoration: none;
     }
 
-    .play-link span:last-child {
+    .brand-mark { width: 40px; height: 44px; flex: 0 0 auto; }
+
+    .brand-copy {
+      display: grid;
+      gap: 2px;
+      font-size: .92rem;
+      line-height: 1.18;
+    }
+
+    .brand-copy strong { font-size: 1rem; }
+
+    .search-wrap { position: relative; }
+
+    .search {
+      width: 100%;
+      height: 42px;
+      padding: 0 42px 0 43px;
+      border: 1px solid #d8e0e9;
+      border-radius: 10px;
+      outline: none;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(25, 46, 68, .08);
+      color: #20302a;
+      font-size: .9rem;
+      transition: border-color .18s, box-shadow .18s;
+    }
+
+    .search:focus {
+      border-color: #74ad83;
+      box-shadow: 0 0 0 3px rgba(61, 145, 78, .13);
+    }
+
+    .search-icon, .google-mark {
+      position: absolute;
+      top: 50%;
+      z-index: 1;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .search-icon { right: 13px; color: #738296; }
+    .google-mark { left: 12px; width: 20px; height: 20px; }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      white-space: nowrap;
+    }
+
+    .button {
+      display: inline-flex;
+      min-height: 34px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-size: .83rem;
+      font-weight: 650;
+      transition: background .18s, border-color .18s, color .18s;
+    }
+
+    .button:hover { border-color: #90a99a; background: #fff; }
+    .button:focus-visible, .lesson:focus-visible { outline: 3px solid #9bc7a7; outline-offset: 2px; }
+
+    .button.primary {
+      border-color: #0f7b3b;
+      background: #087b38;
+      color: #fff;
+    }
+
+    .button.primary:hover { border-color: #08632f; background: #086b33; }
+
+    .language {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      font-size: .83rem;
+      font-weight: 650;
+    }
+
+    .switch {
+      position: relative;
+      width: 29px;
+      height: 16px;
+      border-radius: 99px;
+      background: #aeb9c7;
+      transition: background .2s;
+    }
+
+    .switch::after {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 2px #47556955;
+      content: "";
       transition: transform .2s;
     }
 
-    .play-link:hover span:last-child { transform: translateX(4px); }
+    .language[aria-pressed="true"] .switch { background: #198342; }
+    .language[aria-pressed="true"] .switch::after { transform: translateX(13px); }
+    .fullscreen { width: 34px; padding: 0; }
+
+    .content {
+      display: flex;
+      width: 100%;
+      min-width: 0;
+      max-width: 1680px;
+      flex: 1;
+      flex-direction: column;
+      align-self: center;
+      padding: 18px clamp(16px, 3vw, 42px) 28px;
+    }
+
+    .statusbar {
+      display: flex;
+      min-height: 20px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 2px 12px;
+      color: #647368;
+      font-size: .78rem;
+    }
+
+    .grade-grid {
+      display: grid;
+      min-width: 0;
+      min-height: 0;
+      flex: 1;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .grade-card {
+      display: flex;
+      min-width: 0;
+      max-height: calc(100vh - 160px);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #dce3eb;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .94);
+      box-shadow: 0 3px 10px rgba(35, 51, 68, .06);
+    }
+
+    .grade-title {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      margin: 0;
+      padding: 10px 6px 8px;
+      border-bottom: 1px solid #edf1f4;
+      background: #fff;
+      color: #087938;
+      font-size: clamp(1rem, 1.5vw, 1.25rem);
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .lesson-list {
+      display: flex;
+      min-height: 0;
+      flex-direction: column;
+      gap: 3px;
+      overflow-y: auto;
+      padding: 6px 5px 8px;
+      scrollbar-color: #c9d6cb transparent;
+      scrollbar-width: thin;
+    }
+
+    .lesson {
+      display: flex;
+      min-height: 22px;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 4px;
+      border: 1px solid #e6eaed;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #fff, #fbfcfd);
+      box-shadow: 0 1px 2px rgba(25, 40, 55, .08);
+      color: #1a2921;
+      font-size: clamp(.55rem, .72vw, .72rem);
+      line-height: 1.25;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+
+    .lesson:hover {
+      transform: translateY(-1px);
+      border-color: #a8cfb1;
+      background: #f3fbf4;
+    }
+
+    .lesson-icon {
+      display: inline-grid;
+      width: 12px;
+      height: 12px;
+      flex: 0 0 12px;
+      place-items: center;
+      border-radius: 2px;
+      background: #075a39;
+      color: white;
+      font-size: 8px;
+      line-height: 1;
+    }
+
+    .lesson[hidden], .grade-card[hidden] { display: none; }
+
+    .games-panel {
+      display: none;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+      gap: 14px;
+      align-content: start;
+    }
+
+    .games-panel.active { display: grid; }
+    .grade-grid[hidden] { display: none; }
+
+    .game-card {
+      display: flex;
+      min-height: 175px;
+      flex-direction: column;
+      padding: 19px;
+      border: 1px solid #dce3eb;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 3px 10px rgba(35, 51, 68, .06);
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .game-card:hover { transform: translateY(-3px); box-shadow: 0 9px 20px #243b5318; }
+    .game-icon { margin-bottom: 11px; font-size: 1.55rem; }
+    .game-card h2 { margin: 0 0 6px; color: #20362a; font-size: 1rem; }
+    .game-card p { margin: 0; color: #68766d; font-size: .87rem; line-height: 1.5; }
+    .play-link { margin-top: auto; padding-top: 14px; color: #087938; font-size: .86rem; font-weight: 700; text-decoration: none; }
+    .play-link:hover { text-decoration: underline; }
 
     .message {
       grid-column: 1 / -1;
-      padding: 28px;
-      border: 1px dashed #d8dbea;
-      border-radius: 16px;
-      color: #697087;
+      padding: 28px 16px;
+      border: 1px dashed #cbd7ce;
+      border-radius: 12px;
+      color: #647368;
       text-align: center;
       line-height: 1.6;
     }
 
-    .message[hidden] { display: none; }
-
     .retry {
-      margin-top: 12px;
-      padding: 9px 14px;
+      margin-top: 10px;
+      padding: 8px 13px;
       border: 0;
-      border-radius: 10px;
-      background: #6254d8;
+      border-radius: 7px;
+      background: #087b38;
       color: white;
       cursor: pointer;
       font: inherit;
       font-weight: 700;
     }
 
-    .retry:hover { background: #5143c0; }
-
-    footer {
-      margin-top: 36px;
-      color: #858ba0;
-      font-size: .82rem;
+    .footer {
+      padding-top: 12px;
+      color: #7b887f;
+      font-size: .73rem;
       text-align: center;
     }
 
-    @media (max-width: 600px) {
-      .page { width: min(100% - 28px, 1080px); padding-top: 42px; }
-      .toolbar { align-items: stretch; flex-direction: column-reverse; }
-      .search { width: 100%; }
+    @media (max-width: 760px) {
+      .topbar { grid-template-columns: 1fr minmax(220px, 1fr); gap: 12px 20px; }
+      .search-wrap { grid-row: 2; grid-column: 1 / -1; }
+      .actions { grid-column: 2; grid-row: 1; }
+      .grade-grid {
+        grid-template-columns: repeat(7, minmax(152px, 1fr));
+        overflow-x: auto;
+        padding-bottom: 7px;
+      }
+      .grade-card { max-height: calc(100vh - 205px); }
+    }
+
+    @media (max-width: 540px) {
+      .topbar { min-height: unset; padding: 13px 14px; gap: 12px; }
+      .brand-mark { width: 34px; height: 38px; }
+      .brand-copy { font-size: .78rem; }
+      .brand-copy strong { font-size: .87rem; }
+      .actions { gap: 7px; }
+      .button { min-height: 32px; padding: 0 9px; font-size: .76rem; }
+      .fullscreen { width: 30px; padding: 0; }
+      .language { gap: 5px; font-size: .76rem; }
+      .content { padding: 14px 12px 20px; }
+      .grade-grid { grid-template-columns: repeat(7, minmax(148px, 1fr)); gap: 9px; }
+      .grade-card { max-height: calc(100vh - 183px); }
+      .statusbar { font-size: .72rem; }
     }
   </style>
 </head>
 <body>
-  <main class="page">
-    <p class="eyebrow">Học mà chơi</p>
-    <h1>Chọn trò chơi<br>và bắt đầu nhé!</h1>
-    <p class="intro">Tập hợp các trò chơi học tập. Chọn một trò chơi để mở và trải nghiệm ngay trên website.</p>
+  <main class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Kho học liệu Thầy Minh - Trang chủ">
+        <svg class="brand-mark" viewBox="0 0 48 52" role="img" aria-label="Biểu tượng chiếc lá">
+          <path fill="#167c3c" d="M12 7C4 13 3 27 11 35c2-8 5-15 11-22-3-3-6-5-10-6Z"/>
+          <path fill="#63b54b" d="M41 4C24 5 12 15 10 31c-1 9 3 15 8 18 0-13 6-24 23-34-4 11-12 19-22 27 17-1 29-15 27-38l-5 0Z"/>
+          <path fill="#a4d778" d="M18 45c3-11 10-20 21-28-8 10-13 19-15 29l-6-1Z"/>
+        </svg>
+        <span class="brand-copy"><span data-vi="Kho học liệu" data-en="Learning resources">Kho học liệu</span><strong>Thầy Minh</strong></span>
+      </a>
 
-    <section aria-label="Danh sách trò chơi">
-      <div class="toolbar">
-        <p class="count" id="count" aria-live="polite">Đang tải danh sách trò chơi...</p>
-        <input class="search" id="search" type="search" placeholder="Tìm trò chơi..." aria-label="Tìm trò chơi" disabled>
+      <label class="search-wrap">
+        <svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M21.35 12.2c0-.7-.06-1.37-.18-2.02H12v3.82h5.24a4.48 4.48 0 0 1-1.94 2.94v2.4h3.14c1.84-1.7 2.91-4.2 2.91-7.14Z"/>
+          <path fill="#34A853" d="M12 21.7c2.63 0 4.83-.87 6.44-2.36l-3.14-2.4c-.87.58-1.98.92-3.3.92-2.54 0-4.7-1.72-5.47-4.04H3.28v2.47A9.72 9.72 0 0 0 12 21.7Z"/>
+          <path fill="#FBBC05" d="M6.53 13.82a5.84 5.84 0 0 1 0-3.64V7.71H3.28a9.72 9.72 0 0 0 0 8.58l3.25-2.47Z"/>
+          <path fill="#EA4335" d="M12 6.14c1.43 0 2.71.49 3.72 1.47l2.79-2.79C16.82 3.2 14.63 2.3 12 2.3a9.72 9.72 0 0 0-8.72 5.41l3.25 2.47c.77-2.32 2.93-4.04 5.47-4.04Z"/>
+        </svg>
+        <input class="search" id="search" type="search" placeholder="Tìm bài học..." aria-label="Tìm bài học">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="2"/>
+          <path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </label>
+
+      <nav class="actions" aria-label="Cài đặt giao diện">
+        <button class="button" id="games-toggle" type="button" aria-pressed="false" data-vi="Trò chơi" data-en="Games">Trò chơi</button>
+        <button class="language" id="language-toggle" type="button" aria-label="Chuyển ngôn ngữ" aria-pressed="false">
+          <span class="switch" aria-hidden="true"></span><span id="language-label">VI / EN</span>
+        </button>
+        <button class="button fullscreen" id="fullscreen-toggle" type="button" aria-label="Bật toàn màn hình" title="Toàn màn hình">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </nav>
+    </header>
+
+    <section class="content" aria-label="Thư viện học liệu">
+      <div class="statusbar">
+        <span id="section-label">Bài học theo lớp</span>
+        <span id="count" aria-live="polite">Đang tải học liệu...</span>
       </div>
-      <div class="games" id="games" aria-live="polite">
-        <div class="message">Đang kết nối để lấy danh sách trò chơi...</div>
-      </div>
+      <div class="grade-grid" id="grade-grid" aria-label="Danh sách bài học theo lớp"></div>
+      <div class="games-panel" id="games-panel" aria-label="Danh sách trò chơi" aria-live="polite"></div>
+      <footer class="footer" id="footer-note">Chọn một bài học để bắt đầu khám phá.</footer>
     </section>
-
-    <footer>Danh sách được tự động lấy từ thư mục tro-choi trên GitHub.</footer>
   </main>
 
   <script>
-    const API_URL = "https://api.github.com/repos/hoc-tap/hoc-tap.github.io/contents/tro-choi?ref=main";
-    const gamesElement = document.querySelector("#games");
-    const countElement = document.querySelector("#count");
+    const gradeGrid = document.querySelector("#grade-grid");
+    const gamesPanel = document.querySelector("#games-panel");
     const searchElement = document.querySelector("#search");
+    const countElement = document.querySelector("#count");
+    const gamesToggle = document.querySelector("#games-toggle");
+    const languageToggle = document.querySelector("#language-toggle");
+    const sectionLabel = document.querySelector("#section-label");
+    const footerNote = document.querySelector("#footer-note");
+    const lessonNames = [
+      "Bài 1: Giới thiệu",
+      "Bài 2: Phép cộng",
+      "Bài 3: Phép trừ",
+      "Bài 4: Hình học",
+      "Bài 5: Hình học",
+      "Bài 6: Phép cộng",
+      "Bài 7: Phép trừ",
+      "Bài 8: Hình học",
+      "Bài 9: Phép cộng",
+      "Bài 2: Phép cộng",
+      "Bài 3: Phép trừ",
+      "Bài 4: Hình học",
+      "Bài 5: Hình học",
+      "Bài 6: Phép cộng",
+      "Bài 7: Phép trừ"
+    ];
     const gameDetails = {
       "sudoku.html": { title: "Sudoku", description: "Rèn tư duy logic với những ô số đầy thử thách.", icon: "🔢" },
       "luyen-go-ban-phim.html": { title: "Luyện gõ bàn phím", description: "Luyện kỹ năng gõ phím nhanh và chính xác.", icon: "⌨️" },
       "co-vua.html": { title: "Cờ vua", description: "Thử sức chiến thuật qua từng nước cờ.", icon: "♟️" },
       "co-tuong.html": { title: "Cờ tướng", description: "Đấu trí và sắp xếp thế trận thật khéo léo.", icon: "🏮" },
-      "bao-tap-ban-phim.html": { title: "Bão táp gõ phím", description: "Tăng tốc độ gõ phím trong thử thách sôi động.", icon: "⚡" }
+      "bao-tap-ban-phim.html": { title: "Bão táp gõ phím", description: "Tăng tốc độ gõ phím trong thử thách sôi động.", icon: "⚡" },
+      "qua-song.html": { title: "Qua sông", description: "Vượt qua thử thách bằng những bước đi khéo léo.", icon: "🌉" }
     };
+    let showingGames = false;
+    let isEnglish = false;
     let games = [];
+
+    function createGradeCards() {
+      for (let grade = 3; grade <= 9; grade += 1) {
+        const card = document.createElement("section");
+        card.className = "grade-card";
+        card.dataset.grade = String(grade);
+        card.setAttribute("aria-label", `Lớp ${grade}`);
+
+        const heading = document.createElement("h2");
+        heading.className = "grade-title";
+        heading.textContent = `${isEnglish ? "Grade" : "Lớp"} ${grade}`;
+        card.append(heading);
+
+        const list = document.createElement("div");
+        list.className = "lesson-list";
+        lessonNames.forEach((name, index) => {
+          const lesson = document.createElement("a");
+          lesson.className = "lesson";
+          lesson.href = `./tin${grade}/`;
+          lesson.dataset.search = `${name} lớp ${grade}`.toLocaleLowerCase("vi");
+          lesson.setAttribute("aria-label", `${name}, lớp ${grade}`);
+
+          const icon = document.createElement("span");
+          icon.className = "lesson-icon";
+          icon.setAttribute("aria-hidden", "true");
+          icon.textContent = "▣";
+          lesson.append(icon, document.createTextNode(name));
+          list.append(lesson);
+        });
+        card.append(list);
+        gradeGrid.append(card);
+      }
+    }
+
+    function updateLessonResults() {
+      const query = searchElement.value.trim().toLocaleLowerCase(isEnglish ? "en" : "vi");
+      let visibleCount = 0;
+      gradeGrid.querySelectorAll(".grade-card").forEach((card) => {
+        let gradeHasMatch = false;
+        card.querySelectorAll(".lesson").forEach((lesson) => {
+          const matches = lesson.dataset.search.includes(query);
+          lesson.hidden = !matches;
+          if (matches) {
+            visibleCount += 1;
+            gradeHasMatch = true;
+          }
+        });
+        card.hidden = !gradeHasMatch;
+      });
+      countElement.textContent = `${visibleCount} ${isEnglish ? "lessons" : "bài học"} · ${gradeGrid.querySelectorAll(".grade-card:not([hidden])").length} ${isEnglish ? "grades" : "lớp"}`;
+    }
 
     function getGameDetails(fileName) {
       if (gameDetails[fileName]) return gameDetails[fileName];
       const title = fileName
-        .replace(/\.html$/i, "")
+        .replace(/\.html?$/i, "")
         .replace(/[-_]+/g, " ")
         .replace(/\b\w/g, (letter) => letter.toLocaleUpperCase("vi"));
       return { title, description: "Mở trò chơi và bắt đầu trải nghiệm.", icon: "🎮" };
@@ -256,87 +524,135 @@
         const details = getGameDetails(game.name);
         return `${details.title} ${details.description} ${game.name}`.toLocaleLowerCase("vi").includes(query);
       });
-      gamesElement.replaceChildren();
+      gamesPanel.replaceChildren();
 
       if (filteredGames.length === 0) {
-        const emptyMessage = document.createElement("div");
-        emptyMessage.className = "message";
-        emptyMessage.textContent = games.length ? "Không tìm thấy trò chơi phù hợp." : "Thư mục chưa có trò chơi HTML nào.";
-        gamesElement.append(emptyMessage);
+        const message = document.createElement("div");
+        message.className = "message";
+        message.textContent = games.length ? "Không tìm thấy trò chơi phù hợp." : "Thư mục chưa có trò chơi HTML nào.";
+        gamesPanel.append(message);
       } else {
         filteredGames.forEach((game) => {
           const details = getGameDetails(game.name);
           const card = document.createElement("article");
           card.className = "game-card";
-
           const icon = document.createElement("div");
           icon.className = "game-icon";
           icon.setAttribute("aria-hidden", "true");
           icon.textContent = details.icon;
-
           const title = document.createElement("h2");
           title.textContent = details.title;
-
           const description = document.createElement("p");
           description.textContent = details.description;
-
           const link = document.createElement("a");
           link.className = "play-link";
           link.href = `./tro-choi/${encodeURIComponent(game.name)}`;
           link.setAttribute("aria-label", `Chơi ${details.title}`);
-          link.innerHTML = "<span>Chơi ngay</span><span aria-hidden=\"true\">→</span>";
-
+          link.textContent = isEnglish ? "Play now →" : "Chơi ngay →";
           card.append(icon, title, description, link);
-          gamesElement.append(card);
+          gamesPanel.append(card);
         });
       }
-
-      countElement.textContent = `${filteredGames.length} / ${games.length} trò chơi`;
+      countElement.textContent = `${filteredGames.length} / ${games.length} ${isEnglish ? "games" : "trò chơi"}`;
     }
 
     async function loadGames() {
-      searchElement.disabled = true;
-      countElement.textContent = "Đang tải danh sách trò chơi...";
-      gamesElement.replaceChildren();
-      const loadingMessage = document.createElement("div");
-      loadingMessage.className = "message";
-      loadingMessage.textContent = "Đang kết nối để lấy danh sách trò chơi...";
-      gamesElement.append(loadingMessage);
+      gamesPanel.replaceChildren();
+      const loading = document.createElement("div");
+      loading.className = "message";
+      loading.textContent = isEnglish ? "Connecting to load games..." : "Đang kết nối để lấy danh sách trò chơi...";
+      gamesPanel.append(loading);
+      countElement.textContent = isEnglish ? "Loading games..." : "Đang tải trò chơi...";
 
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch("https://api.github.com/repos/hoc-tap/hoc-tap.github.io/contents/tro-choi?ref=main", {
           headers: { Accept: "application/vnd.github+json" }
         });
         if (!response.ok) throw new Error(`GitHub API trả về mã ${response.status}.`);
-
         const files = await response.json();
         if (!Array.isArray(files)) throw new Error("Dữ liệu thư mục trả về không hợp lệ.");
-
         games = files
           .filter((file) => file.type === "file" && /\.html?$/i.test(file.name))
           .sort((first, second) => first.name.localeCompare(second.name, "vi"));
-        searchElement.disabled = false;
         renderGames();
       } catch (error) {
         console.error("Không thể tải danh sách trò chơi:", error);
         games = [];
-        countElement.textContent = "Chưa thể tải danh sách trò chơi";
-        gamesElement.replaceChildren();
-        const errorMessage = document.createElement("div");
-        errorMessage.className = "message";
-        errorMessage.textContent = "Không tải được danh sách từ GitHub. Vui lòng kiểm tra kết nối mạng rồi thử lại.";
-        const retryButton = document.createElement("button");
-        retryButton.className = "retry";
-        retryButton.type = "button";
-        retryButton.textContent = "Thử lại";
-        retryButton.addEventListener("click", loadGames);
-        errorMessage.append(document.createElement("br"), retryButton);
-        gamesElement.append(errorMessage);
+        countElement.textContent = isEnglish ? "Games could not be loaded" : "Chưa thể tải danh sách trò chơi";
+        gamesPanel.replaceChildren();
+        const message = document.createElement("div");
+        message.className = "message";
+        message.textContent = isEnglish
+          ? "Could not load games from GitHub. Check your connection and try again."
+          : "Không tải được danh sách từ GitHub. Vui lòng kiểm tra kết nối mạng rồi thử lại.";
+        const retry = document.createElement("button");
+        retry.className = "retry";
+        retry.type = "button";
+        retry.textContent = isEnglish ? "Try again" : "Thử lại";
+        retry.addEventListener("click", loadGames);
+        message.append(document.createElement("br"), retry);
+        gamesPanel.append(message);
       }
     }
 
-    searchElement.addEventListener("input", renderGames);
-    loadGames();
+    function updateLanguage() {
+      document.documentElement.lang = isEnglish ? "en" : "vi";
+      languageToggle.setAttribute("aria-pressed", String(isEnglish));
+      languageToggle.setAttribute("aria-label", isEnglish ? "Switch to Vietnamese" : "Chuyển sang tiếng Anh");
+      searchElement.placeholder = isEnglish ? "Search lessons..." : "Tìm bài học...";
+      searchElement.setAttribute("aria-label", isEnglish ? "Search lessons" : "Tìm bài học");
+      sectionLabel.textContent = showingGames
+        ? (isEnglish ? "Learning games" : "Trò chơi học tập")
+        : (isEnglish ? "Lessons by grade" : "Bài học theo lớp");
+      footerNote.textContent = showingGames
+        ? (isEnglish ? "Choose a game and start playing." : "Chọn một trò chơi để bắt đầu.")
+        : (isEnglish ? "Choose a lesson to start exploring." : "Chọn một bài học để bắt đầu khám phá.");
+      gamesToggle.textContent = showingGames
+        ? (isEnglish ? "Lessons" : "Bài học")
+        : (isEnglish ? "Games" : "Trò chơi");
+      gamesToggle.setAttribute("aria-label", showingGames
+        ? (isEnglish ? "Show lessons" : "Hiển thị bài học")
+        : (isEnglish ? "Show games" : "Hiển thị trò chơi"));
+      gradeGrid.querySelectorAll(".grade-title").forEach((heading) => {
+        heading.textContent = `${isEnglish ? "Grade" : "Lớp"} ${heading.parentElement.dataset.grade}`;
+      });
+      if (showingGames) renderGames();
+      else updateLessonResults();
+    }
+
+    createGradeCards();
+    updateLessonResults();
+    searchElement.addEventListener("input", () => {
+      if (showingGames) renderGames();
+      else updateLessonResults();
+    });
+
+    gamesToggle.addEventListener("click", () => {
+      showingGames = !showingGames;
+      gamesToggle.setAttribute("aria-pressed", String(showingGames));
+      gradeGrid.hidden = showingGames;
+      gamesPanel.classList.toggle("active", showingGames);
+      updateLanguage();
+      if (showingGames) loadGames();
+    });
+
+    languageToggle.addEventListener("click", () => {
+      isEnglish = !isEnglish;
+      updateLanguage();
+    });
+
+    document.querySelector("#fullscreen-toggle").addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await document.documentElement.requestFullscreen();
+      } catch (error) {
+        console.error("Không thể thay đổi chế độ toàn màn hình:", error);
+      }
+      const isFullscreen = Boolean(document.fullscreenElement);
+      button.setAttribute("aria-label", isFullscreen ? "Thoát toàn màn hình" : "Bật toàn màn hình");
+      button.title = isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình";
+    });
   </script>
 </body>
 </html>
