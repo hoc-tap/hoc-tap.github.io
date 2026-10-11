@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7f2">
+  <meta name="description" content="Khám phá các trò chơi rèn tư duy, luyện gõ phím và thử thách chiến thuật.">
+  <title>Trò chơi học tập - Thầy Minh</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: #183126;
+      background: #f4f7f2;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 85% 0%, rgba(197, 230, 183, .42), transparent 34rem),
+        #f4f7f2;
+    }
+
+    a { color: inherit; }
+
+    .page {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 30px 0 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 42px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #17452b;
+      font-size: .95rem;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 12px;
+      background: #e3f1df;
+      font-size: 1.25rem;
+    }
+
+    .home-link {
+      color: #4f6d5a;
+      font-size: .9rem;
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .home-link:hover { color: #16743a; }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 34px;
+      padding: clamp(28px, 6vw, 54px);
+      border: 1px solid #dfebdc;
+      border-radius: 26px;
+      background: linear-gradient(115deg, #fff 0%, #f5fbf1 72%, #eaf6e4 100%);
+      box-shadow: 0 14px 36px rgba(37, 75, 46, .07);
+    }
+
+    .hero::after {
+      position: absolute;
+      top: -60px;
+      right: -24px;
+      width: 250px;
+      height: 250px;
+      border: 35px solid rgba(132, 190, 115, .11);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      color: #35814b;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #52a961;
+      content: "";
+    }
+
+    h1 {
+      max-width: 650px;
+      margin: 0;
+      color: #173a27;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      letter-spacing: -.045em;
+      line-height: 1.08;
+    }
+
+    .hero p {
+      max-width: 590px;
+      margin: 16px 0 0;
+      color: #5d7163;
+      font-size: clamp(.97rem, 2vw, 1.08rem);
+      line-height: 1.7;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 2px 18px;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      color: #203c2c;
+      font-size: 1.15rem;
+      letter-spacing: -.02em;
+    }
+
+    .section-heading span {
+      color: #77877b;
+      font-size: .85rem;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .game-card {
+      display: flex;
+      min-height: 205px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 21px;
+      border: 1px solid #e1e9de;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .9);
+      box-shadow: 0 5px 16px rgba(37, 75, 46, .045);
+      text-decoration: none;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .game-card:hover {
+      transform: translateY(-4px);
+      border-color: #b9d8b4;
+      box-shadow: 0 12px 26px rgba(37, 75, 46, .1);
+    }
+
+    .game-card:focus-visible, .home-link:focus-visible, .brand:focus-visible {
+      outline: 3px solid #72b77b;
+      outline-offset: 4px;
+    }
+
+    .game-icon {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 15px;
+      place-items: center;
+      border-radius: 15px;
+      background: var(--icon-bg, #edf5e9);
+      font-size: 1.55rem;
+    }
+
+    .game-card h3 {
+      margin: 0;
+      color: #203a2b;
+      font-size: 1.03rem;
+      letter-spacing: -.015em;
+    }
+
+    .game-card p {
+      margin: 8px 0 17px;
+      color: #718075;
+      font-size: .88rem;
+      line-height: 1.55;
+    }
+
+    .card-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: auto;
+      color: #268044;
+      font-size: .84rem;
+      font-weight: 750;
+    }
+
+    .card-action span {
+      transition: transform .18s ease;
+    }
+
+    .game-card:hover .card-action span { transform: translateX(3px); }
+
+    footer {
+      padding: 26px 0 4px;
+      color: #879389;
+      font-size: .78rem;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      .page { width: min(100% - 30px, 620px); padding-top: 20px; }
+      .topbar { margin-bottom: 28px; }
+      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 480px) {
+      .page { width: calc(100% - 24px); }
+      .hero { margin-bottom: 26px; padding: 27px 22px; border-radius: 20px; }
+      .hero::after { top: -98px; right: -112px; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
+      .game-grid { grid-template-columns: 1fr; gap: 11px; }
+      .game-card { min-height: 0; padding: 18px; }
+      .game-icon { margin-bottom: 12px; }
+      .home-link { font-size: .82rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">🌱</span>
+        <span>Kho học liệu Thầy Minh</span>
+      </a>
+      <a class="home-link" href="../index.html">← Về trang chủ</a>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <span class="eyebrow">Học mà chơi · Chơi mà học</span>
+      <h1 id="page-title">Góc trò chơi<br>khám phá mỗi ngày</h1>
+      <p>Chọn một thử thách để rèn tư duy, luyện kỹ năng và khám phá những điều mới mẻ.</p>
+    </section>
+
+    <section aria-labelledby="games-title">
+      <div class="section-heading">
+        <h2 id="games-title">Chọn trò chơi của bạn</h2>
+        <span>6 trò chơi · 1 trải nghiệm khám phá</span>
+      </div>
+
+      <div class="game-grid">
+        <a class="game-card" href="sudoku.html" style="--icon-bg: #f0edff">
+          <span class="game-icon" aria-hidden="true">🔢</span>
+          <h3>Sudoku</h3>
+          <p>Rèn tư duy logic với những ô số đầy thử thách.</p>
+          <span class="card-action">Chơi ngay <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="game-card" href="luyen-go-ban-phim.html" style="--icon-bg: #e7f7fa">
+          <span class="game-icon" aria-hidden="true">⌨️</span>
+          <h3>Luyện gõ bàn phím</h3>
+          <p>Luyện kỹ năng gõ phím nhanh và chính xác.</p>
+          <span class="card-action">Luyện tập <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="game-card" href="co-vua.html" style="--icon-bg: #f2eee5">
+          <span class="game-icon" aria-hidden="true">♟️</span>
+          <h3>Cờ vua</h3>
+          <p>Thử sức chiến thuật qua từng nước cờ.</p>
+          <span class="card-action">Vào bàn cờ <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="game-card" href="co-tuong.html" style="--icon-bg: #fff1e5">
+          <span class="game-icon" aria-hidden="true">🏮</span>
+          <h3>Cờ tướng</h3>
+          <p>Đấu trí và sắp xếp thế trận thật khéo léo.</p>
+          <span class="card-action">Vào bàn cờ <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="game-card" href="bao-tap-ban-phim.html" style="--icon-bg: #fff4dc">
+          <span class="game-icon" aria-hidden="true">⚡</span>
+          <h3>Bão táp gõ phím</h3>
+          <p>Tăng tốc độ gõ phím trong thử thách sôi động.</p>
+          <span class="card-action">Thử thách ngay <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="game-card" href="qua-song.html" style="--icon-bg: #e5f4f5">
+          <span class="game-icon" aria-hidden="true">🌉</span>
+          <h3>Qua sông</h3>
+          <p>Vượt qua thử thách bằng những bước đi khéo léo.</p>
+          <span class="card-action">Giải câu đố <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="game-card" href="ban-do.html" style="--icon-bg: #eaf4e6">
+          <span class="game-icon" aria-hidden="true">🗺️</span>
+          <h3>Bản đồ Tà Đùng</h3>
+          <p>Khám phá bản đồ vệ tinh Tà Đùng.</p>
+          <span class="card-action">Khám phá <span aria-hidden="true">→</span></span>
+        </a>
+      </div>
+    </section>
+
+    <footer>Chúc bạn có những phút giây học tập thật vui!</footer>
+  </main>
+</body>
+</html>
