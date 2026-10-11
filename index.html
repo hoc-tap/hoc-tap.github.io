@@ -490,16 +490,8 @@
       return a;
     }
 
-    /* ── Accordion toggle (instant, no API) ─────────────────── */
-    function toggleBai(toggleEl, filesEl, grade, baiName) {
-      const expanded = toggleEl.getAttribute('aria-expanded') === 'true';
-
-      toggleEl.setAttribute('aria-expanded', String(!expanded));
-      filesEl.classList.toggle('open', !expanded);
-
-      if (expanded || filesEl.dataset.rendered) return;
-      filesEl.dataset.rendered = '1';
-
+    /* ── Render list of files inside an open bai ─────────────── */
+    function renderBaiFiles(filesEl, grade, baiName) {
       const files = (GRADE_DATA[grade] || {})[baiName] || [];
       filesEl.innerHTML = '';
 
@@ -510,6 +502,19 @@
         filesEl.append(empty);
       } else {
         files.forEach(fn => filesEl.append(makeFileLink(grade, baiName, fn)));
+      }
+      filesEl.dataset.rendered = '1';
+    }
+
+    /* ── Accordion toggle ───────────────────────────────────── */
+    function toggleBai(toggleEl, filesEl, grade, baiName) {
+      const expanded = toggleEl.getAttribute('aria-expanded') === 'true';
+
+      toggleEl.setAttribute('aria-expanded', String(!expanded));
+      filesEl.classList.toggle('open', !expanded);
+
+      if (!expanded) {
+        renderBaiFiles(filesEl, grade, baiName);
       }
     }
 
@@ -522,6 +527,7 @@
       const group = document.createElement('div');
       group.className = 'bai-group';
       group.dataset.bai    = baiName;
+      group.dataset.grade  = String(grade);
       group.dataset.search = `bai ${num} lop ${grade} lesson ${num} grade ${grade}`;
 
       const toggle = document.createElement('button');
@@ -608,6 +614,57 @@
       updateCount();
     }
 
+    /* ── Tự động quét file từ repo qua CDN (Không bao giờ bị 403) ── */
+    async function autoFetchLessons() {
+      try {
+        const url = `https://data.jsdelivr.com/v1/package/gh/hoc-tap/hoc-tap.github.io@main/flat?t=${Date.now()}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('CDN trả về mã ' + res.status);
+        const data = await res.json();
+        if (!data || !Array.isArray(data.files)) return;
+
+        let hasNewFile = false;
+
+        data.files.forEach(item => {
+          if (!item.name) return;
+          // Nhận diện file HTML trong tin-hoc-X/bai-Y/...
+          const m = item.name.match(/^\/tin-hoc-(\d+)\/(bai-\d+)\/([^/]+\.html?)$/i);
+          if (m) {
+            const [, gStr, bStr, fileName] = m;
+            const g = parseInt(gStr, 10);
+            if (!GRADE_DATA[g]) GRADE_DATA[g] = {};
+            if (!GRADE_DATA[g][bStr]) GRADE_DATA[g][bStr] = [];
+            if (!GRADE_DATA[g][bStr].includes(fileName)) {
+              GRADE_DATA[g][bStr].push(fileName);
+              hasNewFile = true;
+            }
+          }
+        });
+
+        if (hasNewFile) {
+          // Cập nhật số lượng file và nội dung các bài đang mở mượt mà
+          document.querySelectorAll('.bai-group').forEach(group => {
+            const g = parseInt(group.dataset.grade, 10);
+            const bn = group.dataset.bai;
+            const files = (GRADE_DATA[g] || {})[bn] || [];
+
+            const countEl = group.querySelector('.bai-file-count');
+            if (countEl) {
+              countEl.textContent = files.length > 0 ? `(${files.length})` : '';
+            }
+
+            const filesEl = group.querySelector('.bai-files');
+            if (filesEl && filesEl.classList.contains('open')) {
+              renderBaiFiles(filesEl, g, bn);
+            }
+          });
+          updateCount();
+        }
+      } catch (err) {
+        console.info('Dùng danh sách bài học mặc định.', err);
+      }
+    }
+
     /* ── Count ───────────────────────────────────────────────── */
     function updateCount() {
       const cards  = gradeGrid.querySelectorAll('.grade-card:not([hidden])');
@@ -688,6 +745,7 @@
       } catch(_) {}
       applyTheme();
       renderAllGrades();
+      autoFetchLessons();
     })();
   </script>
 
