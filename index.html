@@ -382,22 +382,22 @@
         <span class="brand-copy"><span data-vi="Kho học liệu" data-en="Learning resources">Kho học liệu</span><strong>Thầy Minh</strong></span>
       </a>
 
-      <label class="search-wrap">
+      <div class="search-wrap" role="search">
         <svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#4285F4" d="M21.35 12.2c0-.7-.06-1.37-.18-2.02H12v3.82h5.24a4.48 4.48 0 0 1-1.94 2.94v2.4h3.14c1.84-1.7 2.91-4.2 2.91-7.14Z"/>
           <path fill="#34A853" d="M12 21.7c2.63 0 4.83-.87 6.44-2.36l-3.14-2.4c-.87.58-1.98.92-3.3.92-2.54 0-4.7-1.72-5.47-4.04H3.28v2.47A9.72 9.72 0 0 0 12 21.7Z"/>
           <path fill="#FBBC05" d="M6.53 13.82a5.84 5.84 0 0 1 0-3.64V7.71H3.28a9.72 9.72 0 0 0 0 8.58l3.25-2.47Z"/>
           <path fill="#EA4335" d="M12 6.14c1.43 0 2.71.49 3.72 1.47l2.79-2.79C16.82 3.2 14.63 2.3 12 2.3a9.72 9.72 0 0 0-8.72 5.41l3.25 2.47c.77-2.32 2.93-4.04 5.47-4.04Z"/>
         </svg>
-        <input class="search" id="search" type="search" placeholder="Tìm bài học..." aria-label="Tìm bài học">
+        <input class="search" id="search" type="search" placeholder="Bấm để mở Google..." aria-label="Bấm để mở Google" readonly>
         <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="2"/>
           <path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         </svg>
-      </label>
+      </div>
 
       <nav class="actions" aria-label="Cài đặt giao diện">
-        <button class="button" id="games-toggle" type="button" aria-pressed="false" data-vi="Trò chơi" data-en="Games">Trò chơi</button>
+        <button class="button" id="games-toggle" type="button" aria-pressed="false" data-vi="Trò chơi được phép" data-en="Games">Trò chơi được phép</button>
         <button class="language" id="language-toggle" type="button" aria-label="Chuyển ngôn ngữ" aria-pressed="false">
           <span class="switch" aria-hidden="true"></span><span id="language-label">VI / EN</span>
         </button>
@@ -452,7 +452,8 @@
       "co-vua.html": { title: "Cờ vua", description: "Thử sức chiến thuật qua từng nước cờ.", icon: "♟️" },
       "co-tuong.html": { title: "Cờ tướng", description: "Đấu trí và sắp xếp thế trận thật khéo léo.", icon: "🏮" },
       "bao-tap-ban-phim.html": { title: "Bão táp gõ phím", description: "Tăng tốc độ gõ phím trong thử thách sôi động.", icon: "⚡" },
-      "qua-song.html": { title: "Qua sông", description: "Vượt qua thử thách bằng những bước đi khéo léo.", icon: "🌉" }
+      "qua-song.html": { title: "Qua sông", description: "Vượt qua thử thách bằng những bước đi khéo léo.", icon: "🌉" },
+      "ban-do.html": { title: "Bản đồ", description: "Khám phá bản đồ vệ tinh Tà Đùng.", icon: "🗺️" }
     };
     let showingGames = false;
     let isEnglish = false;
@@ -548,7 +549,7 @@
           link.className = "play-link";
           link.href = `./tro-choi/${encodeURIComponent(game.name)}`;
           link.setAttribute("aria-label", `Chơi ${details.title}`);
-          link.textContent = isEnglish ? "Play now →" : "Chơi ngay →";
+          link.textContent = isEnglish ? "Play now →" : "Xem ngay →";
           card.append(icon, title, description, link);
           gamesPanel.append(card);
         });
@@ -599,8 +600,8 @@
       document.documentElement.lang = isEnglish ? "en" : "vi";
       languageToggle.setAttribute("aria-pressed", String(isEnglish));
       languageToggle.setAttribute("aria-label", isEnglish ? "Switch to Vietnamese" : "Chuyển sang tiếng Anh");
-      searchElement.placeholder = isEnglish ? "Search lessons..." : "Tìm bài học...";
-      searchElement.setAttribute("aria-label", isEnglish ? "Search lessons" : "Tìm bài học");
+      searchElement.placeholder = isEnglish ? "Click to open Google..." : "Bấm để mở Google...";
+      searchElement.setAttribute("aria-label", isEnglish ? "Click to open Google" : "Bấm để mở Google");
       sectionLabel.textContent = showingGames
         ? (isEnglish ? "Learning games" : "Trò chơi học tập")
         : (isEnglish ? "Lessons by grade" : "Bài học theo lớp");
@@ -609,10 +610,10 @@
         : (isEnglish ? "Choose a lesson to start exploring." : "Chọn một bài học để bắt đầu khám phá.");
       gamesToggle.textContent = showingGames
         ? (isEnglish ? "Lessons" : "Bài học")
-        : (isEnglish ? "Games" : "Trò chơi");
+        : (isEnglish ? "Games" : "Trò chơi được phép");
       gamesToggle.setAttribute("aria-label", showingGames
         ? (isEnglish ? "Show lessons" : "Hiển thị bài học")
-        : (isEnglish ? "Show games" : "Hiển thị trò chơi"));
+        : (isEnglish ? "Show games" : "Hiển thị trò chơi được phép"));
       gradeGrid.querySelectorAll(".grade-title").forEach((heading) => {
         heading.textContent = `${isEnglish ? "Grade" : "Lớp"} ${heading.parentElement.dataset.grade}`;
       });
@@ -622,9 +623,8 @@
 
     createGradeCards();
     updateLessonResults();
-    searchElement.addEventListener("input", () => {
-      if (showingGames) renderGames();
-      else updateLessonResults();
+    searchElement.addEventListener("click", () => {
+      window.location.href = "https://www.google.com/";
     });
 
     gamesToggle.addEventListener("click", () => {
