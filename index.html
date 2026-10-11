@@ -366,11 +366,21 @@
     const iconExpand   = document.getElementById('icon-fs-expand');
     const iconCollapse = document.getElementById('icon-fs-collapse');
 
-    /* ── GitHub API base ────────────────────────────────────── */
-    const REPO = 'hoc-tap/hoc-tap.github.io';
-    const API  = path => `https://api.github.com/repos/${REPO}/contents/${path}?ref=main`;
+    /* ─────────────────────────────────────────────────────────
+       Fetch entire repo file tree in ONE request → no rate limit
+       GET /repos/{owner}/{repo}/git/trees/{sha}?recursive=1
+    ───────────────────────────────────────────────────────── */
+    const REPO       = 'hoc-tap/hoc-tap.github.io';
+    const TREE_URL   = `https://api.github.com/repos/${REPO}/git/trees/main?recursive=1`;
+    const RAW_BASE   = `https://raw.githubusercontent.com/${REPO}/main`;
 
-    /* ── Pretty file name from filename ─────────────────────── */
+    /*
+     * gradeData[grade] = { baiName: [fileName, ...], ... }
+     * Populated from the tree response.
+     */
+    let gradeData = {};
+
+    /* ── Pretty file name ───────────────────────────────────── */
     function prettyName(filename) {
       return filename
         .replace(/\.html?$/i, '')
@@ -379,76 +389,61 @@
         .trim();
     }
 
-    /* ── Make a file sub-link ────────────────────────────────── */
-    function makeFileLink(file, grade, baiName) {
+    /* ── Build a file sub-link (no API needed, path known) ──── */
+    function makeFileLink(grade, baiName, fileName) {
       const a = document.createElement('a');
       a.className = 'file-link';
-      a.href = `./tin-hoc-${grade}/${baiName}/${encodeURIComponent(file.name)}`;
+      a.href = `./tin-hoc-${grade}/${baiName}/${encodeURIComponent(fileName)}`;
       a.target = '_blank';
       a.rel = 'noopener';
-      a.setAttribute('aria-label', prettyName(file.name));
+      a.setAttribute('aria-label', prettyName(fileName));
 
       const icon = document.createElement('span');
       icon.className = 'file-icon';
       icon.setAttribute('aria-hidden', 'true');
       icon.textContent = '📄';
 
-      a.append(icon, document.createTextNode(prettyName(file.name)));
+      a.append(icon, document.createTextNode(prettyName(fileName)));
       return a;
     }
 
-    /* ── Toggle accordion + lazy-load files ─────────────────── */
-    async function toggleBai(toggleEl, filesEl, grade, baiName) {
+    /* ── Accordion toggle (files already in gradeData) ──────── */
+    function toggleBai(toggleEl, filesEl, grade, baiName) {
       const expanded = toggleEl.getAttribute('aria-expanded') === 'true';
 
       if (expanded) {
-        // collapse
         toggleEl.setAttribute('aria-expanded', 'false');
         filesEl.classList.remove('open');
         return;
       }
 
-      // expand
       toggleEl.setAttribute('aria-expanded', 'true');
       filesEl.classList.add('open');
 
-      // Only load once (marked by data-loaded)
-      if (filesEl.dataset.loaded) return;
-      filesEl.dataset.loaded = '1';
+      if (filesEl.dataset.rendered) return;
+      filesEl.dataset.rendered = '1';
 
-      // Show loading
-      filesEl.innerHTML = `<span class="bai-loading">${isEnglish ? 'Loading...' : 'Đang tải...'}</span>`;
+      const files = (gradeData[grade] || {})[baiName] || [];
+      filesEl.innerHTML = '';
 
-      try {
-        const res = await fetch(API(`tin-hoc-${grade}/${baiName}`), {
-          headers: { Accept: 'application/vnd.github+json' }
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const items = await res.json();
-        const htmlFiles = items.filter(i => i.type === 'file' && /\.html?$/i.test(i.name));
-
-        filesEl.innerHTML = '';
-        if (htmlFiles.length === 0) {
-          const empty = document.createElement('span');
-          empty.className = 'file-empty';
-          empty.textContent = isEnglish ? 'No files yet.' : 'Chưa có bài học nào.';
-          filesEl.append(empty);
-        } else {
-          htmlFiles.forEach(f => filesEl.append(makeFileLink(f, grade, baiName)));
-        }
-      } catch (err) {
-        filesEl.innerHTML = `<span class="file-empty">${isEnglish ? 'Could not load.' : 'Không tải được.'}</span>`;
+      if (files.length === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'file-empty';
+        empty.textContent = isEnglish ? 'No files yet.' : 'Chưa có bài học nào.';
+        filesEl.append(empty);
+      } else {
+        files.forEach(fn => filesEl.append(makeFileLink(grade, baiName, fn)));
       }
     }
 
     /* ── Build one bai-group element ─────────────────────────── */
     function makeBaiGroup(baiName, grade) {
-      const num = parseInt(baiName.replace('bai-', ''), 10);
+      const num   = parseInt(baiName.replace('bai-', ''), 10);
       const label = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
 
       const group = document.createElement('div');
       group.className = 'bai-group';
-      group.dataset.bai = baiName;
+      group.dataset.bai    = baiName;
       group.dataset.search = `bai ${num} lop ${grade} lesson ${num} grade ${grade}`;
 
       const toggle = document.createElement('button');
@@ -462,8 +457,7 @@
       badge.setAttribute('aria-hidden', 'true');
       badge.textContent = num;
 
-      const text = document.createTextNode(label);
-
+      const text  = document.createTextNode(label);
       const arrow = document.createElement('span');
       arrow.className = 'bai-arrow';
       arrow.setAttribute('aria-hidden', 'true');
@@ -480,7 +474,7 @@
       return group;
     }
 
-    /* ── Create empty grade card ─────────────────────────────── */
+    /* ── Create a grade card shell ───────────────────────────── */
     function createGradeCard(grade) {
       const card = document.createElement('section');
       card.className = 'grade-card';
@@ -504,57 +498,98 @@
 
       const list = document.createElement('div');
       list.className = 'lesson-list';
+      // Skeleton placeholder
+      list.innerHTML = `<span class="bai-loading">${isEnglish ? 'Loading...' : 'Đang tải...'}</span>`;
 
       card.append(header, list);
       return card;
     }
 
-    /* ── Fetch grade directory, populate card ────────────────── */
-    async function fetchGrade(grade) {
-      try {
-        const res = await fetch(API(`tin-hoc-${grade}`), {
-          headers: { Accept: 'application/vnd.github+json' }
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const items = await res.json();
-
-        const bais = items
-          .filter(i => i.type === 'dir' && /^bai-\d+$/i.test(i.name))
-          .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-
-        const card = document.getElementById(`card-grade-${grade}`);
-        if (!card) return;
+    /* ── Populate all grade cards from gradeData ─────────────── */
+    function populateAllCards() {
+      for (let g = 3; g <= 9; g++) {
+        const card = document.getElementById(`card-grade-${g}`);
+        if (!card) continue;
         const list = card.querySelector('.lesson-list');
         list.innerHTML = '';
 
-        if (bais.length === 0) {
+        const baiMap = gradeData[g] || {};
+        const baiNames = Object.keys(baiMap).sort((a, b) => a.localeCompare(b, 'vi'));
+
+        if (baiNames.length === 0) {
           const p = document.createElement('p');
           p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
-          p.textContent = isEnglish ? 'No lessons yet.' : 'Chưa có bài học nào.';
+          p.textContent = isEnglish ? 'No lessons yet.' : 'Chưa có bài học.';
           list.append(p);
         } else {
-          bais.forEach(b => list.append(makeBaiGroup(b.name, grade)));
+          baiNames.forEach(bn => list.append(makeBaiGroup(bn, g)));
         }
-      } catch (_) {
-        const card = document.getElementById(`card-grade-${grade}`);
-        if (!card) return;
-        const list = card.querySelector('.lesson-list');
-        const p = document.createElement('p');
-        p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
-        p.textContent = isEnglish ? 'Could not load.' : 'Chưa tải được bài học.';
-        list.append(p);
       }
     }
 
-    /* ── Load all grades ─────────────────────────────────────── */
-    async function loadAllGrades() {
+    /* ── ONE GitHub Tree request for the whole repo ──────────── */
+    async function loadFromTree() {
+      try {
+        const res = await fetch(TREE_URL, {
+          headers: { Accept: 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        // data.tree is a flat list of { path, type, ... }
+        // We need paths like:  tin-hoc-3/bai-01/some-file.html
+        gradeData = {};
+
+        for (const item of data.tree) {
+          // Match: tin-hoc-{grade}/bai-{nn}/{filename.html}
+          const m = item.path.match(
+            /^tin-hoc-(\d+)\/(bai-\d+)\/([^/]+\.html?)$/i
+          );
+          if (m) {
+            const [, grade, bai, file] = m;
+            const g = parseInt(grade, 10);
+            if (!gradeData[g]) gradeData[g] = {};
+            if (!gradeData[g][bai]) gradeData[g][bai] = [];
+            gradeData[g][bai].push(file);
+          }
+
+          // Also register bai folders even if they are empty
+          const mDir = item.path.match(/^tin-hoc-(\d+)\/(bai-\d+)$/);
+          if (mDir && item.type === 'tree') {
+            const [, grade, bai] = mDir;
+            const g = parseInt(grade, 10);
+            if (!gradeData[g]) gradeData[g] = {};
+            if (!gradeData[g][bai]) gradeData[g][bai] = [];
+          }
+        }
+
+        populateAllCards();
+        updateCount();
+
+      } catch (err) {
+        console.error('Tree fetch error:', err);
+        // Fallback: show bai-01..bai-16 without file listings
+        for (let g = 3; g <= 9; g++) {
+          if (!gradeData[g]) gradeData[g] = {};
+          for (let n = 1; n <= 16; n++) {
+            const bn = `bai-${String(n).padStart(2,'0')}`;
+            if (!gradeData[g][bn]) gradeData[g][bn] = [];
+          }
+        }
+        populateAllCards();
+        updateCount();
+        countLabel.textContent += ' ⚠';
+      }
+    }
+
+    /* ── Load all grades (creates shells then fetches tree) ──── */
+    function loadAllGrades() {
       gradeGrid.innerHTML = '';
       for (let g = 3; g <= 9; g++) {
         gradeGrid.append(createGradeCard(g));
       }
-      countLabel.textContent = isEnglish ? 'Loading...' : 'Đang tải...';
-      await Promise.allSettled([3,4,5,6,7,8,9].map(fetchGrade));
-      updateCount();
+      countLabel.textContent = isEnglish ? 'Loading…' : 'Đang tải…';
+      loadFromTree();
     }
 
     /* ── Count ───────────────────────────────────────────────── */
@@ -574,28 +609,23 @@
         if (el.tagName === 'INPUT') el.placeholder = val;
         else el.textContent = val;
       });
-
-      // Grade labels
       gradeGrid.querySelectorAll('.grade-card').forEach(card => {
         const g = card.dataset.grade;
         const lbl = card.querySelector('.grade-header span:last-child');
         if (lbl) lbl.textContent = isEnglish ? `Grade ${g}` : `Lớp ${g}`;
-
-        // Bai labels
         card.querySelectorAll('.bai-group').forEach(group => {
           const baiName = group.dataset.bai || '';
           const num = parseInt(baiName.replace('bai-', ''), 10) || '?';
           const text = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
-          const toggle = group.querySelector('.bai-toggle');
-          if (toggle) {
-            toggle.childNodes.forEach(node => {
+          const tog = group.querySelector('.bai-toggle');
+          if (tog) {
+            tog.childNodes.forEach(node => {
               if (node.nodeType === Node.TEXT_NODE) node.textContent = text;
             });
-            toggle.setAttribute('aria-label', `${text}, ${isEnglish ? 'Grade' : 'Lớp'} ${g}`);
+            tog.setAttribute('aria-label', `${text}, ${isEnglish ? 'Grade' : 'Lớp'} ${g}`);
           }
         });
       });
-
       langLabel.textContent = isEnglish ? 'EN' : 'VI';
       langBtn.setAttribute('aria-pressed', String(isEnglish));
       updateCount();
@@ -603,7 +633,7 @@
 
     /* ── Theme ───────────────────────────────────────────────── */
     function applyTheme() {
-      html.dataset.theme = isDark ? 'dark' : 'light';
+      html.dataset.theme    = isDark ? 'dark' : 'light';
       iconSun.style.display  = isDark ? 'none' : '';
       iconMoon.style.display = isDark ? '' : 'none';
       themeBtn.title = isDark
@@ -613,7 +643,7 @@
 
     /* ── Events ──────────────────────────────────────────────── */
     searchBox.addEventListener('click',   () => { window.location.href = 'https://www.google.com.vn/'; });
-    searchBox.addEventListener('keydown', e => { if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/'; });
+    searchBox.addEventListener('keydown', e  => { if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/'; });
 
     themeBtn.addEventListener('click', () => {
       isDark = !isDark; applyTheme();
@@ -647,6 +677,5 @@
       loadAllGrades();
     })();
   </script>
-
 </body>
 </html>
