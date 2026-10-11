@@ -159,12 +159,14 @@
       border: 1px solid var(--border); border-radius: 12px;
       background: var(--card-bg); overflow: hidden;
       box-shadow: 0 3px 10px var(--shadow);
-      max-height: calc(100vh - 170px);
+      height: calc(100vh - 180px);
+      min-height: 520px;
     }
     .grade-header {
-      position: sticky; top: 0; z-index: 1;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 10px 8px;
+      position: sticky; top: 0; z-index: 2;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 10px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       font-weight: 750; font-size: clamp(.95rem,1.3vw,1.15rem);
@@ -176,59 +178,118 @@
       background: var(--green); color: #fff; font-size: .82rem; font-weight: 800;
     }
     .lesson-list {
-      flex: 1; overflow-y: auto; padding: 6px 6px 8px;
-      display: flex; flex-direction: column; gap: 3px;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 8px 8px 12px;
+      display: flex; flex-direction: column; gap: 6px;
       scrollbar-color: #c9d6cb transparent; scrollbar-width: thin;
     }
     /* ── Bai accordion ───────────────────────────────────────── */
-    .bai-group { border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
-    .bai-group + .bai-group { margin-top: 3px; }
+    .bai-group {
+      flex-shrink: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: border-color .15s;
+    }
+    .bai-group:hover {
+      border-color: #a8cfb1;
+    }
 
     .bai-toggle {
-      width: 100%; display: flex; align-items: center; gap: 6px;
-      padding: 5px 6px;
+      width: 100%;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
       background: var(--lesson-bg);
-      border: none; cursor: pointer; text-align: left;
-      font-size: clamp(.72rem,.85vw,.84rem); line-height: 1.3;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-size: .84rem;
+      font-weight: 600;
+      line-height: 1.3;
       color: var(--text);
       transition: background .14s;
     }
     .bai-toggle:hover { background: var(--lesson-hover); }
-    .bai-toggle[aria-expanded="true"] { background: var(--green-lt); }
+    .bai-toggle[aria-expanded="true"] {
+      background: var(--green-lt);
+      border-bottom: 1px solid var(--border);
+    }
 
     .bai-badge {
-      display: inline-grid; place-items: center; flex-shrink: 0;
-      width: 14px; height: 14px; border-radius: 3px;
-      background: var(--badge-bg); color: #fff; font-size: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--badge-bg);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1;
+    }
+    .bai-title {
+      font-size: .84rem;
+      color: var(--text);
     }
     .bai-arrow {
-      margin-left: auto; flex-shrink: 0; font-size: .65rem;
-      transition: transform .18s; color: var(--text2);
+      margin-left: auto;
+      flex-shrink: 0;
+      font-size: .65rem;
+      transition: transform .18s;
+      color: var(--text2);
     }
     .bai-toggle[aria-expanded="true"] .bai-arrow { transform: rotate(90deg); }
-    .bai-file-count { color: var(--green); font-size: .7rem; font-weight: 600; flex-shrink: 0; }
+    .bai-file-count {
+      color: var(--green);
+      font-size: .75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
 
     .bai-files {
-      display: none; flex-direction: column; gap: 1px;
-      background: var(--bg2); padding: 3px 4px 4px 22px;
-      border-top: 1px solid var(--border);
+      display: none;
+      flex-direction: column;
+      gap: 3px;
+      background: var(--bg2);
+      padding: 6px 8px 8px 14px;
     }
     .bai-files.open { display: flex; }
 
     .file-link {
-      display: flex; align-items: center; gap: 5px;
-      padding: 4px 5px; border-radius: 5px;
-      font-size: clamp(.68rem,.8vw,.8rem); line-height: 1.3;
-      color: var(--text); text-decoration: none;
-      transition: background .12s, color .12s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      font-size: .78rem;
+      line-height: 1.35;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--surface);
+      transition: background .12s, color .12s, border-color .12s;
     }
-    .file-link:hover { background: var(--lesson-hover); color: var(--green); }
-    .file-icon { flex-shrink: 0; font-size: .75rem; }
+    .file-link:hover {
+      background: var(--lesson-hover);
+      border-color: #a8cfb1;
+      color: var(--green);
+    }
+    .file-icon { flex-shrink: 0; font-size: .85rem; }
     .file-empty {
-      padding: 4px 5px; font-size: .72rem;
-      color: var(--text2); font-style: italic;
+      padding: 6px 8px;
+      font-size: .75rem;
+      color: var(--text2);
+      font-style: italic;
     }
-    .bai-loading { color: var(--text2); font-size: .72rem; padding: 4px 5px; font-style: italic; }
+    .bai-loading { color: var(--text2); font-size: .75rem; padding: 6px 8px; font-style: italic; }
 
     .bai-group[hidden] { display: none; }
     .grade-card[hidden] { display: none; }
@@ -249,12 +310,12 @@
     @media (max-width: 600px) {
       .brand-name { font-size: 1rem; }
       .grade-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
-      .grade-card { max-height: calc(100vh - 200px); }
+      .grade-card { height: calc(100vh - 200px); min-height: 420px; }
       .btn { font-size: .76rem; height: 32px; padding: 0 10px; }
     }
     @media (max-width: 420px) {
       .grade-grid { grid-template-columns: 1fr; }
-      .grade-card { max-height: none; }
+      .grade-card { height: auto; max-height: none; min-height: unset; }
     }
   </style>
 </head>
@@ -474,19 +535,21 @@
       badge.setAttribute('aria-hidden', 'true');
       badge.textContent = num;
 
-      const text  = document.createTextNode(label);
+      const titleSpan = document.createElement('span');
+      titleSpan.className = 'bai-title';
+      titleSpan.textContent = label;
 
       const fileCount = document.createElement('span');
       fileCount.className = 'bai-file-count';
       fileCount.setAttribute('aria-hidden', 'true');
-      fileCount.textContent = files.length > 0 ? ` (${files.length})` : '';
+      fileCount.textContent = files.length > 0 ? `(${files.length})` : '';
 
       const arrow = document.createElement('span');
       arrow.className = 'bai-arrow';
       arrow.setAttribute('aria-hidden', 'true');
       arrow.textContent = '\u25B6';
 
-      toggle.append(badge, text, fileCount, arrow);
+      toggle.append(badge, titleSpan, fileCount, arrow);
 
       const filesEl = document.createElement('div');
       filesEl.className = 'bai-files';
@@ -570,13 +633,10 @@
           const baiName = group.dataset.bai || '';
           const num  = parseInt(baiName.replace('bai-', ''), 10) || '?';
           const text = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
+          const titleEl = group.querySelector('.bai-title');
+          if (titleEl) titleEl.textContent = text;
           const tog  = group.querySelector('.bai-toggle');
-          if (tog) {
-            tog.childNodes.forEach(node => {
-              if (node.nodeType === Node.TEXT_NODE) node.textContent = text;
-            });
-            tog.setAttribute('aria-label', `${text}, ${isEnglish ? 'Grade' : 'Lớp'} ${g}`);
-          }
+          if (tog) tog.setAttribute('aria-label', `${text}, ${isEnglish ? 'Grade' : 'Lớp'} ${g}`);
         });
       });
       langLabel.textContent = isEnglish ? 'EN' : 'VI';
