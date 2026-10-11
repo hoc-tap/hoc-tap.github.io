@@ -144,15 +144,16 @@
     </div>
 
     <div class="absolute bottom-3 left-3 right-3 md:right-auto z-[1000] pointer-events-auto">
-        <div class="glass-panel px-3 py-2 rounded-xl text-xs flex items-center justify-between gap-4">
+        <div class="glass-panel px-3.5 py-2.5 rounded-xl text-xs flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl">
             <div class="flex items-center gap-3 text-slate-300 font-mono">
                 <span>Tọa độ: <strong id="coords-display" class="text-white">12.2426, 107.5323</strong></span>
                 <span class="hidden sm:inline">| Zoom: <strong id="zoom-display" class="text-white">17</strong></span>
             </div>
             <a id="external-google-link" href="https://www.google.com/maps/@12.2426471,107.5323126,17z/data=!3m1!1e3" target="_blank" 
-                class="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
-                <span>Google Maps</span>
-                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition shadow-lg transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-earth-americas text-sky-300"></i>
+                <span>Chuyển sang Google Maps</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] opacity-80"></i>
             </a>
         </div>
     </div>
@@ -206,12 +207,12 @@
                 layers: [layers.sat]
             });
 
-            // Set main marker on Ta Dung
+            // Set main marker on Trường TH&THCS Nguyễn Du
             currentMarker = L.marker([DEFAULT_LAT, DEFAULT_LNG]).addTo(map);
             currentMarker.bindPopup(`
                 <div class="p-1">
-                    <h3 class="font-bold text-sm text-blue-400 mb-1">Hồ Tà Đùng</h3>
-                    <p class="text-xs text-slate-300">Tuyệt tác thiên nhiên - Đắk Nông / Lâm Đồng</p>
+                    <h3 class="font-bold text-sm text-blue-400 mb-1">Trường TH&THCS Nguyễn Du</h3>
+                    <p class="text-xs text-slate-300">Trường Tiểu học & Trung học Cơ sở</p>
                     <p class="text-[11px] font-mono text-slate-400 mt-1">${DEFAULT_LAT.toFixed(6)}, ${DEFAULT_LNG.toFixed(6)}</p>
                 </div>
             `).openPopup();
@@ -256,7 +257,7 @@
         function resetToCenter() {
             map.setView([DEFAULT_LAT, DEFAULT_LNG], DEFAULT_ZOOM);
             currentMarker.openPopup();
-            showToast('Đã di chuyển về trung tâm Tà Đùng');
+            showToast('Đã di chuyển về Trường TH&THCS Nguyễn Du');
         }
 
         function getUserLocation() {
@@ -318,19 +319,21 @@
                 return;
             }
 
-            // External Geocoding search via Nominatim OpenStreetMap API
+            // Geocoding search via Open-Meteo Geocoding API (Reliable, CORS-friendly, No API key required)
             showToast(`Đang tìm kiếm: ${query}...`);
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+            fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=vi&format=json`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.length > 0) {
-                        const result = data[0];
-                        const lat = parseFloat(result.lat);
-                        const lon = parseFloat(result.lon);
+                    if (data && data.results && data.results.length > 0) {
+                        const result = data.results[0];
+                        const lat = parseFloat(result.latitude);
+                        const lon = parseFloat(result.longitude);
                         map.setView([lat, lon], 15);
                         
+                        const displayName = [result.name, result.admin1, result.country].filter(Boolean).join(', ');
                         const searchMarker = L.marker([lat, lon]).addTo(map);
-                        searchMarker.bindPopup(`<strong class="text-xs text-sky-400">${result.display_name}</strong>`).openPopup();
+                        searchMarker.bindPopup(`<strong class="text-xs text-sky-400">${displayName}</strong>`).openPopup();
+                        customMarkers.push(searchMarker);
                         showToast('Đã tìm thấy vị trí!');
                     } else {
                         showToast('Không tìm thấy kết quả phù hợp');
