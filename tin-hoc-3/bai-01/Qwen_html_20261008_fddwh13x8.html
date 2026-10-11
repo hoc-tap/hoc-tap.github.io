@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bài kiểm tra trắc nghiệm - Tin học 6 - Bài 1: Thông tin và dữ liệu</title>
+<style>
+/* ============ NỀN TẢNG ============ */
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif;
+  color:#0f172a;background:#eaf4ff;overflow:hidden;
+  -webkit-tap-highlight-color:transparent;
+}
+.hidden{display:none !important}
+button{font-family:inherit;cursor:pointer;border:none}
+:root{
+  --blue:#2563eb;--blue-d:#1e40af;--green:#16a34a;--green-l:#dcfce7;
+  --red:#dc2626;--red-l:#fee2e2;--amber:#f59e0b;--slate:#64748b;
+  --card:#ffffff;--line:#dbe7f5;
+}
+/* ============ HIỆU ỨNG CHUNG ============ */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+.cf{position:absolute;width:11px;height:15px;opacity:.95;border-radius:2px;
+  animation:cffall linear forwards}
+@keyframes cffall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(105vh) rotate(760deg);opacity:.15}}
+#flash{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0;transition:opacity .45s}
+@keyframes pop{0%{transform:scale(.86);opacity:0}60%{transform:scale(1.04)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-11px)}}
+@keyframes glowP{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.45)}50%{box-shadow:0 0 0 16px rgba(37,99,235,0)}}
+@keyframes scorePop{0%{transform:scale(1)}45%{transform:scale(1.32);color:#16a34a}100%{transform:scale(1)}}
+@keyframes spinIn{0%{transform:rotate(-14deg) scale(.7);opacity:0}100%{transform:rotate(0) scale(1);opacity:1}}
+@keyframes bgmove{0%{background-position:0 0,0 0}100%{background-position:120px 90px,-120px -90px}}
+
+/* ============ MÀN HÌNH NHẬP TÊN ============ */
+#startScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(circle at 20% 20%,rgba(255,224,130,.35),transparent 45%),
+    radial-gradient(circle at 80% 15%,rgba(125,211,252,.4),transparent 45%),
+    linear-gradient(160deg,#eaf4ff,#f7fbff 45%,#e8f8ef);
+  overflow:auto;z-index:50}
+.startWrap{width:min(1080px,94vw);display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:center;padding:18px}
+.startCard{background:var(--card);border-radius:26px;padding:34px 34px 28px;
+  box-shadow:0 22px 50px rgba(30,64,175,.16);border:1px solid var(--line);animation:pop .5s ease both}
+.kicker{display:inline-block;background:#eff6ff;color:var(--blue-d);font-weight:800;
+  padding:7px 16px;border-radius:999px;font-size:clamp(13px,1vw,17px);letter-spacing:.6px}
+h1.title{font-size:clamp(28px,3.1vw,50px);line-height:1.12;margin:14px 0 6px;color:#0b2a6b;font-weight:900}
+.sub{font-size:clamp(15px,1.25vw,22px);color:var(--slate);font-weight:600;margin-bottom:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:800;font-size:clamp(14px,1.05vw,19px);margin-bottom:7px;color:#123a75}
+.field input{width:100%;padding:14px 16px;font-size:clamp(17px,1.4vw,25px);font-weight:700;
+  border:3px solid #cfe0f5;border-radius:14px;background:#fbfdff;color:#0f172a;outline:none;transition:.2s}
+.field input:focus{border-color:var(--blue);box-shadow:0 0 0 5px rgba(37,99,235,.14);background:#fff}
+.rules{background:#f6fbff;border:2px dashed #bcd7f5;border-radius:16px;padding:14px 18px;margin:6px 0 18px}
+.rules li{font-size:clamp(14px,1.05vw,19px);margin-left:20px;margin-bottom:6px;color:#1f3d63;font-weight:600}
+.btnBig{width:100%;padding:17px;border-radius:16px;font-size:clamp(19px,1.7vw,30px);font-weight:900;color:#fff;
+  background:linear-gradient(135deg,#2563eb,#22c55e);box-shadow:0 12px 26px rgba(37,99,235,.35);transition:.16s;letter-spacing:.4px}
+.btnBig:hover{transform:translateY(-3px);box-shadow:0 18px 34px rgba(37,99,235,.45)}
+.btnBig:active{transform:translateY(0) scale(.985)}
+.startArt{animation:floaty 5s ease-in-out infinite}
+.err{color:var(--red);font-weight:800;font-size:clamp(13px,1vw,18px);margin-top:9px;min-height:20px}
+
+/* ============ MÀN HÌNH BÀI KIỂM TRA ============ */
+#quizScreen{position:fixed;inset:0;display:grid;grid-template-columns:4fr 1fr;gap:16px;padding:16px;
+  background:
+    radial-gradient(circle at 12% 18%,rgba(191,219,254,.45),transparent 40%),
+    radial-gradient(circle at 88% 82%,rgba(187,247,208,.4),transparent 42%),
+    linear-gradient(150deg,#f2f8ff,#ffffff 50%,#f0fbf4);
+  z-index:20}
+.leftCol{min-width:0;display:flex;flex-direction:column;gap:12px;overflow:auto;padding-right:4px}
+.rightCol{min-width:0;display:flex;flex-direction:column;gap:12px}
+
+/* Thẻ tên góc phải trên cùng */
+#nameChip{position:fixed;top:14px;right:18px;z-index:400;background:linear-gradient(135deg,#1e3a8a,#2563eb);
+  color:#fff;padding:9px 18px;border-radius:999px;font-weight:900;font-size:clamp(15px,1.2vw,23px);
+  box-shadow:0 8px 20px rgba(30,58,138,.35);display:flex;align-items:center;gap:9px;border:3px solid #fff}
+#nameChip .dot{width:11px;height:11px;border-radius:50%;background:#4ade80;animation:glowP 1.6s infinite}
+
+/* Thẻ câu hỏi */
+.qCard{background:var(--card);border-radius:22px;padding:18px 22px;border:1px solid var(--line);
+  box-shadow:0 14px 32px rgba(30,64,175,.1);animation:pop .35s ease both;flex:0 0 auto}
+.qHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.badge{padding:6px 15px;border-radius:999px;font-weight:900;font-size:clamp(13px,1vw,19px);letter-spacing:.4px}
+.bNB{background:#dbeafe;color:#1d4ed8}
+.bTH{background:#fef3c7;color:#b45309}
+.bVD{background:#dcfce7;color:#15803d}
+.qNo{font-weight:900;color:#0b2a6b;font-size:clamp(15px,1.2vw,23px)}
+.qPt{margin-left:auto;background:#f1f5f9;color:#334155;font-weight:800;padding:6px 14px;border-radius:999px;font-size:clamp(13px,1vw,18px)}
+.qText{font-size:clamp(20px,1.85vw,34px);font-weight:800;line-height:1.35;color:#0b1f44}
+.qCard.compact .qText{font-size:clamp(17px,1.35vw,26px)}
+.illus{margin:12px auto 2px;max-width:520px;animation:spinIn .5s ease both}
+.illus svg{width:100%;height:auto;display:block;filter:drop-shadow(0 6px 12px rgba(30,64,175,.14))}
+
+/* Đáp án 2 cột */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.opt{display:flex;align-items:center;gap:13px;text-align:left;background:#f8fbff;border:3px solid #d6e6fa;
+  border-radius:16px;padding:13px 16px;font-size:clamp(16px,1.3vw,26px);font-weight:700;color:#12233f;
+  transition:transform .13s,background .2s,border-color .2s;line-height:1.3;user-select:none}
+.qCard.compact .opt{font-size:clamp(14px,1.02vw,20px);padding:10px 13px}
+.opt:hover:not(:disabled){background:#eaf3ff;border-color:#93c5fd;transform:translateY(-3px)}
+.opt .key{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#3b82f6);
+  color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:clamp(17px,1.3vw,25px)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--green-l);border-color:var(--green);animation:pop .35s ease both}
+.opt.right .key{background:linear-gradient(135deg,#15803d,#22c55e)}
+.opt.wrong{background:var(--red-l);border-color:var(--red);animation:shake .45s}
+.opt.wrong .key{background:linear-gradient(135deg,#b91c1c,#ef4444)}
+.opt.dim{opacity:.55}
+.opt .mark{margin-left:auto;font-size:clamp(18px,1.5vw,28px);font-weight:900}
+
+/* Phản hồi */
+.fb{border-radius:18px;padding:14px 18px;margin-top:12px;font-size:clamp(15px,1.15vw,23px);
+  font-weight:700;line-height:1.4;display:none;animation:pop .3s ease both}
+.fb.show{display:block}
+.fb.ok{background:linear-gradient(135deg,#dcfce7,#ecfdf5);border:3px solid #22c55e;color:#14532d}
+.fb.no{background:linear-gradient(135deg,#fee2e2,#fff1f2);border:3px solid #ef4444;color:#7f1d1d}
+.fb small{display:block;font-weight:600;font-size:.86em;margin-top:5px;color:#334155}
+.navRow{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.btnNext{padding:15px 34px;border-radius:16px;background:linear-gradient(135deg,#f59e0b,#f97316);color:#fff;
+  font-weight:900;font-size:clamp(17px,1.4vw,27px);box-shadow:0 10px 22px rgba(249,115,22,.35);display:none;transition:.15s}
+.btnNext.show{display:inline-block;animation:pop .35s ease both,glowP 1.5s infinite 1s}
+.btnNext:hover{transform:translateY(-3px)}
+
+/* Cột phải */
+.sideCard{background:var(--card);border-radius:20px;padding:14px 16px;border:1px solid var(--line);
+  box-shadow:0 10px 24px rgba(30,64,175,.09)}
+.sideTitle{text-align:center}
+.sideTitle .t1{font-size:clamp(15px,1.15vw,22px);font-weight:900;color:#0b2a6b;line-height:1.25}
+.sideTitle .t2{font-size:clamp(13px,.95vw,18px);font-weight:700;color:var(--slate);margin-top:4px;line-height:1.3}
+.sideLabel{font-size:clamp(12px,.85vw,16px);font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:.7px}
+.stuName{font-size:clamp(18px,1.5vw,29px);font-weight:900;color:#1d4ed8;line-height:1.2;word-break:break-word}
+.timerBox{display:flex;align-items:center;gap:12px;justify-content:center}
+.ring{width:clamp(86px,7.4vw,132px);height:clamp(86px,7.4vw,132px);position:relative;flex:0 0 auto}
+.ring svg{width:100%;height:100%;transform:rotate(0)}
+#ringBar{transition:stroke-dashoffset .18s linear,stroke .3s}
+.ringNum{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ringNum b{font-size:clamp(26px,2.5vw,46px);font-weight:900;color:#0b2a6b;line-height:1}
+.ringNum span{font-size:clamp(10px,.8vw,15px);font-weight:800;color:var(--slate)}
+.urgent .ringNum b{color:var(--red);animation:pop .5s infinite}
+.scoreBox{text-align:center}
+#scoreNum{font-size:clamp(34px,3.4vw,62px);font-weight:900;color:#0b2a6b;line-height:1;display:inline-block}
+#scoreNum.bump{animation:scorePop .55s ease}
+.scoreMax{font-size:clamp(14px,1vw,20px);font-weight:800;color:var(--slate)}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.dotQ{width:clamp(18px,1.5vw,28px);height:clamp(18px,1.5vw,28px);border-radius:50%;background:#e2e8f0;
+  display:flex;align-items:center;justify-content:center;font-size:clamp(10px,.8vw,15px);font-weight:900;color:#94a3b8;transition:.25s}
+.dotQ.cur{background:var(--amber);color:#fff;transform:scale(1.18);box-shadow:0 0 0 4px #fde68a}
+.dotQ.ok{background:var(--green);color:#fff}
+.dotQ.no{background:var(--red);color:#fff}
+.btnSide{width:100%;padding:13px;border-radius:14px;font-weight:900;font-size:clamp(15px,1.15vw,22px);transition:.15s}
+.btnSubmit{background:linear-gradient(135deg,#dc2626,#f97316);color:#fff;box-shadow:0 8px 18px rgba(220,38,38,.3)}
+.btnSubmit:hover{transform:translateY(-2px)}
+.btnGhost{background:#f1f5f9;color:#334155;border:2px solid #dbe4ee}
+.btnGhost:hover{background:#e2e8f0}
+.sideRow{display:flex;gap:8px}
+
+/* ============ MÀN HÌNH LEO NÚI ============ */
+#mtnScreen{position:fixed;inset:0;z-index:600;display:flex;flex-direction:column;
+  background:linear-gradient(180deg,#bfe4ff 0%,#e6f6ff 55%,#d9f2d6 100%);animation:pop .4s ease both}
+.mtnTop{display:flex;align-items:center;gap:14px;padding:12px 20px;flex-wrap:wrap}
+.mtnBanner{background:rgba(255,255,255,.92);border:3px solid #bfdbfe;border-radius:999px;padding:9px 22px;
+  font-weight:900;font-size:clamp(16px,1.5vw,30px);color:#0b2a6b;box-shadow:0 8px 18px rgba(30,64,175,.15)}
+.mtnStats{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.94);border-radius:14px;padding:8px 16px;font-weight:900;
+  font-size:clamp(14px,1.1vw,22px);color:#123a75;box-shadow:0 6px 14px rgba(30,64,175,.14);border:2px solid #dbeafe}
+.chip b{color:#16a34a;font-size:1.15em}
+.mtnStage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+#mtnSvg{width:min(94vw,1180px);height:100%;max-height:74vh;display:block}
+.mtnMsg{position:absolute;left:50%;top:12px;transform:translateX(-50%);max-width:min(760px,90vw);
+  background:rgba(255,255,255,.96);border-radius:18px;padding:12px 24px;text-align:center;
+  border:3px solid #bfdbfe;box-shadow:0 12px 28px rgba(30,64,175,.2);animation:pop .4s ease both}
+.mtnMsg .h{font-size:clamp(18px,1.7vw,33px);font-weight:900;color:#0b2a6b;line-height:1.2}
+.mtnMsg .s{font-size:clamp(14px,1.1vw,22px);font-weight:700;color:var(--slate);margin-top:4px}
+.mtnMsg.good{border-color:#22c55e}.mtnMsg.good .h{color:#15803d}
+.mtnMsg.bad{border-color:#ef4444}.mtnMsg.bad .h{color:#b91c1c}
+.mtnBottom{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px 18px;flex-wrap:wrap}
+.btnCont{padding:15px 40px;border-radius:16px;background:linear-gradient(135deg,#2563eb,#22c55e);color:#fff;
+  font-weight:900;font-size:clamp(18px,1.6vw,31px);box-shadow:0 12px 26px rgba(37,99,235,.35);transition:.15s;animation:pop .4s ease both}
+.btnCont:hover{transform:translateY(-3px) scale(1.02)}
+.giftHint{font-size:clamp(14px,1.15vw,23px);font-weight:800;color:#b45309;background:#fffbeb;border:2px dashed #fbbf24;
+  padding:9px 18px;border-radius:14px;animation:pop .4s ease both}
+#giftG{cursor:pointer}
+#giftG:hover{filter:brightness(1.07)}
+
+/* ============ MÀN HÌNH KẾT QUẢ ============ */
+#resultScreen{position:fixed;inset:0;z-index:800;overflow:auto;padding:22px;
+  background:radial-gradient(circle at 50% 0%,rgba(253,230,138,.5),transparent 55%),linear-gradient(160deg,#eef6ff,#f7fbff 50%,#eafaf0)}
+.resWrap{max-width:1180px;margin:0 auto}
+.resTop{background:#fff;border-radius:24px;padding:22px;border:1px solid var(--line);
+  box-shadow:0 16px 36px rgba(30,64,175,.14);display:grid;grid-template-columns:auto 1fr auto;gap:24px;align-items:center;animation:pop .45s ease both}
+.scoreCircle{width:clamp(130px,12vw,205px);height:clamp(130px,12vw,205px);border-radius:50%;
+  background:conic-gradient(#22c55e var(--p,0%),#e2e8f0 0);display:flex;align-items:center;justify-content:center;position:relative}
+.scoreCircle::after{content:"";position:absolute;inset:12px;background:#fff;border-radius:50%}
+.scoreCircle .in{position:relative;z-index:2;text-align:center}
+.scoreCircle .in b{font-size:clamp(32px,3.6vw,66px);font-weight:900;color:#0b2a6b;line-height:1;display:block}
+.scoreCircle .in span{font-size:clamp(12px,1vw,19px);font-weight:800;color:var(--slate)}
+.resInfo h2{font-size:clamp(24px,2.5vw,46px);color:#0b2a6b;font-weight:900;line-height:1.15}
+.resInfo .name{font-size:clamp(18px,1.7vw,32px);font-weight:900;color:#1d4ed8;margin:6px 0}
+.resInfo .rank{display:inline-block;background:#fef3c7;color:#92400e;font-weight:900;padding:8px 20px;border-radius:999px;
+  font-size:clamp(15px,1.2vw,24px);margin-top:6px}
+.resStats{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.stat{background:#f8fbff;border:2px solid #dbeafe;border-radius:16px;padding:12px 18px;text-align:center;min-width:104px}
+.stat b{display:block;font-size:clamp(22px,2.1vw,40px);font-weight:900;color:#0b2a6b}
+.stat span{font-size:clamp(12px,.9vw,17px);font-weight:800;color:var(--slate)}
+.resList{margin-top:18px;display:flex;flex-direction:column;gap:12px;padding-bottom:26px}
+.resItem{background:#fff;border-radius:18px;padding:15px 18px;border:1px solid var(--line);
+  box-shadow:0 8px 18px rgba(30,64,175,.08);border-left:9px solid #cbd5e1;animation:pop .35s ease both}
+.resItem.ok{border-left-color:var(--green)}
+.resItem.no{border-left-color:var(--red)}
+.resItem .rq{font-size:clamp(15px,1.2vw,23px);font-weight:800;color:#0b1f44;line-height:1.35}
+.resItem .ra{font-size:clamp(14px,1.05vw,20px);font-weight:700;margin-top:8px;line-height:1.45}
+.ra .your{color:#b91c1c}.ra .cor{color:#15803d}
+.resItem .re{font-size:clamp(13px,.98vw,19px);color:#475569;margin-top:6px;font-weight:600;line-height:1.4}
+.resHead{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.resBtns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:6px 0 18px}
+.resBtns button{padding:14px 30px;border-radius:15px;font-weight:900;font-size:clamp(16px,1.3vw,25px)}
+
+/* ============ MÀN HÌNH NHỎ ============ */
+@media (max-width:1000px){
+  body{overflow:auto}
+  #quizScreen{position:static;grid-template-columns:1fr;height:auto;overflow:visible}
+  .leftCol{overflow:visible}
+  .startWrap{grid-template-columns:1fr}
+  .startArt{display:none}
+  .resTop{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .resStats{justify-content:center}
+  #nameChip{position:static;margin:0 0 10px auto;width:max-content}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= MÀN HÌNH NHẬP TÊN ================= -->
+<div id="startScreen">
+  <div class="startWrap">
+    <div class="startCard">
+      <span class="kicker">TIN HỌC 6 • BÀI 1: THÔNG TIN VÀ DỮ LIỆU</span>
+      <h1 class="title">BÀI KIỂM TRA TRẮC NGHIỆM<br>HÀNH TRÌNH LEO ĐỈNH TRI THỨC</h1>
+      <div class="sub">10 câu hỏi • 10 điểm • Trả lời đúng để nhân vật leo lên từng chặng núi</div>
+      <div class="field">
+        <label for="inpName">Họ và tên học sinh</label>
+        <input id="inpName" type="text" placeholder="Ví dụ: Nguyễn Văn An" maxlength="45" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="inpClass">Lớp</label>
+        <input id="inpClass" type="text" placeholder="Ví dụ: 6A1" maxlength="15" autocomplete="off">
+      </div>
+      <div class="rules">
+        <b style="font-size:clamp(14px,1.05vw,19px);color:#123a75">Thể lệ bài kiểm tra:</b>
+        <ul>
+          <li>Gồm 10 câu: 7 câu Nhận biết, 2 câu Thông hiểu, 1 câu Vận dụng.</li>
+          <li>Thời gian: 30 giây/câu Nhận biết, 45 giây/câu Thông hiểu, 70 giây/câu Vận dụng.</li>
+          <li>Mỗi câu đúng được 1,0 điểm; túi quà may mắn có thể cộng thêm 0,5 điểm.</li>
+          <li>Chọn đáp án xong, kết quả và lời giải hiện ra ngay.</li>
+        </ul>
+      </div>
+      <button class="btnBig" id="btnStart">BẮT ĐẦU LÀM BÀI ▶</button>
+      <div class="err" id="startErr"></div>
+    </div>
+    <div class="startArt">
+      <svg viewBox="0 0 460 400" style="width:100%;height:auto">
+        <defs>
+          <linearGradient id="sk0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfeaff"/><stop offset="1" stop-color="#f2fbff"/></linearGradient>
+          <linearGradient id="rk0" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93b0c9"/><stop offset="1" stop-color="#4c6a86"/></linearGradient>
+        </defs>
+        <rect width="460" height="400" rx="26" fill="url(#sk0)"/>
+        <circle cx="380" cy="70" r="36" fill="#ffe082"/>
+        <g fill="#ffffff" opacity=".9"><ellipse cx="100" cy="70" rx="42" ry="19"/><ellipse cx="140" cy="78" rx="34" ry="16"/></g>
+        <path d="M30 340 L150 170 L215 235 L280 120 L330 210 L430 340 Z" fill="url(#rk0)"/>
+        <path d="M255 160 L280 120 L305 165 L292 155 L280 172 L268 152 Z" fill="#ffffff"/>
+        <rect x="20" y="336" width="420" height="46" rx="14" fill="#a5d6a7"/>
+        <polyline points="95,332 165,300 235,318 285,262 250,215 300,180 285,140"
+          fill="none" stroke="#f8fafc" stroke-width="6" stroke-dasharray="13 11" stroke-linecap="round"/>
+        <g>
+          <ellipse cx="285" cy="146" rx="15" ry="5" fill="#00000028"/>
+          <rect x="-9" y="-34" width="19" height="24" rx="9" fill="#ef4444" transform="translate(285,142)"/>
+          <rect x="-17" y="-32" width="11" height="17" rx="5" fill="#f59e0b" transform="translate(285,142)"/>
+          <circle cx="286" cy="100" r="10" fill="#f6c99b"/>
+          <path d="M276 96 a10 10 0 0 1 20 0 z" fill="#16a34a"/>
+          <path d="M281 128 L279 143 M291 128 L294 143" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round"/>
+          <path d="M295 112 L308 96" stroke="#f6c99b" stroke-width="6" stroke-linecap="round"/>
+          <path d="M308 96 L308 72" stroke="#7c2d12" stroke-width="4"/>
+          <path d="M308 72 L332 80 L308 88 Z" fill="#facc15"/>
+        </g>
+        <g fill="#facc15" opacity=".95">
+          <path d="M60 130 l7 16 17 2 -12 12 3 17 -15 -8 -15 8 3 -17 -12 -12 17 -2z"/>
+          <path d="M392 200 l5 12 13 2 -9 9 2 13 -11 -6 -11 6 2 -13 -9 -9 13 -2z"/>
+        </g>
+        <text x="230" y="374" text-anchor="middle" font-size="24" font-weight="900" fill="#0b2a6b">10 CHẶNG • 1 ĐỈNH CAO</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MÀN HÌNH BÀI KIỂM TRA ================= -->
+<div id="quizScreen" class="hidden">
+  <div id="nameChip"><span class="dot"></span><span id="chipName">Học sinh</span></div>
+
+  <div class="leftCol">
+    <div class="qCard" id="qCard">
+      <div class="qHead">
+        <span class="badge bNB" id="lvBadge">NHẬN BIẾT</span>
+        <span class="qNo" id="qNo">Câu 1/10</span>
+        <span class="qPt" id="qPt">1,0 điểm</span>
+      </div>
+      <div class="qText" id="qText">…</div>
+      <div class="illus hidden" id="illus"></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb"></div>
+      <div class="navRow">
+        <button class="btnNext" id="btnNext">SANG CÂU TIẾP ▶</button>
+        <span id="navHint" style="font-weight:800;color:#64748b;font-size:clamp(13px,1vw,19px)">
+          Mẹo: bấm phím A, B, C, D hoặc 1, 2, 3, 4 để chọn đáp án
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="rightCol">
+    <div class="sideCard sideTitle">
+      <div class="t1">BÀI KIỂM TRA TRẮC NGHIỆM</div>
+      <div class="t2">Tin học 6 — Bài 1: Thông tin và dữ liệu</div>
+    </div>
+    <div class="sideCard">
+      <div class="sideLabel">Học sinh</div>
+      <div class="stuName" id="sideName">—</div>
+      <div class="sideLabel" style="margin-top:6px">Lớp</div>
+      <div class="stuName" id="sideClass" style="font-size:clamp(15px,1.15vw,23px);color:#334155">—</div>
+    </div>
+    <div class="sideCard" id="timerCard">
+      <div class="sideLabel" style="text-align:center">Thời gian còn lại</div>
+      <div class="timerBox">
+        <div class="ring">
+          <svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" stroke="#e2e8f0" stroke-width="12" fill="none"/>
+            <circle id="ringBar" cx="60" cy="60" r="52" stroke="#22c55e" stroke-width="12" fill="none"
+                    stroke-linecap="round" transform="rotate(-90 60 60)" stroke-dasharray="326.7" stroke-dashoffset="0"/>
+          </svg>
+          <div class="ringNum"><b id="timeNum">30</b><span>giây</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sideCard scoreBox">
+      <div class="sideLabel">Số điểm</div>
+      <div><span id="scoreNum">0,0</span><span class="scoreMax"> / 10</span></div>
+      <div class="dots" id="dots"></div>
+      <div style="margin-top:8px;font-size:clamp(12px,.9vw,17px);font-weight:800;color:#64748b">
+        Đúng: <span id="okCnt" style="color:#16a34a">0</span> • Sai: <span id="noCnt" style="color:#dc2626">0</span>
+        • Thưởng: <span id="bnCnt" style="color:#b45309">0,0</span>
+      </div>
+    </div>
+    <div class="sideCard">
+      <button class="btnSide btnSubmit" id="btnSubmit">NỘP BÀI</button>
+      <div class="sideRow" style="margin-top:8px">
+        <button class="btnSide btnGhost" id="btnSound">🔊 Âm thanh: BẬT</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MÀN HÌNH LEO NÚI ================= -->
+<div id="mtnScreen" class="hidden">
+  <div class="mtnTop">
+    <div class="mtnBanner" id="mtnBanner">CHẶNG 1 / 10</div>
+    <div class="mtnStats">
+      <div class="chip">👤 <span id="mtnName">—</span></div>
+      <div class="chip">⭐ Điểm: <b id="mtnScore">0,0</b></div>
+      <div class="chip">✅ Đúng: <b id="mtnOk">0</b>/10</div>
+    </div>
+  </div>
+  <div class="mtnStage">
+    <div class="mtnMsg" id="mtnMsg"><div class="h">—</div><div class="s">—</div></div>
+    <svg id="mtnSvg" viewBox="0 0 900 620" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#a9dcff"/><stop offset="1" stop-color="#eaf7ff"/>
+        </linearGradient>
+        <linearGradient id="rock" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9db6cd"/><stop offset="1" stop-color="#4a6885"/>
+        </linearGradient>
+        <linearGradient id="rock2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#b9cddd"/><stop offset="1" stop-color="#7d99b1"/>
+        </linearGradient>
+        <radialGradient id="sunG"><stop offset="0" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffd54f" stop-opacity="0"/></radialGradient>
+      </defs>
+      <rect width="900" height="620" fill="url(#sky)"/>
+      <circle cx="790" cy="86" r="86" fill="url(#sunG)"/>
+      <circle cx="790" cy="86" r="40" fill="#ffe082"/>
+      <g fill="#ffffff" opacity=".92">
+        <ellipse cx="150" cy="88" rx="56" ry="23"/><ellipse cx="205" cy="98" rx="42" ry="19"/><ellipse cx="105" cy="100" rx="36" ry="16"/>
+        <ellipse cx="620" cy="150" rx="48" ry="19"/><ellipse cx="665" cy="158" rx="34" ry="15"/>
+      </g>
+      <path d="M-20 470 L120 300 L215 400 L300 330 L420 470 Z" fill="url(#rock2)" opacity=".8"/>
+      <path d="M560 470 L680 290 L760 370 L850 285 L940 470 Z" fill="url(#rock2)" opacity=".8"/>
+      <path d="M60 585 L235 320 L320 385 L415 205 L455 108 L500 215 L575 180 L665 330 L735 300 L845 585 Z" fill="url(#rock)"/>
+      <path d="M415 205 L455 108 L500 215 L478 196 L458 222 L437 196 Z" fill="#ffffff"/>
+      <path d="M575 180 L610 240 L560 235 Z" fill="#ffffff" opacity=".85"/>
+      <rect y="562" width="900" height="58" fill="#8fce86"/>
+      <g fill="#2f8f4e">
+        <path d="M90 566 l16 -34 16 34z"/><path d="M140 566 l13 -28 13 28z"/>
+        <path d="M760 566 l17 -36 17 36z"/><path d="M815 566 l13 -28 13 28z"/>
+      </g>
+      <polyline id="trail" fill="none" stroke="#fdf6e3" stroke-width="7" stroke-linecap="round" stroke-dasharray="16 13" opacity=".95"/>
+      <g id="cpLayer"></g>
+      <g id="giftLayer"></g>
+      <g id="climber" transform="translate(300,548)">
+        <g id="climberIn">
+          <ellipse cx="0" cy="4" rx="19" ry="6" fill="#00000033"/>
+          <path id="legL" d="M-6 -16 L-9 0" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>
+          <path id="legR" d="M6 -16 L10 0" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round"/>
+          <rect x="-19" y="-40" width="13" height="20" rx="6" fill="#f59e0b"/>
+          <rect x="-11" y="-42" width="22" height="28" rx="10" fill="#ef4444"/>
+          <path d="M10 -36 L23 -50" stroke="#f6c99b" stroke-width="7" stroke-linecap="round"/>
+          <path d="M23 -50 L23 -78" stroke="#7c2d12" stroke-width="4"/>
+          <path d="M23 -78 L47 -70 L23 -62 Z" fill="#facc15"/>
+          <circle cx="1" cy="-52" r="11" fill="#f6c99b"/>
+          <path d="M-10 -56 a11 11 0 0 1 22 0 z" fill="#16a34a"/>
+          <circle cx="6" cy="-52" r="1.9" fill="#0f172a"/>
+          <path d="M2 -47 q4 3 8 0" stroke="#0f172a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div class="mtnBottom">
+    <div class="giftHint hidden" id="giftHint">🎁 Nhấn vào túi quà để mở!</div>
+    <button class="btnCont" id="btnCont">TIẾP TỤC ▶</button>
+  </div>
+</div>
+
+<!-- ================= MÀN HÌNH KẾT QUẢ ================= -->
+<div id="resultScreen" class="hidden">
+  <div class="resWrap">
+    <div class="resTop">
+      <div class="scoreCircle" id="scoreCircle">
+        <div class="in"><b id="finalScore">0,0</b><span>ĐIỂM</span></div>
+      </div>
+      <div class="resInfo">
+        <h2>KẾT QUẢ BÀI KIỂM TRA</h2>
+        <div class="name" id="resName">—</div>
+        <div style="font-weight:700;color:#64748b;font-size:clamp(14px,1.05vw,20px)">
+          Tin học 6 — Bài 1: Thông tin và dữ liệu
+        </div>
+        <div class="rank" id="resRank">—</div>
+      </div>
+      <div class="resStats">
+        <div class="stat"><b id="stOk">0</b><span>Câu đúng</span></div>
+        <div class="stat"><b id="stNo">0</b><span>Câu sai</span></div>
+        <div class="stat"><b id="stBn">0,0</b><span>Điểm thưởng</span></div>
+        <div class="stat"><b id="stT">0s</b><span>Tổng thời gian</span></div>
+      </div>
+    </div>
+    <div class="resBtns">
+      <button class="btnBig" style="width:auto;padding:14px 30px" id="btnAgain">🔄 LÀM BÀI MỚI (10 CÂU KHÁC)</button>
+      <button class="btnSide btnGhost" style="width:auto;padding:14px 26px" id="btnChange">👤 ĐỔI HỌC SINH</button>
+      <button class="btnSide btnGhost" style="width:auto;padding:14px 26px" id="btnPrint">🖨 IN KẾT QUẢ</button>
+    </div>
+    <div style="font-weight:900;font-size:clamp(18px,1.6vw,30px);color:#0b2a6b;margin:4px 0 10px">
+      📋 ĐÁP ÁN CHI TIẾT
+    </div>
+    <div class="resList" id="resList"></div>
+  </div>
+</div>
+
+<div id="fx"></div>
+<div id="flash"></div>
+
+<script>
+/* ================================================================
+   NGÂN HÀNG 80 CÂU HỎI (Tin học 6 - Bài 1: Thông tin và dữ liệu)
+   l: NB = Nhận biết, TH = Thông hiểu, VD = Vận dụng
+   ================================================================ */
+const BANK=[
+{i:1,l:"NB",q:"Thông tin là gì?",o:["Những gì đem lại hiểu biết cho con người về thế giới xung quanh và chính bản thân mình.","Các con số và văn bản được ghi lại trên các thiết bị.","Những tín hiệu điện tử được truyền đi qua các thiết bị máy tính thông minh.","Vật được dùng để lưu trữ và truyền tải hiểu biết của con người."],c:0,e:"Định nghĩa SGK: Thông tin là những gì đem lại hiểu biết."},
+{i:2,l:"NB",q:"Dữ liệu là gì?",o:["Thông tin được ghi lên vật mang tin.","Quá trình xử lý thông tin của bộ não con người trong đời sống.","Thiết bị dùng để lưu trữ thông tin bên trong bộ nhớ máy tính.","Sự hiểu biết của con người về thế giới tự nhiên và xã hội."],c:0,e:"Theo SGK, dữ liệu là thông tin đã được ghi lên vật mang tin dưới dạng số, chữ, hình ảnh, âm thanh."},
+{i:3,l:"NB",q:"Vật mang tin là gì?",o:["Hành động của con người sau khi nhận được dữ liệu từ môi trường.","Phương tiện được dùng để lưu trữ và truyền tải thông tin.","Các con số và chữ viết được ghi chép lại trên giấy trắng.","Những hiểu biết của con người thu nhận được qua các giác quan."],c:1,e:"SGK định nghĩa rõ vật mang tin là phương tiện lưu trữ và truyền tải thông tin."},
+{i:4,l:"NB",q:"Dữ liệu được thể hiện dưới các dạng chủ yếu nào?",o:["Lời nói, hành động, biểu cảm, âm thanh.","Thông tin, vật mang tin, ý nghĩ, con số.","Giấy viết, đĩa CD, thẻ nhớ, hình ảnh.","Con số, văn bản, hình ảnh, âm thanh."],c:3,e:"SGK liệt kê 4 dạng dữ liệu cơ bản: con số, văn bản, hình ảnh, âm thanh."},
+{i:5,l:"NB",q:"Đâu là ví dụ đúng nhất về vật mang tin?",o:["Đĩa CD.","Dòng chữ trên bảng.","Con số chỉ nhiệt độ.","Tiếng chim hót."],c:0,e:"Đĩa CD là phương tiện vật lý để lưu trữ. Các đáp án khác là dữ liệu truyền tải."},
+{i:6,l:"NB",q:"Mối quan hệ cơ bản giữa thông tin và dữ liệu là gì?",o:["Dữ liệu và thông tin hoàn toàn độc lập với nhau.","Dữ liệu đem lại thông tin cho con người.","Thông tin luôn sinh ra dữ liệu trước khi được xử lý.","Thông tin tự động tạo ra vật mang tin."],c:1,e:"Vì dữ liệu đem lại thông tin nên đôi khi vật chứa dữ liệu được gọi là vật mang tin."},
+{i:7,l:"NB",q:"Thông tin có vai trò quan trọng gì đối với con người?",o:["Giúp con người tạo ra nhiều vật mang tin phức tạp hơn.","Thay thế hoàn toàn bộ não con người trong việc ghi nhớ.","Giúp con người đưa ra lựa chọn tốt và hành động hiệu quả.","Chỉ dùng để lưu trữ trên máy tính mà không có tác dụng thực tế."],c:2,e:"Thông tin đúng giúp ra quyết định và đạt hiệu quả trong mọi hoạt động."},
+{i:8,l:"NB",q:"Con người thu nhận thông tin qua những con đường nào?",o:["Chỉ qua việc đọc sách báo hằng ngày.","Chỉ qua việc xem các bản tin dự báo thời tiết.","Lắng nghe, quan sát và trải nghiệm.","Chỉ nhờ vào các thiết bị điện tử hiện đại."],c:2,e:"Sự hiểu biết đến từ việc dùng các giác quan để lắng nghe, quan sát và trải nghiệm."},
+{i:9,l:"NB",q:"Trong quá trình tiếp nhận thông tin, bộ não đóng vai trò gì?",o:["Phát ra các tín hiệu âm thanh và hình ảnh cho người khác.","Lưu trữ vật mang tin từ môi trường bên ngoài vào cơ thể.","Sản xuất ra các loại dữ liệu như văn bản và âm thanh.","Xử lí dữ liệu thu nhận được từ các giác quan để trở thành hiểu biết."],c:3,e:"Não bộ có nhiệm vụ xử lý dữ liệu thu nhận được thành thông tin hữu ích."},
+{i:10,l:"NB",q:"Máy tính thực chất xử lí đối tượng nào?",o:["Vật mang tin.","Sự kiện lịch sử.","Suy nghĩ con người.","Dữ liệu."],c:3,e:"Máy tính trực tiếp xử lí dữ liệu (dãy bit) để cung cấp thông tin cho con người."},
+{i:11,l:"NB",q:"Trong đời sống, “Tiếng còi xe cứu thương” được xem là dữ liệu dưới dạng nào?",o:["Dạng âm thanh.","Dạng văn bản.","Dạng hình ảnh.","Dạng con số."],c:0,e:"Tiếng còi xe cứu thương thu nhận qua thính giác nên thuộc dạng âm thanh."},
+{i:12,l:"NB",q:"Trong đời sống, “Bản nhạc trên đài” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng con số.","Dạng văn bản.","Dạng âm thanh."],c:3,e:"Bản nhạc trên đài thu nhận qua thính giác nên thuộc dạng âm thanh."},
+{i:13,l:"NB",q:"Trong đời sống, “Tiếng trống trường” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng âm thanh.","Dạng con số.","Dạng văn bản."],c:1,e:"Tiếng trống trường thu nhận qua thính giác nên thuộc dạng âm thanh."},
+{i:14,l:"NB",q:"Trong đời sống, “Tiếng thầy cô giảng bài” được xem là dữ liệu dưới dạng nào?",o:["Dạng văn bản.","Dạng hình ảnh.","Dạng con số.","Dạng âm thanh."],c:3,e:"Tiếng thầy cô giảng bài thu nhận qua thính giác nên thuộc dạng âm thanh."},
+{i:15,l:"NB",q:"Trong đời sống, “Đoạn văn trong sách giáo khoa” được xem là dữ liệu dưới dạng nào?",o:["Dạng con số.","Dạng văn bản.","Dạng âm thanh.","Dạng hình ảnh."],c:1,e:"Đoạn văn trong sách giáo khoa thu nhận qua thị giác nên thuộc dạng văn bản."},
+{i:16,l:"NB",q:"Trong đời sống, “Tên đường ghi trên biển báo” được xem là dữ liệu dưới dạng nào?",o:["Dạng âm thanh.","Dạng hình ảnh.","Dạng văn bản.","Dạng con số."],c:2,e:"Tên đường ghi trên biển báo là các chữ viết nên thuộc dạng văn bản."},
+{i:17,l:"NB",q:"Trong đời sống, “Nội dung một bài báo” được xem là dữ liệu dưới dạng nào?",o:["Dạng con số.","Dạng hình ảnh.","Dạng âm thanh.","Dạng văn bản."],c:3,e:"Nội dung bài báo là chữ viết nên thuộc dạng văn bản."},
+{i:18,l:"NB",q:"Trong đời sống, “Danh sách tên học sinh trong lớp” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng âm thanh.","Dạng văn bản.","Dạng con số."],c:2,e:"Danh sách tên học sinh là các dòng chữ nên thuộc dạng văn bản."},
+{i:19,l:"NB",q:"Trong đời sống, “Ảnh chụp gia đình đi du lịch” được xem là dữ liệu dưới dạng nào?",o:["Dạng con số.","Dạng văn bản.","Dạng âm thanh.","Dạng hình ảnh."],c:3,e:"Ảnh chụp thu nhận qua thị giác nên thuộc dạng hình ảnh."},
+{i:20,l:"NB",q:"Trong đời sống, “Biểu tượng dự báo thời tiết” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng âm thanh.","Dạng văn bản.","Dạng con số."],c:0,e:"Biểu tượng dự báo thời tiết là hình vẽ nên thuộc dạng hình ảnh."},
+{i:21,l:"NB",q:"Trong đời sống, “Hình vẽ sơ đồ trong vở” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng âm thanh.","Dạng con số.","Dạng văn bản."],c:0,e:"Hình vẽ sơ đồ thu nhận qua thị giác nên thuộc dạng hình ảnh."},
+{i:22,l:"NB",q:"Trong đời sống, “Biển báo cấm đi ngược chiều” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng văn bản.","Dạng âm thanh.","Dạng con số."],c:0,e:"Biển báo cấm đi ngược chiều là kí hiệu hình vẽ nên thuộc dạng hình ảnh."},
+{i:23,l:"NB",q:"Trong đời sống, “Giá tiền in trên nhãn mác áo” được xem là dữ liệu dưới dạng nào?",o:["Dạng hình ảnh.","Dạng văn bản.","Dạng âm thanh.","Dạng con số."],c:3,e:"Giá tiền là các chữ số nên thuộc dạng con số."},
+{i:24,l:"NB",q:"Trong đời sống, “Nhiệt độ cơ thể đo được” được xem là dữ liệu dưới dạng nào?",o:["Dạng con số.","Dạng âm thanh.","Dạng văn bản.","Dạng hình ảnh."],c:0,e:"Nhiệt độ đo được biểu thị bằng số nên thuộc dạng con số."},
+{i:25,l:"NB",q:"Trong đời sống, “Số điện thoại của người thân” được xem là dữ liệu dưới dạng nào?",o:["Dạng văn bản.","Dạng con số.","Dạng hình ảnh.","Dạng âm thanh."],c:1,e:"Số điện thoại là dãy chữ số nên thuộc dạng con số."},
+{i:26,l:"NB",q:"Đối với “Bài hát đang được lưu trữ”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Giai điệu bài hát","Thẻ nhớ","Âm thanh phát ra","Cảm xúc người nghe"],c:1,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là thẻ nhớ."},
+{i:27,l:"NB",q:"Đối với “Bộ phim chuẩn bị chiếu rạp”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Cuộn phim","Nội dung câu chuyện","Đạo diễn bộ phim","Hình ảnh diễn viên"],c:0,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là cuộn phim."},
+{i:28,l:"NB",q:"Đối với “Thông báo kết quả học tập”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Tên học sinh","Điểm số các môn","Bảng tin nhà trường","Sự lo lắng của phụ huynh"],c:2,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là bảng tin nhà trường."},
+{i:29,l:"NB",q:"Đối với “Chương trình phát thanh buổi sáng”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Người dân đang nghe đài","Giọng nói phát thanh viên","Chiếc loa phường","Bản tin thời tiết"],c:2,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là chiếc loa phường."},
+{i:30,l:"NB",q:"Đối với “Phần mềm máy tính”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Giao diện phần mềm","Mã nguồn lập trình","Nút bấm trên màn hình","Ổ đĩa cứng"],c:3,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là ổ đĩa cứng."},
+{i:31,l:"NB",q:"Đối với “Tài liệu báo cáo môn học”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Kiến thức của học sinh","Tờ giấy in","Số trang tài liệu","Nội dung báo cáo"],c:1,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là tờ giấy in."},
+{i:32,l:"NB",q:"Đối với “Hình ảnh chụp từ máy ảnh số”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Màu sắc bức ảnh","Phong cảnh bức ảnh","Người thợ chụp ảnh","Thẻ nhớ máy ảnh"],c:3,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là thẻ nhớ máy ảnh."},
+{i:33,l:"NB",q:"Đối với “Tệp văn bản mang ra tiệm in”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Chiếc máy in","Chiếc USB","Nội dung tệp chữ","Biểu tượng tệp tin"],c:1,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là chiếc USB."},
+{i:34,l:"NB",q:"Đối với “Bản tin thời sự truyền hình”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Chiếc tivi","Kênh truyền hình","Người dẫn chương trình","Tin tức thế giới"],c:0,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là chiếc tivi."},
+{i:35,l:"NB",q:"Đối với “Bản đồ chỉ dẫn đường đi”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Khoảng cách địa lý","Kí hiệu mũi tên","Tấm bảng gỗ lớn","Tên các con đường"],c:2,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là tấm bảng gỗ lớn."},
+{i:36,l:"NB",q:"Đối với “Biển báo hạn chế tốc độ”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Người lái xe","Tấm kim loại tròn","Vòng tròn màu đỏ","Con số tốc độ"],c:1,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là tấm kim loại tròn."},
+{i:37,l:"NB",q:"Đối với “Nội dung bài học trên lớp”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Hình minh họa","Quyển sách giáo khoa","Chữ in trong bài","Lời giảng của thầy cô"],c:1,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là quyển sách giáo khoa."},
+{i:38,l:"NB",q:"Đối với “Buổi phỏng vấn được ghi lại”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Câu trả lời phỏng vấn","Người tham gia","Cuộn băng ghi âm","Câu hỏi phỏng vấn"],c:2,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là cuộn băng ghi âm."},
+{i:39,l:"NB",q:"Đối với “Hồ sơ xin việc của ứng viên”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Kẹp giấy bìa cứng","Thông tin cá nhân","Chữ ký người nộp","Kinh nghiệm làm việc"],c:0,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là kẹp giấy bìa cứng."},
+{i:40,l:"NB",q:"Đối với “Kết quả khám sức khỏe”, đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?",o:["Hình ảnh ổ bụng","Chỉ số nhịp tim","Phiếu siêu âm giấy","Lời dặn của bác sĩ"],c:2,e:"Vật mang tin là phương tiện vật chất lưu trữ dữ liệu. Trong trường hợp này là phiếu siêu âm giấy."},
+{i:41,l:"TH",q:"Một em bé 2 tuổi nhìn vào tờ báo. Đối với em bé, các dòng chữ trên tờ báo mang ý nghĩa gì?",o:["Là vật mang tin vì tờ báo có khả năng tự động truyền đạt hiểu biết.","Là thông tin vì tờ báo chứa các chữ cái đã được in ấn hoàn chỉnh.","Chỉ là dữ liệu vì em bé chưa biết chữ nên không thu nhận được thông tin.","Là thông tin vì tờ báo luôn cung cấp tri thức cho con người."],c:2,e:"Thông tin phụ thuộc vào người nhận. Em bé không hiểu chữ nên đó chỉ là dữ liệu vô nghĩa."},
+{i:42,l:"TH",q:"Bạn Lan đọc được tờ thông báo và biết ngày mai cúp điện. Cụm từ “ngày mai cúp điện” đối với Lan là gì?",o:["Là vật mang tin vì nó chứa đựng các dữ liệu dạng văn bản thông báo.","Là thông tin vì nó đem lại cho Lan sự hiểu biết về sự kiện sắp diễn ra.","Là một loại vật mang tin điện tử dùng để truyền tải trạng thái năng lượng.","Là dữ liệu vì nó chỉ là các nét mực được in trên bề mặt giấy trắng."],c:1,e:"Lan đã đọc hiểu và có được sự hiểu biết, do đó nó là thông tin."},
+{i:43,l:"TH",q:"Tấm biển ghi “Đảo Cò, 40.000đ” đứng trơ trọi giữa đường. Bản thân tấm biển kim loại đó được gọi là gì?",o:["Dữ liệu âm thanh.","Thông tin.","Vật mang tin.","Dữ liệu."],c:2,e:"Tấm biển làm bằng vật liệu vật lý dùng để ghi chữ lên, đóng vai trò phương tiện lưu trữ."},
+{i:44,l:"TH",q:"Hai người cùng nghe một bản tin tiếng Pháp, một người hiểu, một người không. Điều này minh chứng cho tính chất nào?",o:["Thông tin luôn độc lập với dữ liệu và không bị ảnh hưởng bởi người nghe.","Sự hiểu biết mà thông tin đem lại luôn phụ thuộc vào người tiếp nhận.","Bản tin tiếng Pháp không phải là vật mang tin đối với người không hiểu.","Dữ liệu dạng âm thanh không thể chuyển hóa thành thông tin hữu ích."],c:1,e:"Người hiểu tiếng Pháp nhận được thông tin, người kia thì không. Đó là tính phụ thuộc vào người nhận."},
+{i:45,l:"TH",q:"Bạn Minh xem dự báo thời tiết thấy biểu tượng mặt trời và số 35. Các biểu tượng và con số hiển thị đó gọi là gì?",o:["Môi trường truyền tin.","Vật mang tin.","Thông tin.","Dữ liệu."],c:3,e:"Các con số và hình ảnh hiển thị trước khi được não bộ xử lý ý nghĩa gọi là dữ liệu."},
+{i:46,l:"TH",q:"Từ biểu tượng mặt trời và số 35 trên bản tin, Minh hiểu hôm nay trời rất nóng. Sự hiểu biết “trời rất nóng” gọi là gì?",o:["Vật mang tin.","Thông tin.","Dữ liệu.","Vật chứa dữ liệu."],c:1,e:"Hiểu biết có được sau khi quan sát và phân tích dữ liệu chính là thông tin."},
+{i:47,l:"TH",q:"Một bức tranh vẽ cảnh báo cháy rừng được treo ở bìa rừng. Bản thân khung vải và giấy vẽ bức tranh đó được gọi là gì?",o:["Dữ liệu hình ảnh.","Dữ liệu văn bản.","Vật mang tin.","Thông tin cảnh báo."],c:2,e:"Khung vải và giấy là phương tiện chứa bức tranh, nên chúng là vật mang tin."},
+{i:48,l:"TH",q:"Người dân tộc thiểu số nhìn một văn bản pháp luật nhưng không biết chữ phổ thông. Đối với họ, văn bản đó cung cấp điều gì?",o:["Cung cấp đầy đủ thông tin pháp luật để họ làm theo.","Đóng vai trò là vật mang tin chứa thông tin trực tiếp truyền vào não.","Cung cấp dữ liệu dạng văn bản nhưng không mang lại thông tin.","Không cung cấp cả dữ liệu lẫn thông tin vì họ không nhìn thấy chữ."],c:2,e:"Họ thấy các nét chữ (dữ liệu) nhưng không hiểu ý nghĩa, nên không có thông tin được sinh ra."},
+{i:49,l:"TH",q:"Để rút ra kết luận “Đà Nẵng ít mưa nhất vào tháng 3” từ bảng lượng mưa, con người cần thực hiện thao tác gì?",o:["Tạo ra các vật mang tin mới nhằm thay đổi lượng mưa thực tế.","Chỉ cần ghi chép lại các con số từ vật mang tin vào một tờ giấy khác.","Quan sát và xử lý dữ liệu trong bảng để biến nó thành thông tin.","Chuyển đổi thông tin thành dữ liệu dạng con số để lưu trữ lâu dài."],c:2,e:"Con người phải dùng não bộ so sánh, xử lý dữ liệu để rút ra thông tin có ý nghĩa."},
+{i:50,l:"TH",q:"Câu trả lời “Huế ít mưa nhất vào tháng 4” đem lại điều gì cho người đang có ý định đi du lịch Huế?",o:["Tạo ra một hệ thống dữ liệu dạng số để họ lưu vào bộ nhớ máy tính.","Cung cấp vật mang tin vật lý giúp họ di chuyển đến Huế nhanh chóng hơn.","Sản sinh ra các hiện tượng thời tiết mới thông qua quá trình xử lý dữ liệu.","Đem lại thông tin giúp họ đưa ra quyết định lựa chọn thời gian đi du lịch hợp lý."],c:3,e:"Thông tin này giúp làm thay đổi nhận thức và hỗ trợ quyết định kế hoạch dã ngoại."},
+{i:51,l:"TH",q:"Khi giáo viên nhìn vào bảng điểm dạng số, cô biết được em nào học xuất sắc nhất. Điều cô giáo biết được gọi là gì?",o:["Vật mang tin.","Dữ liệu.","Tín hiệu vật lý.","Thông tin."],c:3,e:"Điểm số là dữ liệu, nhưng việc “biết em nào giỏi nhất” là hiểu biết, tức là thông tin."},
+{i:52,l:"TH",q:"Dữ liệu được truyền tải qua cáp quang dưới dạng tín hiệu ánh sáng. Sợi cáp quang trong trường hợp này đóng vai trò gì?",o:["Dữ liệu âm thanh.","Thông tin tín hiệu.","Vật mang tin.","Dữ liệu hình ảnh."],c:2,e:"Cáp quang là phương tiện vật lý để truyền tải dữ liệu, nên nó là vật mang tin."},
+{i:53,l:"TH",q:"Khi em nghe tiếng chuông báo cháy và lập tức chạy ra khỏi tòa nhà, việc chạy ra khỏi nhà thể hiện vai trò gì của thông tin?",o:["Thông tin có khả năng làm thay đổi hành động của con người.","Thông tin luôn được tạo ra trực tiếp từ những thay đổi hành động.","Thông tin giúp con người tạo ra nhiều loại dữ liệu cảnh báo mới.","Thông tin có chức năng bảo quản vật mang tin khỏi hỏa hoạn."],c:0,e:"Tiếng chuông (dữ liệu) mang lại thông tin có cháy, từ đó thay đổi hành động để đảm bảo an toàn."},
+{i:54,l:"TH",q:"Một cuốn tiểu thuyết viết bằng tiếng Tây Ban Nha đối với người chỉ biết tiếng Việt và không dùng công cụ hỗ trợ thì nó đóng vai trò gì?",o:["Nguồn thông tin khổng lồ giúp người đọc phát triển ngôn ngữ.","Chỉ là một dạng thông tin hình ảnh không liên quan đến dữ liệu.","Vật mang tin truyền tải trực tiếp thông tin cảm xúc đầy đủ.","Vật mang tin chứa dữ liệu nhưng không mang lại thông tin."],c:3,e:"Không biết tiếng nên không xử lý được dữ liệu thành thông tin, sách chỉ chứa dữ liệu."},
+{i:55,l:"TH",q:"Trong bảng thống kê dân số các tỉnh thành, dòng chữ “Thành phố Hà Nội” thuộc dạng dữ liệu nào?",o:["Dạng âm thanh.","Dạng con số.","Dạng văn bản.","Dạng hình ảnh."],c:2,e:"Tên địa danh được viết bằng chữ cái nên nó là dữ liệu dạng văn bản."},
+{i:56,l:"TH",q:"Bản nhạc Beethoven được thu trong đĩa CD móp méo khiến máy không phát được âm thanh. Sự cố này ảnh hưởng trực tiếp đến yếu tố nào?",o:["Vật mang tin bị hỏng khiến dữ liệu không thể truyền tải thành thông tin.","Bộ não người nghe bị mất khả năng xử lý thông tin âm nhạc cổ điển.","Thông tin bài hát bị sai lệch do sự hiểu biết của người nghe kém đi.","Dữ liệu dạng âm thanh bị chuyển đổi sai cách thành dữ liệu dạng con số."],c:0,e:"Đĩa CD móp méo tức là vật mang tin bị hỏng, làm gián đoạn quá trình đọc dữ liệu."},
+{i:57,l:"TH",q:"Sự kiện lịch sử “Chiến thắng Điện Biên Phủ” khi được in thành các dòng chữ trong sách thì các dòng chữ đó trở thành gì?",o:["Thông tin.","Dữ liệu.","Ý niệm trừu tượng.","Vật mang tin."],c:1,e:"Những sự kiện khi được ghi chép lại dưới dạng văn bản thì trở thành dữ liệu."},
+{i:58,l:"TH",q:"Bạn Khoa lên mạng tìm kiếm các trò chơi dã ngoại. “Sự hiểu biết về luật chơi các trò” thu nhận được sau khi đọc trên web gọi là gì?",o:["Thông tin.","Vật chứa tin.","Vật mang tin.","Dữ liệu."],c:0,e:"Hiểu biết sau khi đọc tài liệu trên mạng chính là thông tin."},
+{i:59,l:"TH",q:"Một tệp tin lưu trữ bức ảnh chụp con mèo trong máy tính. Tệp tin này nằm trong ổ cứng được coi là gì?",o:["Tín hiệu xử lý.","Vật mang tin.","Dữ liệu.","Thông tin."],c:2,e:"Tệp tin lưu trong máy tính là các dãy bit biểu diễn hình ảnh, tức là dữ liệu."},
+{i:60,l:"TH",q:"Người khiếm thị dùng ngón tay sờ vào hệ thống chữ nổi Braille để đọc truyện. Các chấm nổi trên mặt giấy đóng vai trò là gì đối với họ?",o:["Dữ liệu dạng âm thanh do người khiếm thị không dùng thị giác để đọc.","Thông tin xúc giác đã được chuyển hóa hoàn toàn thành dữ liệu dạng số.","Dữ liệu dạng kí hiệu hình khối để não bộ phân tích thành thông tin.","Vật mang tin truyền trực tiếp ý nghĩa câu chuyện bỏ qua khâu xử lý."],c:2,e:"Các chấm nổi là các kí hiệu (dữ liệu) vật lý để người khiếm thị sờ và xử lý thành chữ."},
+{i:61,l:"TH",q:"Đặc điểm nổi bật nhất về sự hiểu biết mà thông tin đem lại cho con người là gì?",o:["Hoàn toàn độc lập và giống nhau đối với mọi đối tượng người nghe.","Chỉ có ý nghĩa khi được lưu trữ bên trong các thiết bị điện tử hiện đại.","Luôn phụ thuộc vào khả năng nhận thức của người tiếp nhận thông tin đó.","Luôn thay đổi vật mang tin thành một hình thức biểu diễn phức tạp hơn."],c:2,e:"Người nhận khác nhau (trẻ em, người lớn, bất đồng ngôn ngữ) sẽ thu được thông tin khác nhau."},
+{i:62,l:"TH",q:"Nếu không có vật mang tin thì con người có thể làm gì với thông tin?",o:["Không thể lưu trữ lâu dài để truyền đạt thông tin cho các thế hệ sau.","Vẫn có thể lưu trữ và truyền tải thông tin bằng các dạng dữ liệu siêu nhiên.","Có thể chuyển hóa thông tin thành dữ liệu mà không cần vật lý hỗ trợ.","Bảo quản thông tin tốt hơn vì không sợ vật mang tin bị hỏng hóc tự nhiên."],c:0,e:"Vật mang tin rất quan trọng để lưu giữ dữ liệu. Không có nó, không thể lưu trữ lâu dài."},
+{i:63,l:"TH",q:"Tại sao người ta thường nhấn mạnh “máy tính chỉ xử lí dữ liệu” trong chuyên ngành tin học?",o:["Vì máy tính chỉ tính toán trên các tín hiệu bit vô tri, con người mới hiểu được ý nghĩa.","Vì toàn bộ dữ liệu trên máy tính đều là các con số thập phân dễ hiểu với máy.","Vì máy tính có trí thông minh vượt trội nên tự động chuyển thông tin thành vật mang tin.","Vì máy tính không thể hiển thị thông tin dạng hình ảnh cho con người quan sát."],c:0,e:"Máy tính thao tác với dãy bit (dữ liệu). Sự hiểu biết (thông tin) là ở phía người dùng."},
+{i:64,l:"TH",q:"Em đi trên đường và thấy một người vẫy tay xin sang đường. Hành động vẫy tay đó cung cấp cho em yếu tố nào để em quyết định nhường đường?",o:["Cung cấp thông tin dạng âm thanh để thu hút sự chú ý của người lái xe.","Cung cấp vật mang tin dạng sinh học truyền thẳng vào thị giác người quan sát.","Cung cấp thông tin qua việc xử lý dữ liệu hình ảnh hành động của người đó.","Cung cấp dữ liệu dạng con số biểu thị mức độ ưu tiên giao thông tại thời điểm đó."],c:2,e:"Em nhìn thấy hành động (dữ liệu hình ảnh), bộ não phân tích ra ý nghĩa xin đường (thông tin).},
+{i:65,l:"VD",q:"Khi tham gia giao thông, bạn Hùng nhìn thấy đèn tín hiệu chuyển sang màu vàng và lập tức quyết định đi chậm lại. Phân tích nào sau đây là chính xác nhất về tình huống xử lý thông tin này?",o:["Ánh sáng màu vàng là dữ liệu, việc Hùng hiểu cần phải đi chậm lại là thông tin thu được nhờ quá trình xử lý của não bộ.","Màu vàng rực rỡ của đèn giao thông chính là một loại vật mang tin quang học giúp truyền tải trực tiếp thông tin an toàn đến nhận thức của bạn Hùng tại thời điểm đó mà không cần qua phân tích.","Hành động đi chậm lại của chiếc xe máy do Hùng điều khiển chính là một dạng dữ liệu đầu ra sau khi Hùng đã xử lý thành công vật mang tin là hệ thống đèn giao thông tại ngã tư.","Hệ thống đèn giao thông tự động phát ra các luồng thông tin trực tiếp vào thị giác người đi đường để cảnh báo nguy hiểm, từ đó não bộ tiếp nhận và chuyển hóa các thông tin này thành dữ liệu để ra quyết định giảm tốc độ xe một cách an toàn nhất."],c:0,e:"Đèn là vật mang tin, ánh sáng vàng là dữ liệu. Việc hiểu ý nghĩa đèn vàng để đi chậm lại là thông tin."},
+{i:66,l:"VD",q:"Sáng sớm, Lan nhìn thấy những đám mây đen kéo đến kín trời và cô bé quyết định quay vào nhà mang theo chiếc ô trước khi đi học. Phát biểu nào sau đây mô tả đúng bản chất sự việc?",o:["Dữ liệu về hiện tượng trời sắp mưa đã được não bộ của Lan ghi chép lại và chuyển hóa thành thông tin để lưu trữ vĩnh viễn trên vật mang tin là chiếc ô mang theo bên mình.","Đám mây đen là một loại vật mang tin sinh thái học chứa đựng các dữ liệu về độ ẩm, từ đó trực tiếp truyền tải thông tin dự báo thời tiết vào hệ thần kinh để tạo ra phản xạ cầm ô.","Mây đen là dữ liệu dạng hình ảnh, việc Lan biết trời sắp mưa là thông tin và việc mang ô là quyết định hành động.","Việc mang theo chiếc ô để che mưa chính là một loại thông tin đầu ra sau khi bộ não của Lan tiến hành phân tích và xử lý vật mang tin là những đám mây đen trên bầu trời."],c:2,e:"Mây đen cung cấp dữ liệu hình ảnh, bộ não xử lý ra thông tin “trời mưa” và ra quyết định mang ô."},
+{i:67,l:"VD",q:"Bác sĩ nhìn vào tấm phim chụp X-quang của một bệnh nhân và đưa ra kết luận bệnh nhân bị rạn xương tay. Vai trò của các yếu tố trong quá trình này được định nghĩa như thế nào?",o:["Bệnh nhân đang ngồi chờ kết quả khám bệnh chính là dữ liệu gốc, máy chụp X-quang là hệ thống xử lý thông tin và tấm phim là dữ liệu đầu ra cuối cùng.","Tấm phim X-quang là nguồn thông tin y khoa hiển thị tình trạng xương, từ đó bác sĩ lưu trữ những thông tin này thành hệ thống dữ liệu số để cấp đơn thuốc cho bệnh nhân.","Lời chẩn đoán về tình trạng rạn xương của bác sĩ được phân loại là một dạng vật mang tin y tế chứa đựng các dữ liệu hình ảnh quan trọng của người bệnh.","Tấm phim là vật mang tin, các vệt trắng đen trên phim là dữ liệu, và kết luận rạn xương là thông tin bác sĩ rút ra được."],c:3,e:"Phim (vật mang tin) chứa vệt sáng tối (dữ liệu hình ảnh), bác sĩ dùng kiến thức phân tích ra bệnh trạng (thông tin)."},
+{i:68,l:"VD",q:"Cảnh sát giao thông nhìn vào hệ thống camera giám sát trên đường cao tốc và tiến hành phạt nguội một tài xế chạy quá tốc độ. Hãy xác định đúng quy trình thông tin trong sự việc trên.",o:["Quyết định phạt nguội của lực lượng cảnh sát là một loại dữ liệu pháp lý được trích xuất trực tiếp từ thông tin của máy quay phim chuyên dụng trên đường cao tốc.","Chiếc xe chạy quá tốc độ là thông tin thị giác, hệ thống camera lưu trữ thông tin này và in ra dữ liệu hình ảnh dưới dạng biên bản nộp phạt cho tài xế.","Hệ thống camera là vật mang tin điện tử tự động chuyển hóa các hành vi vi phạm pháp luật thành thông tin tốc độ để truyền trực tiếp vào biên bản phạt nguội của cảnh sát.","Đoạn video trên camera là dữ liệu, việc cảnh sát xác định tài xế vi phạm là thông tin giúp đưa ra quyết định phạt nguội."],c:3,e:"Video là dữ liệu lưu trên máy, việc phân tích video cho ra thông tin vi phạm để ra quyết định xử lý."},
+{i:69,l:"VD",q:"Bác nông dân nghe bản tin dự báo thời tiết trên đài phát thanh báo có hạn hán kéo dài, bác quyết định bơm nước tích trữ vào ao. Nhận định nào dưới đây là SAI về mặt khái niệm Tin học?",o:["Việc bơm nước tích trữ vào ao là hành động thay đổi thực tế dựa trên sự hiểu biết do thông tin mang lại.","Bản tin dự báo thời tiết phát ra từ chiếc đài là một loại vật mang tin phi vật thể chứa đựng các quy luật tự nhiên.","Chiếc đài phát thanh là vật mang tin lưu trữ và truyền tải dữ liệu dạng âm thanh đến thính giác của bác nông dân.","Âm thanh giọng nói của phát thanh viên là dữ liệu, việc bác biết sắp có hạn hán là thông tin thu được."],c:1,e:"Nhận định sai cần tìm: “Bản tin dự báo là vật mang tin phi vật thể”. Vật mang tin phải là phương tiện vật lý (như chiếc đài)."},
+{i:70,l:"VD",q:"Một du khách nước ngoài đang cố gắng tìm đường đến bảo tàng bằng cách nhìn vào tờ bản đồ du lịch bằng tiếng Việt nhưng không thể tìm được đường. Lý do giải thích theo góc độ Tin học là gì?",o:["Toàn bộ các kí hiệu và ngôn ngữ trên bản đồ là thông tin mã hóa, khi du khách nhìn vào thì nó lập tức biến thành dữ liệu vô nghĩa do rào cản ngôn ngữ.","Tờ bản đồ du lịch đã truyền tải sai thông tin địa lý khiến cho bộ não của người du khách chuyển hóa dữ liệu thành các hướng đi không chính xác trong thực tế.","Tờ bản đồ cung cấp dữ liệu hình ảnh và văn bản nhưng du khách không có khả năng xử lý để rút ra thông tin chỉ đường.","Người du khách đã tiếp nhận đầy đủ thông tin từ bản đồ nhưng do tờ giấy bản đồ không phải là vật mang tin tiêu chuẩn nên quá trình tìm đường bị thất bại."],c:2,e:"Du khách nhìn thấy dữ liệu trên giấy nhưng do rào cản ngôn ngữ, kí hiệu nên không chuyển hóa được thành thông tin."},
+{i:71,l:"VD",q:"Người mẹ đi siêu thị, cầm hộp sữa lên xem dòng chữ “HSD: 20/10/2026” in ở đáy hộp trước khi quyết định mua. Vai trò của dòng chữ này là gì?",o:["Là thông tin dinh dưỡng cốt lõi được in ấn tự động trên vật mang tin là hộp sữa nhằm bảo vệ sức khỏe người tiêu dùng thông qua dữ liệu an toàn thực phẩm.","Là dữ liệu dạng văn bản và con số, cung cấp thông tin về ngày hết hạn để người mẹ ra quyết định mua hay không.","Là vật mang tin dạng mã hóa cung cấp trực tiếp quyết định mua sắm vào tiềm thức của người tiêu dùng khi họ nhìn vào các dữ liệu hiển thị.","Là dữ liệu đầu ra của quá trình xử lý thông tin tại nhà máy sản xuất, đóng vai trò như vật mang tin truyền đạt hạn sử dụng."],c:1,e:"Dòng mực in “HSD…” là dữ liệu vật lý trên vỏ hộp, bộ não xử lý hiểu ngày hết hạn là thông tin."},
+{i:72,l:"VD",q:"Đội cứu hộ sử dụng sóng radar quét qua khu vực sạt lở và xác định được vị trí có người mắc kẹt dưới đống đổ nát. Trong tình huống này, quá trình tạo ra thông tin diễn ra như thế nào?",o:["Biểu đồ trên màn hình radar là thông tin nguyên bản, bộ não chuyên gia tiếp nhận và biến đổi nó thành dữ liệu tọa độ để đào bới cứu hộ.","Sóng radar dội về hiển thị dưới dạng biểu đồ là dữ liệu, chuyên gia phân tích biểu đồ để tạo ra thông tin vị trí nạn nhân.","Người mắc kẹt dưới đống đổ nát phát ra các dữ liệu sinh tồn, thiết bị radar đóng vai trò là thông tin xử lý các tín hiệu này thành vị trí cụ thể.","Radar phát ra các chùm thông tin vô tuyến xuyên qua mặt đất, sau đó thu hồi vật mang tin từ nạn nhân và chuyển đổi thành dữ liệu hình ảnh trên màn hình."],c:1,e:"Tín hiệu, biểu đồ radar thu được là dữ liệu; sự phân tích của chuyên gia cho ra thông tin vị trí nạn nhân."},
+{i:73,l:"VD",q:"Bạn An sử dụng bảng thống kê lượng mưa các tháng để lập kế hoạch đi cắm trại. An loại bỏ các tháng có lượng mưa trên 200mm. Hành động này phản ánh quy trình nào?",o:["Quá trình tiếp nhận thông tin từ bảng thống kê, sau đó phân tích thành các dữ liệu logic để điều khiển hành vi của tự nhiên.","Quá trình chuyển hóa thông tin lượng mưa thành hệ thống vật mang tin cá nhân nhằm thay đổi dữ liệu thời tiết của các tháng trong năm.","Quá trình xử lý dữ liệu con số để rút ra thông tin thời tiết, từ đó đưa ra quyết định chọn tháng cắm trại an toàn.","Quá trình thu thập vật mang tin dạng bảng biểu để lưu trữ thông tin dã ngoại vào bộ não dưới dạng các dãy bit dữ liệu phân mảnh."],c:2,e:"Xử lý dữ liệu (các con số) để có thông tin (tháng nào mưa nhiều, mưa ít) nhằm ra quyết định (hành động)."},
+{i:74,l:"VD",q:"Trong trận đấu bóng đá, huấn luyện viên đứng ngoài sân giơ 2 ngón tay lên cao. Tiền đạo cánh nhìn thấy liền đổi vị trí di chuyển chiến thuật. Yếu tố nào là thông tin trong tình huống này?",o:["Quyết định chạy đổi vị trí của cầu thủ tiền đạo sau khi tiếp nhận dữ liệu chiến thuật.","Vật mang tin sinh học là bàn tay của huấn luyện viên được dùng để truyền tải dữ liệu trận đấu.","Ý nghĩa “thay đổi chiến thuật số 2” mà tiền đạo hiểu được sau khi nhìn thấy hành động giơ ngón tay.","Hành động giơ 2 ngón tay vật lý của vị huấn luyện viên đứng ở ngoài đường biên ngang."],c:2,e:"Hành động giơ tay là dữ liệu (hình ảnh), ý nghĩa chiến thuật hiểu được mới là thông tin."},
+{i:75,l:"VD",q:"Bếp trưởng nếm thử một muỗng nước dùng và lập tức ra lệnh cho phụ bếp thêm một thìa muối. Quá trình xử lý thông tin ở đây diễn ra theo trình tự nào?",o:["Nước dùng đóng vai trò là vật mang tin chứa đựng lượng thông tin vị giác, giác quan tiếp nhận thông tin này và chuyển hóa thành dữ liệu để ra lệnh thêm muối.","Giác quan thu nhận vị giác (dữ liệu), não phân tích nhận ra nước dùng bị nhạt (thông tin), đưa ra hành động thêm muối.","Hành động thêm một thìa muối là dữ liệu đầu ra được hình thành sau khi quá trình xử lý thông tin vật lý của món ăn hoàn tất.","Bếp trưởng sử dụng kinh nghiệm bản thân làm dữ liệu để phân tích thông tin truyền từ vật mang tin là chiếc muỗng kim loại đang cầm trên tay."],c:1,e:"Vị mặn hay nhạt cảm nhận qua vị giác là dữ liệu, não bộ đối chiếu kinh nghiệm hiểu là “bị nhạt” (thông tin), dẫn đến quyết định thêm muối."},
+{i:76,l:"VD",q:"Khi thanh toán tại siêu thị, nhân viên thu ngân đưa sản phẩm qua máy quét mã vạch (barcode) và màn hình hiện lên giá tiền. Câu nào phân tích đúng vai trò các thành phần?",o:["Giá tiền hiện trên màn hình là hệ thống dữ liệu mã hóa đã được bộ não của nhân viên thu ngân xử lý thành thông tin thanh toán cuối cùng.","Các vạch đen trắng là dữ liệu, máy quét đọc dữ liệu đưa vào máy tính xử lý để xuất ra thông tin giá tiền trên màn hình.","Máy quét mã vạch là vật mang tin tự động phát ra thông tin laze để thu thập dữ liệu giá cả từ các sản phẩm được bày bán.","Mã vạch là một hệ thống thông tin kinh tế học chứa sẵn dữ liệu thanh toán, khi được quét nó sẽ tự động biến vật mang tin thành hóa đơn mua hàng."],c:1,e:"Vạch đen trắng vật lý trên vỏ hộp là dữ liệu; máy tính tra cứu dữ liệu đó và xuất ra thông tin (tên hàng, giá) cho con người."},
+{i:77,l:"VD",q:"Lính cứu hỏa đang ngủ thì nghe thấy tiếng còi báo động hỏa hoạn vang lên chói tai, lập tức bật dậy mặc đồ bảo hộ và xuất phát. Yếu tố “tiếng còi” trong tình huống này là gì?",o:["Là thông tin khẩn cấp được hệ thống chuyển hóa từ dữ liệu cháy nổ tại hiện trường.","Là dạng dữ liệu cơ học được thiết kế để thay thế thông tin nhận thức của con người.","Là dữ liệu âm thanh được tai tiếp nhận để não bộ xử lý thành thông tin có cháy.","Là vật mang tin truyền tải thông tin báo động nguy cấp trực tiếp vào hệ thần kinh vận động."],c:2,e:"Tiếng còi vật lý thu nhận bằng thính giác là dữ liệu. Hiểu biết “có cháy, cần đi làm nhiệm vụ” là thông tin."},
+{i:78,l:"VD",q:"Những ngư dân đi biển nhiều năm có thể nhìn màu sắc của nước biển và mây trời để dự đoán có bão hay không mà không cần máy móc. Khẳng định nào sau đây mô tả đúng khả năng này?",o:["Biển cả là vật mang tin khổng lồ chứa dữ liệu thời tiết, có khả năng tự phát thông tin dự báo vào não bộ con người.","Ngư dân sử dụng mắt như một vật mang tin để thu thập thông tin bão và chuyển hóa thành dữ liệu sinh tồn trên biển.","Màu nước biển và mây trời là những thông tin khí tượng tự nhiên truyền dữ liệu vào mắt ngư dân để tạo ra quyết định.","Ngư dân dùng kinh nghiệm để xử lý các dữ liệu hình ảnh (màu nước, mây) thành thông tin dự báo thời tiết chính xác."],c:3,e:"Màu sắc quan sát được là dữ liệu thô; nhờ kinh nghiệm phong phú, não bộ xử lý chúng thành thông tin dự báo thời tiết."},
+{i:79,l:"VD",q:"Lớp trưởng đứng trước lớp và đếm số cánh tay giơ lên, sau đó chốt danh sách 30 bạn tham gia đi dã ngoại. Quá trình xử lý để có con số 30 bạn được hiểu như thế nào?",o:["Hành động giơ tay của các bạn là thông tin biểu quyết được chuyển đổi thành dữ liệu lưu trữ trên giấy.","Con số 30 là dữ liệu đầu ra được hình thành từ quá trình thu thập vật mang tin là các cánh tay giơ lên.","Số cánh tay đếm được là dữ liệu con số, ý nghĩa có 30 bạn đồng ý tham gia là thông tin thu nhận được.","Danh sách 30 bạn tham gia là vật mang tin đã được mã hóa bằng dữ liệu chữ viết tay của lớp trưởng."],c:2,e:"Việc đếm (1, 2, 3…) tạo ra dữ liệu số lượng. Hiểu rằng con số đó đại diện cho số học sinh đi dã ngoại là thông tin."},
+{i:80,l:"VD",q:"Một nhà địa chất học quan sát các lớp trầm tích của một vách núi và kết luận khu vực này từng chìm dưới đáy biển hàng triệu năm. Hãy xác định đúng vật mang tin và dữ liệu.",o:["Vách núi là dữ liệu thô, những công cụ của nhà địa chất học đóng vai trò là vật mang tin.","Kết luận của nhà địa chất học là vật mang tin truyền tải dữ liệu đáy biển cho sinh viên.","Vách núi là vật mang tin, hình dáng cấu trúc các lớp trầm tích là dữ liệu hình ảnh.","Lớp trầm tích là thông tin cổ đại, nhà địa chất học biến nó thành dữ liệu phân tích lịch sử."],c:2,e:"Bản thân vách núi ngoài tự nhiên đóng vai trò phương tiện mang dấu vết vật lý (vật mang tin). Các vân đá, hình dáng lớp trầm tích là dữ liệu hình ảnh thô."}
+];
+
+/* ================================================================
+   HÌNH MINH HỌA (SVG nội tuyến) CHO CÁC CÂU VẬN DỤNG
+   ================================================================ */
+const ILLUS={
+65:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="122" width="420" height="28" fill="#d7e1ee"/><g stroke="#fff" stroke-width="4" stroke-dasharray="20 16"><path d="M0 136 H420"/></g><g><rect x="56" y="58" width="10" height="66" fill="#7b8794"/><rect x="35" y="8" width="52" height="88" rx="11" fill="#263238"/><circle cx="61" cy="26" r="11" fill="#5a1f1f"/><circle cx="61" cy="52" r="11" fill="#ffd400"><animate attributeName="opacity" values="1;.2;1" dur="1s" repeatCount="indefinite"/></circle><circle cx="61" cy="78" r="11" fill="#1c4022"/><circle cx="61" cy="52" r="19" fill="#ffd400" opacity=".25"><animate attributeName="r" values="14;23;14" dur="1s" repeatCount="indefinite"/></circle></g><g><circle cx="252" cy="112" r="17" fill="#334155"/><circle cx="252" cy="112" r="7" fill="#cbd5e1"/><circle cx="322" cy="112" r="17" fill="#334155"/><circle cx="322" cy="112" r="7" fill="#cbd5e1"/><path d="M250 108 L270 86 L306 86 L324 108 Z" fill="#2563eb"/><rect x="272" y="76" width="34" height="8" rx="4" fill="#1e3a8a"/><path d="M302 86 L314 62" stroke="#1e3a8a" stroke-width="6" stroke-linecap="round"/><circle cx="288" cy="52" r="11" fill="#f6c99b"/><path d="M277 50 a11 11 0 0 1 22 0 z" fill="#dc2626"/><path d="M288 63 L286 86" stroke="#0f172a" stroke-width="9" stroke-linecap="round"/><g stroke="#94a3b8" stroke-width="4" stroke-linecap="round"><path d="M196 92 h32"/><path d="M186 104 h40"/></g></g><text x="336" y="34" font-size="17" font-weight="700" fill="#0f172a">Đèn vàng</text></svg>`,
+66:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><g fill="#5b6b7d"><ellipse cx="120" cy="40" rx="54" ry="26"/><ellipse cx="172" cy="52" rx="44" ry="21"/><ellipse cx="74" cy="54" rx="36" ry="18"/></g><g stroke="#3b82f6" stroke-width="4" stroke-linecap="round"><path d="M92 76 l-9 17"/><path d="M124 80 l-9 17"/><path d="M156 76 l-9 17"/><path d="M186 72 l-9 17"><animate attributeName="opacity" values="1;.2;1" dur=".8s" repeatCount="indefinite"/></path></g><rect y="126" width="420" height="24" fill="#cfe6cd"/><g><path d="M248 76 a58 58 0 0 1 116 0 z" fill="#ef4444"/><path d="M248 76 q14 11 29 0 q14 11 29 0 q14 11 29 0 q14 11 29 0" fill="#f87171"/><rect x="304" y="76" width="5" height="44" fill="#7c2d12"/><path d="M309 118 q11 7 13 -4" stroke="#7c2d12" stroke-width="5" fill="none"/><circle cx="292" cy="90" r="12" fill="#f6c99b"/><path d="M280 86 a12 12 0 0 1 24 0 z" fill="#1f2937"/><rect x="283" y="101" width="19" height="24" rx="8" fill="#f59e0b"/><rect x="285" y="124" width="6" height="12" fill="#1e3a8a"/><rect x="294" y="124" width="6" height="12" fill="#1e3a8a"/></g><text x="222" y="26" font-size="16" font-weight="700" fill="#334155">Mây đen kéo đến kín trời</text></svg>`,
+67:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect x="26" y="14" width="196" height="122" rx="10" fill="#1e293b"/><rect x="36" y="24" width="176" height="102" rx="6" fill="#0f172a"/><g fill="#e2e8f0"><rect x="60" y="46" width="16" height="62" rx="8"/><rect x="92" y="46" width="16" height="62" rx="8"/><circle cx="68" cy="42" r="11"/><circle cx="100" cy="42" r="11"/><circle cx="68" cy="112" r="9"/><circle cx="100" cy="112" r="9"/></g><path d="M86 60 L96 74 L84 86 L98 100" stroke="#f87171" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="176" cy="72" r="20" fill="none" stroke="#93c5fd" stroke-width="4"/><path d="M190 86 L206 102" stroke="#93c5fd" stroke-width="6" stroke-linecap="round"/><g><circle cx="300" cy="48" r="16" fill="#f6c99b"/><path d="M284 44 a16 16 0 0 1 32 0 z" fill="#0ea5e9"/><rect x="284" y="64" width="34" height="46" rx="12" fill="#f8fafc"/><path d="M288 110 L286 134 M314 110 L316 134" stroke="#334155" stroke-width="9" stroke-linecap="round"/><path d="M316 74 L340 92" stroke="#f6c99b" stroke-width="8" stroke-linecap="round"/></g><text x="352" y="52" font-size="15" font-weight="700" fill="#0f172a">Bác sĩ</text><text x="352" y="72" font-size="15" font-weight="700" fill="#0f172a">đọc phim</text></svg>`,
+68:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="118" width="420" height="32" fill="#cbd5e1"/><g><rect x="52" y="34" width="9" height="88" fill="#64748b"/><rect x="46" y="16" width="52" height="28" rx="8" fill="#1f2937"/><circle cx="94" cy="30" r="9" fill="#38bdf8"/><path d="M98 34 L150 96" stroke="#f87171" stroke-width="3" stroke-dasharray="7 6"><animate attributeName="opacity" values="1;.25;1" dur=".9s" repeatCount="indefinite"/></path></g><g><rect x="170" y="86" width="140" height="26" rx="10" fill="#2563eb"/><path d="M196 86 L214 66 L268 66 L288 86 Z" fill="#3b82f6"/><rect x="216" y="70" width="24" height="14" rx="3" fill="#bfdbfe"/><rect x="246" y="70" width="24" height="14" rx="3" fill="#bfdbfe"/><circle cx="200" cy="114" r="14" fill="#1f2937"/><circle cx="284" cy="114" r="14" fill="#1f2937"/><g stroke="#94a3b8" stroke-width="4" stroke-linecap="round"><path d="M132 76 h28"/><path d="M120 92 h38"/><path d="M136 108 h24"/></g></g><text x="330" y="40" font-size="16" font-weight="700" fill="#0f172a">Camera</text><text x="330" y="60" font-size="16" font-weight="700" fill="#dc2626">Quá tốc độ</text></svg>`,
+69:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="120" width="420" height="30" fill="#d9ead3"/><g><rect x="24" y="52" width="104" height="60" rx="12" fill="#8b5e3c"/><circle cx="52" cy="82" r="17" fill="#fde68a"/><rect x="78" y="66" width="38" height="8" rx="4" fill="#fde68a"/><rect x="78" y="82" width="38" height="8" rx="4" fill="#fde68a"/><rect x="78" y="98" width="38" height="6" rx="3" fill="#fcd34d"/><path d="M112 52 L138 18" stroke="#4b5563" stroke-width="4"/><circle cx="138" cy="16" r="5" fill="#ef4444"/><g stroke="#60a5fa" stroke-width="3" fill="none"><path d="M146 30 q16 -12 30 0"><animate attributeName="opacity" values="1;.2;1" dur="1.1s" repeatCount="indefinite"/></path><path d="M152 44 q20 -14 38 0"><animate attributeName="opacity" values=".2;1;.2" dur="1.1s" repeatCount="indefinite"/></path></g></g><g><ellipse cx="288" cy="126" rx="94" ry="20" fill="#7dd3fc"/><ellipse cx="288" cy="122" rx="94" ry="18" fill="#38bdf8"/><path d="M206 118 q82 -18 164 0" stroke="#e0f2fe" stroke-width="3" fill="none"/></g><g><circle cx="200" cy="70" r="13" fill="#f6c99b"/><path d="M182 64 q18 -16 36 0 z" fill="#a16207"/><rect x="188" y="83" width="25" height="34" rx="9" fill="#22c55e"/><path d="M192 117 L190 132 M209 117 L211 132" stroke="#1f2937" stroke-width="8" stroke-linecap="round"/></g><text x="300" y="40" font-size="15" font-weight="700" fill="#0f172a">Bơm nước tích trữ vào ao</text></svg>`,
+70:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="126" width="420" height="24" fill="#e2e8f0"/><g><circle cx="112" cy="44" r="15" fill="#f6c99b"/><path d="M92 40 q20 -18 40 0 z" fill="#f59e0b"/><rect x="96" y="59" width="32" height="42" rx="12" fill="#3b82f6"/><rect x="82" y="62" width="16" height="30" rx="7" fill="#ef4444"/><path d="M100 101 L96 128 M124 101 L128 128" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round"/><path d="M128 70 L158 82" stroke="#f6c99b" stroke-width="8" stroke-linecap="round"/></g><g transform="rotate(-6 250 88)"><rect x="168" y="52" width="164" height="80" rx="8" fill="#fffbeb" stroke="#d6b656" stroke-width="3"/><path d="M186 112 q34 -34 62 -14 q30 20 62 -22" stroke="#16a34a" stroke-width="4" fill="none" stroke-dasharray="9 7"/><circle cx="186" cy="112" r="6" fill="#dc2626"/><path d="M200 66 h40 M200 78 h28" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/><path d="M300 100 L318 78" stroke="#2563eb" stroke-width="4"/><path d="M246 96 l10 -10 10 10 -10 10z" fill="#60a5fa"/></g><text x="330" y="46" font-size="34" font-weight="900" fill="#dc2626">?<animate attributeName="opacity" values="1;.25;1" dur="1s" repeatCount="indefinite"/></text><text x="252" y="146" font-size="14" font-weight="700" fill="#475569" text-anchor="middle">Bản đồ du lịch bằng tiếng Việt</text></svg>`,
+71:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="126" width="420" height="24" fill="#e2e8f0"/><g><path d="M96 46 L136 26 L176 46 L176 126 L96 126 Z" fill="#ffffff" stroke="#94a3b8" stroke-width="3"/><path d="M96 46 L136 62 L176 46" fill="#e0f2fe" stroke="#94a3b8" stroke-width="3"/><rect x="104" y="72" width="64" height="30" rx="5" fill="#2563eb"/><text x="136" y="93" font-size="15" font-weight="900" fill="#fff" text-anchor="middle">SỮA</text><rect x="100" y="108" width="72" height="14" rx="4" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/><text x="136" y="119" font-size="10.5" font-weight="800" fill="#92400e" text-anchor="middle">HSD: 20/10/2026</text></g><g><circle cx="238" cy="86" r="30" fill="none" stroke="#334155" stroke-width="6"/><path d="M260 108 L286 132" stroke="#334155" stroke-width="9" stroke-linecap="round"/><circle cx="238" cy="86" r="26" fill="#bae6fd" opacity=".45"/></g><text x="298" y="52" font-size="16" font-weight="800" fill="#0f172a">Xem hạn sử dụng</text><text x="298" y="74" font-size="15" font-weight="700" fill="#475569">trước khi mua</text></svg>`,
+72:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="122" width="420" height="28" fill="#e2e8f0"/><g><rect x="26" y="18" width="140" height="112" rx="12" fill="#0f172a"/><circle cx="96" cy="74" r="48" fill="#052e16"/><g stroke="#22c55e" stroke-width="2" fill="none" opacity=".8"><circle cx="96" cy="74" r="16"/><circle cx="96" cy="74" r="32"/><circle cx="96" cy="74" r="47"/><path d="M49 74 H143 M96 27 V121"/></g><g><path d="M96 74 L96 27 A47 47 0 0 1 137 96 Z" fill="#22c55e" opacity=".38"><animateTransform attributeName="transform" type="rotate" from="0 96 74" to="360 96 74" dur="2.6s" repeatCount="indefinite"/></path></g><circle cx="122" cy="52" r="5.5" fill="#facc15"><animate attributeName="opacity" values="1;.15;1" dur="1.2s" repeatCount="indefinite"/></circle></g><g fill="#78716c"><path d="M210 128 L232 92 L254 128 Z"/><path d="M246 128 L272 82 L300 128 Z"/><path d="M292 128 L316 98 L340 128 Z"/></g><g><circle cx="268" cy="70" r="9" fill="#f6c99b"/><rect x="260" y="79" width="17" height="18" rx="6" fill="#f97316"/><path d="M252 60 l8 8 M284 60 l-8 8" stroke="#facc15" stroke-width="3"/></g><text x="352" y="52" font-size="15" font-weight="800" fill="#0f172a">Vị trí</text><text x="352" y="72" font-size="15" font-weight="800" fill="#0f172a">nạn nhân</text></svg>`,
+73:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><g><path d="M40 20 V124 H226" stroke="#334155" stroke-width="3" fill="none"/><g fill="#38bdf8"><rect x="52" y="70" width="20" height="54" rx="3"/><rect x="80" y="46" width="20" height="78" rx="3"/><rect x="108" y="86" width="20" height="38" rx="3"/><rect x="136" y="34" width="20" height="90" rx="3" fill="#ef4444"/><rect x="164" y="94" width="20" height="30" rx="3"/><rect x="192" y="60" width="20" height="64" rx="3"/></g><g stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="7 6"><path d="M40 54 H226"/></g><text x="230" y="52" font-size="12" font-weight="800" fill="#b45309">200mm</text><text x="42" y="140" font-size="12" font-weight="700" fill="#475569">1   2   3   4   5   6  (tháng)</text></g><g><path d="M286 124 L330 66 L374 124 Z" fill="#f97316"/><path d="M330 66 L330 124" stroke="#c2410c" stroke-width="3"/><path d="M316 124 L330 96 L344 124 Z" fill="#1f2937"/><rect x="278" y="124" width="106" height="8" rx="4" fill="#8fce86"/><circle cx="392" cy="40" r="16" fill="#fde047"/></g><text x="330" y="146" font-size="13" font-weight="800" fill="#0f172a" text-anchor="middle">Chọn tháng cắm trại an toàn</text></svg>`,
+74:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="120" width="420" height="30" fill="#8fce86"/><g stroke="#fff" stroke-width="3"><path d="M0 132 H420" stroke-dasharray="18 14"/></g><g><circle cx="110" cy="46" r="15" fill="#f6c99b"/><path d="M92 42 q18 -17 36 0 z" fill="#1f2937"/><rect x="94" y="61" width="33" height="42" rx="12" fill="#0f172a"/><path d="M98 103 L94 128 M123 103 L127 128" stroke="#1f2937" stroke-width="9" stroke-linecap="round"/><path d="M126 68 L146 34" stroke="#f6c99b" stroke-width="8" stroke-linecap="round"/><g stroke="#f6c99b" stroke-width="7" stroke-linecap="round"><path d="M146 34 L140 12"/><path d="M146 34 L154 13"/></g><circle cx="118" cy="72" r="4.5" fill="#facc15"/></g><g><circle cx="286" cy="112" r="17" fill="#fff" stroke="#0f172a" stroke-width="3"/><path d="M286 95 l9 8 -4 11 h-11 l-4 -11z" fill="#0f172a"/><g stroke="#0f172a" stroke-width="2.4"><path d="M286 95 V112 M295 103 L286 112 M277 103 L286 112 M282 125 L286 112 M291 125 L286 112"/></g></g><g><circle cx="356" cy="60" r="13" fill="#f6c99b"/><rect x="344" y="73" width="26" height="34" rx="10" fill="#dc2626"/><path d="M348 107 L344 126 M366 107 L372 124" stroke="#1e3a8a" stroke-width="8" stroke-linecap="round"/><path d="M344 80 L326 66" stroke="#f6c99b" stroke-width="7" stroke-linecap="round"/></g><text x="300" y="24" font-size="16" font-weight="800" fill="#0f172a">Chiến thuật số 2</text></svg>`,
+75:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="124" width="420" height="26" fill="#e2e8f0"/><g><path d="M96 100 q0 -34 44 -34 q44 0 44 34 z" fill="#94a3b8"/><rect x="88" y="98" width="104" height="16" rx="7" fill="#64748b"/><path d="M120 58 q-8 -14 4 -22 M140 54 q-8 -16 4 -24 M160 58 q-8 -14 4 -22" stroke="#cbd5e1" stroke-width="4" fill="none" stroke-linecap="round"><animate attributeName="opacity" values=".25;1;.25" dur="2s" repeatCount="indefinite"/></path><rect x="70" y="114" width="140" height="12" rx="6" fill="#475569"/></g><g><circle cx="288" cy="46" r="15" fill="#f6c99b"/><path d="M270 34 q18 -22 36 0 q-18 -8 -36 0z" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/><rect x="272" y="61" width="34" height="44" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/><path d="M276 105 L272 128 M302 105 L306 128" stroke="#334155" stroke-width="9" stroke-linecap="round"/><path d="M272 72 L246 62" stroke="#f6c99b" stroke-width="8" stroke-linecap="round"/><path d="M246 62 L232 56" stroke="#94a3b8" stroke-width="4"/><ellipse cx="228" cy="55" rx="9" ry="6" fill="#94a3b8"/></g><g><rect x="330" y="86" width="14" height="34" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/><rect x="322" y="80" width="30" height="10" rx="4" fill="#e2e8f0"/><g fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"><circle cx="330" cy="72" r="4"/><circle cx="340" cy="70" r="4"/><circle cx="336" cy="63" r="4"/></g></g><text x="356" y="52" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">Thêm muối</text></svg>`,
+76:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="122" width="420" height="28" fill="#e2e8f0"/><g><rect x="34" y="58" width="86" height="64" rx="8" fill="#fde68a" stroke="#d97706" stroke-width="3"/><g stroke="#0f172a" stroke-width="3"><path d="M46 72 V108"/><path d="M54 72 V108" stroke-width="2"/><path d="M62 72 V108" stroke-width="5"/><path d="M74 72 V108"/><path d="M82 72 V108" stroke-width="2"/><path d="M92 72 V108" stroke-width="4"/><path d="M104 72 V108" stroke-width="2"/></g></g><g><path d="M136 84 L176 84" stroke="#ef4444" stroke-width="4"><animate attributeName="opacity" values="1;.2;1" dur=".7s" repeatCount="indefinite"/></path><rect x="176" y="62" width="66" height="44" rx="9" fill="#334155"/><rect x="186" y="72" width="46" height="12" rx="4" fill="#7dd3fc"/><path d="M176 106 L162 122" stroke="#334155" stroke-width="8" stroke-linecap="round"/></g><g><rect x="266" y="42" width="128" height="82" rx="10" fill="#1f2937"/><rect x="276" y="52" width="108" height="52" rx="5" fill="#0ea5e9"/><text x="330" y="76" font-size="13" font-weight="800" fill="#fff" text-anchor="middle">Sữa tươi 1 lít</text><text x="330" y="96" font-size="19" font-weight="900" fill="#fde047" text-anchor="middle">45.000đ</text><rect x="316" y="124" width="28" height="10" fill="#475569"/></g></svg>`,
+77:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#fff7ed"/><rect y="124" width="420" height="26" fill="#e2e8f0"/><g><path d="M96 62 a26 26 0 0 1 52 0 v18 h-52 z" fill="#facc15" stroke="#b45309" stroke-width="3"><animateTransform attributeName="transform" type="rotate" values="-8 122 66;8 122 66;-8 122 66" dur=".45s" repeatCount="indefinite"/></path><rect x="88" y="80" width="68" height="9" rx="4" fill="#b45309"/><circle cx="122" cy="96" r="6" fill="#78350f"/><g stroke="#ef4444" stroke-width="4" fill="none" stroke-linecap="round"><path d="M74 52 q-14 14 0 30"><animate attributeName="opacity" values="1;.15;1" dur=".5s" repeatCount="indefinite"/></path><path d="M170 52 q14 14 0 30"><animate attributeName="opacity" values=".15;1;.15" dur=".5s" repeatCount="indefinite"/></path></g></g><g><circle cx="268" cy="52" r="15" fill="#f6c99b"/><path d="M250 48 q18 -20 36 0 z" fill="#dc2626"/><rect x="256" y="40" width="24" height="8" rx="4" fill="#facc15"/><rect x="252" y="67" width="33" height="42" rx="12" fill="#b91c1c"/><path d="M258 78 h22" stroke="#fde047" stroke-width="5"/><path d="M256 109 L252 132 M281 109 L285 132" stroke="#1f2937" stroke-width="9" stroke-linecap="round"/><path d="M285 76 L306 62" stroke="#f6c99b" stroke-width="8" stroke-linecap="round"/></g><g fill="#f97316"><path d="M344 128 q-10 -22 6 -34 q-2 14 10 18 q14 5 8 16z"><animate attributeName="opacity" values=".7;1;.7" dur=".8s" repeatCount="indefinite"/></path></g><text x="352" y="52" font-size="15" font-weight="800" fill="#b91c1c">Báo cháy!</text></svg>`,
+78:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><g fill="#475569"><ellipse cx="96" cy="34" rx="46" ry="20"/><ellipse cx="146" cy="44" rx="36" ry="17"/><ellipse cx="300" cy="30" rx="42" ry="19"/></g><circle cx="352" cy="34" r="15" fill="#fde047" opacity=".85"/><rect y="86" width="420" height="64" fill="#0ea5e9"/><g stroke="#7dd3fc" stroke-width="3" fill="none"><path d="M0 100 q26 -10 52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0"/><path d="M0 120 q26 -10 52 0 t52 0 t52 0 t52 0 t52 0 t52 0 t52 0" opacity=".7"/></g><g><path d="M150 92 L286 92 L262 116 L174 116 Z" fill="#8b5e3c"/><rect x="196" y="42" width="6" height="52" fill="#7c2d12"/><path d="M202 44 L246 66 L202 78 Z" fill="#f8fafc"/><circle cx="234" cy="70" r="12" fill="#f6c99b"/><path d="M220 66 q14 -14 28 0 z" fill="#a16207"/><rect x="224" y="82" width="22" height="14" rx="6" fill="#f59e0b"/></g><text x="212" y="142" font-size="14" font-weight="800" fill="#0f172a" text-anchor="middle">Nhìn màu nước và mây để dự báo bão</text></svg>`,
+79:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="126" width="420" height="24" fill="#e2e8f0"/><g><rect x="30" y="26" width="120" height="62" rx="8" fill="#0f172a"/><text x="90" y="56" font-size="15" font-weight="800" fill="#fde047" text-anchor="middle">ĐI DÃ NGOẠI</text><text x="90" y="76" font-size="13" font-weight="700" fill="#7dd3fc" text-anchor="middle">Ai đồng ý giơ tay?</text><circle cx="90" cy="102" r="12" fill="#f6c99b"/><rect x="78" y="114" width="25" height="24" rx="9" fill="#2563eb"/><path d="M102 118 L118 100" stroke="#f6c99b" stroke-width="7" stroke-linecap="round"/></g><g><circle cx="196" cy="86" r="11" fill="#f6c99b"/><rect x="186" y="97" width="21" height="22" rx="8" fill="#22c55e"/><path d="M206 100 L214 74" stroke="#f6c99b" stroke-width="7" stroke-linecap="round"/><rect x="176" y="118" width="60" height="9" rx="4" fill="#a16207"/></g><g><circle cx="264" cy="86" r="11" fill="#f6c99b"/><rect x="254" y="97" width="21" height="22" rx="8" fill="#f97316"/><path d="M274 100 L282 74" stroke="#f6c99b" stroke-width="7" stroke-linecap="round"/><rect x="244" y="118" width="60" height="9" rx="4" fill="#a16207"/></g><g><circle cx="332" cy="86" r="11" fill="#f6c99b"/><rect x="322" y="97" width="21" height="22" rx="8" fill="#8b5cf6"/><path d="M342 100 L350 74" stroke="#f6c99b" stroke-width="7" stroke-linecap="round"/><rect x="312" y="118" width="60" height="9" rx="4" fill="#a16207"/></g><g><circle cx="386" cy="40" r="24" fill="#fff" stroke="#2563eb" stroke-width="3"/><text x="386" y="48" font-size="20" font-weight="900" fill="#1d4ed8" text-anchor="middle">30</text></g></svg>`,
+80:`<svg viewBox="0 0 420 150"><rect width="420" height="150" rx="14" fill="#f1f7ff"/><rect y="128" width="420" height="22" fill="#cbb89a"/><g><path d="M40 128 L60 40 L206 30 L226 128 Z" fill="#a98467"/><path d="M52 62 L214 52 L216 66 L54 76 Z" fill="#8d6e63"/><path d="M56 84 L218 74 L220 88 L58 98 Z" fill="#bc8f6f"/><path d="M60 106 L222 96 L224 110 L62 120 Z" fill="#7d5a4a"/><circle cx="120" cy="70" r="7" fill="#f5f5dc" stroke="#6d4c41" stroke-width="2"/><path d="M120 63 q5 7 0 14 M114 66 q6 4 12 0" stroke="#6d4c41" stroke-width="1.6" fill="none"/></g><g><circle cx="288" cy="60" r="13" fill="#f6c99b"/><path d="M272 56 q16 -16 32 0 z" fill="#f59e0b"/><rect x="274" y="73" width="29" height="38" rx="11" fill="#0ea5e9"/><path d="M278 111 L274 132 M300 111 L304 132" stroke="#1e3a8a" stroke-width="9" stroke-linecap="round"/><path d="M274 82 L246 96" stroke="#f6c99b" stroke-width="8" stroke-linecap="round"/><path d="M246 96 L228 104" stroke="#78350f" stroke-width="5" stroke-linecap="round"/></g><g><circle cx="356" cy="88" r="24" fill="none" stroke="#334155" stroke-width="6"/><path d="M374 106 L394 126" stroke="#334155" stroke-width="9" stroke-linecap="round"/><circle cx="356" cy="88" r="21" fill="#bae6fd" opacity=".4"/></g><text x="356" y="42" font-size="15" font-weight="800" fill="#0f172a" text-anchor="middle">Lớp trầm tích</text></svg>`
+};
+
+/* ================================================================
+   ÂM THANH (Web Audio API - không cần file ngoài)
+   ================================================================ */
+let actx=null,soundOn=true;
+function AC(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return null}}
+  if(actx.state==="suspended")actx.resume();return actx}
+function tone(f,d,type,vol,delay){
+  if(!soundOn)return;const c=AC();if(!c)return;
+  const t0=c.currentTime+(delay||0);
+  const o=c.createOscillator(),g=c.createGain();
+  o.type=type||"sine";o.frequency.setValueAtTime(f,t0);
+  g.gain.setValueAtTime(0.0001,t0);
+  g.gain.exponentialRampToValueAtTime(vol||0.16,t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+  o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+d+0.05);
+}
+function sweep(f1,f2,d,type,vol,delay){
+  if(!soundOn)return;const c=AC();if(!c)return;
+  const t0=c.currentTime+(delay||0);
+  const o=c.createOscillator(),g=c.createGain();
+  o.type=type||"sine";o.frequency.setValueAtTime(f1,t0);
+  o.frequency.exponentialRampToValueAtTime(f2,t0+d);
+  g.gain.setValueAtTime(0.0001,t0);g.gain.exponentialRampToValueAtTime(vol||0.14,t0+0.03);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+d);
+  o.connect(g);g.connect(c.destination);o.start(t0);o.stop(t0+d+0.05);
+}
+const S={
+  click:()=>tone(680,.08,"triangle",.12),
+  correct:()=>{[523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f,.24,"triangle",.17,i*.09))},
+  wrong:()=>{sweep(300,110,.5,"sawtooth",.13);tone(150,.4,"square",.07,.05)},
+  tick:()=>tone(1180,.05,"square",.07),
+  climb:()=>{sweep(320,760,.7,"sine",.12)},
+  gift:()=>{[880,1174.66,1396.91,1760].forEach((f,i)=>tone(f,.18,"triangle",.15,i*.07))},
+  empty:()=>{tone(420,.16,"sine",.12);tone(300,.24,"sine",.11,.16)},
+  win:()=>{[523.25,659.25,783.99,1046.5,1318.51,1567.98].forEach((f,i)=>tone(f,.4,"triangle",.16,i*.13))},
+  start:()=>{[392,523.25,659.25].forEach((f,i)=>tone(f,.22,"sine",.15,i*.1))},
+  timeout:()=>{sweep(700,180,.6,"square",.12)}
+};
+
+/* ================================================================
+   HIỆU ỨNG HÌNH ẢNH
+   ================================================================ */
+function confetti(n,x,y,spread){
+  const fx=document.getElementById("fx");
+  const cols=["#ef4444","#f59e0b","#22c55e","#3b82f6","#a855f7","#ec4899","#facc15"];
+  const cx=(x===undefined)?window.innerWidth/2:x, cy=(y===undefined)?window.innerHeight/2:y;
+  const sp=spread||window.innerWidth*0.5;
+  for(let i=0;i<n;i++){
+    const d=document.createElement("div");d.className="cf";
+    d.style.background=cols[i%cols.length];
+    d.style.left=(cx+(Math.random()-.5)*sp)+"px";
+    d.style.top=(cy-40+Math.random()*60)+"px";
+    d.style.animationDuration=(1.6+Math.random()*1.5)+"s";
+    d.style.transform="rotate("+Math.random()*360+"deg)";
+    fx.appendChild(d);setTimeout(()=>d.remove(),3400);
+  }
+}
+function flash(color){
+  const f=document.getElementById("flash");
+  f.style.background=color;f.style.opacity=".45";
+  setTimeout(()=>{f.style.opacity="0"},110);
+}
+
+/* ================================================================
+   TRẠNG THÁI BÀI KIỂM TRA
+   ================================================================ */
+const LV={NB:{name:"NHẬN BIẾT",time:30,cls:"bNB"},TH:{name:"THÔNG HIỂU",time:45,cls:"bTH"},VD:{name:"VẬN DỤNG",time:70,cls:"bVD"}};
+let quiz=[],idx=0,score=0,bonus=0,results=[],answered=false,
+    tTotal=0,tEnd=0,tInt=null,lastTick=-1,usedSec=0,startedAt=0;
+let stuName="",stuClass="";
+const $=id=>document.getElementById(id);
+function fmt(n){return (Math.round(n*10)/10).toFixed(1).replace(".",",")}
+function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function pick(lv,n){return shuffle(BANK.filter(q=>q.l===lv)).slice(0,n)}
+
+function buildQuiz(){ return pick("NB",7).concat(pick("TH",2)).concat(pick("VD",1)); }
+
+/* ============ BẮT ĐẦU ============ */
+$("btnStart").addEventListener("click",()=>{
+  const n=$("inpName").value.trim();
+  if(n.length<2){$("startErr").textContent="⚠ Vui lòng nhập họ tên học sinh để bắt đầu bài kiểm tra.";S.wrong();return}
+  stuName=n;stuClass=$("inpClass").value.trim()||"—";
+  $("startErr").textContent="";
+  S.start();AC();
+  $("chipName").textContent=stuName;$("sideName").textContent=stuName;$("sideClass").textContent=stuClass;
+  $("mtnName").textContent=stuName;
+  startTest();
+});
+$("inpName").addEventListener("keydown",e=>{if(e.key==="Enter")$("btnStart").click()});
+$("inpClass").addEventListener("keydown",e=>{if(e.key==="Enter")$("btnStart").click()});
+
+function startTest(){
+  quiz=buildQuiz();idx=0;score=0;bonus=0;results=[];usedSec=0;startedAt=Date.now();
+  $("startScreen").classList.add("hidden");
+  $("resultScreen").classList.add("hidden");
+  $("mtnScreen").classList.add("hidden");
+  $("quizScreen").classList.remove("hidden");
+  buildDots();updateScore();buildMountain();setClimber(0,true);
+  renderQuestion();
+}
+
+function buildDots(){
+  const d=$("dots");d.innerHTML="";
+  for(let i=0;i<10;i++){const s=document.createElement("div");s.className="dotQ";s.textContent=i+1;d.appendChild(s)}
+}
+function paintDots(){
+  const ds=$("dots").children;
+  for(let i=0;i<10;i++){
+    ds[i].className="dotQ";
+    if(i<results.length)ds[i].classList.add(results[i].ok?"ok":"no");
+    else if(i===idx)ds[i].classList.add("cur");
+  }
+}
+function updateScore(){
+  const el=$("scoreNum");const tot=Math.min(10,score+bonus);
+  el.textContent=fmt(tot);el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");
+  $("okCnt").textContent=results.filter(r=>r.ok).length;
+  $("noCnt").textContent=results.filter(r=>!r.ok).length;
+  $("bnCnt").textContent=fmt(bonus);
+  $("mtnScore").textContent=fmt(tot);
+  $("mtnOk").textContent=results.filter(r=>r.ok).length;
+}
+
+/* ============ HIỂN THỊ CÂU HỎI ============ */
+function renderQuestion(){
+  const q=quiz[idx];answered=false;lastTick=-1;
+  const card=$("qCard");
+  card.classList.toggle("compact",q.l==="VD");
+  card.style.animation="none";void card.offsetWidth;card.style.animation="pop .35s ease both";
+  const lv=LV[q.l];
+  $("lvBadge").textContent=lv.name;$("lvBadge").className="badge "+lv.cls;
+  $("qNo").textContent="Câu "+(idx+1)+"/10  •  "+q.l;
+  $("qPt").textContent="1,0 điểm";
+  $("qText").textContent=q.q;
+  const il=$("illus");
+  if(q.l==="VD"&&ILLUS[q.i]){il.innerHTML=ILLUS[q.i];il.classList.remove("hidden")}else{il.innerHTML="";il.classList.add("hidden")}
+  const box=$("opts");box.innerHTML="";
+  q.o.forEach((txt,i)=>{
+    const b=document.createElement("button");b.className="opt";b.type="button";
+    b.innerHTML='<span class="key">'+"ABCD"[i]+'</span><span class="txt">'+txt+'</span>';
+    b.addEventListener("click",()=>choose(i));
+    box.appendChild(b);
+  });
+  const fb=$("fb");fb.className="fb";fb.innerHTML="";
+  $("btnNext").classList.remove("show");
+  $("btnNext").textContent=(idx===9)?"XEM KẾT QUẢ CHẶNG CUỐI 🏁":"SANG CÂU TIẾP ▶";
+  $("navHint").style.display="inline";
+  paintDots();
+  startTimer(lv.time);
+}
+
+/* ============ ĐỒNG HỒ ĐẾM NGƯỢC ============ */
+const C=2*Math.PI*52;
+function startTimer(sec){
+  clearInterval(tInt);tTotal=sec;tEnd=Date.now()+sec*1000;
+  const bar=$("ringBar"),num=$("timeNum"),card=$("timerCard");
+  bar.setAttribute("stroke-dasharray",C.toFixed(1));
+  const step=()=>{
+    const left=Math.max(0,(tEnd-Date.now())/1000);
+    num.textContent=Math.ceil(left);
+    bar.setAttribute("stroke-dashoffset",(C*(1-left/tTotal)).toFixed(1));
+    const r=left/tTotal;
+    bar.setAttribute("stroke",r>0.5?"#22c55e":(r>0.25?"#f59e0b":"#ef4444"));
+    card.classList.toggle("urgent",left<=6);
+    const s=Math.ceil(left);
+    if(left<=5&&s!==lastTick&&s>0){lastTick=s;S.tick()}
+    if(left<=0){clearInterval(tInt);timeUp()}
+  };
+  step();tInt=setInterval(step,100);
+}
+function timeUp(){
+  if(answered)return;answered=true;
+  usedSec+=tTotal;
+  S.timeout();flash("#ef4444");
+  reveal(-1,false,true);
+}
+
+/* ============ CHỌN ĐÁP ÁN ============ */
+function choose(i){
+  if(answered)return;
+  answered=true;clearInterval(tInt);
+  usedSec+=Math.max(0,tTotal-(tEnd-Date.now())/1000);
+  reveal(i,i===quiz[idx].c,false);
+}
+function reveal(chosen,ok,timeout){
+  const q=quiz[idx];
+  const btns=$("opts").children;
+  for(let k=0;k<btns.length;k++){
+    btns[k].disabled=true;
+    if(k===q.c){btns[k].classList.add("right");btns[k].innerHTML+='<span class="mark">✔</span>'}
+    else if(k===chosen){btns[k].classList.add("wrong");btns[k].innerHTML+='<span class="mark">✘</span>'}
+    else btns[k].classList.add("dim");
+  }
+  const fb=$("fb");
+  if(ok){
+    score+=1;S.correct();flash("#22c55e");confetti(60,window.innerWidth*0.4,window.innerHeight*0.4,420);
+    fb.className="fb show ok";
+    fb.innerHTML="🎉 <b>CHÍNH XÁC!</b> +1,0 điểm &nbsp;•&nbsp; Đáp án đúng: <b>"+"ABCD"[q.c]+"</b><small>💡 "+q.e+"</small>";
+  }else{
+    S.wrong();flash("#ef4444");
+    const card=$("qCard");card.style.animation="shake .45s";
+    fb.className="fb show no";
+    fb.innerHTML=(timeout?"⏰ <b>HẾT GIỜ!</b> ":"❌ <b>CHƯA ĐÚNG!</b> ")+
+      "Đáp án đúng: <b>"+"ABCD"[q.c]+"</b> — "+q.o[q.c]+"<small>💡 "+q.e+"</small>";
+  }
+  results.push({q:q,chosen:chosen,ok:ok,timeout:!!timeout});
+  updateScore();paintDots();
+  $("navHint").style.display="none";
+  $("btnNext").classList.add("show");
+  $("btnNext").focus();
+}
+
+/* ============ SANG CÂU TIẾP → MÀN HÌNH LEO NÚI ============ */
+$("btnNext").addEventListener("click",()=>{S.click();goMountain()});
+document.addEventListener("keydown",e=>{
+  if(!$("quizScreen").classList.contains("hidden")){
+    const k=e.key.toLowerCase();
+    const map={"a":0,"b":1,"c":2,"d":3,"1":0,"2":1,"3":2,"4":3};
+    if(!answered&&map[k]!==undefined){choose(map[k]);return}
+    if((e.key==="Enter"||e.key===" ")&&answered){e.preventDefault();if(!$("btnNext").classList.contains("contains"))goMountain()}
+  }
+  if(!$("mtnScreen").classList.contains("hidden")&&(e.key==="Enter"||e.key===" ")){e.preventDefault();cont()}
+});
+function goMountain(){
+  clearInterval(tInt);
+  const qs=$("quizScreen");
+  qs.style.transition="opacity .35s,transform .35s";qs.style.opacity="0";qs.style.transform="scale(.97)";
+  setTimeout(()=>{
+    qs.classList.add("hidden");qs.style.opacity="1";qs.style.transform="none";
+    showMountain();
+  },330);
+}
+
+/* ============ NÚI & CHẶNG ============ */
+const PTS=[[300,548],[420,512],[540,480],[600,430],[480,400],[370,365],[330,310],[430,275],[520,235],[470,185],[452,118]];
+let climberStage=0,animating=false;
+function buildMountain(){
+  document.getElementById("trail").setAttribute("points",PTS.map(p=>p.join(",")).join(" "));
+  const cp=document.getElementById("cpLayer");cp.innerHTML="";
+  for(let i=1;i<=10;i++){
+    const p=PTS[i];
+    const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("id","cp"+i);
+    g.innerHTML='<circle cx="'+p[0]+'" cy="'+(p[1]-24)+'" r="15" fill="#e2e8f0" stroke="#94a3b8" stroke-width="3"/>'+
+      '<text x="'+p[0]+'" y="'+(p[1]-19)+'" text-anchor="middle" font-size="16" font-weight="900" fill="#64748b">'+i+'</text>';
+    cp.appendChild(g);
+  }
+  const s=PTS[10];
+  const fl=document.createElementNS("http://www.w3.org/2000/svg","g");
+  fl.setAttribute("id","summitFlag");
+  fl.innerHTML='<path d="M'+(s[0]+16)+' '+(s[1]-30)+' L'+(s[0]+16)+' '+(s[1]-92)+'" stroke="#7c2d12" stroke-width="5"/>'+
+    '<path d="M'+(s[0]+18)+' '+(s[1]-92)+' L'+(s[0]+62)+' '+(s[1]-80)+' L'+(s[0]+18)+' '+(s[1]-68)+' Z" fill="#ef4444"/>'+
+    '<text x="'+(s[0]+70)+'" y="'+(s[1]-72)+'" font-size="19" font-weight="900" fill="#0b2a6b">ĐỈNH TRI THỨC</text>';
+  document.getElementById("cpLayer").appendChild(fl);
+}
+function setClimber(stage,instant){
+  climberStage=stage;
+  const p=PTS[stage];
+  document.getElementById("climber").setAttribute("transform","translate("+p[0]+","+p[1]+")");
+  for(let i=1;i<=10;i++){
+    const g=document.getElementById("cp"+i);if(!g)continue;
+    const c=g.querySelector("circle"),t=g.querySelector("text");
+    if(i<=stage){c.setAttribute("fill","#22c55e");c.setAttribute("stroke","#15803d");t.setAttribute("fill","#ffffff")}
+    else{c.setAttribute("fill","#e2e8f0");c.setAttribute("stroke","#94a3b8");t.setAttribute("fill","#64748b")}
+  }
+}
+function animateClimb(from,to,good,done){
+  animating=true;const cl=document.getElementById("climber"),inn=document.getElementById("climberIn");
+  const a=PTS[from],b=PTS[to];const dur=good?1700:2300;const t0=performance.now();
+  S.climb();
+  function fr(now){
+    let t=Math.min(1,(now-t0)/dur);
+    const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    let x=a[0]+(b[0]-a[0])*e, y=a[1]+(b[1]-a[1])*e;
+    const hop=Math.abs(Math.sin(t*Math.PI*(good?7:4)))*(good?15:7);
+    let rot=Math.sin(t*Math.PI*(good?6:3))*(good?5:9);
+    if(!good&&t>0.42&&t<0.58){x-=14*(1-Math.abs(t-0.5)/0.08);rot-=16}
+    cl.setAttribute("transform","translate("+x.toFixed(1)+","+(y-hop).toFixed(1)+") rotate("+rot.toFixed(1)+")");
+    inn.setAttribute("transform","scale("+(b[0]<a[0]?-1:1)+",1)");
+    if(t<1){requestAnimationFrame(fr)}
+    else{cl.setAttribute("transform","translate("+b[0]+","+b[1]+")");animating=false;done&&done()}
+  }
+  requestAnimationFrame(fr);
+}
+
+/* ============ HIỂN THỊ MÀN HÌNH LEO NÚI ============ */
+let giftOpen=false,giftNode=null;
+function showMountain(){
+  const r=results[results.length-1];
+  const m=$("mtnScreen");m.classList.remove("hidden");
+  $("mtnBanner").textContent="CHẶNG "+(idx+1)+" / 10";
+  const msg=$("mtnMsg");
+  msg.className="mtnMsg "+(r.ok?"good":"bad");
+  msg.innerHTML=r.ok
+    ? '<div class="h">🎉 CHẶNG '+(idx+1)+' HOÀN THÀNH!</div><div class="s">Trả lời đúng — nhân vật đang leo lên chặng tiếp theo</div>'
+    : '<div class="h">💪 CHẶNG '+(idx+1)+' KHÓ KHĂN</div><div class="s">Đáp án đúng là <b>'+"ABCD"[r.q.c]+'</b> — nhân vật vẫn kiên trì leo tiếp</div>';
+  $("giftHint").classList.add("hidden");
+  clearGift();updateScore();
+  const from=idx,to=idx+1;
+  setClimber(from,true);
+  animateClimb(from,to,r.ok,()=>{
+    setClimber(to,true);
+    if(to===10){const s=PTS[10];confetti(90,window.innerWidth/2,window.innerHeight*0.35,window.innerWidth*0.7);S.win()}
+    if(r.ok){dropGift()}
+  });
+}
+function clearGift(){
+  const l=document.getElementById("giftLayer");l.innerHTML="";giftNode=null;giftOpen=false;
+}
+function dropGift(){
+  const l=document.getElementById("giftLayer");l.innerHTML="";
+  const p=PTS[climberStage];
+  const tx=Math.max(80,Math.min(820,p[0]+110)),ty=p[1]-70;
+  const g=document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.setAttribute("id","giftG");
+  g.innerHTML=
+   '<g id="giftIn">'+
+   '<rect x="-30" y="-20" width="60" height="52" rx="10" fill="#ef4444"/>'+
+   '<rect x="-35" y="-32" width="70" height="18" rx="7" fill="#dc2626"/>'+
+   '<rect x="-7" y="-32" width="14" height="64" fill="#fde047"/>'+
+   '<path d="M0 -32 c-20 -22 -36 4 -7 9 z" fill="#fde047"/>'+
+   '<path d="M0 -32 c20 -22 36 4 7 9 z" fill="#fde047"/>'+
+   '<text x="0" y="16" text-anchor="middle" font-size="26" font-weight="900" fill="#fff">?</text>'+
+   '<rect x="-46" y="-46" width="92" height="100" fill="transparent"/>'+
+   '</g>';
+  l.appendChild(g);
+  g.addEventListener("click",openGift);
+  // rơi xuống
+  let y=-90,x=tx,t0=performance.now();const dur=1500;
+  function fr(now){
+    const t=Math.min(1,(now-t0)/dur);const e=t*t;
+    const yy=-90+(ty+90)*e;const sw=Math.sin(t*10)*16*(1-t);
+    g.setAttribute("transform","translate("+(x+sw).toFixed(1)+","+yy.toFixed(1)+") rotate("+(sw*1.3).toFixed(1)+")");
+    if(t<1)requestAnimationFrame(fr);
+    else{$("giftHint").classList.remove("hidden");pulseGift(g)}
+  }
+  requestAnimationFrame(fr);
+  giftNode=g;
+  if(soundOn)tone(1046,.2,"triangle",.12);
+}
+let pulseInt=null;
+function pulseGift(g){
+  clearInterval(pulseInt);let s=1,dir=1;
+  pulseInt=setInterval(()=>{
+    if(!document.body.contains(g)){clearInterval(pulseInt);return}
+    s+=0.012*dir;if(s>1.1||s<0.96)dir*=-1;
+    const inn=g.querySelector("#giftIn");if(inn)inn.setAttribute("transform","scale("+s.toFixed(3)+")");
+  },40);
+}
+function openGift(){
+  if(!giftNode||giftOpen)return;giftOpen=true;clearInterval(pulseInt);
+  const g=giftNode;
+  const p=PTS[climberStage];
+  const rect=$("mtnSvg").getBoundingClientRect();
+  const sx=rect.left+(p[0]+110)/900*rect.width, sy=rect.top+(p[1]-70)/620*rect.height;
+  const win=Math.random()<0.2;   // 20% có quà 0,5 điểm - 80% không có quà
+  g.style.transition="transform .35s,opacity .35s";
+  if(win){
+    bonus+=0.5;updateScore();S.gift();
+    confetti(110,sx,sy,520);flash("#facc15");
+    const msg=$("mtnMsg");msg.className="mtnMsg good";
+    msg.innerHTML='<div class="h">🎁 TÚI QUÀ MAY MẮN: +0,5 ĐIỂM!</div><div class="s">Tổng điểm hiện tại: <b>'+fmt(Math.min(10,score+bonus))+'</b> / 10 — Tuyệt vời!</div>';
+    $("giftHint").classList.add("hidden");
+    g.setAttribute("opacity","0");
+  }else{
+    S.empty();
+    const msg=$("mtnMsg");msg.className="mtnMsg";
+    msg.innerHTML='<div class="h">🎁 Túi quà trống!</div><div class="s">Không có điểm thưởng lần này — hãy tiếp tục leo núi nhé!</div>';
+    $("giftHint").classList.add("hidden");
+    g.setAttribute("opacity","0");
+  }
+  setTimeout(()=>{const l=document.getElementById("giftLayer");if(l)l.innerHTML=""},420);
+}
+
+/* ============ TIẾP TỤC ============ */
+$("btnCont").addEventListener("click",cont);
+function cont(){
+  S.click();clearInterval(pulseInt);clearGift();
+  $("mtnScreen").classList.add("hidden");
+  if(idx>=9){showResult();return}
+  idx++;
+  $("quizScreen").classList.remove("hidden");
+  renderQuestion();
+}
+
+/* ============ NỘP BÀI / KẾT QUẢ ============ */
+$("btnSubmit").addEventListener("click",()=>{
+  S.click();
+  const left=10-results.length;
+  if(!confirm("Nộp bài bây giờ?\n\nSố câu chưa trả lời: "+left+"\nCác câu chưa trả lời sẽ không được tính điểm."))return;
+  clearInterval(tInt);
+  while(results.length<10){results.push({q:quiz[results.length],chosen:-1,ok:false,timeout:true})}
+  $("quizScreen").classList.add("hidden");$("mtnScreen").classList.add("hidden");
+  showResult();
+});
+function showResult(){
+  clearInterval(tInt);
+  const total=Math.min(10,score+bonus);
+  $("resultScreen").classList.remove("hidden");
+  $("resName").textContent=stuName+(stuClass&&stuClass!=="—"?" — Lớp "+stuClass:"");
+  $("finalScore").textContent=fmt(total);
+  $("scoreCircle").style.setProperty("--p",(total/10*100)+"%");
+  const ok=results.filter(r=>r.ok).length;
+  $("stOk").textContent=ok;$("stNo").textContent=10-ok;
+  $("stBn").textContent=fmt(bonus);
+  const sec=Math.round((Date.now()-startedAt)/1000);
+  $("stT").textContent=Math.floor(sec/60)+"p "+(sec%60)+"s";
+  let rank="Cần cố gắng thêm 💪",rc="#fee2e2",col="#991b1b";
+  if(total>=9){rank="XUẤT SẮC 🏆";rc="#dcfce7";col="#14532d"}
+  else if(total>=7.5){rank="GIỎI ⭐";rc="#dbeafe";col="#1e3a8a"}
+  else if(total>=5){rank="KHÁ 👍";rc="#fef3c7";col="#92400e"}
+  const rEl=$("resRank");rEl.textContent=rank;rEl.style.background=rc;rEl.style.color=col;
+  const list=$("resList");list.innerHTML="";
+  results.forEach((r,i)=>{
+    const d=document.createElement("div");
+    d.className="resItem "+(r.ok?"ok":"no");d.style.animationDelay=(i*0.05)+"s";
+    const your=r.chosen<0?"Không chọn đáp án (hết giờ)":"ABCD"[r.chosen]+". "+r.q.o[r.chosen];
+    d.innerHTML='<div class="resHead"><span class="badge '+LV[r.q.l].cls+'">'+LV[r.q.l].name+'</span>'+
+      '<b style="color:#0b2a6b;font-size:clamp(14px,1.1vw,21px)">Câu '+(i+1)+' '+(r.ok?"✔ +1,0 điểm":"✘ 0 điểm")+'</b>'+
+      '<span style="margin-left:auto;color:#94a3b8;font-weight:700;font-size:clamp(12px,.9vw,17px)">Câu gốc số '+r.q.i+'</span></div>'+
+      '<div class="rq">'+r.q.q+'</div>'+
+      '<div class="ra"><span class="your">✔ Trả lời: '+your+'</span><br><span class="cor">✅ Đáp án đúng: '+"ABCD"[r.q.c]+'. '+r.q.o[r.q.c]+'</span></div>'+
+      '<div class="re">💡 Giải thích: '+r.q.e+'</div>';
+    list.appendChild(d);
+  });
+  if(total>=5){S.win();confetti(150,window.innerWidth/2,window.innerHeight*0.2,window.innerWidth*0.85)}
+  else{S.empty()}
+  window.scrollTo(0,0);
+}
+$("btnAgain").addEventListener("click",()=>{S.click();startTest()});
+$("btnChange").addEventListener("click",()=>{
+  S.click();$("resultScreen").classList.add("hidden");$("startScreen").classList.remove("hidden");
+});
+$("btnPrint").addEventListener("click",()=>window.print());
+
+/* ============ ÂM THANH BẬT/TẮT ============ */
+$("btnSound").addEventListener("click",function(){
+  soundOn=!soundOn;
+  this.textContent=soundOn?"🔊 Âm thanh: BẬT":"🔇 Âm thanh: TẮT";
+  if(soundOn)S.click();
+});
+</script>
+</body>
+</html>

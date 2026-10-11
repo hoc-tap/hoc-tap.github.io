@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Kiểm Tra Trắc Nghiệm - Chinh Phục Đỉnh Cao</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX for Math Expressions -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                        },
+                        accent: {
+                            gold: '#f59e0b',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Segoe UI', 'Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Lexend', 'Inter', sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 50%, #fff7ed 100%);
+            min-height: 100vh;
+            user-select: none;
+        }
+
+        /* TV Projection Very Large Typography */
+        .tv-question-text {
+            font-size: clamp(1.8rem, 2.5vw, 3.2rem);
+            line-height: 1.35;
+        }
+
+        .tv-option-text {
+            font-size: clamp(1.3rem, 1.8vw, 2.3rem);
+            line-height: 1.3;
+        }
+
+        .tv-meta-text {
+            font-size: clamp(1.2rem, 1.5vw, 1.8rem);
+        }
+
+        /* Pulse glowing animation */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(2, 132, 199, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(2, 132, 199, 0.8); }
+        }
+
+        .glow-active {
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes bounce-subtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .bounce-anim {
+            animation: bounce-subtle 1.8s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .path-line {
+            stroke-dasharray: 8;
+            animation: dash 30s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        .gift-box-shake {
+            animation: giftShake 0.6s cubic-bezier(.36,.07,.19,.97) infinite;
+        }
+        @keyframes giftShake {
+            10%, 90% { transform: translate3d(-1px, 0, 0) rotate(-3deg); }
+            20%, 80% { transform: translate3d(2px, 0, 0) rotate(3deg); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0) rotate(-6deg); }
+            40%, 60% { transform: translate3d(4px, 0, 0) rotate(6deg); }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 overflow-x-hidden">
+
+    <script>
+        // Web Audio API Sound Effects Generator
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playTone(freq, type, duration, delay = 0) {
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + delay);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + delay + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + delay);
+                    osc.stop(this.ctx.currentTime + delay + duration);
+                } catch(e) {}
+            }
+
+            playCorrect() {
+                this.playTone(523.25, 'triangle', 0.15, 0);   // C5
+                this.playTone(659.25, 'triangle', 0.15, 0.1); // E5
+                this.playTone(783.99, 'triangle', 0.25, 0.2); // G5
+                this.playTone(1046.50, 'triangle', 0.4, 0.3); // C6
+            }
+
+            playWrong() {
+                this.playTone(220, 'sawtooth', 0.2, 0);
+                this.playTone(180, 'sawtooth', 0.35, 0.15);
+            }
+
+            playClick() {
+                this.playTone(400, 'sine', 0.05, 0);
+            }
+
+            playClimb() {
+                this.playTone(300, 'sine', 0.08, 0);
+                this.playTone(450, 'sine', 0.08, 0.07);
+            }
+
+            playBonus() {
+                [523, 659, 783, 987, 1046, 1318].forEach((freq, idx) => {
+                    this.playTone(freq, 'sine', 0.15, idx * 0.06);
+                });
+            }
+        }
+        const sound = new SoundFX();
+    </script>
+
+    <div id="app" class="flex-1 flex flex-col h-screen overflow-hidden p-2 md:p-4">
+        
+        <!-- HEADER / NAVIGATION BAR -->
+        <header class="bg-white/90 backdrop-blur border border-sky-200 shadow-md rounded-2xl p-3 px-6 mb-3 flex justify-between items-center shrink-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-sky-600 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black text-sky-900 tracking-tight">HỆ THỐNG KIỂM TRA ĐÁNH GIÁ NĂNG LỰC HỌC TẬP</h1>
+                    <p class="text-xs md:text-sm font-semibold text-sky-600">Ứng Dụng Đánh Giá Chiếu Lớp Học Trực Quan</p>
+                </div>
+            </div>
+            <div id="headerStudentBadge" class="hidden flex items-center space-x-3 bg-sky-50 border border-sky-200 py-1.5 px-4 rounded-xl">
+                <i class="fa-solid fa-user-circle text-2xl text-sky-600"></i>
+                <div>
+                    <span class="text-xs text-slate-500 font-bold uppercase block">Học sinh làm bài</span>
+                    <span id="badgeStudentName" class="text-lg font-bold text-sky-900">--</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: STUDENT NAME INPUT (BEFORE STARTING) -->
+        <section id="screenSetup" class="flex-1 flex items-center justify-center p-4">
+            <div class="bg-white border-2 border-sky-200 rounded-3xl shadow-2xl p-8 md:p-12 max-w-2xl w-full text-center space-y-6 transform transition-all duration-300">
+                <div class="w-24 h-24 bg-gradient-to-tr from-sky-500 to-teal-400 rounded-full flex items-center justify-center mx-auto shadow-xl text-white text-5xl bounce-anim">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-800">BÀI KIỂM TRA ĐÁNH GIÁ NĂNG LỰC</h2>
+                    <p class="text-slate-600 mt-2 text-lg">Hành trình thử thách kiến thức qua 10 chặng đường chông gai</p>
+                </div>
+
+                <div class="bg-sky-50 p-6 rounded-2xl border border-sky-100 text-left space-y-3">
+                    <div class="flex items-center text-sky-800 font-bold text-lg">
+                        <i class="fa-solid fa-circle-info mr-2 text-sky-600"></i> Quy định bài kiểm tra:
+                    </div>
+                    <ul class="text-slate-700 space-y-2 text-base font-medium">
+                        <li><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Tổng số: <strong>10 câu hỏi</strong> ngẫu nhiên (70% ND, 20% TH, 10% VD).</li>
+                        <li><i class="fa-solid fa-clock text-amber-500 mr-2"></i> Thời gian: <strong>30s</strong> (Nhận biết), <strong>45s</strong> (Thông hiểu), <strong>70s</strong> (Vận dụng).</li>
+                        <li><i class="fa-solid fa-star text-amber-400 mr-2"></i> Thang điểm 10 chuẩn mực + Cơ hội nhận túi quà may mắn (+0.5đ).</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-4 pt-2">
+                    <label for="inputStudentName" class="block text-xl font-bold text-slate-700 text-left">
+                        <i class="fa-solid fa-pen-nib text-sky-600 mr-2"></i>Nhập họ và tên học sinh thực hiện:
+                    </label>
+                    <input type="text" id="inputStudentName" placeholder="Ví dụ: Nguyễn Văn An - Lớp 10A1"
+                        class="w-full text-xl md:text-2xl px-6 py-4 rounded-2xl border-2 border-slate-300 focus:border-sky-500 focus:ring-4 focus:ring-sky-100 outline-none font-bold text-slate-800 transition-all shadow-inner"
+                        onkeypress="if(event.key==='Enter') startQuiz();">
+                </div>
+
+                <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-700 hover:to-teal-700 text-white text-2xl font-black py-5 px-8 rounded-2xl shadow-xl hover:shadow-2xl active:scale-95 transition-all flex items-center justify-center space-x-3">
+                    <span>BẮT ĐẦU BÀI KIỂM TRA</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: MAIN QUIZ TEST INTERFACE (2 COLUMNS: LEFT 80%, RIGHT 20%) -->
+        <section id="screenQuiz" class="hidden flex-1 flex flex-col md:flex-row gap-4 h-full overflow-hidden">
+            
+            <!-- LEFT COLUMN (80% WIDTH): QUESTION, OPTIONS (2 COLS), NEXT BUTTON -->
+            <div class="w-full md:w-[80%] bg-white rounded-3xl border-2 border-sky-100 shadow-xl p-6 md:p-8 flex flex-col justify-between overflow-y-auto">
+                <div>
+                    <!-- Question Header Info -->
+                    <div class="flex items-center justify-between border-b-2 border-slate-100 pb-4 mb-6">
+                        <div class="flex items-center space-x-3">
+                            <span id="questionCategoryBadge" class="px-4 py-1.5 rounded-full text-lg font-black bg-sky-100 text-sky-800 border border-sky-300 shadow-sm">
+                                CHẶNG 1 / 10
+                            </span>
+                            <span id="questionLevelBadge" class="px-4 py-1.5 rounded-full text-lg font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                Mức độ: Nhận biết
+                            </span>
+                        </div>
+                        <div class="text-slate-500 font-bold text-xl">
+                            <i class="fa-solid fa-bullseye text-sky-600 mr-1"></i> Giá trị: <span class="text-sky-700 font-black">1.0 điểm</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Content -->
+                    <div class="space-y-6">
+                        <div id="questionText" class="tv-question-text font-bold text-slate-800 tracking-tight leading-relaxed">
+                            Loading question...
+                        </div>
+
+                        <!-- SVG Illustration for Level 3 (Vận dụng) -->
+                        <div id="vdIllustrationContainer" class="hidden bg-slate-50 border-2 border-sky-200 rounded-2xl p-4 flex justify-center items-center shadow-inner my-4">
+                            <!-- SVG render dynamically here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OPTIONS GRID: 2 COLUMNS FOR A, B, C, D -->
+                <div class="mt-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6" id="optionsContainer">
+                        <!-- Options buttons generated dynamically -->
+                    </div>
+
+                    <!-- Action Footer Bar -->
+                    <div class="flex justify-between items-center pt-4 border-t-2 border-slate-100">
+                        <div id="feedbackMessage" class="tv-meta-text font-extrabold flex items-center space-x-2">
+                            <!-- Immediate result feedback will display here -->
+                        </div>
+                        <button id="btnNextQuestion" onclick="goToMountainScreen()" disabled
+                            class="opacity-50 cursor-not-allowed bg-gradient-to-r from-emerald-500 to-teal-600 text-white tv-option-text font-black px-8 py-4 rounded-2xl shadow-xl flex items-center space-x-3 hover:shadow-2xl transition-all">
+                            <span>SANG CHẶNG TIẾP THEO</span>
+                            <i class="fa-solid fa-angles-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN (20% WIDTH): TEST INFO, STUDENT NAME, TIMER, LIVE SCORE -->
+            <div class="w-full md:w-[20%] bg-gradient-to-b from-sky-900 to-slate-900 text-white rounded-3xl p-6 shadow-2xl flex flex-col justify-between border-2 border-sky-700">
+                <div class="space-y-6">
+                    <!-- Quiz Title -->
+                    <div class="border-b border-sky-700/60 pb-4 text-center">
+                        <span class="text-xs uppercase tracking-widest text-sky-300 font-bold block mb-1">BÀI KIỂM TRA</span>
+                        <h3 class="text-lg font-black text-white leading-tight">ĐÁNH GIÁ NĂNG LỰC</h3>
+                    </div>
+
+                    <!-- Student Name -->
+                    <div class="bg-sky-800/50 border border-sky-600/50 rounded-2xl p-4 text-center shadow-inner">
+                        <i class="fa-solid fa-user-graduate text-3xl text-sky-300 mb-1"></i>
+                        <div class="text-xs text-sky-200 font-semibold uppercase">Học sinh</div>
+                        <div id="sideStudentName" class="text-xl font-black text-white truncate">--</div>
+                    </div>
+
+                    <!-- Countdown Timer Ring / Counter -->
+                    <div class="bg-slate-800/80 border-2 border-sky-500 rounded-2xl p-4 text-center shadow-lg relative overflow-hidden">
+                        <div class="text-xs font-bold text-sky-300 uppercase tracking-wider mb-1">Thời Gian Còn Lại</div>
+                        <div id="timerDisplay" class="text-5xl md:text-6xl font-black text-amber-400 font-mono tracking-tight my-1">
+                            30s
+                        </div>
+                        <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden mt-2 border border-slate-600">
+                            <div id="timerProgressBar" class="bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 h-full w-full transition-all duration-1000"></div>
+                        </div>
+                    </div>
+
+                    <!-- Live Score Badge -->
+                    <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-center shadow-xl text-white">
+                        <div class="text-xs font-extrabold uppercase tracking-wider opacity-90">SỐ ĐIỂM TÍCH LŨY</div>
+                        <div id="liveScoreDisplay" class="text-4xl md:text-5xl font-black font-mono my-1">0.0</div>
+                        <div id="bonusPointsBadge" class="hidden text-xs font-bold bg-white/20 rounded-full py-0.5 px-2 inline-block">
+                            +0.5đ Quà may mắn!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Early / Finish Button -->
+                <div class="pt-4 border-t border-sky-800">
+                    <button onclick="confirmSubmitEarly()" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-extrabold py-3 px-4 rounded-xl shadow-md transition-all text-base flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        <span>NỘP BÀI KIỂM TRA</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: MOUNTAIN CLIMBING TRAIL SCREEN (HÀNH TRÌNH CHINH PHỤC ĐỈNH NÚI) -->
+        <section id="screenMountain" class="hidden flex-1 bg-white rounded-3xl border-2 border-sky-200 shadow-2xl p-6 flex flex-col items-center justify-between overflow-hidden relative">
+            <!-- Background Mountain Header -->
+            <div class="text-center z-10 bg-white/80 backdrop-blur px-8 py-3 rounded-2xl border border-sky-200 shadow-sm">
+                <h2 class="text-3xl font-black text-sky-900 tracking-tight">HÀNH TRÌNH CHINH PHỤC ĐỈNH CAO</h2>
+                <p class="text-slate-600 font-bold text-lg">Chặng đường vượt mốc thử thách học tập</p>
+            </div>
+
+            <!-- Central Mountain Visual Path (SVG Graphic) -->
+            <div class="w-full max-w-4xl flex-1 relative flex items-center justify-center my-2">
+                <svg viewBox="0 0 800 500" class="w-full h-full max-h-[500px]">
+                    <defs>
+                        <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#38bdf8"/>
+                            <stop offset="40%" stop-color="#0284c7"/>
+                            <stop offset="100%" stop-color="#0f172a"/>
+                        </linearGradient>
+                        <linearGradient id="snowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff"/>
+                            <stop offset="100%" stop-color="#e2e8f0"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background Mountains -->
+                    <polygon points="50,480 250,180 450,480" fill="#94a3b8" opacity="0.3" />
+                    <polygon points="350,480 600,120 800,480" fill="#64748b" opacity="0.4" />
+
+                    <!-- Main Mountain Peak -->
+                    <polygon points="100,480 400,60 700,480" fill="url(#mountainGrad)" />
+                    <!-- Snow Cap -->
+                    <polygon points="350,130 400,60 450,130 420,115 400,125 380,115" fill="url(#snowGrad)" />
+
+                    <!-- Summit Flag -->
+                    <line x1="400" y1="60" x2="400" y2="20" stroke="#f59e0b" stroke-width="4" />
+                    <polygon points="400,20 440,32 400,44" fill="#ef4444" />
+
+                    <!-- Winding Trail Path -->
+                    <path id="mountainTrail" d="M 140,460 Q 220,430 260,390 T 360,320 T 480,260 T 380,200 T 400,80" 
+                        fill="none" stroke="#fef08a" stroke-width="8" stroke-dasharray="10 6" class="path-line" />
+
+                    <!-- Milestone Checkpoints along path (10 Checkpoints) -->
+                    <g id="mountainNodesGroup">
+                        <!-- Rendered dynamically -->
+                    </g>
+
+                    <!-- Climber Character Marker -->
+                    <g id="climberAvatar" class="transition-all duration-1000 ease-in-out" transform="translate(140, 460)">
+                        <circle r="22" fill="#0284c7" stroke="#ffffff" stroke-width="4" shadow="md"/>
+                        <text x="0" y="7" text-anchor="middle" fill="#ffffff" font-size="18" font-weight="bold">🏃</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Bottom Control Panel -->
+            <div class="z-10 flex flex-col items-center space-y-3">
+                <div id="mountainStatusText" class="text-2xl font-black text-sky-900 bg-sky-100 px-6 py-2 rounded-xl border border-sky-300">
+                    Sẵn sàng bước vào chặng mới!
+                </div>
+                <button id="btnContinueFromMountain" onclick="startNextQuestionFromMountain()"
+                    class="bg-gradient-to-r from-sky-600 via-teal-600 to-emerald-600 hover:from-sky-700 hover:to-emerald-700 text-white text-2xl font-black py-4 px-12 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all flex items-center space-x-3">
+                    <span>TIẾP TỤC BÀI KIỂM TRA</span>
+                    <i class="fa-solid fa-play"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- LUCKY GIFT MODAL (TÚI QUÀ MAY MẮN DIỆU KỲ) -->
+        <div id="modalGiftBag" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl border-4 border-amber-400 p-8 max-w-md w-full text-center space-y-6 shadow-2xl transform animate-bounce-subtle">
+                <div class="w-28 h-28 bg-gradient-to-tr from-amber-400 to-yellow-300 rounded-full flex items-center justify-center mx-auto shadow-xl border-4 border-white gift-box-shake text-5xl">
+                    🎁
+                </div>
+                <div>
+                    <span class="bg-amber-100 text-amber-800 text-sm font-black px-4 py-1 rounded-full border border-amber-300 uppercase">Phần Thưởng Đột Phá</span>
+                    <h3 class="text-3xl font-black text-slate-800 mt-2">TÚI QUÀ MAY MẮN!</h3>
+                    <p class="text-slate-600 font-semibold text-lg mt-1">Xuất sắc trả lời đúng câu hỏi và mở khóa điểm thưởng!</p>
+                </div>
+
+                <div class="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl">
+                    <div class="text-2xl font-black text-amber-700">+0.5 ĐIỂM THƯỞNG BỔ SUNG!</div>
+                    <div class="text-sm text-amber-800 font-medium">Điểm được cộng trực tiếp vào tổng kết bài kiểm tra.</div>
+                </div>
+
+                <button onclick="closeGiftModal()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-xl py-4 rounded-2xl shadow-lg transition-all">
+                    NHẬN QUÀ & TIẾP TỤC
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: FINAL RESULT & SCORECARD SCREEN -->
+        <section id="screenResult" class="hidden flex-1 bg-white rounded-3xl border-2 border-sky-200 shadow-2xl p-6 md:p-10 flex flex-col overflow-y-auto">
+            <div class="text-center space-y-4 border-b-2 border-slate-100 pb-6">
+                <div class="inline-block p-4 bg-emerald-100 text-emerald-600 rounded-full text-5xl mb-2">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight">KẾT QUẢ BÀI KIỂM TRA</h2>
+                <p class="text-xl text-slate-600 font-bold">Báo cáo đánh giá năng lực hoàn thành bài làm</p>
+            </div>
+
+            <!-- Scorecard Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 my-8">
+                <div class="bg-sky-50 border-2 border-sky-200 p-6 rounded-2xl text-center shadow-sm">
+                    <span class="text-slate-500 font-bold text-base block">HỌC SINH</span>
+                    <span id="resStudentName" class="text-2xl font-black text-sky-900 mt-1 block">--</span>
+                </div>
+                <div class="bg-emerald-50 border-2 border-emerald-200 p-6 rounded-2xl text-center shadow-sm">
+                    <span class="text-emerald-700 font-bold text-base block">CÂU TRẢ LỜI ĐÚNG</span>
+                    <span id="resCorrectCount" class="text-4xl font-black text-emerald-800 mt-1 block">0 / 10</span>
+                </div>
+                <div class="bg-amber-50 border-2 border-amber-200 p-6 rounded-2xl text-center shadow-sm">
+                    <span class="text-amber-700 font-bold text-base block">ĐIỂM THƯỞNG TÚI QUÀ</span>
+                    <span id="resBonusScore" class="text-4xl font-black text-amber-800 mt-1 block">+0.0</span>
+                </div>
+                <div class="bg-gradient-to-br from-sky-600 to-teal-600 text-white p-6 rounded-2xl text-center shadow-xl">
+                    <span class="text-sky-100 font-extrabold text-base block">TỔNG ĐIỂM CHUNG CUỘC</span>
+                    <span id="resTotalScore" class="text-5xl font-black mt-1 block">0.0 / 10</span>
+                </div>
+            </div>
+
+            <!-- Detailed Answers Breakdown Table -->
+            <div class="space-y-4 flex-1">
+                <h3 class="text-2xl font-black text-slate-800 flex items-center">
+                    <i class="fa-solid fa-list-check text-sky-600 mr-2"></i> Chi tiết bài làm các câu hỏi:
+                </h3>
+                <div id="resQuestionsBreakdown" class="space-y-4">
+                    <!-- Dynamic review list of all questions -->
+                </div>
+            </div>
+
+            <!-- Bottom Restart Button -->
+            <div class="pt-8 mt-6 border-t-2 border-slate-100 flex justify-center">
+                <button onclick="resetApp()" class="bg-sky-600 hover:bg-sky-700 text-white font-black text-2xl py-4 px-10 rounded-2xl shadow-xl transition-all flex items-center space-x-3">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>THỰC HIỆN BÀI KIỂM TRA MỚI</span>
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // QUESTION BANK DATASET
+        // Mức độ 1: Nhận biết (ND) - 30 giây
+        // Mức độ 2: Thông hiểu (TH) - 45 giây
+        // Mức độ 3: Vận dụng (VD) - 70 giây + SVG vẽ hình minh họa
+        const QUESTION_POOL = {
+            ND: [
+                {
+                    id: 'ND_1',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Hàm số $y = x^3 - 3x + 2$ có bao nhiêu điểm cực trị?',
+                    options: ['0 điểm', '1 điểm', '2 điểm', '3 điểm'],
+                    correct: 2,
+                    explain: 'Ta có $y\' = 3x^2 - 3 = 0 \\Leftrightarrow x = \\pm 1$. Phương trình $y\'=0$ có 2 nghiệm phân biệt và $y\'$ đổi dấu qua 2 nghiệm này nên hàm số có 2 điểm cực trị.'
+                },
+                {
+                    id: 'ND_2',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Tập xác định của hàm số $y = (x - 1)^{\\frac{1}{3}}$ là:',
+                    options: ['$(1; +\\infty)$', '$[1; +\\infty)$', '$\\mathbb{R} \\setminus \\{1\\}$', '$\\mathbb{R}$'],
+                    correct: 0,
+                    explain: 'Do số mũ $\\frac{1}{3}$ không nguyên nên điều kiện xác định là $x - 1 > 0 \\Leftrightarrow x > 1$.'
+                },
+                {
+                    id: 'ND_3',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Thể tích $V$ của khối lăng trụ có diện tích đáy $B$ và chiều cao $h$ được tính theo công thức nào?',
+                    options: ['$V = \\frac{1}{3}Bh$', '$V = Bh$', '$V = 3Bh$', '$V = \\frac{1}{2}Bh$'],
+                    correct: 1,
+                    explain: 'Thể tích khối lăng trụ bằng diện tích đáy nhân với chiều cao: $V = B \\cdot h$.'
+                },
+                {
+                    id: 'ND_4',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Trong không gian $Oxyz$, tọa độ của vectơ $\\vec{a} = 2\\vec{i} - 3\\vec{j} + \\vec{k}$ là:',
+                    options: ['$(2; -3; 1)$', '$(2; 3; 1)$', '$(-2; 3; -1)$', '$(2; -3; 0)$'],
+                    correct: 0,
+                    explain: 'Tọa độ vectơ $\\vec{a} = x\\vec{i} + y\\vec{j} + z\\vec{k}$ là $(x; y; z) = (2; -3; 1)$.'
+                },
+                {
+                    id: 'ND_5',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Nghiệm của phương trình $\\log_2(x - 3) = 3$ là:',
+                    options: ['$x = 11$', '$x = 9$', '$x = 8$', '$x = 6$'],
+                    correct: 0,
+                    explain: '$\\log_2(x - 3) = 3 \\Leftrightarrow x - 3 = 2^3 = 8 \\Leftrightarrow x = 11$.'
+                },
+                {
+                    id: 'ND_6',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Họ tất cả các nguyên hàm của hàm số $f(x) = \\cos x$ là:',
+                    options: ['$\\sin x + C$', '$-\\sin x + C$', '$\\cos x + C$', '$-\\cos x + C$'],
+                    correct: 0,
+                    explain: 'Nguyên hàm của $\\cos x$ là $\\sin x + C$ vì $(\\sin x)\' = \\cos x$.'
+                },
+                {
+                    id: 'ND_7',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Cho cấp số cộng $(u_n)$ có $u_1 = 3$ và công sai $d = 2$. Giá trị của $u_2$ bằng:',
+                    options: ['$5$', '$6$', '$1$', '$8$'],
+                    correct: 0,
+                    explain: 'Số hạng thứ hai $u_2 = u_1 + d = 3 + 2 = 5$.'
+                },
+                {
+                    id: 'ND_8',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Đường tiệm cận đứng của đồ thị hàm số $y = \\frac{2x + 1}{x - 1}$ là:',
+                    options: ['$x = 1$', '$y = 2$', '$x = -1$', '$y = -1$'],
+                    correct: 0,
+                    explain: 'Mẫu số bằng $0$ khi $x = 1$, nên đường tiệm cận đứng là $x = 1$.'
+                },
+                {
+                    id: 'ND_9',
+                    level: 'Nhận biết',
+                    timeLimit: 30,
+                    question: 'Số phức $z = 3 - 4i$ có phần ảo bằng bao nhiêu?',
+                    options: ['$-4$', '$-4i$', '$3$', '$4$'],
+                    correct: 0,
+                    explain: 'Số phức $z = a + bi$ có phần thực là $a=3$ và phần ảo là $b=-4$.'
+                }
+            ],
+            TH: [
+                {
+                    id: 'TH_1',
+                    level: 'Thông hiểu',
+                    timeLimit: 45,
+                    question: 'Tính tích phân $I = \\int_{0}^{1} (2x + 1) dx$.',
+                    options: ['$2$', '$3$', '$1$', '$4$'],
+                    correct: 0,
+                    explain: '$I = [x^2 + x]_0^1 = (1^2 + 1) - (0) = 2$.'
+                },
+                {
+                    id: 'TH_2',
+                    level: 'Thông hiểu',
+                    timeLimit: 45,
+                    question: 'Cho hình chóp $S.ABC$ có đáy $ABC$ là tam giác vuông tại $B$, $SA \\perp (ABC)$. Góc giữa đường thẳng $SB$ và mặt phẳng $(ABC)$ là góc nào?',
+                    options: ['$\\widehat{SBA}$', '$\\widehat{SCA}$', '$\\widehat{SBC}$', '$\\widehat{ASB}$'],
+                    correct: 0,
+                    explain: 'Vì $SA \\perp (ABC)$ nên $A$ là hình chiếu vuông góc của $S$ lên $(ABC)$. do đó hình chiếu của $SB$ lên $(ABC)$ là $AB$. Vậy góc giữa $SB$ và $(ABC)$ là $\\widehat{SBA}$.'
+                },
+                {
+                    id: 'TH_3',
+                    level: 'Thông hiểu',
+                    timeLimit: 45,
+                    question: 'Giá trị lớn nhất của hàm số $f(x) = x^4 - 2x^2 + 3$ trên đoạn $[0; 2]$ bằng bao nhiêu?',
+                    options: ['$11$', '$3$', '$2$', '$18$'],
+                    correct: 0,
+                    explain: '$f\'(x) = 4x^3 - 4x = 0 \\Leftrightarrow x=0$ hoặc $x=1$ (trên $[0; 2]$). Ta có $f(0)=3$, $f(1)=2$, $f(2)=11$. Vậy giá trị lớn nhất bằng $11$.'
+                },
+                {
+                    id: 'TH_4',
+                    level: 'Thông hiểu',
+                    timeLimit: 45,
+                    question: 'Trong mặt phẳng tọa độ $Oxy$, tập hợp các điểm biểu diễn số phức $z$ thỏa mãn $|z - 1 + 2i| = 3$ là một đường tròn có bán kính $R$ bằng:',
+                    options: ['$R = 3$', '$R = 9$', '$R = 1$', '$R = \\sqrt{3}$'],
+                    correct: 0,
+                    explain: 'Phương trình $|z - (1 - 2i)| = 3$ mô tả đường tròn tâm $I(1; -2)$ và bán kính $R = 3$.'
+                }
+            ],
+            VD: [
+                {
+                    id: 'VD_1',
+                    level: 'Vận dụng',
+                    timeLimit: 70,
+                    question: 'Một hình chóp $S.ABCD$ có đáy $ABCD$ là hình vuông cạnh $a$, $SA \\perp (ABCD)$ và $SA = a\\sqrt{3}$. Tính góc giữa mặt phẳng $(SCD)$ và mặt phẳng đáy $(ABCD)$. (Xem hình minh họa bên dưới)',
+                    options: ['$60^\\circ$', '$45^\\circ$', '$30^\\circ$', '$90^\\circ$'],
+                    correct: 0,
+                    explain: 'Ta có $CD \\perp AD$ và $CD \\perp SA \\Rightarrow CD \\perp (SAD) \\Rightarrow CD \\perp SD$. Góc giữa $(SCD)$ và $(ABCD)$ là góc $\\widehat{SDA}$. Trong $\\triangle SAD$ vuông tại $A$: $\\tan \\widehat{SDA} = \\frac{SA}{AD} = \\frac{a\\sqrt{3}}{a} = \\sqrt{3} \\Rightarrow \\widehat{SDA} = 60^\\circ$.',
+                    hasSvg: true,
+                    svgType: 'pyramid'
+                },
+                {
+                    id: 'VD_2',
+                    level: 'Vận dụng',
+                    timeLimit: 70,
+                    question: 'Cho hình nón có bán kính đáy $r = 3\\text{ cm}$ và chiều cao $h = 4\\text{ cm}$. Tính diện tích xung quanh $S_{xq}$ của hình nón đó. (Xem hình minh họa bên dưới)',
+                    options: ['$15\\pi\\text{ cm}^2$', '$12\\pi\\text{ cm}^2$', '$20\\pi\\text{ cm}^2$', '$24\\pi\\text{ cm}^2$'],
+                    correct: 0,
+                    explain: 'Đường sinh $l = \\sqrt{r^2 + h^2} = \\sqrt{3^2 + 4^2} = 5\\text{ cm}$. Diện tích xung quanh $S_{xq} = \\pi r l = \\pi \\cdot 3 \\cdot 5 = 15\\pi\\text{ cm}^2$.',
+                    hasSvg: true,
+                    svgType: 'cone'
+                }
+            ]
+        };
+
+        // SVG GEOMETRIC ILLUSTRATIONS GENERATOR FOR VD LEVEL
+        function renderVDIllustration(type) {
+            if (type === 'pyramid') {
+                return `
+                    <svg width="280" height="200" viewBox="0 0 280 200" class="max-w-full h-auto">
+                        <!-- Pyramid S.ABCD Illustration -->
+                        <polygon points="120,20 40,140 180,140" fill="none" stroke="#0284c7" stroke-width="2"/>
+                        <polygon points="120,20 180,140 240,110" fill="none" stroke="#0284c7" stroke-width="2"/>
+                        <line x1="120" y1="20" x2="100" y2="110" stroke="#0284c7" stroke-width="2"/>
+                        <line x1="40" y1="140" x2="100" y2="110" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4"/>
+                        <line x1="100" y1="110" x2="240" y2="110" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4"/>
+                        <line x1="120" y1="20" x2="40" y2="140" stroke="#0284c7" stroke-width="2.5"/>
+                        <!-- Vertices Labels -->
+                        <text x="120" y="15" fill="#0369a1" font-weight="bold" font-size="14">S</text>
+                        <text x="25" y="150" fill="#0369a1" font-weight="bold" font-size="14">A</text>
+                        <text x="180" y="155" fill="#0369a1" font-weight="bold" font-size="14">D</text>
+                        <text x="245" y="115" fill="#0369a1" font-weight="bold" font-size="14">C</text>
+                        <text x="90" y="105" fill="#0369a1" font-weight="bold" font-size="14">B</text>
+                        <!-- Right Angle Mark at A -->
+                        <path d="M 40,130 L 50,130 L 50,140" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                    </svg>
+                `;
+            } else if (type === 'cone') {
+                return `
+                    <svg width="240" height="200" viewBox="0 0 240 200" class="max-w-full h-auto">
+                        <!-- Cone Illustration -->
+                        <ellipse cx="120" cy="150" rx="80" ry="25" fill="none" stroke="#0284c7" stroke-width="2"/>
+                        <line x1="40" y1="150" x2="120" y2="30" stroke="#0284c7" stroke-width="2"/>
+                        <line x1="200" y1="150" x2="120" y2="30" stroke="#0284c7" stroke-width="2"/>
+                        <line x1="120" y1="30" x2="120" y2="150" stroke="#ef4444" stroke-width="2" stroke-dasharray="4"/>
+                        <line x1="120" y1="150" x2="200" y2="150" stroke="#10b981" stroke-width="2"/>
+                        <!-- Labels -->
+                        <text x="115" y="20" fill="#0369a1" font-weight="bold" font-size="14">S</text>
+                        <text x="115" y="170" fill="#0369a1" font-weight="bold" font-size="14">O</text>
+                        <text x="155" y="145" fill="#10b981" font-weight="bold" font-size="14">r = 3</text>
+                        <text x="95" y="95" fill="#ef4444" font-weight="bold" font-size="14">h = 4</text>
+                    </svg>
+                `;
+            }
+            return '';
+        }
+
+        // APP GLOBAL STATE
+        let quizState = {
+            studentName: '',
+            questions: [],
+            currentIndex: 0,
+            score: 0,
+            bonusScore: 0,
+            userAnswers: [],
+            timeLeft: 30,
+            timerInterval: null,
+            answered: false
+        };
+
+        // Helper: Random shuffle array
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // START QUIZ LOGIC
+        function startQuiz() {
+            sound.playClick();
+            const nameInput = document.getElementById('inputStudentName').value.trim();
+            if (!nameInput) {
+                alert('Vui lòng nhập họ và tên học sinh trước khi bắt đầu bài kiểm tra!');
+                return;
+            }
+
+            quizState.studentName = nameInput;
+            document.getElementById('badgeStudentName').innerText = nameInput;
+            document.getElementById('sideStudentName').innerText = nameInput;
+            document.getElementById('headerStudentBadge').classList.remove('hidden');
+
+            // Select 10 questions: 7 ND (70%), 2 TH (20%), 1 VD (10%)
+            const selectedND = shuffleArray(QUESTION_POOL.ND).slice(0, 7);
+            const selectedTH = shuffleArray(QUESTION_POOL.TH).slice(0, 2);
+            const selectedVD = shuffleArray(QUESTION_POOL.VD).slice(0, 1);
+
+            quizState.questions = [...selectedND, ...selectedTH, ...selectedVD];
+            quizState.currentIndex = 0;
+            quizState.score = 0;
+            quizState.bonusScore = 0;
+            quizState.userAnswers = [];
+
+            // Switch screen
+            document.getElementById('screenSetup').classList.add('hidden');
+            document.getElementById('screenQuiz').classList.remove('hidden');
+
+            loadQuestion(0);
+        }
+
+        // LOAD QUESTION BY INDEX
+        function loadQuestion(index) {
+            quizState.currentIndex = index;
+            quizState.answered = false;
+            const q = quizState.questions[index];
+
+            // Reset UI
+            document.getElementById('questionCategoryBadge').innerText = `CHẶNG ${index + 1} / 10`;
+            document.getElementById('questionLevelBadge').innerText = `Mức độ: ${q.level}`;
+            document.getElementById('questionText').innerHTML = q.question;
+
+            // Illustration container for Level 3 VD
+            const vdContainer = document.getElementById('vdIllustrationContainer');
+            if (q.hasSvg && q.svgType) {
+                vdContainer.innerHTML = renderVDIllustration(q.svgType);
+                vdContainer.classList.remove('hidden');
+            } else {
+                vdContainer.classList.add('hidden');
+                vdContainer.innerHTML = '';
+            }
+
+            // Options (2 Columns Layout)
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            const optionPrefixes = ['A', 'B', 'C', 'D'];
+            q.options.forEach((optText, optIdx) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-5 rounded-2xl border-2 border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-400 transition-all shadow-sm flex items-center space-x-4 active:scale-98`;
+                btn.onclick = () => selectOption(optIdx);
+                btn.id = `optBtn_${optIdx}`;
+                btn.innerHTML = `
+                    <span class="w-12 h-12 rounded-xl bg-white border-2 border-slate-300 font-black text-sky-700 text-2xl flex items-center justify-center shrink-0 shadow-sm">${optionPrefixes[optIdx]}</span>
+                    <span class="tv-option-text font-bold text-slate-800 flex-1">${optText}</span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Feedback Message & Next Button
+            document.getElementById('feedbackMessage').innerHTML = '';
+            const nextBtn = document.getElementById('btnNextQuestion');
+            nextBtn.disabled = true;
+            nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            // Render LaTeX formulas with KaTeX
+            renderMathInElement(document.getElementById('questionText'), {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+            renderMathInElement(optionsContainer, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+
+            // Start Timer
+            startTimer(q.timeLimit);
+        }
+
+        // TIMER ROUTINE
+        function startTimer(seconds) {
+            clearInterval(quizState.timerInterval);
+            quizState.timeLeft = seconds;
+            updateTimerDisplay();
+
+            quizState.timerInterval = setInterval(() => {
+                quizState.timeLeft--;
+                updateTimerDisplay();
+
+                if (quizState.timeLeft <= 0) {
+                    clearInterval(quizState.timerInterval);
+                    if (!quizState.answered) {
+                        handleTimeOut();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timerDisplay');
+            const barEl = document.getElementById('timerProgressBar');
+            const q = quizState.questions[quizState.currentIndex];
+            
+            timerEl.innerText = `${quizState.timeLeft}s`;
+            const pct = (quizState.timeLeft / q.timeLimit) * 100;
+            barEl.style.width = `${pct}%`;
+
+            if (quizState.timeLeft <= 5) {
+                timerEl.classList.add('text-rose-500', 'animate-pulse');
+            } else {
+                timerEl.classList.remove('text-rose-500', 'animate-pulse');
+                timerEl.classList.add('text-amber-400');
+            }
+        }
+
+        // USER SELECTS OPTION
+        function selectOption(selectedIndex) {
+            if (quizState.answered) return;
+            quizState.answered = true;
+            clearInterval(quizState.timerInterval);
+
+            const q = quizState.questions[quizState.currentIndex];
+            const isCorrect = (selectedIndex === q.correct);
+
+            // Record Answer
+            quizState.userAnswers.push({
+                questionId: q.id,
+                selectedIndex: selectedIndex,
+                correctIndex: q.correct,
+                isCorrect: isCorrect,
+                timeLeft: quizState.timeLeft
+            });
+
+            // Highlight Options
+            const options = document.querySelectorAll('.option-btn');
+            options.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.classList.remove('bg-slate-50', 'border-slate-200');
+                    btn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900', 'ring-4', 'ring-emerald-200');
+                } else if (idx === selectedIndex && !isCorrect) {
+                    btn.classList.remove('bg-slate-50', 'border-slate-200');
+                    btn.classList.add('bg-rose-100', 'border-rose-500', 'text-rose-900');
+                }
+            });
+
+            const feedbackEl = document.getElementById('feedbackMessage');
+
+            if (isCorrect) {
+                sound.playCorrect();
+                quizState.score += 1.0;
+                feedbackEl.innerHTML = `<span class="text-emerald-600"><i class="fa-solid fa-circle-check mr-2"></i>CHÍNH XÁC! (+1.0 điểm)</span>`;
+                
+                // Trigger confetti burst
+                confetti({ particleCount: 50, spread: 60, origin: { y: 0.8 } });
+
+                // 20% Probability for Lucky Gift Bag Bonus (+0.5đ)
+                if (Math.random() < 0.20) {
+                    quizState.bonusScore += 0.5;
+                    setTimeout(() => {
+                        sound.playBonus();
+                        document.getElementById('modalGiftBag').classList.remove('hidden');
+                    }, 500);
+                }
+            } else {
+                sound.playWrong();
+                feedbackEl.innerHTML = `<span class="text-rose-600"><i class="fa-solid fa-circle-xmark mr-2"></i>CHƯA CHÍNH XÁC!</span>`;
+            }
+
+            updateLiveScore();
+
+            // Enable Next Question Button
+            const nextBtn = document.getElementById('btnNextQuestion');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        // TIMEOUT HANDLER
+        function handleTimeOut() {
+            quizState.answered = true;
+            sound.playWrong();
+
+            const q = quizState.questions[quizState.currentIndex];
+            quizState.userAnswers.push({
+                questionId: q.id,
+                selectedIndex: -1, // Timeout
+                correctIndex: q.correct,
+                isCorrect: false,
+                timeLeft: 0
+            });
+
+            const options = document.querySelectorAll('.option-btn');
+            options.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correct) {
+                    btn.classList.add('bg-emerald-100', 'border-emerald-500', 'text-emerald-900');
+                }
+            });
+
+            document.getElementById('feedbackMessage').innerHTML = `<span class="text-amber-600"><i class="fa-solid fa-hourglass-end mr-2"></i>HẾT THỜI GIAN LÀM BÀI!</span>`;
+
+            const nextBtn = document.getElementById('btnNextQuestion');
+            nextBtn.disabled = false;
+            nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+
+        function updateLiveScore() {
+            const total = quizState.score + quizState.bonusScore;
+            document.getElementById('liveScoreDisplay').innerText = total.toFixed(1);
+            if (quizState.bonusScore > 0) {
+                document.getElementById('bonusPointsBadge').classList.remove('hidden');
+            }
+        }
+
+        function closeGiftModal() {
+            sound.playClick();
+            document.getElementById('modalGiftBag').classList.add('hidden');
+            updateLiveScore();
+        }
+
+        // MOUNTAIN PATH TRANSITION SCREEN LOGIC
+        function goToMountainScreen() {
+            sound.playClick();
+            document.getElementById('screenQuiz').classList.add('hidden');
+            document.getElementById('screenMountain').classList.remove('hidden');
+
+            renderMountainTrail();
+        }
+
+        function renderMountainTrail() {
+            const group = document.getElementById('mountainNodesGroup');
+            group.innerHTML = '';
+
+            // Coordinates along mountain curve for 10 checkpoints
+            const coords = [
+                {x: 140, y: 460},
+                {x: 190, y: 440},
+                {x: 240, y: 405},
+                {x: 290, y: 365},
+                {x: 340, y: 330},
+                {x: 420, y: 290},
+                {x: 470, y: 260},
+                {x: 420, y: 215},
+                {x: 380, y: 165},
+                {x: 400, y: 80}
+            ];
+
+            const completedCount = quizState.currentIndex + 1;
+
+            coords.forEach((pt, idx) => {
+                const nodeNum = idx + 1;
+                const isPassed = nodeNum <= completedCount;
+                const isCurrent = nodeNum === completedCount;
+
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', pt.x);
+                circle.setAttribute('cy', pt.y);
+                circle.setAttribute('r', isCurrent ? '18' : '14');
+                circle.setAttribute('fill', isCurrent ? '#f59e0b' : (isPassed ? '#10b981' : '#94a3b8'));
+                circle.setAttribute('stroke', '#ffffff');
+                circle.setAttribute('stroke-width', '3');
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', pt.x);
+                text.setAttribute('y', pt.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', '#ffffff');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('font-size', '13');
+                text.textContent = nodeNum;
+
+                group.appendChild(circle);
+                group.appendChild(text);
+            });
+
+            // Animate Avatar Marker
+            const currentPt = coords[quizState.currentIndex];
+            const avatar = document.getElementById('climberAvatar');
+            sound.playClimb();
+            avatar.setAttribute('transform', `translate(${currentPt.x}, ${currentPt.y - 25})`);
+
+            // Update Text
+            const statusText = document.getElementById('mountainStatusText');
+            if (completedCount >= 10) {
+                statusText.innerText = 'CHÚC MỪNG BẠN ĐÃ CHINH PHỤC ĐỈNH NÚI TẠI CHẶNG 10!';
+                document.getElementById('btnContinueFromMountain').innerHTML = `
+                    <span>XEM KẾT QUẢ BÀI KIỂM TRA</span>
+                    <i class="fa-solid fa-trophy"></i>
+                `;
+            } else {
+                statusText.innerText = `ĐÃ HOÀN THÀNH CHẶNG ${completedCount} / 10! SẴN SÀNG SANG CHẶNG ${completedCount + 1}`;
+            }
+        }
+
+        function startNextQuestionFromMountain() {
+            sound.playClick();
+            if (quizState.currentIndex + 1 >= 10) {
+                showFinalResults();
+            } else {
+                document.getElementById('screenMountain').classList.add('hidden');
+                document.getElementById('screenQuiz').classList.remove('hidden');
+                loadQuestion(quizState.currentIndex + 1);
+            }
+        }
+
+        function confirmSubmitEarly() {
+            sound.playClick();
+            if (confirm('Học sinh có chắc chắn muốn nộp bài kiểm tra sớm không?')) {
+                clearInterval(quizState.timerInterval);
+                showFinalResults();
+            }
+        }
+
+        // SHOW FINAL RESULTS SCREEN
+        function showFinalResults() {
+            sound.playCorrect();
+            confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+
+            document.getElementById('screenQuiz').classList.add('hidden');
+            document.getElementById('screenMountain').classList.add('hidden');
+            document.getElementById('screenResult').classList.remove('hidden');
+
+            const correctCount = quizState.userAnswers.filter(a => a.isCorrect).length;
+            const totalScore = (quizState.score + quizState.bonusScore).toFixed(1);
+
+            document.getElementById('resStudentName').innerText = quizState.studentName;
+            document.getElementById('resCorrectCount').innerText = `${correctCount} / 10`;
+            document.getElementById('resBonusScore').innerText = `+${quizState.bonusScore.toFixed(1)}`;
+            document.getElementById('resTotalScore').innerText = `${totalScore} / 10`;
+
+            // Detailed Questions Breakdown
+            const breakdownContainer = document.getElementById('resQuestionsBreakdown');
+            breakdownContainer.innerHTML = '';
+
+            quizState.questions.forEach((q, idx) => {
+                const userAns = quizState.userAnswers[idx] || { isCorrect: false, selectedIndex: -1 };
+                const optionPrefixes = ['A', 'B', 'C', 'D'];
+                
+                const userChoiceText = userAns.selectedIndex >= 0 ? `${optionPrefixes[userAns.selectedIndex]}. ${q.options[userAns.selectedIndex]}` : 'Không chọn (Hết giờ)';
+                const correctChoiceText = `${optionPrefixes[q.correct]}. ${q.options[q.correct]}`;
+
+                const card = document.createElement('div');
+                card.className = `p-5 rounded-2xl border-2 ${userAns.isCorrect ? 'border-emerald-200 bg-emerald-50/50' : 'border-rose-200 bg-rose-50/50'} space-y-2`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-center font-bold text-lg">
+                        <span class="text-slate-800">Câu ${idx + 1} (${q.level}): ${q.question}</span>
+                        <span class="${userAns.isCorrect ? 'text-emerald-700 bg-emerald-100' : 'text-rose-700 bg-rose-100'} px-3 py-1 rounded-full text-sm font-black">
+                            ${userAns.isCorrect ? 'ĐÚNG (+1.0đ)' : 'SAI (0đ)'}
+                        </span>
+                    </div>
+                    <div class="text-base font-semibold space-y-1">
+                        <div class="${userAns.isCorrect ? 'text-emerald-800' : 'text-rose-800'}">
+                            <i class="fa-solid fa-user-check mr-1"></i> Học sinh chọn: <strong>${userChoiceText}</strong>
+                        </div>
+                        <div class="text-emerald-800">
+                            <i class="fa-solid fa-circle-check mr-1"></i> Đáp án đúng: <strong>${correctChoiceText}</strong>
+                        </div>
+                        <div class="text-slate-600 bg-white/80 p-3 rounded-xl border border-slate-200 text-sm mt-2">
+                            <strong><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Giải chi tiết:</strong> ${q.explain}
+                        </div>
+                    </div>
+                `;
+                breakdownContainer.appendChild(card);
+            });
+
+            renderMathInElement(breakdownContainer, {
+                delimiters: [
+                    {left: '$$', right: '$$', display: true},
+                    {left: '$', right: '$', display: false}
+                ]
+            });
+        }
+
+        // RESET APPLICATION FOR NEW TEST
+        function resetApp() {
+            sound.playClick();
+            document.getElementById('screenResult').classList.add('hidden');
+            document.getElementById('screenSetup').classList.remove('hidden');
+            document.getElementById('inputStudentName').value = '';
+            document.getElementById('headerStudentBadge').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

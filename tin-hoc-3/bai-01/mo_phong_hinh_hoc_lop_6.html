@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô Phỏng Hình Học Lớp 6 - Khám Phá Tứ Giác</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; user-select: none; }
+        canvas { touch-action: none; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen w-screen overflow-hidden flex flex-col m-0 p-0">
+
+    <div class="flex-1 flex flex-col md:flex-row w-full h-full overflow-hidden">
+        
+        <!-- LEFT COLUMN: 80% - Interactive Canvas Area -->
+        <div class="w-full md:w-[80%] h-[70vh] md:h-full bg-slate-950 relative flex flex-col items-center justify-center p-2 border-b md:border-b-0 md:border-r border-slate-800">
+            <!-- Top Overlay Info Bar inside Canvas -->
+            <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur border border-slate-700/60 rounded-xl px-4 py-2 text-xs md:text-sm shadow-lg flex items-center gap-3 z-10">
+                <span class="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Kéo thả các đỉnh A, B, C, D để thay đổi hình dạng
+                </span>
+                <span class="text-slate-400 hidden lg:inline">| Mẹo: Bấm các nút mẫu ở cột phải để xem nhanh</span>
+            </div>
+
+            <!-- Canvas Container -->
+            <div id="canvas-container" class="w-full h-full relative rounded-xl overflow-hidden cursor-crosshair shadow-inner bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px]">
+                <canvas id="geoCanvas" class="w-full h-full block"></canvas>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: 20% - Sidebar Title, Status & Controls -->
+        <div class="w-full md:w-[20%] h-[30vh] md:h-full bg-slate-900 flex flex-col justify-between p-3 md:p-4 overflow-y-auto">
+            
+            <div class="flex flex-col gap-3">
+                <div>
+                    <h1 class="text-base md:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 leading-tight">
+                        Khám Phá Tứ Giác
+                    </h1>
+                    <p class="text-xs text-slate-400">Hình học lớp 6 trực quan</p>
+                </div>
+
+                <!-- Recognized Shape Card -->
+                <div id="shape-badge" class="bg-gradient-to-br from-blue-900/40 to-slate-800/80 border border-blue-500/40 rounded-xl p-3 shadow-md transition-all duration-300">
+                    <div class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold mb-0.5">Nhận diện hình:</div>
+                    <div id="shape-name" class="text-sm md:text-base font-bold text-white flex items-center gap-2">
+                        <span>📐 Tứ giác thường</span>
+                    </div>
+                    <div id="shape-desc" class="text-[11px] text-slate-300 mt-1 leading-snug">
+                        Có 4 cạnh và 4 đỉnh không nằm trên một đường thẳng.
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-2.5 text-xs">
+                    <div class="font-semibold text-slate-300 mb-1.5 flex justify-between items-center">
+                        <span>Độ dài cạnh</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Đơn vị: px</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-red-400 font-bold">AB:</span> <span id="len-ab">0</span>
+                        </div>
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-green-400 font-bold">BC:</span> <span id="len-bc">0</span>
+                        </div>
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-blue-400 font-bold">CD:</span> <span id="len-cd">0</span>
+                        </div>
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-amber-400 font-bold">DA:</span> <span id="len-da">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Angles Table -->
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-2.5 text-xs">
+                    <div class="font-semibold text-slate-300 mb-1.5 flex justify-between items-center">
+                        <span>Góc tại các đỉnh</span>
+                        <span class="text-[10px] text-slate-400 font-normal">Độ (°):</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5 font-mono text-[11px]">
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-red-400 font-bold">Â:</span> <span id="ang-a">0°</span>
+                        </div>
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-green-400 font-bold">B̂:</span> <span id="ang-b">0°</span>
+                        </div>
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-blue-400 font-bold">Ĉ:</span> <span id="ang-c">0°</span>
+                        </div>
+                        <div class="bg-slate-900/60 px-2 py-1 rounded border border-slate-700/30 flex justify-between">
+                            <span class="text-amber-400 font-bold">D̂:</span> <span id="ang-d">0°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-2 pt-2 border-t border-slate-800 flex flex-col gap-1.5">
+                <div class="text-[11px] font-semibold text-slate-400">Mẫu hình nhanh:</div>
+                <div class="grid grid-cols-2 gap-1.5">
+                    <button onclick="setPreset('square')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs text-slate-200 py-1.5 px-2 rounded-lg border border-slate-700 transition font-medium flex items-center justify-center gap-1">
+                        <span>⬛</span> Hình vuông
+                    </button>
+                    <button onclick="setPreset('rectangle')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs text-slate-200 py-1.5 px-2 rounded-lg border border-slate-700 transition font-medium flex items-center justify-center gap-1">
+                        <span>▭</span> Hình chữ nhật
+                    </button>
+                    <button onclick="setPreset('parallelogram')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs text-slate-200 py-1.5 px-2 rounded-lg border border-slate-700 transition font-medium flex items-center justify-center gap-1">
+                        <span>▱</span> Hình bình hành
+                    </button>
+                    <button onclick="setPreset('trapezoid')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-xs text-slate-200 py-1.5 px-2 rounded-lg border border-slate-700 transition font-medium flex items-center justify-center gap-1">
+                        <span>⏢</span> Hình thang
+                    </button>
+                </div>
+                <button onclick="resetDefault()" class="w-full bg-slate-800/80 hover:bg-slate-700 text-xs text-slate-300 py-1.5 rounded-lg border border-slate-700 transition mt-1 font-medium text-center">
+                    🔄 Đặt lại mặc định
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('geoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let points = [];
+        let draggedPointIndex = null;
+        let hoverPointIndex = null;
+
+        // Initialize coordinates relative to canvas size
+        function initPoints() {
+            width = canvas.clientWidth;
+            height = canvas.clientHeight;
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            const cx = width / 2;
+            const cy = height / 2;
+            const size = Math.min(width, height) * 0.25;
+
+            // Default coordinates for A, B, C, D (convex quadrilateral)
+            points = [
+                { x: cx - size, y: cy - size, name: 'A', color: '#ef4444' },
+                { x: cx + size, y: cy - size * 0.8, name: 'B', color: '#22c55e' },
+                { x: cx + size * 0.9, y: cy + size, name: 'C', color: '#3b82f6' },
+                { x: cx - size * 1.1, y: cy + size * 0.8, name: 'D', color: '#f59e0b' }
+            ];
+        }
+
+        window.addEventListener('resize', () => {
+            // Keep relative positions or reset if size changes drastically
+            width = canvas.clientWidth;
+            height = canvas.clientHeight;
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            draw();
+        });
+
+        function setPreset(type) {
+            width = canvas.clientWidth;
+            height = canvas.clientHeight;
+            const cx = width / 2;
+            const cy = height / 2;
+
+            if (type === 'square') {
+                const s = 140;
+                points[0] = { x: cx - s, y: cy - s, name: 'A', color: '#ef4444' };
+                points[1] = { x: cx + s, y: cy - s, name: 'B', color: '#22c55e' };
+                points[2] = { x: cx + s, y: cy + s, name: 'C', color: '#3b82f6' };
+                points[3] = { x: cx - s, y: cy + s, name: 'D', color: '#f59e0b' };
+            } else if (type === 'rectangle') {
+                const w = 180, h = 110;
+                points[0] = { x: cx - w, y: cy - h, name: 'A', color: '#ef4444' };
+                points[1] = { x: cx + w, y: cy - h, name: 'B', color: '#22c55e' };
+                points[2] = { x: cx + w, y: cy + h, name: 'C', color: '#3b82f6' };
+                points[3] = { x: cx - w, y: cy + h, name: 'D', color: '#f59e0b' };
+            } else if (type === 'parallelogram') {
+                const w = 160, h = 110, skew = 60;
+                points[0] = { x: cx - w + skew, y: cy - h, name: 'A', color: '#ef4444' };
+                points[1] = { x: cx + w + skew, y: cy - h, name: 'B', color: '#22c55e' };
+                points[2] = { x: cx + w - skew, y: cy + h, name: 'C', color: '#3b82f6' };
+                points[3] = { x: cx - w - skew, y: cy + h, name: 'D', color: '#f59e0b' };
+            } else if (type === 'trapezoid') {
+                const w1 = 180, w2 = 110, h = 110;
+                points[0] = { x: cx - w2, y: cy - h, name: 'A', color: '#ef4444' };
+                points[1] = { x: cx + w2, y: cy - h, name: 'B', color: '#22c55e' };
+                points[2] = { x: cx + w1, y: cy + h, name: 'C', color: '#3b82f6' };
+                points[3] = { x: cx - w1, y: cy + h, name: 'D', color: '#f59e0b' };
+            }
+            draw();
+        }
+
+        function resetDefault() {
+            initPoints();
+            draw();
+        }
+
+        function dist(p1, p2) {
+            return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+        }
+
+        function getAngle(p1, vertex, p2) {
+            // Angle at vertex between vector vertex->p1 and vertex->p2
+            const v1 = { x: p1.x - vertex.x, y: p1.y - vertex.y };
+            const v2 = { x: p2.x - vertex.x, y: p2.y - vertex.y };
+            const dot = v1.x * v2.x + v1.y * v2.y;
+            const cross = v1.x * v2.y - v1.y * v2.x;
+            let ang = Math.atan2(cross, dot) * (180 / Math.PI);
+            ang = Math.abs(ang);
+            // In a polygon, interior angle can be acute or obtuse. Let's make sure it's the interior angle correctly computed.
+            return ang;
+        }
+
+        // Precise interior angle calculation using dot product & arccos
+        function calculateInteriorAngles() {
+            let angles = [];
+            for (let i = 0; i < 4; i++) {
+                let prev = points[(i + 3) % 4];
+                let curr = points[i];
+                let next = points[(i + 1) % 4];
+
+                let v1 = { x: prev.x - curr.x, y: prev.y - curr.y };
+                let v2 = { x: next.x - curr.x, y: next.y - curr.y };
+
+                let len1 = Math.hypot(v1.x, v1.y);
+                let len2 = Math.hypot(v2.x, v2.y);
+
+                if (len1 === 0 || len2 === 0) {
+                    angles.push(0);
+                    continue;
+                }
+
+                let dot = v1.x * v2.x + v1.y * v2.y;
+                let cosTheta = Math.max(-1, Math.min(1, dot / (len1 * len2)));
+                let rad = Math.acos(cosTheta);
+                let deg = rad * (180 / Math.PI);
+                angles.push(deg);
+            }
+            return angles;
+        }
+
+        function isParallel(p1, p2, p3, p4, tolerance = 0.08) {
+            // Vector 1: p1 -> p2, Vector 2: p3 -> p4
+            const v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
+            const v2 = { x: p4.x - p3.x, y: p4.y - p3.y };
+            const len1 = Math.hypot(v1.x, v1.y);
+            const len2 = Math.hypot(v2.x, v2.y);
+            if (len1 === 0 || len2 === 0) return false;
+            
+            // Normalized cross product or dot product of normalized vectors
+            const u1 = { x: v1.x / len1, y: v1.y / len1 };
+            const u2 = { x: v2.x / len2, y: v2.y / len2 };
+            
+            const cross = Math.abs(u1.x * u2.y - u1.y * u2.x);
+            return cross < tolerance;
+        }
+
+        function isPerpendicular(p1, p2, p3, p4, tolerance = 0.08) {
+            const v1 = { x: p2.x - p1.x, y: p2.y - p1.y };
+            const v2 = { x: p4.x - p3.x, y: p4.y - p3.y };
+            const len1 = Math.hypot(v1.x, v1.y);
+            const len2 = Math.hypot(v2.x, v2.y);
+            if (len1 === 0 || len2 === 0) return false;
+
+            const u1 = { x: v1.x / len1, y: v1.y / len1 };
+            const u2 = { x: v2.x / len2, y: v2.y / len2 };
+
+            const dot = Math.abs(u1.x * u2.x + u1.y * u2.y);
+            return dot < tolerance;
+        }
+
+        function analyzeQuadrilateral(lens, angles) {
+            const [ab, bc, cd, da] = lens;
+            const [aa, abg, ac, ad] = angles;
+
+            // Side equality tolerances (within 5% or 8px)
+            const sideTol = Math.max(8, (ab + bc + cd + da) * 0.03);
+            const sidesEqual = (s1, s2) => Math.abs(s1 - s2) <= sideTol;
+            const allSidesEqual = sidesEqual(ab, bc) && sidesEqual(bc, cd) && sidesEqual(cd, da);
+
+            // Angle equality tolerances (within 3 degrees of 90)
+            const angleTol = 3.5;
+            const isRightAngle = (ang) => Math.abs(ang - 90) <= angleTol;
+            const allRightAngles = isRightAngle(aa) && isRightAngle(abg) && isRightAngle(ac) && isRightAngle(ad);
+
+            // Parallelism check
+            const ab_dc_parallel = isParallel(points[0], points[1], points[3], points[2], 0.06);
+            const ad_bc_parallel = isParallel(points[0], points[3], points[1], points[2], 0.06);
+            const bothPairsParallel = ab_dc_parallel && ad_bc_parallel;
+            const onePairParallel = ab_dc_parallel || ad_bc_parallel;
+
+            // Classification output
+            if (allSidesEqual && allRightAngles) {
+                return {
+                    name: "Hình Vuông",
+                    icon: "⬛",
+                    desc: "Tứ giác đặc biệt có 4 góc vuông và 4 cạnh bằng nhau. Hai cặp cạnh đối song song.",
+                    color: "from-emerald-900/50 to-slate-800/80 border-emerald-500/50 text-emerald-400"
+                };
+            }
+            if (allRightAngles || (bothPairsParallel && (isRightAngle(aa) || isRightAngle(abg)))) {
+                return {
+                    name: "Hình Chữ Nhật",
+                    icon: "▭",
+                    desc: "Tứ giác có 4 góc vuông (90°). Các cặp cạnh đối diện bằng nhau và song song.",
+                    color: "from-blue-900/50 to-slate-800/80 border-blue-500/50 text-blue-400"
+                };
+            }
+            if (allSidesEqual || (bothPairsParallel && (sidesEqual(ab, bc)))) {
+                return {
+                    name: "Hình Thoi",
+                    icon: "◇",
+                    desc: "Tứ giác có 4 cạnh bằng nhau. Hai cặp cạnh đối diện song song, các góc đối bằng nhau.",
+                    color: "from-amber-900/50 to-slate-800/80 border-amber-500/50 text-amber-400"
+                };
+            }
+            if (bothPairsParallel) {
+                return {
+                    name: "Hình Bình Hành",
+                    icon: "▱",
+                    desc: "Tứ giác có hai cặp cạnh đối diện song song và bằng nhau. Các góc đối bằng nhau.",
+                    color: "from-purple-900/50 to-slate-800/80 border-purple-500/50 text-purple-400"
+                };
+            }
+            if (onePairParallel) {
+                return {
+                    name: "Hình Thang",
+                    icon: "⏢",
+                    desc: "Tứ giác có ít nhất một cặp cạnh đối diện song song (gọi là hai cạnh đáy).",
+                    color: "from-cyan-900/50 to-slate-800/80 border-cyan-500/50 text-cyan-400"
+                };
+            }
+            return {
+                name: "Tứ Giác Thường",
+                icon: "📐",
+                desc: "Tứ giác có 4 đỉnh và 4 cạnh không có tính chất song song đặc biệt nào.",
+                color: "from-slate-800 to-slate-900 border-slate-700 text-slate-300"
+            };
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw connecting edges
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < 4; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+
+            // Fill polygon with soft glowing gradient tint
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.08)';
+            ctx.fill();
+
+            // Outline stroke
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#3b82f6';
+            ctx.shadowColor = 'rgba(59, 130, 246, 0.4)';
+            ctx.shadowBlur = 12;
+            ctx.stroke();
+            ctx.shadowBlur = 0; // reset
+
+            // Calculate metrics
+            const ab = dist(points[0], points[1]);
+            const bc = dist(points[1], points[2]);
+            const cd = dist(points[2], points[3]);
+            const da = dist(points[3], points[0]);
+            const lens = [ab, bc, cd, da];
+
+            const angles = calculateInteriorAngles();
+
+            // Update UI sidebar
+            document.getElementById('len-ab').innerText = Math.round(ab);
+            document.getElementById('len-bc').innerText = Math.round(bc);
+            document.getElementById('len-cd').innerText = Math.round(cd);
+            document.getElementById('len-da').innerText = Math.round(da);
+
+            document.getElementById('ang-a').innerText = Math.round(angles[0]) + '°';
+            document.getElementById('ang-b').innerText = Math.round(angles[1]) + '°';
+            document.getElementById('ang-c').innerText = Math.round(angles[2]) + '°';
+            document.getElementById('ang-d').innerText = Math.round(angles[3]) + '°';
+
+            const shapeInfo = analyzeQuadrilateral(lens, angles);
+            const badge = document.getElementById('shape-badge');
+            badge.className = `bg-gradient-to-br ${shapeInfo.color} border rounded-xl p-3 shadow-md transition-all duration-300`;
+            document.getElementById('shape-name').innerHTML = `<span>${shapeInfo.icon}</span> ${shapeInfo.name}`;
+            document.getElementById('shape-desc').innerText = shapeInfo.desc;
+
+            // Draw edge lengths in the middle of each edge
+            const edgeMidpoints = [
+                { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2, label: 'AB' },
+                { x: (points[1].x + points[2].x) / 2, y: (points[1].y + points[2].y) / 2, label: 'BC' },
+                { x: (points[2].x + points[3].x) / 2, y: (points[2].y + points[3].y) / 2, label: 'CD' },
+                { x: (points[3].x + points[0].x) / 2, y: (points[3].y + points[0].y) / 2, label: 'DA' }
+            ];
+
+            edgeMidpoints.forEach((em, idx) => {
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.strokeStyle = 'rgba(100, 116, 139, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(em.x - 22, em.y - 11, 44, 22, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(Math.round(lens[idx]), em.x, em.y);
+            });
+
+            // Draw vertices and name tags
+            points.forEach((p, idx) => {
+                // Outer glow if hovered or dragged
+                if (draggedPointIndex === idx || hoverPointIndex === idx) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 16, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color + '44';
+                    ctx.fill();
+                }
+
+                // Vertex circle
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Vertex Label (A, B, C, D)
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px Inter, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(`${p.name} (${Math.round(angles[idx])}°)`, p.x + 14, p.y - 6);
+            });
+        }
+
+        function getPointerPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getPointerPos(e);
+            points.forEach((p, idx) => {
+                if (Math.hypot(p.x - pos.x, p.y - pos.y) < 22) {
+                    draggedPointIndex = idx;
+                }
+            });
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const pos = getPointerPos(e);
+            
+            // Check hover state
+            let foundHover = null;
+            points.forEach((p, idx) => {
+                if (Math.hypot(p.x - pos.x, p.y - pos.y) < 22) {
+                    foundHover = idx;
+                }
+            });
+            hoverPointIndex = foundHover;
+            canvas.style.cursor = hoverPointIndex !== null || draggedPointIndex !== null ? 'grab' : 'crosshair';
+
+            if (draggedPointIndex !== null) {
+                canvas.style.cursor = 'grabbing';
+                // Keep points inside canvas bounds with padding
+                const padding = 20;
+                points[draggedPointIndex].x = Math.max(padding, Math.min(width - padding, pos.x));
+                points[draggedPointIndex].y = Math.max(padding, Math.min(height - padding, pos.y));
+                draw();
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            draggedPointIndex = null;
+            canvas.style.cursor = 'crosshair';
+            draw();
+        });
+
+        // Touch support for mobile/tablets
+        canvas.addEventListener('touchstart', (e) => {
+            const pos = getPointerPos(e);
+            points.forEach((p, idx) => {
+                if (Math.hypot(p.x - pos.x, p.y - pos.y) * window.devicePixelRatio < 40) {
+                    draggedPointIndex = idx;
+                }
+            });
+        }, { passive: true });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (draggedPointIndex !== null) {
+                const pos = getPointerPos(e);
+                const padding = 20;
+                points[draggedPointIndex].x = Math.max(padding, Math.min(width - padding, pos.x));
+                points[draggedPointIndex].y = Math.max(padding, Math.min(height - padding, pos.y));
+                draw();
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            draggedPointIndex = null;
+            draw();
+        });
+
+        // Initial load
+        window.onload = () => {
+            initPoints();
+            draw();
+        };
+    </script>
+</body>
+</html>

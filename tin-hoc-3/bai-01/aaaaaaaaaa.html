@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bài Kiểm Tra Trắc Nghiệm Môn Tin Học 6 - Bài 1</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for crisp TV display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Lexend', sans-serif;
+      user-select: none;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Pulse & glow animations */
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s infinite ease-in-out;
+    }
+
+    @keyframes bounce-gentle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-bounce-gentle {
+      animation: bounce-gentle 1.5s infinite ease-in-out;
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confetti-fall 3s linear infinite;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 h-screen w-screen overflow-hidden flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-white border-b border-slate-200 px-6 py-3 flex justify-between items-center shrink-0 shadow-sm z-10">
+    <div class="flex items-center gap-3">
+      <div class="bg-teal-600 text-white p-2 rounded-xl font-extrabold text-xl tracking-wide shadow-md">
+        TIN 6
+      </div>
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">BÀI KIỂM TRA MÔN TIN HỌC 6</h1>
+        <p class="text-xs md:text-sm text-slate-500 font-medium">Bài 1: Thông tin và Dữ liệu</p>
+      </div>
+    </div>
+
+    <!-- Right Header: Student Info Badge -->
+    <div id="headerStudentBadge" class="hidden flex items-center gap-3 bg-teal-50 border border-teal-200 px-4 py-1.5 rounded-full shadow-sm">
+      <div class="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold text-base shadow">
+        <span id="studentAvatarChar">H</span>
+      </div>
+      <div>
+        <div class="text-xs text-teal-600 font-semibold uppercase tracking-wider">Học sinh thực hiện</div>
+        <div id="studentNameDisplay" class="text-base font-bold text-teal-900 leading-tight">Nguyễn Văn A</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="flex-1 overflow-hidden relative p-4 md:p-6 flex flex-col">
+
+    <!-- ==================== VIEW 1: STUDENT NAME INPUT FORM ==================== -->
+    <div id="viewStart" class="h-full w-full flex items-center justify-center">
+      <div class="bg-white rounded-3xl p-8 md:p-10 shadow-xl max-w-xl w-full border border-slate-200 text-center animate-fade-in relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-40 h-40 bg-teal-100 rounded-full blur-2xl opacity-70"></div>
+        <div class="absolute -bottom-12 -left-12 w-40 h-40 bg-blue-100 rounded-full blur-2xl opacity-70"></div>
+
+        <div class="w-20 h-20 bg-teal-100 text-teal-700 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-4 shadow-inner">
+          📝
+        </div>
+
+        <h2 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-2">Bắt Đầu Bài Kiểm Tra</h2>
+        <p class="text-slate-600 text-sm md:text-base mb-6">Mời em nhập họ tên để tham gia hành trình chinh phục tri thức Tin học 6!</p>
+
+        <form id="startForm" onsubmit="startTest(event)" class="space-y-5 text-left">
+          <div>
+            <label for="inputStudentName" class="block text-sm font-bold text-slate-700 mb-2">Họ và tên học sinh <span class="text-red-500">*</span></label>
+            <input type="text" id="inputStudentName" required placeholder="Nhập đầy đủ họ và tên..."
+                   class="w-full px-5 py-3.5 text-lg rounded-2xl border-2 border-slate-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none transition font-medium text-slate-800 shadow-sm">
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs md:text-sm text-slate-600 space-y-2">
+            <div class="font-bold text-slate-700 flex items-center gap-2">
+              <span class="text-teal-600">ℹ️</span> Cấu trúc bài kiểm tra:
+            </div>
+            <ul class="list-disc list-inside space-y-1 pl-1">
+              <li><strong>10 câu hỏi ngẫu nhiên</strong> (70% Nhận biết, 20% Thông hiểu, 10% Vận dụng)</li>
+              <li><strong>Thời gian:</strong> 30s (Nhận biết), 45s (Thông hiểu), 70s (Vận dụng)</li>
+              <li><strong>Thang điểm:</strong> 10 điểm chính + Cơ hội mở Túi quà may mắn (+0.5đ)</li>
+            </ul>
+          </div>
+
+          <button type="submit" 
+                  class="w-full bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xl py-4 rounded-2xl shadow-lg hover:shadow-teal-200 transition-all transform active:scale-95 flex items-center justify-center gap-3">
+            <span>BẮT ĐẦU LÀM BÀI</span>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+          </button>
+        </form>
+      </div>
+    </div>
+
+
+    <!-- ==================== VIEW 2: ACTIVE QUIZ VIEW (2 COLUMNS: 80% / 20%) ==================== -->
+    <div id="viewQuiz" class="hidden h-full w-full flex flex-col md:flex-row gap-6 overflow-hidden">
+
+      <!-- LEFT COLUMN: QUESTION CONTENT & OPTIONS (80% WIDTH) -->
+      <div class="w-full md:w-[80%] flex flex-col h-full bg-white rounded-3xl p-6 border border-slate-200 shadow-md relative overflow-hidden">
+        
+        <!-- Question Meta Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+          <div class="flex items-center gap-3">
+            <span id="questionNumBadge" class="bg-teal-700 text-white font-black text-lg md:text-xl px-4 py-1.5 rounded-xl shadow-sm">
+              Câu 1 / 10
+            </span>
+            <span id="levelBadge" class="bg-blue-100 text-blue-800 font-bold text-sm md:text-base px-3.5 py-1 rounded-xl border border-blue-200">
+              Nhận biết
+            </span>
+          </div>
+
+          <div class="text-slate-400 text-sm font-semibold hidden md:block">
+            Màn hình trình chiếu lớp học
+          </div>
+        </div>
+
+        <!-- Scrollable Middle Section: Question text, Illustration (if VD), Answers -->
+        <div class="flex-1 overflow-y-auto my-4 pr-2 space-y-5">
+          
+          <!-- Question Text (Large font for TV) -->
+          <div id="questionText" class="text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-800 leading-snug">
+            Nội dung câu hỏi hiển thị tại đây...
+          </div>
+
+          <!-- Illustration Canvas Container (Only active for VD questions) -->
+          <div id="illustrationBox" class="hidden w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-center">
+            <svg id="illustrationSvg" class="max-h-48 md:max-h-56 w-auto" viewBox="0 0 400 200">
+              <!-- Dynamic SVG artwork drawn via JS -->
+            </svg>
+          </div>
+
+          <!-- Answer Options ABCD in 2 COLUMNS GRID -->
+          <div id="optionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <!-- Option buttons injected dynamically -->
+          </div>
+
+          <!-- Explanation box shown after selection -->
+          <div id="explanationBox" class="hidden bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 text-emerald-900 shadow-sm animate-fade-in">
+            <div class="font-bold text-base md:text-lg mb-1 flex items-center gap-2">
+              <span>💡</span> Giải thích chi tiết đáp án:
+            </div>
+            <p id="explanationText" class="text-sm md:text-base font-medium">Nội dung giải thích SGK...</p>
+          </div>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <div class="pt-3 border-t border-slate-100 flex justify-end shrink-0">
+          <button id="btnNextQuestion" onclick="nextQuestion()" disabled
+                  class="bg-slate-300 text-slate-500 font-extrabold text-lg md:text-xl px-8 py-3.5 rounded-2xl shadow transition-all duration-200 flex items-center gap-3 cursor-not-allowed">
+            <span>Câu tiếp theo</span>
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: TEST INFO, TIMER, SCORE, MOUNTAIN ASCENT VISUAL (20% WIDTH) -->
+      <div class="w-full md:w-[20%] flex flex-col h-full gap-4 shrink-0 overflow-y-auto">
+        
+        <!-- Live Timer & Score Panel -->
+        <div class="bg-white rounded-3xl p-4 border border-slate-200 shadow-md flex flex-col items-center text-center">
+          <!-- Countdown Timer Circle -->
+          <div class="relative w-24 h-24 md:w-28 md:h-28 flex items-center justify-center my-1">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-slate-100" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              <path id="timerCircle" class="text-teal-500 transition-all duration-1000 ease-linear" stroke-dasharray="100, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <div class="absolute flex flex-col items-center justify-center">
+              <span id="timerSeconds" class="text-2xl md:text-3xl font-black text-slate-800 leading-none">30</span>
+              <span class="text-[10px] uppercase font-bold text-slate-400 mt-0.5">giây</span>
+            </div>
+          </div>
+
+          <!-- Live Score Badge -->
+          <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-2.5 mt-2">
+            <div class="text-xs text-slate-500 font-bold uppercase tracking-wider">Điểm số hiện tại</div>
+            <div id="liveScoreText" class="text-2xl md:text-3xl font-black text-amber-500">0.0 <span class="text-sm font-semibold text-slate-400">/ 10</span></div>
+          </div>
+        </div>
+
+        <!-- Mountain Ascent Map (Hành Trình Leo Núi) -->
+        <div class="bg-gradient-to-b from-sky-100 via-sky-50 to-emerald-100 rounded-3xl p-4 border border-slate-200 shadow-md flex-1 flex flex-col relative overflow-hidden">
+          <div class="text-xs font-black text-slate-600 uppercase tracking-wider text-center mb-2 z-10 flex items-center justify-center gap-1">
+            <span>⛰️</span> HÀNH TRÌNH LEO NÚI
+          </div>
+
+          <!-- Mountain Graphic Canvas / Path SVG -->
+          <div class="flex-1 relative w-full h-full min-h-[220px]">
+            <svg id="mountainSvg" class="w-full h-full" viewBox="0 0 120 280" preserveAspectRatio="none">
+              <!-- Mountain Peak Silhouette -->
+              <path d="M 10 270 Q 30 180 60 120 T 100 20 L 115 280 Z" fill="#cbd5e1" opacity="0.3"/>
+              <path d="M 20 280 Q 45 200 65 110 T 80 15 L 120 280 Z" fill="#a7f3d0" opacity="0.5"/>
+              
+              <!-- Winding Path Line -->
+              <path id="mountainPath" d="M 20 260 L 90 235 L 30 205 L 95 175 L 25 145 L 90 115 L 35 85 L 85 55 L 60 25" 
+                    fill="none" stroke="#059669" stroke-width="4" stroke-linecap="round" stroke-dasharray="4 4" />
+
+              <!-- Checkpoint Nodes (Chặng 1 -> Chặng 10) -->
+              <g id="mountainNodes"></g>
+            </svg>
+
+            <!-- Climber Avatar Icon -->
+            <div id="climberAvatar" class="absolute w-8 h-8 -ml-4 -mt-4 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center text-sm shadow-lg transition-all duration-700 ease-out z-20">
+              🧗‍♂️
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ==================== VIEW 3: FINAL SCORE & REVIEW SCREEN ==================== -->
+    <div id="viewResults" class="hidden h-full w-full overflow-y-auto flex flex-col items-center py-4">
+      <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-xl max-w-4xl w-full text-center space-y-6">
+        
+        <div class="inline-block bg-amber-100 text-amber-800 font-extrabold text-sm px-4 py-1.5 rounded-full border border-amber-300">
+          🎉 HOÀN THÀNH BÀI KIỂM TRA
+        </div>
+
+        <h2 class="text-3xl md:text-4xl font-black text-slate-800">Kết Quả Đạt Được</h2>
+        <p class="text-slate-600 font-medium">Chúc mừng em <span id="finalStudentName" class="font-bold text-teal-700">...</span> đã hoàn thành bài thi!</p>
+
+        <!-- Final Score Board -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-teal-50 border border-teal-200 rounded-2xl p-5 text-center">
+            <div class="text-xs font-bold text-teal-600 uppercase">Tổng điểm số</div>
+            <div id="finalScoreVal" class="text-4xl md:text-5xl font-black text-teal-700 mt-1">0.0</div>
+            <div class="text-xs text-slate-400 mt-1">thang điểm 10 + quà</div>
+          </div>
+
+          <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-center">
+            <div class="text-xs font-bold text-emerald-600 uppercase">Số câu trả lời đúng</div>
+            <div id="finalCorrectCount" class="text-4xl md:text-5xl font-black text-emerald-700 mt-1">0/10</div>
+            <div class="text-xs text-slate-400 mt-1">câu hỏi chính xác</div>
+          </div>
+
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center">
+            <div class="text-xs font-bold text-amber-600 uppercase">Điểm thưởng quà may mắn</div>
+            <div id="finalBonusVal" class="text-4xl md:text-5xl font-black text-amber-600 mt-1">+0.0</div>
+            <div class="text-xs text-slate-400 mt-1">từ túi quà leo núi</div>
+          </div>
+        </div>
+
+        <!-- Detailed Question Review List -->
+        <div class="text-left pt-4">
+          <h3 class="text-xl font-extrabold text-slate-800 mb-4 flex items-center gap-2">
+            <span>📋</span> Chi tiết bài làm và đáp án:
+          </h3>
+          <div id="reviewList" class="space-y-4 max-h-[350px] overflow-y-auto pr-2">
+            <!-- Review cards injected dynamically -->
+          </div>
+        </div>
+
+        <!-- Restart Test Button -->
+        <div class="pt-4 flex justify-center">
+          <button onclick="resetApp()" 
+                  class="bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-lg px-8 py-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center gap-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>LÀM LẠI BÀI KIỂM TRA MỚI</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ==================== BONUS GIFT MODAL (TÚI QUÀ MAY MẮN) ==================== -->
+  <div id="modalGift" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border border-slate-100 animate-bounce-gentle relative overflow-hidden">
+      <div class="text-6xl mb-3 animate-pulse">🎁</div>
+      <h3 class="text-2xl font-black text-amber-600 mb-1">TÚI QUÀ MAY MẮN!</h3>
+      <p class="text-slate-600 text-sm mb-6">Em đã đạt chặng leo núi xuất sắc và rơi trúng túi quà ngẫu nhiên!</p>
+      
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+        <div class="text-xs font-bold text-amber-700 uppercase">Phần thưởng</div>
+        <div class="text-3xl font-black text-amber-600 mt-0.5">+0.5 ĐIỂM THƯỞNG</div>
+      </div>
+
+      <button onclick="claimBonusGift()" 
+              class="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-lg py-3.5 rounded-xl shadow-md transition transform active:scale-95">
+        NHẬN ĐIỂM THƯỞNG
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    /* Web Audio API Synthesizer for sound effects (Zero external files reliance) */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.15); // E5
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(220, now); // A3
+        osc.frequency.exponentialRampToValueAtTime(130.81, now + 0.25); // C3
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'gift') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } else if (type === 'tick') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+    }
+
+    /* Full 80 Question Bank from Document */
+    const ALL_QUESTIONS = [
+      // NB Questions (1 to 40)
+      { id: 1, level: 'NB', question: "Thông tin là gì?", options: ["Những gì đem lại hiểu biết cho con người về thế giới xung quanh và chính bản thân mình.", "Các con số và văn bản được ghi lại trên các thiết bị.", "Những tín hiệu điện tử được truyền đi qua các thiết bị máy tính thông minh.", "Vật được dùng để lưu trữ và truyền tải hiểu biết của con người."], answer: 0, explain: "SGK định nghĩa: Thông tin là những gì đem lại hiểu biết cho con người." },
+      { id: 2, level: 'NB', question: "Dữ liệu là gì?", options: ["Thông tin được ghi lên vật mang tin.", "Quá trình xử lý thông tin của bộ não con người trong đời sống.", "Thiết bị dùng để lưu trữ thông tin bên trong bộ nhớ máy tính.", "Sự hiểu biết của con người về thế giới tự nhiên và xã hội."], answer: 0, explain: "Dữ liệu là thông tin đã được ghi lên vật mang tin dưới dạng số, chữ, hình ảnh, âm thanh." },
+      { id: 3, level: 'NB', question: "Vật mang tin là gì?", options: ["Hành động của con người sau khi nhận được dữ liệu từ môi trường.", "Phương tiện được dùng để lưu trữ và truyền tải thông tin.", "Các con số và chữ viết được ghi chép lại trên giấy trắng.", "Những hiểu biết của con người thu nhận được qua các giác quan."], answer: 1, explain: "Vật mang tin là phương tiện lưu trữ và truyền tải thông tin." },
+      { id: 4, level: 'NB', question: "Dữ liệu được thể hiện dưới các dạng chủ yếu nào?", options: ["Lời nói, hành động, biểu cảm, âm thanh.", "Thông tin, vật mang tin, ý nghĩ, con số.", "Giấy viết, đĩa CD, thẻ nhớ, hình ảnh.", "Con số, văn bản, hình ảnh, âm thanh."], answer: 3, explain: "4 dạng dữ liệu cơ bản: con số, văn bản, hình ảnh, âm thanh." },
+      { id: 5, level: 'NB', question: "Đâu là ví dụ đúng nhất về vật mang tin?", options: ["Đĩa CD.", "Dòng chữ trên bảng.", "Con số chỉ nhiệt độ.", "Tiếng chim hót."], answer: 0, explain: "Đĩa CD là phương tiện vật lý lưu trữ dữ liệu." },
+      { id: 6, level: 'NB', question: "Mối quan hệ cơ bản giữa thông tin và dữ liệu là gì?", options: ["Dữ liệu và thông tin hoàn toàn độc lập với nhau.", "Dữ liệu đem lại thông tin cho con người.", "Thông tin luôn sinh ra dữ liệu trước khi được xử lý.", "Thông tin tự động tạo ra vật mang tin."], answer: 1, explain: "Dữ liệu đem lại thông tin cho con người." },
+      { id: 7, level: 'NB', question: "Thông tin có vai trò quan trọng gì đối với con người?", options: ["Giúp con người tạo ra nhiều vật mang tin phức tạp hơn.", "Thay thế hoàn toàn bộ não con người trong việc ghi nhớ.", "Giúp con người đưa ra lựa chọn tốt và hành động hiệu quả.", "Chỉ dùng để lưu trữ trên máy tính mà không có tác dụng thực tế."], answer: 2, explain: "Thông tin giúp đưa ra quyết định đúng đắn và hành động hiệu quả." },
+      { id: 8, level: 'NB', question: "Con người thu nhận thông tin qua những con đường nào?", options: ["Chỉ qua việc đọc sách báo hằng ngày.", "Chỉ qua việc xem các bản tin dự báo thời tiết.", "Lắng nghe, quan sát và trải nghiệm.", "Chỉ nhờ vào các thiết bị điện tử hiện đại."], answer: 2, explain: "Con người thu nhận thông tin qua lắng nghe, quan sát và trải nghiệm." },
+      { id: 9, level: 'NB', question: "Trong quá trình tiếp nhận thông tin, bộ não đóng vai trò gì?", options: ["Phát ra các tín hiệu âm thanh và hình ảnh cho người khác.", "Lưu trữ vật mang tin từ môi trường bên ngoài vào cơ thể.", "Sản xuất ra các loại dữ liệu như văn bản và âm thanh.", "Xử lí dữ liệu thu nhận được từ các giác quan để trở thành hiểu biết."], answer: 3, explain: "Bộ não xử lý dữ liệu từ các giác quan thành hiểu biết (thông tin)." },
+      { id: 10, level: 'NB', question: "Máy tính thực chất xử lí đối tượng nào?", options: ["Vật mang tin.", "Sự kiện lịch sử.", "Suy nghĩ con người.", "Dữ liệu."], answer: 3, explain: "Máy tính trực tiếp xử lý dữ liệu." },
+      { id: 11, level: 'NB', question: "Trong đời sống, 'Tiếng còi xe cứu thương' được xem là dữ liệu dưới dạng nào?", options: ["Dạng âm thanh.", "Dạng văn bản.", "Dạng hình ảnh.", "Dạng con số."], answer: 0, explain: "Tiếng còi phát ra sóng âm thanh thuộc dạng dữ liệu âm thanh." },
+      { id: 12, level: 'NB', question: "Trong đời sống, 'Bản nhạc trên đài' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng con số.", "Dạng văn bản.", "Dạng âm thanh."], answer: 3, explain: "Bản nhạc nghe bằng thính giác là dữ liệu âm thanh." },
+      { id: 13, level: 'NB', question: "Trong đời sống, 'Tiếng trống trường' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng âm thanh.", "Dạng con số.", "Dạng văn bản."], answer: 1, explain: "Tiếng trống là dạng dữ liệu âm thanh." },
+      { id: 14, level: 'NB', question: "Trong đời sống, 'Tiếng thầy cô giảng bài' được xem là dữ liệu dưới dạng nào?", options: ["Dạng văn bản.", "Dạng hình ảnh.", "Dạng con số.", "Dạng âm thanh."], answer: 3, explain: "Giọng giảng bài là dữ liệu âm thanh." },
+      { id: 15, level: 'NB', question: "Trong đời sống, 'Đoạn văn trong sách giáo khoa' được xem là dữ liệu dưới dạng nào?", options: ["Dạng con số.", "Dạng văn bản.", "Dạng âm thanh.", "Dạng hình ảnh."], answer: 1, explain: "Đoạn văn ghi bằng chữ viết là dữ liệu văn bản." },
+      { id: 16, level: 'NB', question: "Trong đời sống, 'Tên đường ghi trên biển báo' được xem là dữ liệu dưới dạng nào?", options: ["Dạng âm thanh.", "Dạng hình ảnh.", "Dạng văn bản.", "Dạng con số."], answer: 2, explain: "Tên đường viết bằng chữ là dữ liệu văn bản." },
+      { id: 17, level: 'NB', question: "Trong đời sống, 'Nội dung một bài báo' được xem là dữ liệu dưới dạng nào?", options: ["Dạng con số.", "Dạng hình ảnh.", "Dạng âm thanh.", "Dạng văn bản."], answer: 3, explain: "Nội dung bài báo là dữ liệu dạng văn bản." },
+      { id: 18, level: 'NB', question: "Trong đời sống, 'Danh sách tên học sinh trong lớp' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng âm thanh.", "Dạng văn bản.", "Dạng con số."], answer: 2, explain: "Danh sách tên thuộc dạng văn bản." },
+      { id: 19, level: 'NB', question: "Trong đời sống, 'Ảnh chụp gia đình đi du lịch' được xem là dữ liệu dưới dạng nào?", options: ["Dạng con số.", "Dạng văn bản.", "Dạng âm thanh.", "Dạng hình ảnh."], answer: 3, explain: "Bức ảnh thuộc dữ liệu hình ảnh." },
+      { id: 20, level: 'NB', question: "Trong đời sống, 'Biểu tượng dự báo thời tiết' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng âm thanh.", "Dạng văn bản.", "Dạng con số."], answer: 0, explain: "Biểu tượng hình vẽ thuộc dạng dữ liệu hình ảnh." },
+      { id: 21, level: 'NB', question: "Trong đời sống, 'Hình vẽ sơ đồ trong vở' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng âm thanh.", "Dạng con số.", "Dạng văn bản."], answer: 0, explain: "Hình vẽ sơ đồ là dữ liệu hình ảnh." },
+      { id: 22, level: 'NB', question: "Trong đời sống, 'Biển báo cấm đi ngược chiều' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng văn bản.", "Dạng âm thanh.", "Dạng con số."], answer: 0, explain: "Biển báo hình vẽ thuộc dữ liệu hình ảnh." },
+      { id: 23, level: 'NB', question: "Trong đời sống, 'Giá tiền in trên nhãn mác áo' được xem là dữ liệu dưới dạng nào?", options: ["Dạng hình ảnh.", "Dạng văn bản.", "Dạng âm thanh.", "Dạng con số."], answer: 3, explain: "Giá tiền biểu diễn bằng các con số." },
+      { id: 24, level: 'NB', question: "Trong đời sống, 'Nhiệt độ cơ thể đo được' được xem là dữ liệu dưới dạng nào?", options: ["Dạng con số.", "Dạng âm thanh.", "Dạng văn bản.", "Dạng hình ảnh."], answer: 0, explain: "Nhiệt độ biểu diễn bằng các con số." },
+      { id: 25, level: 'NB', question: "Trong đời sống, 'Số điện thoại của người thân' được xem là dữ liệu dưới dạng nào?", options: ["Dạng văn bản.", "Dạng con số.", "Dạng hình ảnh.", "Dạng âm thanh."], answer: 1, explain: "Dãy số điện thoại là dữ liệu con số." },
+      { id: 26, level: 'NB', question: "Đối với 'Bài hát đang được lưu trữ', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Giai điệu bài hát", "Thẻ nhớ", "Âm thanh phát ra", "Cảm xúc người nghe"], answer: 1, explain: "Thẻ nhớ là vật thể vật lý chứa dữ liệu bài hát." },
+      { id: 27, level: 'NB', question: "Đối với 'Bộ phim chuẩn bị chiếu rạp', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Cuộn phim", "Nội dung câu chuyện", "Đạo diễn bộ phim", "Hình ảnh diễn viên"], answer: 0, explain: "Cuộn phim là vật mang tin." },
+      { id: 28, level: 'NB', question: "Đối với 'Thông báo kết quả học tập', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Tên học sinh", "Điểm số các môn", "Bảng tin nhà trường", "Sự lo lắng của phụ huynh"], answer: 2, explain: "Bảng tin nhà trường chứa thông báo." },
+      { id: 29, level: 'NB', question: "Đối với 'Chương trình phát thanh buổi sáng', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Người dân đang nghe đài", "Giọng nói phát thanh viên", "Chiếc loa phường", "Bản tin thời tiết"], answer: 2, explain: "Chiếc loa phường truyền phát dữ liệu." },
+      { id: 30, level: 'NB', question: "Đối với 'Phần mềm máy tính', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Giao diện phần mềm", "Mã nguồn lập trình", "Nút bấm trên màn hình", "Ổ đĩa cứng"], answer: 3, explain: "Ổ đĩa cứng lưu trữ dữ liệu phần mềm." },
+      { id: 31, level: 'NB', question: "Đối với 'Tài liệu báo cáo môn học', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Kiến thức của học sinh", "Tờ giấy in", "Số trang tài liệu", "Nội dung báo cáo"], answer: 1, explain: "Tờ giấy in là phương tiện mang thông tin." },
+      { id: 32, level: 'NB', question: "Đối với 'Hình ảnh chụp từ máy ảnh số', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Màu sắc bức ảnh", "Phong cảnh bức ảnh", "Người thợ chụp ảnh", "Thẻ nhớ máy ảnh"], answer: 3, explain: "Thẻ nhớ chứa dữ liệu ảnh." },
+      { id: 33, level: 'NB', question: "Đối với 'Tệp văn bản mang ra tiệm in', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Chiếc máy in", "Chiếc USB", "Nội dung tệp chữ", "Biểu tượng tệp tin"], answer: 1, explain: "Chiếc USB là vật mang tin chứa tệp." },
+      { id: 34, level: 'NB', question: "Đối với 'Bản tin thời sự truyền hình', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Chiếc tivi", "Kênh truyền hình", "Người dẫn chương trình", "Tin tức thế giới"], answer: 0, explain: "Chiếc tivi hiển thị tín hiệu tin tức." },
+      { id: 35, level: 'NB', question: "Đối với 'Bản đồ chỉ dẫn đường đi', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Khoảng cách địa lý", "Kí hiệu mũi tên", "Tấm bảng gỗ lớn", "Tên các con đường"], answer: 2, explain: "Tấm bảng gỗ là vật thể chứa bản đồ." },
+      { id: 36, level: 'NB', question: "Đối với 'Biển báo hạn chế tốc độ', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Người lái xe", "Tấm kim loại tròn", "Vòng tròn màu đỏ", "Con số tốc độ"], answer: 1, explain: "Tấm kim loại tròn chứa hình biển báo." },
+      { id: 37, level: 'NB', question: "Đối với 'Nội dung bài học trên lớp', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Hình minh họa", "Quyển sách giáo khoa", "Chữ in trong bài", "Lời giảng của thầy cô"], answer: 1, explain: "Quyển SGK chứa dữ liệu bài học." },
+      { id: 38, level: 'NB', question: "Đối với 'Buổi phỏng vấn được ghi lại', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Câu trả lời phỏng vấn", "Người tham gia", "Cuộn băng ghi âm", "Câu hỏi phỏng vấn"], answer: 2, explain: "Cuộn băng ghi âm lưu tiếng phỏng vấn." },
+      { id: 39, level: 'NB', question: "Đối với 'Hồ sơ xin việc của ứng viên', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Kẹp giấy bìa cứng", "Thông tin cá nhân", "Chữ ký người nộp", "Kinh nghiệm làm việc"], answer: 0, explain: "Kẹp giấy bìa chứa giấy tờ hồ sơ." },
+      { id: 40, level: 'NB', question: "Đối với 'Kết quả khám sức khỏe', đâu là vật mang tin đóng vai trò lưu trữ hoặc truyền tải?", options: ["Hình ảnh ổ bụng", "Chỉ số nhịp tim", "Phiếu siêu âm giấy", "Lời dặn của bác sĩ"], answer: 2, explain: "Phiếu siêu âm giấy là vật mang tin." },
+
+      // TH Questions (41 to 64)
+      { id: 41, level: 'TH', question: "Một em bé 2 tuổi nhìn vào tờ báo. Đối với em bé, các dòng chữ trên tờ báo mang ý nghĩa gì?", options: ["Là vật mang tin vì tờ báo có khả năng tự động truyền đạt hiểu biết.", "Là thông tin vì tờ báo chứa các chữ cái đã được in ấn hoàn chỉnh.", "Chỉ là dữ liệu vì em bé chưa biết chữ nên không thu nhận được thông tin.", "Là thông tin vì tờ báo luôn cung cấp tri thức cho con người."], answer: 2, explain: "Em bé chưa biết chữ nên chữ in chỉ là dữ liệu, không tạo thành thông tin." },
+      { id: 42, level: 'TH', question: "Bạn Lan đọc được tờ thông báo và biết ngày mai cúp điện. Cụm từ 'ngày mai cúp điện' đối với Lan là gì?", options: ["Là vật mang tin vì nó chứa đựng các dữ liệu dạng văn bản thông báo.", "Là thông tin vì nó đem lại cho Lan sự hiểu biết về sự kiện sắp diễn ra.", "Là một loại vật mang tin điện tử dùng để truyền tải trạng thái năng lượng.", "Là dữ liệu vì nó chỉ là các nét mực được in trên bề mặt giấy trắng."], answer: 1, explain: "Lan đã tiếp nhận và hiểu được sự việc, nên đó là thông tin." },
+      { id: 43, level: 'TH', question: "Tấm biển ghi 'Đảo Cò, 40.000đ' đứng trơ trọi giữa đường. Bản thân tấm biển kim loại đó được gọi là gì?", options: ["Dữ liệu âm thanh.", "Thông tin.", "Vật mang tin.", "Dữ liệu."], answer: 2, explain: "Tấm biển kim loại là phương tiện vật lý chứa chữ viết, tức là vật mang tin." },
+      { id: 44, level: 'TH', question: "Hai người cùng nghe một bản tin tiếng Pháp, một người hiểu, một người không. Điều này minh chứng cho tính chất nào?", options: ["Thông tin luôn độc lập với dữ liệu và không bị ảnh hưởng bởi người nghe.", "Sự hiểu biết mà thông tin đem lại luôn phụ thuộc vào người tiếp nhận.", "Bản tin tiếng Pháp không phải là vật mang tin đối với người không hiểu.", "Dữ liệu dạng âm thanh không thể chuyển hóa thành thông tin hữu ích."], answer: 1, explain: "Thông tin phụ thuộc vào khả năng hiểu của người tiếp nhận." },
+      { id: 45, level: 'TH', question: "Bạn Minh xem dự báo thời tiết thấy biểu tượng mặt trời và số 35. Các biểu tượng và con số hiển thị đó gọi là gì?", options: ["Môi trường truyền tin.", "Vật mang tin.", "Thông tin.", "Dữ liệu."], answer: 3, explain: "Biểu tượng và con số là dữ liệu hình ảnh/số." },
+      { id: 46, level: 'TH', question: "Từ biểu tượng mặt trời và số 35 trên bản tin, Minh hiểu hôm nay trời rất nóng. Sự hiểu biết 'trời rất nóng' gọi là gì?", options: ["Vật mang tin.", "Thông tin.", "Dữ liệu.", "Vật chứa dữ liệu."], answer: 1, explain: "Sự hiểu biết rút ra sau khi phân tích dữ liệu là thông tin." },
+      { id: 47, level: 'TH', question: "Một bức tranh vẽ cảnh báo cháy rừng được treo ở bìa rừng. Bản thân khung vải và giấy vẽ bức tranh đó được gọi là gì?", options: ["Dữ liệu hình ảnh.", "Dữ liệu văn bản.", "Vật mang tin.", "Thông tin cảnh báo."], answer: 2, explain: "Khung vải và giấy là vật mang tin." },
+      { id: 48, level: 'TH', question: "Người dân tộc thiểu số nhìn một văn bản pháp luật nhưng không biết chữ phổ thông. Đối với họ, văn bản đó cung cấp điều gì?", options: ["Cung cấp đầy đủ thông tin pháp luật để họ làm theo.", "Đóng vai trò là vật mang tin chứa thông tin trực tiếp truyền vào não.", "Cung cấp dữ liệu dạng văn bản nhưng không mang lại thông tin.", "Không cung cấp cả dữ liệu lẫn thông tin vì họ không nhìn thấy chữ."], answer: 2, explain: "Họ nhìn thấy nét chữ (dữ liệu) nhưng không hiểu ý nghĩa nên không có thông tin." },
+      { id: 49, level: 'TH', question: "Để rút ra kết luận 'Đà Nẵng ít mưa nhất vào tháng 3' từ bảng lượng mưa, con người cần thực hiện thao tác gì?", options: ["Tạo ra các vật mang tin mới nhằm thay đổi lượng mưa thực tế.", "Chỉ cần ghi chép lại các con số từ vật mang tin vào một tờ giấy khác.", "Quan sát và xử lý dữ liệu trong bảng để biến nó thành thông tin.", "Chuyển đổi thông tin thành dữ liệu dạng con số để lưu trữ lâu dài."], answer: 2, explain: "Cần quan sát và xử lý dữ liệu bằng bộ brain." },
+      { id: 50, level: 'TH', question: "Câu trả lời 'Huế ít mưa nhất vào tháng 4' đem lại điều gì cho người đang có ý định đi du lịch Huế?", options: ["Tạo ra một hệ thống dữ liệu dạng số để họ lưu vào bộ nhớ máy tính.", "Cung cấp vật mang tin vật lý giúp họ di chuyển đến Huế nhanh chóng hơn.", "Sản sinh ra các hiện tượng thời tiết mới thông qua quá trình xử lý dữ liệu.", "Đem lại thông tin giúp họ đưa ra quyết định lựa chọn thời gian đi du lịch hợp lý."], answer: 3, explain: "Thông tin giúp con người đưa ra quyết định phù hợp." },
+      { id: 51, level: 'TH', question: "Khi giáo viên nhìn vào bảng điểm dạng số, cô biết được em nào học xuất sắc nhất. Điều cô giáo biết được gọi là gì?", options: ["Vật mang tin.", "Dữ liệu.", "Tín hiệu vật lý.", "Thông tin."], answer: 3, explain: "Hiểu biết thu nhận được là thông tin." },
+      { id: 52, level: 'TH', question: "Dữ liệu được truyền tải qua cáp quang dưới dạng tín hiệu ánh sáng. Sợi cáp quang trong trường hợp này đóng vai trò gì?", options: ["Dữ liệu âm thanh.", "Thông tin tín hiệu.", "Vật mang tin.", "Dữ liệu hình ảnh."], answer: 2, explain: "Sợi cáp quang là phương tiện truyền tải, tức vật mang tin." },
+      { id: 53, level: 'TH', question: "Khi em nghe tiếng chuông báo cháy và lập tức chạy ra khỏi tòa nhà, việc chạy ra khỏi nhà thể hiện vai trò gì của thông tin?", options: ["Thông tin có khả năng làm thay đổi hành động của con người.", "Thông tin luôn được tạo ra trực tiếp từ những thay đổi hành động.", "Thông tin giúp con người tạo ra nhiều loại dữ liệu cảnh báo mới.", "Thông tin có chức năng bảo quản vật mang tin khỏi hỏa hoạn."], answer: 0, explain: "Thông tin làm thay đổi hành động của con người." },
+      { id: 54, level: 'TH', question: "Một cuốn tiểu thuyết viết bằng tiếng Tây Ban Nha đối với người chỉ biết tiếng Việt và không dùng công cụ thì nó đóng vai trò gì?", options: ["Nguồn thông tin khổng lồ giúp người đọc phát triển ngôn ngữ.", "Chỉ là một dạng thông tin hình ảnh không liên quan đến dữ liệu.", "Vật mang tin truyền tải trực tiếp thông tin cảm xúc đầy đủ.", "Vật mang tin chứa dữ liệu nhưng không mang lại thông tin."], answer: 3, explain: "Không biết tiếng nên không thu được thông tin từ dữ liệu chữ viết." },
+      { id: 55, level: 'TH', question: "Trong bảng thống kê dân số các tỉnh thành, dòng chữ 'Thành phố Hà Nội' thuộc dạng dữ liệu nào?", options: ["Dạng âm thanh.", "Dạng con số.", "Dạng văn bản.", "Dạng hình ảnh."], answer: 2, explain: "Chữ viết là dữ liệu dạng văn bản." },
+      { id: 56, level: 'TH', question: "Bản nhạc Beethoven được thu trong đĩa CD móp méo khiến máy không phát được âm thanh. Sự cố này ảnh hưởng trực tiếp đến yếu tố nào?", options: ["Vật mang tin bị hỏng khiến dữ liệu không thể truyền tải thành thông tin.", "Bộ脑 người nghe bị mất khả năng xử lý thông tin âm nhạc cổ điển.", "Thông tin bài hát bị sai lệch do sự hiểu biết của người nghe kém đi.", "Dữ liệu dạng âm thanh bị chuyển đổi sai cách thành dữ liệu dạng con số."], answer: 0, explain: "Vật mang tin bị hỏng cản trở việc truyền tải dữ liệu." },
+      { id: 57, level: 'TH', question: "Sự kiện lịch sử 'Chiến thắng Điện Biên Phủ' khi được in thành các dòng chữ trong sách thì các dòng chữ đó trở thành gì?", options: ["Thông tin.", "Dữ liệu.", "Ý niệm trừu tượng.", "Vật mang tin."], answer: 1, explain: "Các dòng chữ được ghi lại là dữ liệu." },
+      { id: 58, level: 'TH', question: "Bạn Khoa lên mạng tìm kiếm các trò chơi dã ngoại. 'Sự hiểu biết về luật chơi các trò' thu nhận được sau khi đọc trên web gọi là gì?", options: ["Thông tin.", "Vật chứa tin.", "Vật mang tin.", "Dữ liệu."], answer: 0, explain: "Sự hiểu biết thu nhận được chính là thông tin." },
+      { id: 59, level: 'TH', question: "Một tệp tin lưu trữ bức ảnh chụp con mèo trong máy tính. Tệp tin này nằm trong ổ cứng được coi là gì?", options: ["Tín hiệu xử lý.", "Vật mang tin.", "Dữ liệu.", "Thông tin."], answer: 2, explain: "Tệp tin ảnh trong máy tính là dữ liệu hình ảnh." },
+      { id: 60, level: 'TH', question: "Người khiếm thị dùng ngón tay sờ vào hệ thống chữ nổi Braille để đọc truyện. Các chấm nổi trên mặt giấy đóng vai trò là gì đối với họ?", options: ["Dữ liệu dạng âm thanh do người khiếm thị không dùng thị giác để đọc.", "Thông tin xúc giác đã được chuyển hóa hoàn toàn thành dữ liệu dạng số.", "Dữ liệu dạng kí hiệu hình khối để brain phân tích thành thông tin.", "Vật mang tin truyền trực tiếp ý nghĩa câu chuyện bỏ qua khâu xử lý."], answer: 2, explain: "Các chấm nổi là các kí hiệu (dữ liệu) để phân tích thành thông tin." },
+      { id: 61, level: 'TH', question: "Đặc điểm nổi bật nhất về sự hiểu biết mà thông tin đem lại cho con người là gì?", options: ["Hoàn toàn độc lập và giống nhau đối với mọi đối tượng người nghe.", "Chỉ có ý nghĩa khi được lưu trữ bên trong các thiết bị điện tử hiện đại.", "Luôn phụ thuộc vào khả năng nhận thức của người tiếp nhận thông tin đó.", "Luôn thay đổi vật mang tin thành một hình thức biểu diễn phức tạp hơn."], answer: 2, explain: "Phụ thuộc vào khả năng nhận thức của người tiếp nhận." },
+      { id: 62, level: 'TH', question: "Nếu không có vật mang tin thì con người có thể làm gì với thông tin?", options: ["Không thể lưu trữ lâu dài để truyền đạt thông tin cho các thế hệ sau.", "Vẫn có thể lưu trữ và truyền tải thông tin bằng các dạng dữ liệu siêu nhiên.", "Có thể chuyển hóa thông tin thành dữ liệu mà không cần vật lý hỗ trợ.", "Bảo quản thông tin tốt hơn vì không sợ vật mang tin bị hỏng hóc tự nhiên."], answer: 0, explain: "Thiếu vật mang tin thì không thể lưu trữ truyền tải lâu dài." },
+      { id: 63, level: 'TH', question: "Tại sao người ta thường nhấn mạnh 'máy tính chỉ xử lí dữ liệu' trong chuyên ngành tin học?", options: ["Vì máy tính chỉ tính toán trên các tín hiệu bit vô tri, con người mới hiểu được ý nghĩa.", "Vì toàn bộ dữ liệu trên máy tính đều là các con số thập phân dễ hiểu với máy.", "Vì máy tính có trí thông minh vượt trội nên tự động chuyển thông tin thành vật mang tin.", "Vì máy tính không thể hiển thị thông tin dạng hình ảnh cho con người quan sát."], answer: 0, explain: "Máy tính chỉ thao tác với tín hiệu dữ liệu, ý nghĩa thông tin thuộc về con người." },
+      { id: 64, level: 'TH', question: "Em đi trên đường và thấy một người vẫy tay xin sang đường. Hành động vẫy tay đó cung cấp cho em yếu tố nào để em quyết định nhường đường?", options: ["Cung cấp thông tin dạng âm thanh để thu hút sự chú ý của người lái xe.", "Cung cấp vật mang tin dạng sinh học truyền thẳng vào thị giác người quan sát.", "Cung cấp thông tin qua việc xử lý dữ liệu hình ảnh hành động của người đó.", "Cung cấp dữ liệu dạng con số biểu thị mức độ ưu tiên giao thông tại thời điểm đó."], answer: 2, explain: "Xử lý dữ liệu hình ảnh người vẫy tay thành thông tin cần xin đường." },
+
+      // VD Questions (65 to 80)
+      { id: 65, level: 'VD', question: "Khi tham gia giao thông, bạn Hùng nhìn thấy đèn tín hiệu chuyển sang màu vàng và lập tức quyết định đi chậm lại. Phân tích nào sau đây là chính xác nhất về tình huống xử lý thông tin này?", options: ["Ánh sáng màu vàng là dữ liệu, việc Hùng hiểu cần phải đi chậm lại là thông tin thu được nhờ quá trình xử lý của brain.", "Màu vàng rực rỡ của đèn giao thông chính là một loại vật mang tin quang học giúp truyền tải trực tiếp thông tin an toàn đến nhận thức của bạn Hùng tại thời điểm đó mà không cần qua phân tích.", "Hành động đi chậm lại của chiếc xe máy do Hùng điều khiển chính là một dạng dữ liệu đầu ra sau khi Hùng đã xử lý thành công vật mang tin là hệ thống đèn giao thông tại ngã tư.", "Hệ thống đèn giao thông tự động phát ra các luồng thông tin trực tiếp vào thị giác người đi đường để cảnh báo nguy hiểm, từ đó brain tiếp nhận và chuyển hóa các thông tin này thành dữ liệu để ra quyết định giảm tốc độ xe một cách an toàn nhất."], answer: 0, explain: "Ánh sáng vàng là dữ liệu, hiểu cần đi chậm lại là thông tin qua xử lý não bộ.", drawType: "traffic" },
+      { id: 66, level: 'VD', question: "Sáng sớm, Lan nhìn thấy những đám mây đen kéo đến kín trời và cô bé quyết định quay vào nhà mang theo chiếc ô trước khi đi học. Phát biểu nào sau đây mô tả đúng bản chất sự việc?", options: ["Dữ liệu về hiện tượng trời sắp mưa đã được brain của Lan ghi chép lại và chuyển hóa thành thông tin để lưu trữ vĩnh viễn trên vật mang tin là chiếc ô mang theo bên mình.", "Đám mây đen là một loại vật mang tin sinh thái học chứa đựng các dữ liệu về độ ẩm, từ đó trực tiếp truyền tải thông tin dự báo thời tiết vào hệ thần kinh để tạo ra phản xạ cầm ô.", "Mây đen là dữ liệu dạng hình ảnh, việc Lan biết trời sắp mưa là thông tin và việc mang ô là quyết định hành động.", "Việc mang theo chiếc ô để che mưa chính là một loại thông tin đầu ra sau khi bộ brain của Lan tiến hành phân tích và xử lý vật mang tin là những đám mây đen trên bầu trời."], answer: 2, explain: "Mây đen = dữ liệu hình ảnh, biết trời sắp mưa = thông tin, mang ô = hành động.", drawType: "storm" },
+      { id: 67, level: 'VD', question: "Bác sĩ nhìn vào tấm phim chụp X-quang của một bệnh nhân và đưa ra kết luận bệnh nhân bị rạn xương tay. Vai trò của các yếu tố trong quá trình này được định nghĩa như thế nào?", options: ["Bệnh nhân đang ngồi chờ kết quả khám bệnh chính là dữ liệu gốc, máy chụp X-quang là hệ thống xử lý thông tin và tấm phim là dữ liệu đầu ra cuối cùng.", "Tấm phim X-quang là nguồn thông tin y khoa hiển thị tình trạng xương, từ đó bác sĩ lưu trữ những thông tin này thành hệ thống dữ liệu số để cấp đơn thuốc cho bệnh nhân.", "Lời chẩn đoán về tình trạng rạn xương của bác sĩ được phân loại là một dạng vật mang tin y tế chứa đựng các dữ liệu hình ảnh quan trọng của người bệnh.", "Tấm phim là vật mang tin, các vệt trắng đen trên phim là dữ liệu, và kết luận rạn xương là thông tin bác sĩ rút ra được."], answer: 3, explain: "Tấm phim = vật mang tin, vệt sáng tối = dữ liệu hình ảnh, kết luận rạn xương = thông tin.", drawType: "xray" },
+      { id: 68, level: 'VD', question: "Cảnh sát giao thông nhìn vào hệ thống camera giám sát trên đường cao tốc và tiến hành phạt nguội một tài xế chạy quá tốc độ. Hãy xác định đúng quy trình thông tin trong sự việc trên.", options: ["Quyết định phạt nguội của lực lượng cảnh sát là một loại dữ liệu pháp lý được trích xuất trực tiếp từ thông tin của máy quay phim chuyên dụng trên đường cao tốc.", "Chiếc xe chạy quá tốc độ là thông tin thị giác, hệ thống camera lưu trữ thông tin này và in ra dữ liệu hình ảnh dưới dạng biên bản nộp phạt cho tài xế.", "Hệ thống camera là vật mang tin điện tử tự động chuyển hóa các hành vi vi phạm pháp luật thành thông tin tốc độ để truyền trực tiếp vào biên bản phạt nguội của cảnh sát.", "Đoạn video trên camera là dữ liệu, việc cảnh sát xác định tài xế vi phạm là thông tin giúp đưa ra quyết định phạt nguội."], answer: 3, explain: "Video = dữ liệu, xác định vi phạm = thông tin để ra quyết định xử phạt.", drawType: "camera" },
+      { id: 69, level: 'VD', question: "Bác nông dân nghe bản tin dự báo thời tiết trên đài phát thanh báo có hạn hán kéo dài, bác quyết định bơm nước tích trữ vào ao. Nhận định nào dưới đây là sai về mặt khái niệm Tin học?", options: ["Việc bơm nước tích trữ vào ao là hành động thay đổi thực tế dựa trên sự hiểu biết do thông tin mang lại.", "Bản tin dự báo thời tiết phát ra từ chiếc đài là một loại vật mang tin phi vật thể chứa đựng các quy luật tự nhiên.", "Chiếc đài phát thanh là vật mang tin lưu trữ và truyền tải dữ liệu dạng âm thanh đến thính giác của bác nông dân.", "Âm thanh giọng nói của phát thanh viên là dữ liệu, việc bác biết sắp có hạn hán là thông tin thu được."], answer: 1, explain: "Nhận định B sai vì bản tin không phải vật mang tin phi vật thể. Vật mang tin phải là phương tiện vật lý.", drawType: "radio" },
+      { id: 70, level: 'VD', question: "Một du khách nước ngoài đang cố gắng tìm đường đến bảo tàng bằng cách nhìn vào tờ bản đồ du lịch bằng tiếng Việt nhưng không thể tìm được đường. Lý do giải thích theo góc độ Tin học là gì?", options: ["Toàn bộ các kí hiệu và ngôn ngữ trên bản đồ là thông tin mã hóa, khi du khách nhìn vào thì nó lập tức biến thành dữ liệu vô nghĩa do rào cản ngôn ngữ.", "Tờ bản đồ du lịch đã truyền tải sai thông tin địa lý khiến cho bộ brain của người du khách chuyển hóa dữ liệu thành các hướng đi không chính xác trong thực tế.", "Tờ bản đồ cung cấp dữ liệu hình ảnh và văn bản nhưng du khách không có khả năng xử lý để rút ra thông tin chỉ đường.", "Người du khách đã tiếp nhận đầy đủ thông tin từ bản đồ nhưng do tờ giấy bản đồ không phải là vật mang tin tiêu chuẩn nên quá trình tìm đường bị thất bại."], answer: 2, explain: "Khách nhìn thấy dữ liệu nhưng không có khả năng hiểu tiếng Việt để rút ra thông tin.", drawType: "map" },
+      { id: 71, level: 'VD', question: "Người mẹ đi siêu thị, cầm hộp sữa lên xem dòng chữ 'HSD: 20/10/2026' in ở đáy hộp trước khi quyết định mua. Vai trò của dòng chữ này là gì?", options: ["Là thông tin dinh dưỡng cốt lõi được in ấn tự động trên vật mang tin là hộp sữa nhằm bảo vệ sức khỏe người tiêu dùng thông qua dữ liệu an toàn thực phẩm.", "Là dữ liệu dạng văn bản và con số, cung cấp thông tin về ngày hết hạn để người mẹ ra quyết định mua hay không.", "Là vật mang tin dạng mã hóa cung cấp trực tiếp quyết định mua sắm vào tiềm thức của người tiêu dùng khi họ nhìn vào các dữ liệu hiển thị.", "Là dữ liệu đầu ra của quá trình xử lý thông tin tại nhà máy sản xuất, đóng vai trò như vật mang tin truyền đạt hạn sử dụng."], answer: 1, explain: "Dòng chữ HSD = dữ liệu văn bản/con số, cung cấp thông tin ngày hết hạn để ra quyết định.", drawType: "milk" },
+      { id: 72, level: 'VD', question: "Đội cứu hộ sử dụng sóng radar quét qua khu vực sạt lở và xác định được vị trí có người mắc kẹt dưới đống đổ nát. Trong tình huống này, quá trình tạo ra thông tin diễn ra như thế nào?", options: ["Biểu đồ trên màn hình radar là thông tin nguyên bản, bộ brain chuyên gia tiếp nhận và biến đổi nó thành dữ liệu tọa độ để đào bới cứu hộ.", "Sóng radar dội về hiển thị dưới dạng biểu đồ là dữ liệu, chuyên gia phân tích biểu đồ để tạo ra thông tin vị trí nạn nhân.", "Người mắc kẹt dưới đống đổ nát phát ra các dữ liệu sinh tồn, thiết bị radar đóng vai trò là thông tin xử lý các tín hiệu này thành vị trí cụ thể.", "Radar phát ra các chùm thông tin vô tuyến xuyên qua mặt đất, sau đó thu hồi vật mang tin từ nạn nhân và chuyển đổi thành dữ liệu hình ảnh trên màn hình."], answer: 1, explain: "Tín hiệu/biểu đồ radar = dữ liệu, phân tích biểu đồ = thông tin vị trí nạn nhân.", drawType: "radar" },
+      { id: 73, level: 'VD', question: "Bạn An sử dụng bảng thống kê lượng mưa các tháng để lập kế hoạch đi cắm trại. An loại bỏ các tháng có lượng mưa trên 200mm. Hành động này phản ánh quy trình nào?", options: ["Quá trình tiếp nhận thông tin từ bảng thống kê, sau đó phân tích thành các dữ liệu logic để điều khiển hành vi của tự nhiên.", "Quá trình chuyển hóa thông tin lượng mưa thành hệ thống vật mang tin cá nhân nhằm thay đổi dữ liệu thời tiết của các tháng trong năm.", "Quá trình xử lý dữ liệu con số để rút ra thông tin thời tiết, từ đó đưa ra quyết định chọn tháng cắm trại an toàn.", "Quá trình thu thập vật mang tin dạng bảng biểu để lưu trữ thông tin dã ngoại vào bộ brain dưới dạng các dãy bit dữ liệu phân mảnh."], answer: 2, explain: "Xử lý dữ liệu con số lượng mưa -> thông tin thời tiết -> quyết định thời gian cắm trại.", drawType: "camp" },
+      { id: 74, level: 'VD', question: "Trong trận đấu bóng đá, huấn luyện viên đứng ngoài sân giơ 2 ngón tay lên cao. Tiền đạo cánh nhìn thấy liền đổi vị trí di chuyển chiến thuật. Yếu tố nào là thông tin trong tình huống này?", options: ["Quyết định chạy đổi vị trí của cầu thủ tiền đạo sau khi tiếp nhận dữ liệu chiến thuật.", "Vật mang tin sinh học là bàn tay của huấn luyện viên được dùng để truyền tải dữ liệu trận đấu.", "Ý nghĩa 'thay đổi chiến thuật số 2' mà tiền đạo hiểu được sau khi nhìn thấy hành động giơ ngón tay.", "Hành động giơ 2 ngón tay vật lý của vị huấn luyện viên đứng ở ngoài đường biên ngang."], answer: 2, explain: "Ý nghĩa chiến thuật mà cầu thủ hiểu được sau khi quan sát mới là thông tin.", drawType: "coach" },
+      { id: 75, level: 'VD', question: "Bếp trưởng nếm thử một muỗng nước dùng và lập tức ra lệnh cho phụ bếp thêm một thìa muối. Quá trình xử lý thông tin ở đây diễn ra theo trình tự nào?", options: ["Nước dùng đóng vai trò là vật mang tin chứa đựng lượng thông tin vị giác, giác quan tiếp nhận thông tin này và chuyển hóa thành dữ liệu để ra lệnh thêm muối.", "Giác quan thu nhận vị giác (dữ liệu), brain phân tích nhận ra nước dùng bị nhạt (thông tin), đưa ra hành động thêm muối.", "Hành động thêm một thìa muối là dữ liệu đầu ra được hình thành sau khi quá trình xử lý thông tin vật lý của món ăn hoàn tất.", "Bếp trưởng sử dụng kinh nghiệm bản thân làm dữ liệu để phân tích thông tin truyền từ vật mang tin là chiếc muỗng kim loại đang cầm trên tay."], answer: 1, explain: "Vị giác thu nhận dữ liệu -> Não phân tích bị nhạt (thông tin) -> Hành động thêm muối.", drawType: "soup" },
+      { id: 76, level: 'VD', question: "Khi thanh toán tại siêu thị, nhân viên thu ngân đưa sản phẩm qua máy quét mã vạch (barcode) và màn hình hiện lên giá tiền. Câu nào phân tích đúng vai trò các thành phần?", options: ["Giá tiền hiện trên màn hình là hệ thống dữ liệu mã hóa đã được bộ brain của nhân viên thu ngân xử lý thành thông tin thanh toán cuối cùng.", "Các vạch đen trắng là dữ liệu, máy quét đọc dữ liệu đưa vào máy tính xử lý để xuất ra thông tin giá tiền trên màn hình.", "Máy quét mã vạch là vật mang tin tự động phát ra thông tin laze để thu thập dữ liệu giá cả từ các sản phẩm được bày bán.", "Mã vạch là một hệ thống thông tin kinh tế học chứa sẵn dữ liệu thanh toán, khi được quét nó sẽ tự động biến vật mang tin thành hóa đơn mua hàng."], answer: 1, explain: "Vạch đen trắng = dữ liệu, máy quét đọc và xuất ra thông tin giá tiền.", drawType: "barcode" },
+      { id: 77, level: 'VD', question: "Lính cứu hỏa đang ngủ thì nghe thấy tiếng còi báo động hỏa hoạn vang lên chói tai, lập tức bật dậy mặc đồ bảo hộ và xuất phát. Yếu tố 'tiếng còi' trong tình huống này là gì?", options: ["Là thông tin khẩn cấp được hệ thống chuyển hóa từ dữ liệu cháy nổ tại hiện trường.", "Là dạng dữ liệu cơ học được thiết kế để thay thế thông tin nhận thức của con người.", "Là dữ liệu âm thanh được tai tiếp nhận để brain xử lý thành thông tin có cháy.", "Là vật mang tin truyền tải thông tin báo động nguy cấp trực tiếp vào hệ thần kinh vận động."], answer: 2, explain: "Tiếng còi = dữ liệu âm thanh, xử lý qua tai/não thành thông tin có hỏa hoạn.", drawType: "alarm" },
+      { id: 78, level: 'VD', question: "Những ngư dân đi biển nhiều năm có thể nhìn màu sắc của nước biển và mây trời để dự đoán có bão hay không mà không cần máy móc. Khẳng định nào sau đây mô tả đúng khả năng này?", options: ["Biển cả là vật mang tin khổng lồ chứa dữ liệu thời tiết, có khả năng tự phát thông tin dự báo vào brain con người.", "Ngư dân sử dụng mắt như một vật mang tin để thu thập thông tin bão và chuyển hóa thành dữ liệu sinh tồn trên biển.", "Màu nước biển và mây trời là những thông tin khí tượng tự nhiên truyền dữ liệu vào mắt ngư dân để tạo ra quyết định.", "Ngư dân dùng kinh nghiệm để xử lý các dữ liệu hình ảnh (màu nước, mây) thành thông tin dự báo thời tiết chính xác."], answer: 3, explain: "Kinh nghiệm giúp ngư dân xử lý dữ liệu hình ảnh (màu nước, mây) thành thông tin dự báo bão.", drawType: "sea" },
+      { id: 79, level: 'VD', question: "Lớp trưởng đứng trước lớp và đếm số cánh tay giơ lên, sau đó chốt danh sách 30 bạn tham gia đi dã ngoại. Quá trình xử lý để có con số 30 bạn được hiểu như thế nào?", options: ["Hành động giơ tay của các bạn là thông tin biểu quyết được chuyển đổi thành dữ liệu lưu trữ trên giấy.", "Con số 30 là dữ liệu đầu ra được hình thành từ quá trình thu thập vật mang tin là các cánh tay giơ lên.", "Số cánh tay đếm được là dữ liệu con số, ý nghĩa có 30 bạn đồng ý tham gia là thông tin thu nhận được.", "Danh sách 30 bạn tham gia là vật mang tin đã được mã hóa bằng dữ liệu chữ viết tay của lớp trưởng."], answer: 2, explain: "Số cánh tay đếm được = dữ liệu con số, ý nghĩa 30 bạn đồng ý = thông tin.", drawType: "class" },
+      { id: 80, level: 'VD', question: "Một nhà địa chất học quan sát các lớp trầm tích của một vách núi và kết luận khu vực này từng chìm dưới đáy biển hàng triệu năm. Hãy xác định đúng vật mang tin và dữ liệu.", options: ["Vách núi là dữ liệu thô, những công cụ của nhà địa chất học đóng vai trò là vật mang tin.", "Kết luận của nhà địa chất học là vật mang tin truyền tải dữ liệu đáy biển cho sinh viên.", "Vách núi là vật mang tin, hình dáng cấu trúc các lớp trầm tích là dữ liệu hình ảnh.", "Lớp trầm tích là thông tin cổ đại, nhà địa chất học biến nó thành dữ liệu phân tích lịch sử."], answer: 2, explain: "Vách núi = vật mang tin, các vệt lớp trầm tích = dữ liệu hình ảnh.", drawType: "strata" }
+    ];
+
+    /* Application State Variables */
+    let studentName = "";
+    let selectedQuestions = [];
+    let currentIdx = 0;
+    let studentAnswers = []; // stores index or null
+    let score = 0;
+    let bonusGiftPoints = 0;
+    let timerInterval = null;
+    let secondsLeft = 30;
+    let maxSeconds = 30;
+    let giftAvailable = false;
+
+    /* Utility: Shuffle Array */
+    function shuffle(array) {
+      let cur = array.length, rand;
+      let copy = [...array];
+      while (cur !== 0) {
+        rand = Math.floor(Math.random() * cur);
+        cur--;
+        [copy[cur], copy[rand]] = [copy[rand], copy[cur]];
+      }
+      return copy;
+    }
+
+    /* Step 1: Start Test Handler */
+    function startTest(e) {
+      e.preventDefault();
+      const input = document.getElementById('inputStudentName').value.trim();
+      if (!input) return;
+
+      studentName = input;
+      document.getElementById('studentNameDisplay').textContent = studentName;
+      document.getElementById('studentAvatarChar').textContent = studentName.charAt(0).toUpperCase();
+      document.getElementById('headerStudentBadge').classList.remove('hidden');
+
+      // Sample 10 random questions according to proportions: 7 NB, 2 TH, 1 VD
+      const nbPool = ALL_QUESTIONS.filter(q => q.level === 'NB');
+      const thPool = ALL_QUESTIONS.filter(q => q.level === 'TH');
+      const vdPool = ALL_QUESTIONS.filter(q => q.level === 'VD');
+
+      const setNB = shuffle(nbPool).slice(0, 7);
+      const setTH = shuffle(thPool).slice(0, 2);
+      const setVD = shuffle(vdPool).slice(0, 1);
+
+      selectedQuestions = shuffle([...setNB, ...setTH, ...setVD]);
+      studentAnswers = new Array(10).fill(null);
+      currentIdx = 0;
+      score = 0;
+      bonusGiftPoints = 0;
+
+      // Render Mountain Checkpoints SVG
+      renderMountainNodes();
+
+      // Switch View
+      document.getElementById('viewStart').classList.add('hidden');
+      document.getElementById('viewQuiz').classList.remove('hidden');
+
+      loadQuestion(0);
+    }
+
+    /* Step 2: Render Mountain Checkpoints SVG Path */
+    const NODE_COORDS = [
+      { x: 20, y: 260 }, { x: 90, y: 235 }, { x: 30, y: 205 }, { x: 95, y: 175 }, { x: 25, y: 145 },
+      { x: 90, y: 115 }, { x: 35, y: 85 },  { x: 85, y: 55 },  { x: 60, y: 25 },  { x: 60, y: 12 }
+    ];
+
+    function renderMountainNodes() {
+      const g = document.getElementById('mountainNodes');
+      g.innerHTML = '';
+      NODE_COORDS.forEach((pt, i) => {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", pt.x);
+        circle.setAttribute("cy", pt.y);
+        circle.setAttribute("r", i === 9 ? "8" : "6");
+        circle.setAttribute("fill", i === 0 ? "#f59e0b" : "#ffffff");
+        circle.setAttribute("stroke", "#0284c7");
+        circle.setAttribute("stroke-width", "2.5");
+        circle.setAttribute("id", `node-${i}`);
+        g.appendChild(circle);
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", pt.x);
+        text.setAttribute("y", pt.y + 3.5);
+        text.setAttribute("font-size", "7");
+        text.setAttribute("font-weight", "bold");
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("fill", "#0f172a");
+        text.textContent = (i + 1);
+        g.appendChild(text);
+      });
+      updateClimberPos(0);
+    }
+
+    function updateClimberPos(idx) {
+      const target = NODE_COORDS[Math.min(idx, 9)];
+      const avatar = document.getElementById('climberAvatar');
+      // Calculate % relative to 120x280 viewBox
+      const leftPct = (target.x / 120) * 100;
+      const topPct = (target.y / 280) * 100;
+      avatar.style.left = `${leftPct}%`;
+      avatar.style.top = `${topPct}%`;
+
+      // Highlight active node
+      NODE_COORDS.forEach((_, i) => {
+        const n = document.getElementById(`node-${i}`);
+        if (n) {
+          if (i === idx) {
+            n.setAttribute("fill", "#f59e0b");
+            n.setAttribute("r", "8");
+          } else if (i < idx) {
+            n.setAttribute("fill", "#10b981");
+            n.setAttribute("r", "6");
+          } else {
+            n.setAttribute("fill", "#ffffff");
+            n.setAttribute("r", "6");
+          }
+        }
+      });
+    }
+
+    /* Step 3: Load Question Data into UI */
+    function loadQuestion(idx) {
+      clearInterval(timerInterval);
+      const q = selectedQuestions[idx];
+
+      // Update question header
+      document.getElementById('questionNumBadge').textContent = `Câu ${idx + 1} / 10`;
+      
+      const levelBadge = document.getElementById('levelBadge');
+      if (q.level === 'NB') {
+        levelBadge.textContent = 'Nhận biết';
+        levelBadge.className = 'bg-blue-100 text-blue-800 font-bold text-sm md:text-base px-3.5 py-1 rounded-xl border border-blue-200';
+        maxSeconds = 30;
+      } else if (q.level === 'TH') {
+        levelBadge.textContent = 'Thông hiểu';
+        levelBadge.className = 'bg-amber-100 text-amber-800 font-bold text-sm md:text-base px-3.5 py-1 rounded-xl border border-amber-200';
+        maxSeconds = 45;
+      } else {
+        levelBadge.textContent = 'Vận dụng';
+        levelBadge.className = 'bg-purple-100 text-purple-800 font-bold text-sm md:text-base px-3.5 py-1 rounded-xl border border-purple-200';
+        maxSeconds = 70;
+      }
+
+      // Update question text
+      document.getElementById('questionText').textContent = q.question;
+
+      // Illustration for VD level
+      const illBox = document.getElementById('illustrationBox');
+      if (q.level === 'VD' && q.drawType) {
+        illBox.classList.remove('hidden');
+        drawIllustration(q.drawType);
+      } else {
+        illBox.classList.add('hidden');
+      }
+
+      // Render Options Grid (2 COLUMNS)
+      const optionsGrid = document.getElementById('optionsGrid');
+      optionsGrid.innerHTML = '';
+      const labels = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((optText, optIdx) => {
+        const btn = document.createElement('button');
+        btn.id = `optBtn-${optIdx}`;
+        btn.onclick = () => selectAnswer(optIdx);
+        btn.className = "p-4 md:p-5 rounded-2xl border-2 border-slate-200 hover:border-teal-500 bg-white hover:bg-teal-50/50 text-slate-800 font-medium text-base md:text-lg text-left transition-all duration-200 flex items-start gap-3 shadow-sm active:scale-98 h-full w-full";
+
+        btn.innerHTML = `
+          <span class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 font-extrabold flex items-center justify-center shrink-0 border border-slate-300">
+            ${labels[optIdx]}
+          </span>
+          <span class="pt-0.5 leading-snug font-medium">${optText}</span>
+        `;
+        optionsGrid.appendChild(btn);
+      });
+
+      // Reset explanation box & Next button
+      document.getElementById('explanationBox').classList.add('hidden');
+      const btnNext = document.getElementById('btnNextQuestion');
+      btnNext.disabled = true;
+      btnNext.className = "bg-slate-200 text-slate-400 font-extrabold text-lg md:text-xl px-8 py-3.5 rounded-2xl shadow transition-all duration-200 flex items-center gap-3 cursor-not-allowed";
+
+      // Start Countdown Timer
+      secondsLeft = maxSeconds;
+      updateTimerUI();
+      timerInterval = setInterval(() => {
+        secondsLeft--;
+        updateTimerUI();
+        if (secondsLeft <= 5 && secondsLeft > 0) {
+          playSound('tick');
+        }
+        if (secondsLeft <= 0) {
+          clearInterval(timerInterval);
+          handleTimeout();
+        }
+      }, 1000);
+
+      // Update Climber position on mountain map
+      updateClimberPos(idx);
+    }
+
+    /* Timer Display Updater */
+    function updateTimerUI() {
+      document.getElementById('timerSeconds').textContent = secondsLeft;
+      const pct = (secondsLeft / maxSeconds) * 100;
+      const circle = document.getElementById('timerCircle');
+      circle.setAttribute('stroke-dasharray', `${pct}, 100`);
+
+      if (secondsLeft <= 5) {
+        circle.setAttribute('class', 'text-red-500 transition-all duration-1000 ease-linear animate-pulse');
+      } else if (secondsLeft <= 15) {
+        circle.setAttribute('class', 'text-amber-500 transition-all duration-1000 ease-linear');
+      } else {
+        circle.setAttribute('class', 'text-teal-500 transition-all duration-1000 ease-linear');
+      }
+    }
+
+    /* Handle Answer Selection */
+    function selectAnswer(optIdx) {
+      if (studentAnswers[currentIdx] !== null) return; // already answered
+      clearInterval(timerInterval);
+
+      studentAnswers[currentIdx] = optIdx;
+      const q = selectedQuestions[currentIdx];
+      const isCorrect = (optIdx === q.answer);
+
+      // Disable option buttons & highlight choices
+      const labels = ['A', 'B', 'C', 'D'];
+      q.options.forEach((_, i) => {
+        const btn = document.getElementById(`optBtn-${i}`);
+        btn.onclick = null;
+        btn.classList.remove('hover:border-teal-500', 'hover:bg-teal-50/50', 'active:scale-98');
+
+        if (i === q.answer) {
+          // Correct Answer Style
+          btn.className = "p-4 md:p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-extrabold text-base md:text-lg text-left flex items-start gap-3 shadow-md w-full";
+          btn.querySelector('span').className = "w-8 h-8 rounded-xl bg-emerald-600 text-white font-extrabold flex items-center justify-center shrink-0 shadow-sm";
+          btn.querySelector('span').textContent = '✓';
+        } else if (i === optIdx && !isCorrect) {
+          // Wrong Selected Style
+          btn.className = "p-4 md:p-5 rounded-2xl border-2 border-red-400 bg-red-50 text-red-900 font-medium text-base md:text-lg text-left flex items-start gap-3 shadow-sm w-full";
+          btn.querySelector('span').className = "w-8 h-8 rounded-xl bg-red-500 text-white font-extrabold flex items-center justify-center shrink-0";
+          btn.querySelector('span').textContent = '✕';
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      // Update Score
+      if (isCorrect) {
+        score += 1.0;
+        playSound('correct');
+
+        // 10% chance to drop bonus gift
+        if (Math.random() <= 0.10) {
+          setTimeout(() => {
+            document.getElementById('modalGift').classList.remove('hidden');
+            playSound('gift');
+          }, 600);
+        }
+      } else {
+        playSound('wrong');
+      }
+
+      updateLiveScore();
+
+      // Show Explanation Box
+      document.getElementById('explanationText').textContent = q.explain;
+      document.getElementById('explanationBox').classList.remove('hidden');
+
+      // Enable Next Button
+      enableNextButton();
+    }
+
+    /* Handle Time-out */
+    function handleTimeout() {
+      if (studentAnswers[currentIdx] !== null) return;
+      studentAnswers[currentIdx] = -1; // -1 represents timed out
+      playSound('wrong');
+
+      const q = selectedQuestions[currentIdx];
+      q.options.forEach((_, i) => {
+        const btn = document.getElementById(`optBtn-${i}`);
+        btn.onclick = null;
+        if (i === q.answer) {
+          btn.className = "p-4 md:p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-50 text-emerald-900 font-extrabold text-base md:text-lg text-left flex items-start gap-3 shadow-md w-full";
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      document.getElementById('explanationText').textContent = "Hết thời gian! " + q.explain;
+      document.getElementById('explanationBox').classList.remove('hidden');
+
+      enableNextButton();
+    }
+
+    function enableNextButton() {
+      const btnNext = document.getElementById('btnNextQuestion');
+      btnNext.disabled = false;
+      btnNext.className = "bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-lg md:text-xl px-8 py-3.5 rounded-2xl shadow-lg transition-all duration-200 transform active:scale-95 flex items-center gap-3 cursor-pointer animate-pulse-subtle";
+      
+      if (currentIdx === 9) {
+        btnNext.innerHTML = `<span>NỘP BÀI KIỂM TRA</span> <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>`;
+      }
+    }
+
+    function updateLiveScore() {
+      const totalDisplay = (score + bonusGiftPoints).toFixed(1);
+      document.getElementById('liveScoreText').innerHTML = `${totalDisplay} <span class="text-sm font-semibold text-slate-400">/ 10</span>`;
+    }
+
+    function claimBonusGift() {
+      bonusGiftPoints += 0.5;
+      updateLiveScore();
+      document.getElementById('modalGift').classList.add('hidden');
+    }
+
+    function nextQuestion() {
+      if (currentIdx < 9) {
+        currentIdx++;
+        loadQuestion(currentIdx);
+      } else {
+        finishTest();
+      }
+    }
+
+    /* Step 4: Finish Test & Display Results */
+    function finishTest() {
+      clearInterval(timerInterval);
+
+      document.getElementById('viewQuiz').classList.add('hidden');
+      document.getElementById('viewResults').classList.remove('hidden');
+
+      const finalTotal = (score + bonusGiftPoints).toFixed(1);
+      document.getElementById('finalStudentName').textContent = studentName;
+      document.getElementById('finalScoreVal').textContent = finalTotal;
+      
+      let correctCount = 0;
+      selectedQuestions.forEach((q, i) => {
+        if (studentAnswers[i] === q.answer) correctCount++;
+      });
+
+      document.getElementById('finalCorrectCount').textContent = `${correctCount}/10`;
+      document.getElementById('finalBonusVal').textContent = `+${bonusGiftPoints.toFixed(1)}`;
+
+      // Render Detailed Question Breakdown List
+      const reviewList = document.getElementById('reviewList');
+      reviewList.innerHTML = '';
+
+      const labels = ['A', 'B', 'C', 'D'];
+
+      selectedQuestions.forEach((q, i) => {
+        const userAns = studentAnswers[i];
+        const isCorrect = (userAns === q.answer);
+
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-2xl border-2 ${isCorrect ? 'border-emerald-200 bg-emerald-50/50' : 'border-red-200 bg-red-50/50'} space-y-2 text-sm md:text-base`;
+
+        let userAnsText = (userAns !== null && userAns >= 0) ? `${labels[userAns]}. ${q.options[userAns]}` : "Không trả lời (Hết giờ)";
+        let rightAnsText = `${labels[q.answer]}. ${q.options[q.answer]}`;
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between font-bold">
+            <span class="${isCorrect ? 'text-emerald-800' : 'text-red-800'}">Câu ${i + 1} (${q.level}): ${isCorrect ? '✓ Đúng' : '✕ Sai'}</span>
+          </div>
+          <div class="font-extrabold text-slate-800">${q.question}</div>
+          <div class="text-xs md:text-sm">
+            <div><span class="font-bold text-slate-600">Đã chọn:</span> <span class="${isCorrect ? 'text-emerald-700 font-bold' : 'text-red-600 font-bold'}">${userAnsText}</span></div>
+            ${!isCorrect ? `<div><span class="font-bold text-slate-600">Đáp án đúng:</span> <span class="text-emerald-700 font-bold">${rightAnsText}</span></div>` : ''}
+          </div>
+          <div class="text-xs text-slate-500 italic bg-white p-2.5 rounded-xl border border-slate-200 mt-1">
+            📌 <strong>Giải thích:</strong> ${q.explain}
+          </div>
+        `;
+        reviewList.appendChild(card);
+      });
+    }
+
+    function resetApp() {
+      document.getElementById('viewResults').classList.add('hidden');
+      document.getElementById('viewStart').classList.remove('hidden');
+      document.getElementById('inputStudentName').value = '';
+      document.getElementById('headerStudentBadge').classList.add('hidden');
+    }
+
+    /* Dynamic SVG Drawings for VD Questions */
+    function drawIllustration(type) {
+      const svg = document.getElementById('illustrationSvg');
+      svg.innerHTML = '';
+
+      if (type === 'traffic') {
+        svg.innerHTML = `
+          <rect x="160" y="20" width="80" height="160" rx="20" fill="#334155"/>
+          <circle cx="200" cy="50" r="20" fill="#64748b"/>
+          <circle cx="200" cy="100" r="20" fill="#eab308" class="animate-pulse"/>
+          <circle cx="200" cy="150" r="20" fill="#64748b"/>
+          <path d="M 50 180 Q 150 160 350 180" stroke="#94a3b8" stroke-width="4" fill="none"/>
+        `;
+      } else if (type === 'storm') {
+        svg.innerHTML = `
+          <path d="M 120 70 Q 140 40 180 50 Q 210 30 250 50 Q 280 40 300 70 Q 320 100 280 110 L 140 110 Q 100 100 120 70 Z" fill="#475569"/>
+          <line x1="160" y1="120" x2="150" y2="150" stroke="#0284c7" stroke-width="3"/>
+          <line x1="200" y1="120" x2="190" y2="150" stroke="#0284c7" stroke-width="3"/>
+          <line x1="240" y1="120" x2="230" y2="150" stroke="#0284c7" stroke-width="3"/>
+        `;
+      } else if (type === 'xray') {
+        svg.innerHTML = `
+          <rect x="100" y="20" width="200" height="160" rx="15" fill="#0f172a"/>
+          <path d="M 150 100 Q 200 95 250 100" stroke="#f8fafc" stroke-width="12" stroke-linecap="round"/>
+          <line x1="195" y1="92" x2="205" y2="104" stroke="#ef4444" stroke-width="3"/>
+        `;
+      } else if (type === 'camera') {
+        svg.innerHTML = `
+          <rect x="140" y="40" width="120" height="80" rx="10" fill="#1e293b"/>
+          <circle cx="200" cy="80" r="25" fill="#38bdf8"/>
+          <path d="M 100 170 C 180 150, 220 150, 300 170" stroke="#cbd5e1" stroke-width="8" fill="none"/>
+        `;
+      } else {
+        // Generic informative visual icon
+        svg.innerHTML = `
+          <rect x="80" y="30" width="240" height="140" rx="15" fill="#f0fdf4" stroke="#86efac" stroke-width="4"/>
+          <text x="200" y="110" font-size="48" text-anchor="middle" fill="#16a34a">💡</text>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
