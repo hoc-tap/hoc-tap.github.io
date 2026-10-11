@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiểm tra giữa học kì I - Tin học 8</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1f2937;--mu:#6b7280;--pr:#2563eb;--bd:#d9dfeb;--ok:#16a34a;--no:#dc2626}
+@media(prefers-color-scheme:dark){:root{--bg:#111827;--card:#1f2937;--tx:#f3f4f6;--mu:#9ca3af;--pr:#60a5fa;--bd:#374151}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:var(--tx);line-height:1.5}
+.wrap{max-width:820px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:14px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:17px;margin:0 0 6px}
+.mu{color:var(--mu);font-size:14px}
+label{display:block;font-size:14px;margin:10px 0 4px;font-weight:600}
+input{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;font-size:16px;background:var(--bg);color:var(--tx)}
+button{background:var(--pr);color:#fff;border:0;border-radius:8px;padding:12px 22px;font-size:16px;cursor:pointer}
+button:disabled{opacity:.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media(max-width:600px){.grid{grid-template-columns:1fr}}
+#bar{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 16px;font-weight:600}
+#timer{color:var(--pr);font-size:20px;font-variant-numeric:tabular-nums}
+.q{margin-bottom:14px}.q p{margin:0 0 6px}
+.opt{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;margin:5px 0;cursor:pointer}
+.opt:has(input:checked){border-color:var(--pr);background:rgba(37,99,235,.12)}
+.opt input{width:auto;margin-top:4px}
+table{border-collapse:collapse;margin:8px 0;font-size:14px;width:100%}
+td,th{border:1px solid var(--bd);padding:5px 8px;text-align:center}
+.ds{display:grid;grid-template-columns:1fr auto auto;gap:6px 14px;align-items:center;border-top:1px solid var(--bd);padding:8px 0}
+.ds label{display:inline-flex;gap:4px;margin:0;font-weight:400;align-items:center}
+.ds input{width:auto}
+.hide{display:none}
+.big{font-size:44px;font-weight:700;color:var(--pr)}
+.ok{color:var(--ok)}.no{color:var(--no)}
+</style>
+</head>
+<body>
+<div id="bar" class="hide"><span id="who"></span><span id="timer">45:00</span></div>
+<div class="wrap">
+
+<div id="s1" class="card">
+  <h1>ĐỀ KIỂM TRA GIỮA HỌC KỲ I – TIN HỌC 8</h1>
+  <div class="mu">Trường TH&amp;THCS Nguyễn Du · Năm học 2026 – 2027 · Thời gian: 45 phút</div>
+  <div class="grid">
+    <div><label>Số báo danh</label><input id="sbd"></div>
+    <div><label>Họ và tên</label><input id="ten"></div>
+    <div><label>Lớp</label><input id="lop" placeholder="VD: 8A1"></div>
+    <input id="pc" type="hidden">
+  </div>
+  <p class="mu">Lưu ý: không chuyển tab/thoát màn hình khi làm bài, hệ thống sẽ ghi nhận số lần thoát. Hết giờ bài sẽ tự động nộp.</p>
+  <button id="btnStart">Bắt đầu làm bài</button>
+</div>
+
+<div id="s2" class="hide">
+  <div class="card"><h2>PHẦN I. Trắc nghiệm nhiều lựa chọn (6,0 điểm)</h2><div class="mu">Mỗi câu chọn một đáp án, đúng được 0,25 điểm.</div></div>
+  <div id="p1"></div>
+  <div class="card"><h2>PHẦN II. Trắc nghiệm đúng sai (4,0 điểm)</h2><div class="mu">Mỗi ý chọn Đúng hoặc Sai, đúng được 0,25 điểm.</div></div>
+  <div id="p2"></div>
+  <div class="card"><button id="btnSubmit">Nộp bài</button> <span id="warn" class="mu"></span></div>
+</div>
+
+<div id="s3" class="card hide" style="text-align:center">
+  <h2 id="rt">Đã nộp bài</h2>
+  <div class="big" id="rs"></div>
+  <p id="rd"></p>
+  <p id="st" class="mu"></p>
+  <button id="btnRetry" class="hide">Gửi lại kết quả</button>
+</div>
+</div>
+
+<script>
+/* ===== CẤU HÌNH ===== */
+const URL_SHEET="https://script.google.com/macros/s/AKfycbxBt8Ft9YOj8X-FfYgtrPsUW3t1zdsM6u_bGt0aBXEdw6mvevIyy0NufI8xlKOf7K9Zsw/exec";
+const MA_DE="01", KY_KT="Giữa học kì I 2026-2027", PHUT=45, SHOW_RESULT=true; // SHOW_RESULT=false để ẩn điểm với học sinh
+
+/* ===== ĐỀ & ĐÁP ÁN ===== */
+const NLC=[
+["Công cụ tính toán sớm nhất mà con người sử dụng là gì?",["Máy tính cơ khí","Thẻ đục lỗ","Bàn tính","Máy vi tính"],"C"],
+["Ai là người chế tạo ra chiếc máy tính cơ khí Pascaline?",["Charles Babbage","John Von Neumann","Howard Aiken","Blaise Pascal"],"D"],
+["Theo cấu trúc Von Neumann, máy tính gồm bộ xử lí (CPU), thiết bị vào – ra, đường truyền và thành phần nào sau đây?",["Bộ nhớ","Bàn phím","Chuột","Màn hình"],"A"],
+["Linh kiện điện tử chính của máy tính thế hệ thứ nhất là gì?",["Bóng bán dẫn","Đèn điện tử chân không","Mạch tích hợp","Vi xử lí"],"B"],
+["Máy tính thế hệ thứ năm có đặc điểm nổi bật nào sau đây?",["Chỉ thực hiện được các phép tính cộng, trừ.","Chỉ nhận lệnh từ thẻ đục lỗ.","Tích hợp khả năng cảm nhận, suy luận (trí tuệ nhân tạo).","Không có khả năng lưu trữ dữ liệu."],"C"],
+["Yếu tố nào giúp máy tính thế hệ thứ hai nhỏ gọn và tiêu thụ ít điện năng hơn máy tính thế hệ thứ nhất?",["Sự ra đời của bóng bán dẫn thay thế đèn điện tử chân không.","Việc tích hợp hàng triệu linh kiện lên một vi mạch xử lí.","Việc loại bỏ hoàn toàn bộ nhớ lưu trữ.","Sự xuất hiện của màn hình cảm ứng thay cho thẻ đục lỗ."],"A"],
+["Việc camera an ninh tự động phát hiện hành vi vi phạm pháp luật thể hiện điều gì?",["Sức mạnh cơ khí của máy móc.","Sự chính xác tuyệt đối của công nghệ ghi hình bằng băng từ.","Việc máy tính tự đưa ra hình phạt ngay tại hiện trường.","Khả năng nhận dạng hình ảnh và phân tích của trí tuệ nhân tạo ở máy tính thế hệ thứ năm."],"D"],
+["Đặc điểm nào sau đây là của thông tin số?",["Khó bị sao chép và nhân bản.","Dễ dàng được nhân bản và chia sẻ.","Chỉ truyền tải được trên một thiết bị duy nhất.","Luôn bị xoá hoàn toàn sau khi chia sẻ."],"B"],
+["Thông tin số có độ tin cậy như thế nào?",["Mọi thông tin số đều đáng tin cậy tuyệt đối.","Mọi thông tin số đều không đáng tin cậy.","Thông tin số có độ tin cậy rất khác nhau.","Chỉ thông tin trên mạng xã hội mới đáng tin cậy."],"C"],
+["Công cụ nào sau đây được dùng để tìm kiếm thông tin trên mạng?",["Máy tìm kiếm","Trình soạn thảo văn bản","Phần mềm diệt virus","Phần mềm bảng tính"],"A"],
+["Trang web có địa chỉ tên miền kết thúc bằng \".gov.vn\" là trang thông tin của tổ chức nào?",["Một tập đoàn công nghệ","Một tổ chức phi chính phủ","Một câu lạc bộ thể thao","Cơ quan chính phủ"],"D"],
+["Mục đích chính của việc đánh giá thông tin tìm được trên mạng là gì?",["So sánh tốc độ tải của các trang web.","Xác định độ tin cậy và sự phù hợp của thông tin.","Tải được nhiều hình ảnh đẹp và video chất lượng cao về máy tính.","Tăng lượt truy cập cho các trang web."],"B"],
+["Tiêu chí \"sự phù hợp\" khi đánh giá thông tin tìm được có ý nghĩa gì?",["Thông tin phải được trình bày dưới dạng video có độ nét cao.","Thông tin phải hoàn toàn miễn phí và không cần đăng nhập.","Nội dung thông tin đáp ứng đúng yêu cầu của chủ đề cần tìm.","Trang web chứa thông tin phải có giao diện đẹp, bắt mắt."],"C"],
+["Lan tìm được hai bài viết về \"Năng lượng mặt trời\": Bài 1 đăng trên trang web .gov.vn năm 2021; Bài 2 đăng trên diễn đàn cá nhân năm 2026. Nếu cần số liệu chính xác để báo cáo, Lan nên ưu tiên bài nào?",["Bài 2, vì được đăng gần đây nhất.","Lấy số liệu trung bình cộng của cả hai bài.","Không dùng bài nào.","Bài 1, vì thuộc cơ quan chính phủ nên có độ tin cậy cao hơn."],"D"],
+["Hành vi nào sau đây bị pháp luật nghiêm cấm trên không gian mạng?",["Tham gia, quảng cáo cho các trang web đánh bạc trực tuyến.","Đăng bài viết chia sẻ về ẩm thực quê hương.","Lập trang web bán sản phẩm thủ công mỹ nghệ.","Tạo nhóm trên mạng xã hội để trao đổi về thú cưng."],"A"],
+["Vì sao việc sử dụng phần mềm bẻ khoá (crack) bị coi là vi phạm pháp luật và đạo đức?",["Vì làm chậm tốc độ hoạt động của hệ điều hành.","Vì xâm phạm quyền sở hữu trí tuệ của nhà phát triển phần mềm.","Vì luôn chứa mã độc làm hỏng phần cứng của thiết bị.","Vì làm tăng dung lượng ổ đĩa cứng."],"B"],
+["Khi nhập công thức vào ô tính, kí tự đầu tiên phải gõ là gì?",["Dấu cộng (+)","Dấu ngoặc đơn \"(\"","Dấu nháy kép (\")","Dấu bằng (=)"],"D"],
+["Địa chỉ nào sau đây là địa chỉ tuyệt đối?",["$C$3","C3","$C3","C$3"],"A"],
+["Đặc điểm của địa chỉ tương đối khi sao chép công thức là gì?",["Không thay đổi trong mọi trường hợp.","Chỉ thay đổi tên cột, giữ nguyên tên hàng.","Tự động thay đổi để tương ứng với vị trí mới của ô chứa công thức.","Người dùng phải nhập lại thủ công sau mỗi lần sao chép."],"C"],
+["Sao chép công thức =B3*$F$1 từ ô D3 xuống ô D4, thành phần nào của công thức được giữ nguyên?",["B3","$F$1","Cả B3 và $F$1","Không có thành phần nào"],"B"],
+["Tại ô D4 có công thức =B4*C4. Nếu sao chép công thức này từ ô D4 xuống ô D5 thì công thức tại ô D5 là gì?",["=B5*C5","=B4*C4","=C4*D4","=B5*C4"],"A"],
+["Tại ô C2 có công thức =A2+B2. Nếu sao chép công thức này từ ô C2 sang ô D2 thì công thức tại ô D2 là gì?",["=A2+B2","=B2+C2","=B3+C3","=A3+B3"],"B"],
+["Ô F2 chứa tỉ lệ doanh thu của công ti là 70%; các ô E4:E9 chứa doanh thu của từng phần mềm. Công thức nào nhập tại ô F4 để tính doanh thu của công ti và có thể sao chép xuống các ô F5:F9 cho kết quả đúng?",["=E4*F2","=$E$4*F2","=E4*$F$2","=$E$4*$F$2"],"C"],
+["Em sao chép một bảng gồm 5 hàng, 3 cột từ phần mềm soạn thảo văn bản rồi chọn ô B2 của trang tính làm ô đích để dán. Ô dữ liệu ở góc dưới bên phải của bảng gốc sẽ nằm ở ô nào?",["C6","E6","D5","D6"],"D"]
+];
+const BANG='<table><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr><tr><th>1</th><td colspan="5"><b>BẢNG TÍNH TIỀN BÁN HÀNG CÓ GIẢM GIÁ</b></td></tr><tr><th>2</th><td colspan="3">Tỉ lệ giảm giá:</td><td>10%</td><td></td></tr><tr><th>3</th><td>STT</td><td>Tên mặt hàng</td><td>Đơn giá (đồng)</td><td>Số tiền giảm (đồng)</td><td>Giá sau giảm (đồng)</td></tr><tr><th>4</th><td>1</td><td>Vở</td><td>20000</td><td></td><td></td></tr><tr><th>5</th><td>2</td><td>Bút bi</td><td>5000</td><td></td><td></td></tr><tr><th>6</th><td>3</td><td>Cặp sách</td><td>250000</td><td></td><td></td></tr></table>';
+const DS=[
+["Khoa chụp một bức ảnh bằng điện thoại thông minh rồi đăng lên mạng xã hội. Khi tìm hiểu về thông tin số, Khoa đưa ra các nhận định sau:","",
+ ["Bức ảnh Khoa chụp bằng điện thoại thông minh là thông tin số vì đã được mã hoá thành dãy bit.","Quyền tác giả đối với thông tin số không được pháp luật bảo vệ.","Khi tìm hiểu về một đội bóng yêu thích, Khoa nên ưu tiên trang web chính thức của đội bóng hoặc các trang báo thể thao uy tín vì những nguồn này có độ tin cậy cao hơn tin đồn trên mạng xã hội.","Một thông tin được chia sẻ rất nhiều lần trên mạng xã hội thì chắc chắn là thông tin đáng tin cậy nên Khoa không cần kiểm chứng."],"ĐSĐS"],
+["Nhóm của Lan thực hiện bài trình chiếu với chủ đề \"Tác hại của rác thải nhựa\". Trong quá trình tìm kiếm, xử lí và chia sẻ thông tin, nhóm gặp các tình huống sau:","",
+ ["Việc dán nguyên đoạn văn dài 500 chữ vào một trang nội dung là chưa phù hợp với yêu cầu trình bày của bài trình chiếu.","Nhóm tìm thấy một tài liệu rất chi tiết trên website .com của một hãng bán túi nilon. Nhóm cần cẩn trọng với tài liệu này vì website thuộc doanh nghiệp có lợi ích liên quan nên thông tin có thể thiên vị.","Bài trình chiếu có 15 trang, gồm 1 trang tiêu đề, 1 trang dàn ý, 1 trang kết luận và 1 trang tài liệu tham khảo. Như vậy bài có 12 trang nội dung.","Một video dung lượng 2 GB không gửi được qua thư điện tử vì vượt giới hạn. Cách xử lí hợp lí là chia video thành nhiều tệp chỉ vài kilobyte rồi gửi liên tiếp."],"ĐĐSS"],
+["Trong buổi sinh hoạt lớp với chủ đề \"Ứng xử có văn hoá trên môi trường số\", các bạn học sinh đưa ra các ý kiến sau:","",
+ ["Chụp ảnh tại khu vực có biển báo không cho phép chụp ảnh là việc làm bình thường, không vi phạm quy định.","Quay phim bộ phim đang chiếu trong rạp rồi chia sẻ lên mạng là hành vi vi phạm pháp luật.","Hà tải sơ đồ của người khác từ Internet về, chỉnh sửa màu sắc rồi ghi tên mình là tác giả. Hành vi này là thiếu trung thực khi tạo ra sản phẩm số.","Tải tệp bài hát có bản quyền từ trang web chia sẻ lậu về máy tính để nghe cá nhân thì không vi phạm bản quyền."],"SĐĐS"],
+["Một cửa hàng lập bảng tính tiền bán hàng có giảm giá như hình dưới (các ô D4:E6 chưa nhập công thức). Ô D2 chứa tỉ lệ giảm giá cố định; cột D là số tiền giảm, tính bằng đơn giá nhân với tỉ lệ giảm giá; cột E là giá sau giảm.",BANG,
+ ["Trong công thức =C4*$D$2, C4 là địa chỉ tương đối còn $D$2 là địa chỉ tuyệt đối.","Để tính số tiền giảm tại ô D4 và sao chép xuống các ô D5, D6 cho kết quả đúng, có thể nhập vào ô D4 công thức =C4*D2.","Nếu nhập vào ô D4 công thức =$C$4*$D$2 rồi sao chép xuống ô D5 thì công thức tại ô D5 là =$C$5*$D$2.","Giá sau giảm tại ô E4 được tính bằng công thức =C4-C4*$D$2; khi sao chép công thức này xuống ô E5 ta được =C5-C5*$D$2."],"ĐSSĐ"]
+];
+
+/* ===== RENDER ===== */
+const $=id=>document.getElementById(id), L="ABCD";
+$("p1").innerHTML=NLC.map((q,i)=>`<div class="card q"><p><b>Câu ${i+1}.</b> ${q[0]}</p>`+q[1].map((o,j)=>`<label class="opt"><input type="radio" name="n${i}" value="${L[j]}"><span><b>${L[j]}.</b> ${o}</span></label>`).join("")+`</div>`).join("");
+$("p2").innerHTML=DS.map((q,i)=>`<div class="card q"><p><b>Câu ${i+1}.</b> ${q[0]}</p>${q[1]}`+q[2].map((o,j)=>`<div class="ds"><span><b>${"abcd"[j]})</b> ${o}</span><label><input type="radio" name="d${i}${j}" value="Đ">Đúng</label><label><input type="radio" name="d${i}${j}" value="S">Sai</label></div>`).join("")+`</div>`).join("");
+
+/* ===== TRẠNG THÁI ===== */
+let info={}, t0, endAt, tick, thoat=0, done=false, payload=null, ip="", lanLam=1;
+const fmt=d=>d.toLocaleString("vi-VN");
+function layTenMay(){
+  let v="";
+  try{v=localStorage.getItem("computerName")||"";}catch(e){}
+  if(!v){
+    v="MAY 5"+String(Math.floor(Math.random()*10000)).padStart(4,"0");
+    try{localStorage.setItem("computerName",v);}catch(e){}
+  }
+  return v;
+}
+$("pc").value=layTenMay();
+fetch("https://api.ipify.org?format=json").then(r=>r.json()).then(j=>ip=j.ip).catch(()=>{});
+
+$("btnStart").onclick=()=>{
+  info={sbd:$("sbd").value.trim(),ten:$("ten").value.trim(),lop:$("lop").value.trim(),pc:$("pc").value.trim()};
+  if(!info.sbd||!info.ten||!info.lop){alert("Vui lòng nhập Số báo danh, Họ tên và Lớp.");return;}
+  info.pc=layTenMay();
+  try{
+    const k="lanLam_"+MA_DE+"_"+info.sbd;
+    lanLam=(parseInt(localStorage.getItem(k))||0)+1;
+    localStorage.setItem(k,lanLam);
+  }catch(e){lanLam=1;}
+  t0=new Date(); endAt=Date.now()+PHUT*60000;
+  $("s1").classList.add("hide"); $("s2").classList.remove("hide"); $("bar").classList.remove("hide");
+  $("who").textContent=info.ten+" – "+info.lop;
+  tick=setInterval(()=>{
+    const s=Math.max(0,Math.round((endAt-Date.now())/1000));
+    $("timer").textContent=String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+    if(s<=0) nopBai(true);
+  },500);
+};
+function leave(){ if(t0&&!done){thoat++;$("warn").textContent="Số lần thoát màn hình: "+thoat;} }
+document.addEventListener("visibilitychange",()=>{if(document.hidden)leave();});
+window.addEventListener("blur",()=>{ if(!document.hidden) leave(); });
+window.addEventListener("beforeunload",e=>{if(t0&&!done){e.preventDefault();e.returnValue="";}});
+
+$("btnSubmit").onclick=()=>{
+  const thieu=NLC.filter((_,i)=>!document.querySelector(`input[name=n${i}]:checked`)).length
+    +DS.reduce((a,q,i)=>a+q[2].filter((_,j)=>!document.querySelector(`input[name=d${i}${j}]:checked`)).length,0);
+  if(confirm(thieu?`Bạn còn ${thieu} câu/ý chưa trả lời. Vẫn nộp bài?`:"Xác nhận nộp bài?")) nopBai(false);
+};
+
+function nopBai(auto){
+  if(done) return; done=true; clearInterval(tick);
+  const tl=[], kq=[]; let dungN=0, dungD=0;
+  NLC.forEach((q,i)=>{const c=document.querySelector(`input[name=n${i}]:checked`);const a=c?c.value:"";tl.push(a);if(a===q[2])dungN++;kq.push(`NLC${i+1}:${a||"-"}${a===q[2]?"✓":"✗"}`);});
+  const tlD=[], dapD=[];
+  DS.forEach((q,i)=>{let s=[],d=[];q[2].forEach((_,j)=>{const c=document.querySelector(`input[name=d${i}${j}]:checked`);const a=c?c.value:"";const k=q[3][j];s.push(a||"-");d.push(k);if(a===k)dungD++;kq.push(`DS${i+1}${"abcd"[j]}:${a||"-"}${a===k?"✓":"✗"}`);});tlD.push(s.join(""));dapD.push(d.join(""));});
+  const dN=dungN*0.25, dD=dungD*0.25, tong=dN+dD;
+  const sec=Math.round((Date.now()-t0)/1000);
+  payload={soBaoDanh:info.sbd,hoTen:info.ten,lop:info.lop,maDe:MA_DE,kyKiemTra:KY_KT,
+    soCauNLC:dungN,diemNLC:dN,soYDS:dungD,diemDS:dD,tongDiem:tong,
+    thoiGianBatDau:fmt(t0),thoiGianLamBai:Math.floor(sec/60)+" phút "+(sec%60)+" giây",
+    soLanThoat:thoat,soLanLam:lanLam,computerName:info.pc,ip:ip,chiTietBaiLam:"LẦN LÀM: "+lanLam+" | "+kq.join(" | "),
+    dapanNLC:NLC.map(q=>q[2]).join(""),cautraloiNLC:tl.map(x=>x||"-").join(""),
+    dapanDS:dapD.join("-"),cautraloiDS:tlD.join("-")};
+  $("s2").classList.add("hide"); $("bar").classList.add("hide"); $("s3").classList.remove("hide");
+  $("rt").textContent=auto?"Hết giờ – bài đã được tự động nộp":"Đã nộp bài";
+  if(SHOW_RESULT){
+    $("rs").textContent=tong.toFixed(2).replace(".",",")+" / 10";
+    $("rd").textContent=`Phần I: ${dungN}/24 câu đúng (${dN} đ) · Phần II: ${dungD}/16 ý đúng (${dD} đ)`;
+  } else $("rd").textContent="Bài làm của em đã được ghi nhận.";
+  gui();
+}
+
+function gui(){
+  $("st").textContent="Đang gửi kết quả lên máy chủ..."; $("btnRetry").classList.add("hide");
+  // text/plain để tránh preflight CORS; no-cors vì Apps Script không trả header CORS
+  fetch(URL_SHEET,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
+   .then(()=>{$("st").innerHTML='<span class="ok">✔ Đã gửi kết quả thành công. Em có thể đóng trang.</span>';})
+   .catch(()=>{$("st").innerHTML='<span class="no">✘ Gửi thất bại. Kiểm tra mạng rồi bấm "Gửi lại kết quả" (đừng đóng trang).</span>';$("btnRetry").classList.remove("hide");});
+}
+$("btnRetry").onclick=gui;
+</script>
+</body>
+</html>

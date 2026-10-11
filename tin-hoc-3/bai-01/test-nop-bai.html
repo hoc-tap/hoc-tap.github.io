@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test nộp bài - Google Sheet</title>
+<style>
+  :root{--bg:#f3f6f4;--card:#fff;--ink:#1d2a26;--mute:#5d6d67;--line:#d5dfda;--accent:#1f6f5c;--ok:#1b7a3d;--err:#b3261e}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Segoe UI",system-ui,sans-serif;padding:20px}
+  main{max-width:860px;margin:0 auto}
+  h1{font-size:1.5rem;margin:0 0 4px}
+  p.sub{margin:0 0 20px;color:var(--mute)}
+  fieldset{background:var(--card);border:1px solid var(--line);border-radius:8px;margin:0 0 16px;padding:16px}
+  legend{font-weight:600;padding:0 6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  label{display:block;font-size:.85rem;color:var(--mute)}
+  input,textarea{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;color:var(--ink);background:#fff}
+  input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  textarea{min-height:60px;resize:vertical}
+  .wide{grid-column:1/-1}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button{border:0;border-radius:6px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;background:var(--accent);color:#fff}
+  button.alt{background:#e3ebe7;color:var(--ink)}
+  button:disabled{opacity:.6;cursor:wait}
+  #kq{margin-top:16px;padding:12px 14px;border-radius:8px;display:none;white-space:pre-wrap;word-break:break-word;font-size:.95rem}
+  #kq.ok{display:block;background:#e4f4ea;color:var(--ok)}
+  #kq.err{display:block;background:#fbe9e7;color:var(--err)}
+  #kq.info{display:block;background:#fff4d6;color:#7a5a00}
+  details{margin-top:16px;font-size:.85rem;color:var(--mute)}
+  code{word-break:break-all}
+</style>
+</head>
+<body>
+<main>
+  <h1>Test gửi bài làm lên Google Sheet</h1>
+  <p class="sub">Điền thử dữ liệu, bấm “Gửi thử” rồi mở Google Sheet để kiểm tra dòng mới.</p>
+
+  <form id="f" autocomplete="off">
+    <fieldset>
+      <legend>Thông tin thí sinh</legend>
+      <div class="grid">
+        <label>Số báo danh<input name="soBaoDanh" value="HS001"></label>
+        <label>Họ tên<input name="hoTen" value="Nguyễn Văn A"></label>
+        <label>Lớp<input name="lop" value="12A1"></label>
+        <label>Mã đề<input name="maDe" value="101"></label>
+        <label class="wide">Kỳ kiểm tra<input name="kyKiemTra" value="Giữa kỳ 1 - Thử nghiệm"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Kết quả</legend>
+      <div class="grid">
+        <label>Số câu NLC đúng<input type="number" name="soCauNLC" value="10"></label>
+        <label>Điểm NLC<input type="number" step="0.01" name="diemNLC" value="2.5"></label>
+        <label>Số ý Đ/S đúng<input type="number" name="soYDS" value="6"></label>
+        <label>Điểm Đ/S<input type="number" step="0.01" name="diemDS" value="1.5"></label>
+        <label>Tổng điểm<input type="number" step="0.01" name="tongDiem" value="4"></label>
+        <label>Số lần thoát màn hình<input type="number" name="soLanThoat" value="0"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Thời gian và thiết bị</legend>
+      <div class="grid">
+        <label>Thời gian bắt đầu<input name="thoiGianBatDau" id="bd"></label>
+        <label>Thời gian làm bài<input name="thoiGianLamBai" value="00:35:12"></label>
+        <label>Computer name<input name="computerName" value="PC-TEST-01"></label>
+        <label>IP<input name="ip" value="192.168.1.10"></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Chi tiết bài làm</legend>
+      <div class="grid">
+        <label class="wide">Chi tiết bài làm<textarea name="chiTietBaiLam">Câu 1: A (đúng); Câu 2: C (sai)</textarea></label>
+        <label>Đáp án NLC<input name="dapanNLC" value="A,B,C,D"></label>
+        <label>Câu trả lời NLC<input name="cautraloiNLC" value="A,B,D,D"></label>
+        <label>Đáp án Đ/S<input name="dapanDS" value="ĐSĐS"></label>
+        <label>Câu trả lời Đ/S<input name="cautraloiDS" value="ĐSSS"></label>
+      </div>
+    </fieldset>
+
+    <div class="bar">
+      <button type="submit" id="gui">Gửi thử</button>
+      <button type="button" class="alt" id="ngauNhien">Điền điểm ngẫu nhiên</button>
+    </div>
+  </form>
+
+  <div id="kq" role="status"></div>
+
+  <details>
+    <summary>Đường dẫn đang dùng</summary>
+    <code id="urlHien"></code>
+  </details>
+</main>
+
+<script>
+const URL_APP = "https://script.google.com/macros/s/AKfycbxBt8Ft9YOj8X-FfYgtrPsUW3t1zdsM6u_bGt0aBXEdw6mvevIyy0NufI8xlKOf7K9Zsw/exec";
+const NUM = ["soCauNLC","diemNLC","soYDS","diemDS","tongDiem","soLanThoat"];
+const f = document.getElementById("f"), kq = document.getElementById("kq"), gui = document.getElementById("gui");
+
+document.getElementById("urlHien").textContent = URL_APP;
+document.getElementById("bd").value = new Date().toLocaleString("vi-VN");
+
+function hien(loai, msg){ kq.className = loai; kq.textContent = msg; }
+
+document.getElementById("ngauNhien").onclick = () => {
+  const a = Math.floor(Math.random()*13), b = Math.floor(Math.random()*5);
+  f.soCauNLC.value = a; f.diemNLC.value = (a*0.25).toFixed(2);
+  f.soYDS.value = b;    f.diemDS.value  = (b*0.25).toFixed(2);
+  f.tongDiem.value = (a*0.25 + b*0.25).toFixed(2);
+};
+
+f.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = {};
+  new FormData(f).forEach((v,k) => data[k] = NUM.includes(k) ? Number(v) : v);
+
+  gui.disabled = true;
+  hien("info", "Đang gửi...");
+  try {
+    // Dùng text/plain để trình duyệt không gửi yêu cầu preflight (Apps Script không hỗ trợ OPTIONS)
+    const res = await fetch(URL_APP, {
+      method: "POST",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(data)
+    });
+    const text = await res.text();
+    let json; try { json = JSON.parse(text); } catch { json = null; }
+
+    if (json && json.result === "success") {
+      hien("ok", "Gửi thành công. Hãy mở Google Sheet để xem dòng mới.");
+    } else if (json) {
+      hien("err", "Apps Script báo lỗi: " + (json.error || text));
+    } else {
+      hien("err", "Phản hồi không phải JSON. Kiểm tra lại quyền truy cập của bản triển khai (phải là “Anyone”).\n\n" + text.slice(0,300));
+    }
+  } catch (err) {
+    // Dự phòng: gửi no-cors (không đọc được phản hồi nhưng dữ liệu vẫn được ghi)
+    try {
+      await fetch(URL_APP, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(data)});
+      hien("info", "Đã gửi ở chế độ no-cors, không đọc được phản hồi. Hãy mở Google Sheet để kiểm tra.\nChi tiết lỗi: " + err.message);
+    } catch (err2) {
+      hien("err", "Không gửi được: " + err2.message);
+    }
+  } finally {
+    gui.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
