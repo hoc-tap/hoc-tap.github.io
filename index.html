@@ -206,6 +206,7 @@
       transition: transform .18s; color: var(--text2);
     }
     .bai-toggle[aria-expanded="true"] .bai-arrow { transform: rotate(90deg); }
+    .bai-file-count { color: var(--green); font-size: .7rem; font-weight: 600; flex-shrink: 0; }
 
     .bai-files {
       display: none; flex-direction: column; gap: 1px;
@@ -366,30 +367,51 @@
     const iconExpand   = document.getElementById('icon-fs-expand');
     const iconCollapse = document.getElementById('icon-fs-collapse');
 
-    /* ─────────────────────────────────────────────────────────
-       Fetch entire repo file tree in ONE request → no rate limit
-       GET /repos/{owner}/{repo}/git/trees/{sha}?recursive=1
-    ───────────────────────────────────────────────────────── */
-    const REPO       = 'hoc-tap/hoc-tap.github.io';
-    const TREE_URL   = `https://api.github.com/repos/${REPO}/git/trees/main?recursive=1`;
-    const RAW_BASE   = `https://raw.githubusercontent.com/${REPO}/main`;
+    /* ── Static lesson data (generated from local filesystem) ──
+       Cập nhật dữ liệu này mỗi khi thêm file mới vào thư mục.
+    ────────────────────────────────────────────────────────── */
+    const GRADE_DATA = {
+      3: {
+        "bai-01": ["google_maps_satellite_embed (1).html", "kiem_tra_tin_8_GHKI (3).html", "test-nop-bai.html"],
+        "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      },
+      4: {
+        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      },
+      5: {
+        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      },
+      6: {
+        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      },
+      7: {
+        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      },
+      8: {
+        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      },
+      9: {
+        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
+        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+      }
+    };
 
-    /*
-     * gradeData[grade] = { baiName: [fileName, ...], ... }
-     * Populated from the tree response.
-     */
-    let gradeData = {};
-
-    /* ── Pretty file name ───────────────────────────────────── */
+    /* ── Pretty file name ────────────────────────────────────── */
     function prettyName(filename) {
       return filename
         .replace(/\.html?$/i, '')
-        .replace(/[-_]+/g, ' ')
+        .replace(/[-_()\[\]]+/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
     }
 
-    /* ── Build a file sub-link (no API needed, path known) ──── */
+    /* ── Build a file sub-link ───────────────────────────────── */
     function makeFileLink(grade, baiName, fileName) {
       const a = document.createElement('a');
       a.className = 'file-link';
@@ -401,29 +423,23 @@
       const icon = document.createElement('span');
       icon.className = 'file-icon';
       icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = '📄';
+      icon.textContent = '\uD83D\uDCC4';
 
       a.append(icon, document.createTextNode(prettyName(fileName)));
       return a;
     }
 
-    /* ── Accordion toggle (files already in gradeData) ──────── */
+    /* ── Accordion toggle (instant, no API) ─────────────────── */
     function toggleBai(toggleEl, filesEl, grade, baiName) {
       const expanded = toggleEl.getAttribute('aria-expanded') === 'true';
 
-      if (expanded) {
-        toggleEl.setAttribute('aria-expanded', 'false');
-        filesEl.classList.remove('open');
-        return;
-      }
+      toggleEl.setAttribute('aria-expanded', String(!expanded));
+      filesEl.classList.toggle('open', !expanded);
 
-      toggleEl.setAttribute('aria-expanded', 'true');
-      filesEl.classList.add('open');
-
-      if (filesEl.dataset.rendered) return;
+      if (expanded || filesEl.dataset.rendered) return;
       filesEl.dataset.rendered = '1';
 
-      const files = (gradeData[grade] || {})[baiName] || [];
+      const files = (GRADE_DATA[grade] || {})[baiName] || [];
       filesEl.innerHTML = '';
 
       if (files.length === 0) {
@@ -436,9 +452,10 @@
       }
     }
 
-    /* ── Build one bai-group element ─────────────────────────── */
+    /* ── Build one bai-group ─────────────────────────────────── */
     function makeBaiGroup(baiName, grade) {
       const num   = parseInt(baiName.replace('bai-', ''), 10);
+      const files = (GRADE_DATA[grade] || {})[baiName] || [];
       const label = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
 
       const group = document.createElement('div');
@@ -458,12 +475,18 @@
       badge.textContent = num;
 
       const text  = document.createTextNode(label);
+
+      const fileCount = document.createElement('span');
+      fileCount.className = 'bai-file-count';
+      fileCount.setAttribute('aria-hidden', 'true');
+      fileCount.textContent = files.length > 0 ? ` (${files.length})` : '';
+
       const arrow = document.createElement('span');
       arrow.className = 'bai-arrow';
       arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '▶';
+      arrow.textContent = '\u25B6';
 
-      toggle.append(badge, text, arrow);
+      toggle.append(badge, text, fileCount, arrow);
 
       const filesEl = document.createElement('div');
       filesEl.className = 'bai-files';
@@ -474,7 +497,7 @@
       return group;
     }
 
-    /* ── Create a grade card shell ───────────────────────────── */
+    /* ── Build a grade card ──────────────────────────────────── */
     function createGradeCard(grade) {
       const card = document.createElement('section');
       card.className = 'grade-card';
@@ -498,98 +521,28 @@
 
       const list = document.createElement('div');
       list.className = 'lesson-list';
-      // Skeleton placeholder
-      list.innerHTML = `<span class="bai-loading">${isEnglish ? 'Loading...' : 'Đang tải...'}</span>`;
+
+      const baiNames = Object.keys(GRADE_DATA[grade] || {}).sort((a,b) => a.localeCompare(b, 'vi'));
+      if (baiNames.length === 0) {
+        const p = document.createElement('p');
+        p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
+        p.textContent = isEnglish ? 'No lessons yet.' : 'Chưa có bài học.';
+        list.append(p);
+      } else {
+        baiNames.forEach(bn => list.append(makeBaiGroup(bn, grade)));
+      }
 
       card.append(header, list);
       return card;
     }
 
-    /* ── Populate all grade cards from gradeData ─────────────── */
-    function populateAllCards() {
-      for (let g = 3; g <= 9; g++) {
-        const card = document.getElementById(`card-grade-${g}`);
-        if (!card) continue;
-        const list = card.querySelector('.lesson-list');
-        list.innerHTML = '';
-
-        const baiMap = gradeData[g] || {};
-        const baiNames = Object.keys(baiMap).sort((a, b) => a.localeCompare(b, 'vi'));
-
-        if (baiNames.length === 0) {
-          const p = document.createElement('p');
-          p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
-          p.textContent = isEnglish ? 'No lessons yet.' : 'Chưa có bài học.';
-          list.append(p);
-        } else {
-          baiNames.forEach(bn => list.append(makeBaiGroup(bn, g)));
-        }
-      }
-    }
-
-    /* ── ONE GitHub Tree request for the whole repo ──────────── */
-    async function loadFromTree() {
-      try {
-        const res = await fetch(TREE_URL, {
-          headers: { Accept: 'application/vnd.github+json' }
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-
-        // data.tree is a flat list of { path, type, ... }
-        // We need paths like:  tin-hoc-3/bai-01/some-file.html
-        gradeData = {};
-
-        for (const item of data.tree) {
-          // Match: tin-hoc-{grade}/bai-{nn}/{filename.html}
-          const m = item.path.match(
-            /^tin-hoc-(\d+)\/(bai-\d+)\/([^/]+\.html?)$/i
-          );
-          if (m) {
-            const [, grade, bai, file] = m;
-            const g = parseInt(grade, 10);
-            if (!gradeData[g]) gradeData[g] = {};
-            if (!gradeData[g][bai]) gradeData[g][bai] = [];
-            gradeData[g][bai].push(file);
-          }
-
-          // Also register bai folders even if they are empty
-          const mDir = item.path.match(/^tin-hoc-(\d+)\/(bai-\d+)$/);
-          if (mDir && item.type === 'tree') {
-            const [, grade, bai] = mDir;
-            const g = parseInt(grade, 10);
-            if (!gradeData[g]) gradeData[g] = {};
-            if (!gradeData[g][bai]) gradeData[g][bai] = [];
-          }
-        }
-
-        populateAllCards();
-        updateCount();
-
-      } catch (err) {
-        console.error('Tree fetch error:', err);
-        // Fallback: show bai-01..bai-16 without file listings
-        for (let g = 3; g <= 9; g++) {
-          if (!gradeData[g]) gradeData[g] = {};
-          for (let n = 1; n <= 16; n++) {
-            const bn = `bai-${String(n).padStart(2,'0')}`;
-            if (!gradeData[g][bn]) gradeData[g][bn] = [];
-          }
-        }
-        populateAllCards();
-        updateCount();
-        countLabel.textContent += ' ⚠';
-      }
-    }
-
-    /* ── Load all grades (creates shells then fetches tree) ──── */
-    function loadAllGrades() {
+    /* ── Render all grade cards ──────────────────────────────── */
+    function renderAllGrades() {
       gradeGrid.innerHTML = '';
       for (let g = 3; g <= 9; g++) {
         gradeGrid.append(createGradeCard(g));
       }
-      countLabel.textContent = isEnglish ? 'Loading…' : 'Đang tải…';
-      loadFromTree();
+      updateCount();
     }
 
     /* ── Count ───────────────────────────────────────────────── */
@@ -615,9 +568,9 @@
         if (lbl) lbl.textContent = isEnglish ? `Grade ${g}` : `Lớp ${g}`;
         card.querySelectorAll('.bai-group').forEach(group => {
           const baiName = group.dataset.bai || '';
-          const num = parseInt(baiName.replace('bai-', ''), 10) || '?';
+          const num  = parseInt(baiName.replace('bai-', ''), 10) || '?';
           const text = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
-          const tog = group.querySelector('.bai-toggle');
+          const tog  = group.querySelector('.bai-toggle');
           if (tog) {
             tog.childNodes.forEach(node => {
               if (node.nodeType === Node.TEXT_NODE) node.textContent = text;
@@ -674,8 +627,9 @@
         isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
       } catch(_) {}
       applyTheme();
-      loadAllGrades();
+      renderAllGrades();
     })();
   </script>
+
 </body>
 </html>
