@@ -180,24 +180,56 @@
       display: flex; flex-direction: column; gap: 3px;
       scrollbar-color: #c9d6cb transparent; scrollbar-width: thin;
     }
-    .lesson {
-      display: flex; align-items: center; gap: 5px;
+    /* ── Bai accordion ───────────────────────────────────────── */
+    .bai-group { border-radius: 7px; overflow: hidden; border: 1px solid var(--border); }
+    .bai-group + .bai-group { margin-top: 3px; }
+
+    .bai-toggle {
+      width: 100%; display: flex; align-items: center; gap: 6px;
       padding: 5px 6px;
-      border: 1px solid var(--border); border-radius: 7px;
       background: var(--lesson-bg);
+      border: none; cursor: pointer; text-align: left;
       font-size: clamp(.72rem,.85vw,.84rem); line-height: 1.3;
-      transition: background .14s, border-color .14s, transform .14s;
+      color: var(--text);
+      transition: background .14s;
     }
-    .lesson:hover {
-      border-color: var(--green); background: var(--lesson-hover);
-      transform: translateY(-1px);
-    }
-    .lesson-badge {
+    .bai-toggle:hover { background: var(--lesson-hover); }
+    .bai-toggle[aria-expanded="true"] { background: var(--green-lt); }
+
+    .bai-badge {
       display: inline-grid; place-items: center; flex-shrink: 0;
       width: 14px; height: 14px; border-radius: 3px;
       background: var(--badge-bg); color: #fff; font-size: 8px;
     }
-    .lesson[hidden] { display: none; }
+    .bai-arrow {
+      margin-left: auto; flex-shrink: 0; font-size: .65rem;
+      transition: transform .18s; color: var(--text2);
+    }
+    .bai-toggle[aria-expanded="true"] .bai-arrow { transform: rotate(90deg); }
+
+    .bai-files {
+      display: none; flex-direction: column; gap: 1px;
+      background: var(--bg2); padding: 3px 4px 4px 22px;
+      border-top: 1px solid var(--border);
+    }
+    .bai-files.open { display: flex; }
+
+    .file-link {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 5px; border-radius: 5px;
+      font-size: clamp(.68rem,.8vw,.8rem); line-height: 1.3;
+      color: var(--text); text-decoration: none;
+      transition: background .12s, color .12s;
+    }
+    .file-link:hover { background: var(--lesson-hover); color: var(--green); }
+    .file-icon { flex-shrink: 0; font-size: .75rem; }
+    .file-empty {
+      padding: 4px 5px; font-size: .72rem;
+      color: var(--text2); font-style: italic;
+    }
+    .bai-loading { color: var(--text2); font-size: .72rem; padding: 4px 5px; font-style: italic; }
+
+    .bai-group[hidden] { display: none; }
     .grade-card[hidden] { display: none; }
 
     /* ── Footer ──────────────────────────────────────────────── */
@@ -321,209 +353,275 @@
     let isDark    = false;
 
     /* ── Elements ────────────────────────────────────────────── */
-    const html       = document.documentElement;
-    const gradeGrid  = document.getElementById('grade-grid');
-    const searchBox  = document.getElementById('search-box');
-    const countLabel = document.getElementById('count-label');
-    const langBtn    = document.getElementById('lang-btn');
-    const langLabel  = document.getElementById('lang-label');
-    const themeBtn   = document.getElementById('theme-btn');
-    const iconSun    = document.getElementById('icon-sun');
-    const iconMoon   = document.getElementById('icon-moon');
-    const fsBtn      = document.getElementById('fs-btn');
-    const iconExpand = document.getElementById('icon-fs-expand');
+    const html         = document.documentElement;
+    const gradeGrid    = document.getElementById('grade-grid');
+    const searchBox    = document.getElementById('search-box');
+    const countLabel   = document.getElementById('count-label');
+    const langBtn      = document.getElementById('lang-btn');
+    const langLabel    = document.getElementById('lang-label');
+    const themeBtn     = document.getElementById('theme-btn');
+    const iconSun      = document.getElementById('icon-sun');
+    const iconMoon     = document.getElementById('icon-moon');
+    const fsBtn        = document.getElementById('fs-btn');
+    const iconExpand   = document.getElementById('icon-fs-expand');
     const iconCollapse = document.getElementById('icon-fs-collapse');
 
-    /* ── Lesson data per grade (from GitHub API – cached in JS) ── */
-    /*
-     * Mỗi mảng chứa tên bài học cho lớp tương ứng.
-     * API endpoint: https://api.github.com/repos/hoc-tap/hoc-tap.github.io/contents/tin-hoc-{grade}
-     * Trang sẽ tự động lấy danh sách thư mục bai-xx từ API.
-     */
-    const GRADE_LABELS = {
-      vi: g => `Lớp ${g}`,
-      en: g => `Grade ${g}`
-    };
+    /* ── GitHub API base ────────────────────────────────────── */
+    const REPO = 'hoc-tap/hoc-tap.github.io';
+    const API  = path => `https://api.github.com/repos/${REPO}/contents/${path}?ref=main`;
 
-    /* ── Load lessons for all grades ─────────────────────────── */
-    async function loadAllGrades() {
-      gradeGrid.innerHTML = '';
-
-      // Create placeholder cards
-      for (let g = 3; g <= 9; g++) {
-        const card = createGradeCard(g, []);
-        card.id = `card-grade-${g}`;
-        gradeGrid.append(card);
-      }
-
-      const fetches = [];
-      for (let g = 3; g <= 9; g++) {
-        fetches.push(fetchGrade(g));
-      }
-      await Promise.allSettled(fetches);
-      updateCount();
+    /* ── Pretty file name from filename ─────────────────────── */
+    function prettyName(filename) {
+      return filename
+        .replace(/\.html?$/i, '')
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
     }
 
-    async function fetchGrade(grade) {
-      const url = `https://api.github.com/repos/hoc-tap/hoc-tap.github.io/contents/tin-hoc-${grade}?ref=main`;
+    /* ── Make a file sub-link ────────────────────────────────── */
+    function makeFileLink(file, grade, baiName) {
+      const a = document.createElement('a');
+      a.className = 'file-link';
+      a.href = `./tin-hoc-${grade}/${baiName}/${encodeURIComponent(file.name)}`;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.setAttribute('aria-label', prettyName(file.name));
+
+      const icon = document.createElement('span');
+      icon.className = 'file-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = '📄';
+
+      a.append(icon, document.createTextNode(prettyName(file.name)));
+      return a;
+    }
+
+    /* ── Toggle accordion + lazy-load files ─────────────────── */
+    async function toggleBai(toggleEl, filesEl, grade, baiName) {
+      const expanded = toggleEl.getAttribute('aria-expanded') === 'true';
+
+      if (expanded) {
+        // collapse
+        toggleEl.setAttribute('aria-expanded', 'false');
+        filesEl.classList.remove('open');
+        return;
+      }
+
+      // expand
+      toggleEl.setAttribute('aria-expanded', 'true');
+      filesEl.classList.add('open');
+
+      // Only load once (marked by data-loaded)
+      if (filesEl.dataset.loaded) return;
+      filesEl.dataset.loaded = '1';
+
+      // Show loading
+      filesEl.innerHTML = `<span class="bai-loading">${isEnglish ? 'Loading...' : 'Đang tải...'}</span>`;
+
       try {
-        const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
+        const res = await fetch(API(`tin-hoc-${grade}/${baiName}`), {
+          headers: { Accept: 'application/vnd.github+json' }
+        });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const items = await res.json();
-        // Only directories matching bai-xx
-        const lessons = items
-          .filter(i => i.type === 'dir' && /^bai-\d+$/i.test(i.name))
-          .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
-        populateCard(grade, lessons);
-      } catch (e) {
-        // Keep empty placeholder, show error text
-        const card = document.getElementById(`card-grade-${grade}`);
-        if (card) {
-          const list = card.querySelector('.lesson-list');
-          if (list) {
-            const err = document.createElement('p');
-            err.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
-            err.textContent = isEnglish ? 'Could not load lessons.' : 'Chưa tải được bài học.';
-            list.append(err);
-          }
+        const htmlFiles = items.filter(i => i.type === 'file' && /\.html?$/i.test(i.name));
+
+        filesEl.innerHTML = '';
+        if (htmlFiles.length === 0) {
+          const empty = document.createElement('span');
+          empty.className = 'file-empty';
+          empty.textContent = isEnglish ? 'No files yet.' : 'Chưa có bài học nào.';
+          filesEl.append(empty);
+        } else {
+          htmlFiles.forEach(f => filesEl.append(makeFileLink(f, grade, baiName)));
         }
+      } catch (err) {
+        filesEl.innerHTML = `<span class="file-empty">${isEnglish ? 'Could not load.' : 'Không tải được.'}</span>`;
       }
     }
 
-    function lessonLabel(folderName, grade) {
-      // "bai-01" → "Bài 1", "bai-12" → "Bài 12"
-      const num = parseInt(folderName.replace('bai-', ''), 10);
-      return isEnglish ? `Lesson ${num}` : `Bài ${num}`;
+    /* ── Build one bai-group element ─────────────────────────── */
+    function makeBaiGroup(baiName, grade) {
+      const num = parseInt(baiName.replace('bai-', ''), 10);
+      const label = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
+
+      const group = document.createElement('div');
+      group.className = 'bai-group';
+      group.dataset.bai = baiName;
+      group.dataset.search = `bai ${num} lop ${grade} lesson ${num} grade ${grade}`;
+
+      const toggle = document.createElement('button');
+      toggle.className = 'bai-toggle';
+      toggle.type = 'button';
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', `${label}, ${isEnglish ? 'Grade' : 'Lớp'} ${grade}`);
+
+      const badge = document.createElement('span');
+      badge.className = 'bai-badge';
+      badge.setAttribute('aria-hidden', 'true');
+      badge.textContent = num;
+
+      const text = document.createTextNode(label);
+
+      const arrow = document.createElement('span');
+      arrow.className = 'bai-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '▶';
+
+      toggle.append(badge, text, arrow);
+
+      const filesEl = document.createElement('div');
+      filesEl.className = 'bai-files';
+
+      toggle.addEventListener('click', () => toggleBai(toggle, filesEl, grade, baiName));
+
+      group.append(toggle, filesEl);
+      return group;
     }
 
-    function createGradeCard(grade, lessons) {
+    /* ── Create empty grade card ─────────────────────────────── */
+    function createGradeCard(grade) {
       const card = document.createElement('section');
       card.className = 'grade-card';
+      card.id = `card-grade-${grade}`;
       card.dataset.grade = grade;
       card.setAttribute('aria-label', (isEnglish ? 'Grade ' : 'Lớp ') + grade);
 
       const header = document.createElement('div');
       header.className = 'grade-header';
-      const num = document.createElement('span');
-      num.className = 'grade-num';
-      num.textContent = grade;
-      const label = document.createElement('span');
-      label.dataset.vi = `Lớp ${grade}`;
-      label.dataset.en = `Grade ${grade}`;
-      label.textContent = isEnglish ? `Grade ${grade}` : `Lớp ${grade}`;
-      header.append(num, label);
+
+      const numBadge = document.createElement('span');
+      numBadge.className = 'grade-num';
+      numBadge.textContent = grade;
+
+      const lbl = document.createElement('span');
+      lbl.dataset.vi = `Lớp ${grade}`;
+      lbl.dataset.en = `Grade ${grade}`;
+      lbl.textContent = isEnglish ? `Grade ${grade}` : `Lớp ${grade}`;
+
+      header.append(numBadge, lbl);
 
       const list = document.createElement('div');
       list.className = 'lesson-list';
-
-      lessons.forEach(item => {
-        list.append(makeLessonLink(item.name, grade));
-      });
 
       card.append(header, list);
       return card;
     }
 
-    function makeLessonLink(folderName, grade) {
-      const num = parseInt(folderName.replace('bai-', ''), 10);
-      const a = document.createElement('a');
-      a.className = 'lesson';
-      a.href = `./tin-hoc-${grade}/${folderName}/`;
-      const title = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
-      a.dataset.search = `bai ${num} lop ${grade} lesson ${num} grade ${grade}`;
-      a.setAttribute('aria-label', title + (isEnglish ? `, Grade ${grade}` : `, Lớp ${grade}`));
+    /* ── Fetch grade directory, populate card ────────────────── */
+    async function fetchGrade(grade) {
+      try {
+        const res = await fetch(API(`tin-hoc-${grade}`), {
+          headers: { Accept: 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const items = await res.json();
 
-      const badge = document.createElement('span');
-      badge.className = 'lesson-badge';
-      badge.setAttribute('aria-hidden', 'true');
-      badge.textContent = num;
+        const bais = items
+          .filter(i => i.type === 'dir' && /^bai-\d+$/i.test(i.name))
+          .sort((a, b) => a.name.localeCompare(b.name, 'vi'));
 
-      a.append(badge, document.createTextNode(title));
-      return a;
+        const card = document.getElementById(`card-grade-${grade}`);
+        if (!card) return;
+        const list = card.querySelector('.lesson-list');
+        list.innerHTML = '';
+
+        if (bais.length === 0) {
+          const p = document.createElement('p');
+          p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
+          p.textContent = isEnglish ? 'No lessons yet.' : 'Chưa có bài học nào.';
+          list.append(p);
+        } else {
+          bais.forEach(b => list.append(makeBaiGroup(b.name, grade)));
+        }
+      } catch (_) {
+        const card = document.getElementById(`card-grade-${grade}`);
+        if (!card) return;
+        const list = card.querySelector('.lesson-list');
+        const p = document.createElement('p');
+        p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
+        p.textContent = isEnglish ? 'Could not load.' : 'Chưa tải được bài học.';
+        list.append(p);
+      }
     }
 
-    function populateCard(grade, lessons) {
-      const card = document.getElementById(`card-grade-${grade}`);
-      if (!card) return;
-      const list = card.querySelector('.lesson-list');
-      list.innerHTML = '';
-      lessons.forEach(item => {
-        list.append(makeLessonLink(item.name, grade));
-      });
+    /* ── Load all grades ─────────────────────────────────────── */
+    async function loadAllGrades() {
+      gradeGrid.innerHTML = '';
+      for (let g = 3; g <= 9; g++) {
+        gradeGrid.append(createGradeCard(g));
+      }
+      countLabel.textContent = isEnglish ? 'Loading...' : 'Đang tải...';
+      await Promise.allSettled([3,4,5,6,7,8,9].map(fetchGrade));
+      updateCount();
     }
 
-    /* ── Translate all data-vi/data-en elements ──────────────── */
+    /* ── Count ───────────────────────────────────────────────── */
+    function updateCount() {
+      const cards  = gradeGrid.querySelectorAll('.grade-card:not([hidden])');
+      const groups = gradeGrid.querySelectorAll('.bai-group:not([hidden])');
+      countLabel.textContent = isEnglish
+        ? `${groups.length} lessons · ${cards.length} grades`
+        : `${groups.length} bài học · ${cards.length} lớp`;
+    }
+
+    /* ── Language ────────────────────────────────────────────── */
     function applyLanguage() {
       document.querySelectorAll('[data-vi]').forEach(el => {
-        const key = isEnglish ? 'en' : 'vi';
-        if (el.tagName === 'INPUT') {
-          el.placeholder = el.dataset[key] || el.placeholder;
-        } else {
-          el.textContent = el.dataset[key] || el.textContent;
-        }
+        const val = el.dataset[isEnglish ? 'en' : 'vi'];
+        if (!val) return;
+        if (el.tagName === 'INPUT') el.placeholder = val;
+        else el.textContent = val;
       });
-      // Grade headers
-      document.querySelectorAll('.grade-card').forEach(card => {
+
+      // Grade labels
+      gradeGrid.querySelectorAll('.grade-card').forEach(card => {
         const g = card.dataset.grade;
         const lbl = card.querySelector('.grade-header span:last-child');
         if (lbl) lbl.textContent = isEnglish ? `Grade ${g}` : `Lớp ${g}`;
-        // Lesson labels
-        card.querySelectorAll('.lesson').forEach(a => {
-          const badge = a.querySelector('.lesson-badge');
-          const num = badge ? badge.textContent : '?';
+
+        // Bai labels
+        card.querySelectorAll('.bai-group').forEach(group => {
+          const baiName = group.dataset.bai || '';
+          const num = parseInt(baiName.replace('bai-', ''), 10) || '?';
           const text = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
-          // Update text node
-          a.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) node.textContent = text;
-          });
-          a.setAttribute('aria-label', text + (isEnglish ? `, Grade ${g}` : `, Lớp ${g}`));
+          const toggle = group.querySelector('.bai-toggle');
+          if (toggle) {
+            toggle.childNodes.forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE) node.textContent = text;
+            });
+            toggle.setAttribute('aria-label', `${text}, ${isEnglish ? 'Grade' : 'Lớp'} ${g}`);
+          }
         });
       });
+
       langLabel.textContent = isEnglish ? 'EN' : 'VI';
       langBtn.setAttribute('aria-pressed', String(isEnglish));
       updateCount();
     }
 
-    /* ── Count visible lessons ───────────────────────────────── */
-    function updateCount() {
-      const cards  = document.querySelectorAll('.grade-card:not([hidden])');
-      const lessons = document.querySelectorAll('.lesson:not([hidden])');
-      const lbl = isEnglish
-        ? `${lessons.length} lessons · ${cards.length} grades`
-        : `${lessons.length} bài học · ${cards.length} lớp`;
-      countLabel.textContent = lbl;
-    }
-
-    /* ── Google search ───────────────────────────────────────── */
-    searchBox.addEventListener('click', () => {
-      window.location.href = 'https://www.google.com.vn/';
-    });
-    searchBox.addEventListener('keydown', e => {
-      if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/';
-    });
-
-    /* ── Dark / Light mode ───────────────────────────────────── */
+    /* ── Theme ───────────────────────────────────────────────── */
     function applyTheme() {
       html.dataset.theme = isDark ? 'dark' : 'light';
       iconSun.style.display  = isDark ? 'none' : '';
-      iconMoon.style.display = isDark ? ''     : 'none';
+      iconMoon.style.display = isDark ? '' : 'none';
       themeBtn.title = isDark
-        ? (isEnglish ? 'Switch to Light mode' : 'Chuyển sang chế độ Sáng')
-        : (isEnglish ? 'Switch to Dark mode'  : 'Chuyển sang chế độ Tối');
+        ? (isEnglish ? 'Switch to Light' : 'Chế độ Sáng')
+        : (isEnglish ? 'Switch to Dark'  : 'Chế độ Tối');
     }
+
+    /* ── Events ──────────────────────────────────────────────── */
+    searchBox.addEventListener('click',   () => { window.location.href = 'https://www.google.com.vn/'; });
+    searchBox.addEventListener('keydown', e => { if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/'; });
+
     themeBtn.addEventListener('click', () => {
-      isDark = !isDark;
-      applyTheme();
+      isDark = !isDark; applyTheme();
       try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(_) {}
     });
 
-    /* ── Language ────────────────────────────────────────────── */
-    langBtn.addEventListener('click', () => {
-      isEnglish = !isEnglish;
-      applyLanguage();
-    });
+    langBtn.addEventListener('click', () => { isEnglish = !isEnglish; applyLanguage(); });
 
-    /* ── Fullscreen ──────────────────────────────────────────── */
     fsBtn.addEventListener('click', async () => {
       try {
         if (document.fullscreenElement) await document.exitFullscreen();
@@ -533,26 +631,19 @@
     document.addEventListener('fullscreenchange', () => {
       const full = Boolean(document.fullscreenElement);
       iconExpand.style.display   = full ? 'none' : '';
-      iconCollapse.style.display = full ? ''     : 'none';
+      iconCollapse.style.display = full ? '' : 'none';
       fsBtn.setAttribute('aria-label', full
         ? (isEnglish ? 'Exit fullscreen' : 'Thoát toàn màn hình')
         : (isEnglish ? 'Fullscreen'      : 'Bật toàn màn hình'));
-      fsBtn.title = full ? (isEnglish ? 'Exit fullscreen' : 'Thoát') : (isEnglish ? 'Fullscreen' : 'Toàn màn hình');
     });
 
     /* ── Init ────────────────────────────────────────────────── */
     (function init() {
-      // Restore theme preference
       try {
         const saved = localStorage.getItem('theme');
-        if (saved === 'dark') { isDark = true; applyTheme(); }
-        else if (saved === 'light') { isDark = false; applyTheme(); }
-        else {
-          isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          applyTheme();
-        }
+        isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
       } catch(_) {}
-
+      applyTheme();
       loadAllGrades();
     })();
   </script>
