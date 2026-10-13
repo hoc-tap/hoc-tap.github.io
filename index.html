@@ -586,56 +586,104 @@
       updateCount();
     }
 
-    /* ── Tự động quét file từ repo qua CDN (Không bao giờ bị 403) ── */
-    async function autoFetchLessons() {
-      try {
-        const url = `https://data.jsdelivr.com/v1/package/gh/hoc-tap/hoc-tap.github.io@main/flat?t=${Date.now()}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('CDN trả về mã ' + res.status);
-        const data = await res.json();
-        if (!data || !Array.isArray(data.files)) return;
+    /* ── Tự động quét file từ repo ──────────────────────────────────
+       Thứ tự: 1) Cache localStorage (TTL 30 phút)
+               2) GitHub Trees API
+               3) jsDelivr CDN (fallback nếu GitHub bị rate-limit)
+    ─────────────────────────────────────────────────────────────── */
+    const CACHE_KEY = 'hoc-tap-tree';
+    const CACHE_TTL = 30 * 60 * 1000; // 30 phút
 
-        let hasNewFile = false;
-
-        data.files.forEach(item => {
-          if (!item.name) return;
-          // Nhận diện file HTML trong tin-hoc-X/bai-Y/...
-          const m = item.name.match(/^\/tin-hoc-(\d+)\/(bai-\d+)\/([^/]+\.html?)$/i);
-          if (m) {
-            const [, gStr, bStr, fileName] = m;
-            const g = parseInt(gStr, 10);
-            if (!GRADE_DATA[g]) GRADE_DATA[g] = {};
-            if (!GRADE_DATA[g][bStr]) GRADE_DATA[g][bStr] = [];
-            if (!GRADE_DATA[g][bStr].includes(fileName)) {
-              GRADE_DATA[g][bStr].push(fileName);
-              hasNewFile = true;
-            }
+    function applyTree(paths) {
+      let hasNewFile = false;
+      paths.forEach(path => {
+        const m = path.match(/^tin-hoc-(\d+)\/(bai-\d+)\/([^/]+\.html?)$/i);
+        if (m) {
+          const [, gStr, bStr, fileName] = m;
+          const g = parseInt(gStr, 10);
+          if (!GRADE_DATA[g]) GRADE_DATA[g] = {};
+          if (!GRADE_DATA[g][bStr]) GRADE_DATA[g][bStr] = [];
+          if (!GRADE_DATA[g][bStr].includes(fileName)) {
+            GRADE_DATA[g][bStr].push(fileName);
+            hasNewFile = true;
           }
-        });
-
-        if (hasNewFile) {
-          // Cập nhật số lượng file và nội dung các bài đang mở mượt mà
-          document.querySelectorAll('.bai-group').forEach(group => {
-            const g = parseInt(group.dataset.grade, 10);
-            const bn = group.dataset.bai;
-            const files = (GRADE_DATA[g] || {})[bn] || [];
-
-            const countEl = group.querySelector('.bai-file-count');
-            if (countEl) {
-              countEl.textContent = files.length > 0 ? `(${files.length})` : '';
-            }
-
-            const filesEl = group.querySelector('.bai-files');
-            if (filesEl && filesEl.classList.contains('open')) {
-              renderBaiFiles(filesEl, g, bn);
-            }
-          });
-          updateCount();
         }
-      } catch (err) {
-        console.info('Dùng danh sách bài học mặc định.', err);
+      });
+      if (hasNewFile) {
+        document.querySelectorAll('.bai-group').forEach(group => {
+          const g  = parseInt(group.dataset.grade, 10);
+          const bn = group.dataset.bai;
+          const files = (GRADE_DATA[g] || {})[bn] || [];
+          const countEl = group.querySelector('.bai-file-count');
+          if (countEl) countEl.textContent = files.length > 0 ? `(${files.length})` : '';
+          const filesEl = group.querySelector('.bai-files');
+          if (filesEl && filesEl.classList.contains('open')) renderBaiFiles(filesEl, g, bn);
+        });
+        updateCount();
       }
     }
+
+    async function fetchFromGitHub() {
+      const res = await fetch(
+        'https://api.github.com/repos/hoc-tap/hoc-tap.github.io/git/trees/main?recursive=1',
+        { headers: { 'Accept': 'application/vnd.github+json' } }
+      );
+      if (!res.ok) throw new Error('GitHub API ' + res.status);
+      const data = await res.json();
+      if (!data || !Array.isArray(data.tree)) throw new Error('GitHub: dữ liệu không hợp lệ');
+      return data.tree
+        .filter(item => item.type === 'blob' && item.path)
+        .map(item => item.path);
+    }
+
+    async function fetchFromJsdelivr() {
+      const res = await fetch(
+        `https://data.jsdelivr.com/v1/package/gh/hoc-tap/hoc-tap.github.io@main/flat`
+      );
+      if (!res.ok) throw new Error('jsDelivr ' + res.status);
+      const data = await res.json();
+      if (!data || !Array.isArray(data.files)) throw new Error('jsDelivr: dữ liệu không hợp lệ');
+      // jsDelivr trả về path có dấu "/" đầu → bỏ đi
+      return data.files.map(f => f.name.replace(/^\//, ''));
+    }
+
+    async function autoFetchLessons() {
+      try {
+        // 1️⃣ Kiểm tra cache localStorage trước
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) {
+          const { ts, paths } = JSON.parse(raw);
+          if (Date.now() - ts < CACHE_TTL) {
+            applyTree(paths);
+            return; // Dùng cache, không cần gọi API
+          }
+        }
+      } catch (_) {}
+
+      // 2️⃣ Gọi GitHub API
+      let paths = null;
+      try {
+        paths = await fetchFromGitHub();
+      } catch (err) {
+        console.warn('GitHub API lỗi, thử jsDelivr...', err.message);
+        // 3️⃣ Fallback jsDelivr
+        try {
+          paths = await fetchFromJsdelivr();
+        } catch (err2) {
+          console.info('Không thể tải danh sách bài học.', err2.message);
+          return;
+        }
+      }
+
+      if (paths) {
+        applyTree(paths);
+        // Lưu vào cache localStorage
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), paths }));
+        } catch (_) {}
+      }
+    }
+
 
     /* ── Count ───────────────────────────────────────────────── */
     function updateCount() {
