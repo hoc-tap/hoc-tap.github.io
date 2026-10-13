@@ -60,6 +60,11 @@ input:focus{border-color:var(--blue)}
 .big{font-size:64px;margin:0}
 .sc{font-size:56px;font-weight:800;color:var(--pri);margin:6px 0}
 @media(max-width:760px){.quiz{flex-direction:column;padding:12px;gap:12px;padding-top:56px}.right{order:-1;padding:14px;gap:8px}.right .sub,.stat div:nth-child(n+3){display:none}.stat{grid-template-columns:1fr 1fr}.ans{flex-direction:column}}
+.art{display:flex;justify-content:center;animation:pop .4s}.art:empty{display:none}
+@keyframes pop{from{transform:scale(.85);opacity:0}}
+.ar{display:flex;flex-direction:column;align-items:center;background:linear-gradient(#f3f9ff,#e6f2ff);border-radius:18px;padding:8px 24px;border:3px dashed #cfe3fb}
+.ae{font-size:clamp(34px,7vh,60px);letter-spacing:6px;line-height:1.2}.ac{font-size:13px;color:#4b6785;font-weight:700}
+.mk{height:clamp(90px,20vh,160px);width:auto;max-width:100%}
 </style></head><body>
 <div class="tools"><button id="snd" title="Âm thanh">🔊</button><button id="fs" title="Toàn màn hình">⛶</button></div>
 <div id="flash"></div>
@@ -73,7 +78,7 @@ input:focus{border-color:var(--blue)}
 <p id="best" style="font-size:14px"></p></div></section>
 
 <section class="scr quiz" id="sQuiz">
-<div class="card left" id="qBox"><div class="tag" id="qNo"></div><p class="qt" id="qTx"></p>
+<div class="card left" id="qBox"><div class="tag" id="qNo"></div><p class="qt" id="qTx"></p><div class="art" id="qArt"></div>
 <div class="ans"><button class="bt" id="bT">✔ ĐÚNG</button><button class="bf" id="bF">✘ SAI</button></div><div class="fb" id="fb"></div></div>
 <aside class="card right"><div style="font-size:48px">🧗</div><h2>Leo Núi<br>Tri Thức</h2><div class="sub">Bài 3 · Tìm kiếm thông tin trong giải quyết vấn đề</div>
 <div class="bar"><i id="pg"></i></div>
@@ -132,7 +137,31 @@ function newGame(){const name=$('#nm').value.trim();G={name,list:shuffle(Q).slic
 const types=['star','gem','shield','chest','star','gem','chest','shield','star'];shuffle(Array.from({length:28},(_,i)=>i+2)).slice(0,9).forEach((k,j)=>G.rw[k]=types[j]);
 buildScene();sfx.go();showQ()}
 function hud(){$('#hN').textContent=G.name;$('#hS').textContent=G.score;$('#hK').textContent=G.streak+(G.streak>1?' 🔥':'');$('#hD').textContent=G.shield?'🛡️×'+G.shield:'0';$('#pg').style.width=(G.i/N*100)+'%'}
-function showQ(){show('#sQuiz');const q=G.list[G.i];$('#qNo').textContent=`CÂU ${G.i+1} / ${N} · chặng ${G.i+1}`;$('#qTx').textContent=q[0];$('#fb').textContent='';$('#fb').style.color='';
+const RULES=[
+[/Nha Trang/,()=>E('🏖️☀️🩴','Nha Trang')],
+[/Đà Lạt/,()=>E('🌲🧥☁️','Đà Lạt')],
+[/Nam bán cầu|ở Úc|sang Úc|Úc là|Minh/,()=>E('🦘☃️🧣','Nước Úc')],
+[/nhà thờ đá/i,()=>E('⛪','Nhà thờ đá Sa Pa')],
+[/ruộng bậc thang|Cổng trời/,()=>E('🌾🌄','')],
+[/Phan Xi Păng|Ô Quy Hồ|Mường Hoa|trèo đèo|lội suối/,()=>E('🏔️🥾','')],
+[/Sa Pa|Cát Cát|Lào Cai|hồ Sa Pa/,()=>E('🏞️⛰️','Sa Pa')],
+[/Hình 17|từ khoá/,(m,t)=>search(t.includes('Sa Pa')?'Các điểm tham quan ở Sa Pa':'Từ khoá tìm kiếm')],
+[/Google|máy tìm kiếm|nháy chuột vào kết quả|kết quả/,()=>E('🔍🌐','')],
+[/Thủ đô|Hà Nội|website|sodulich/,()=>E('🌐🏛️','')],
+[/trình chiếu|trang chiếu/,()=>E('📊👫','')],
+[/nhóm|hợp tác|phân công/,()=>E('👧🧒👦🤝','')],
+[/truyện|mua sách/,()=>E('📚🛒','')],
+[/ti vi|sách, báo|báo/,()=>E('📺📰📖','')],
+[/người già|trẻ em|đoàn/,()=>E('👴👶🚶','')]
+];
+const E=(e,c)=>`<div class="ar"><div class="ae">${e}</div>${c?`<div class="ac">${c}</div>`:''}</div>`;
+const CUR={hand:'<text x="150" y="92" font-size="40">👆</text>',arrow:'<polygon points="150,52 150,97 162,87 170,106 178,102 170,83 186,83" fill="#fff" stroke="#222" stroke-width="3"/>',ibeam:'<path d="M160 50v50M150 50h20M150 100h20" stroke="#222" stroke-width="4" fill="none"/>'};
+const mock=k=>`<svg viewBox="0 0 300 120" class="mk"><rect x="2" y="2" width="296" height="116" rx="14" fill="#e8f3ff" stroke="#9cc4ee" stroke-width="3"/><text x="150" y="60" font-size="30" text-anchor="middle" fill="#1f4e9c"${k=='hand'?' text-decoration="underline"':''}>Trăng ơi!</text>${CUR[k]}</svg>`;
+const fig7=n=>{const h=i=>i==n?'stroke="#ff8a1f" stroke-width="6"':'stroke="#9cc4ee" stroke-width="2"';const b=(i,x,y,c)=>`<circle cx="${x}" cy="${y}" r="14" fill="${c}"/><text x="${x}" y="${y+5}" font-size="14" font-weight="700" fill="#fff" text-anchor="middle">0${i}</text>`;
+return `<svg viewBox="0 0 360 160" class="mk"><rect x="2" y="2" width="356" height="156" rx="12" fill="#f3f8ff" stroke="#9cc4ee" stroke-width="3"/><rect x="18" y="26" width="150" height="104" rx="8" fill="#34495e" ${h(1)}/><polygon points="76,60 76,98 108,79" fill="#fff"/>${b(1,22,24,'#16a870')}<g ${h(2)}><rect x="190" y="26" width="150" height="58" rx="6" fill="#fff"/></g><rect x="194" y="30" width="68" height="24" fill="#ffb347"/><rect x="266" y="30" width="70" height="24" fill="#4aa3df"/><rect x="194" y="56" width="68" height="24" fill="#e76f51"/><rect x="266" y="56" width="70" height="24" fill="#6bbf59"/>${b(2,336,24,'#ff8a1f')}<rect x="190" y="94" width="150" height="40" rx="6" fill="#fff" ${h(3)}/><rect x="198" y="102" width="134" height="5" fill="#b8c7d9"/><rect x="198" y="114" width="134" height="5" fill="#b8c7d9"/><rect x="198" y="126" width="90" height="5" fill="#b8c7d9"/>${b(3,336,136,'#17a2b8')}</svg>`};
+const search=t=>`<svg viewBox="0 0 360 80" class="mk" style="height:clamp(60px,14vh,100px)"><rect x="2" y="12" width="356" height="56" rx="28" fill="#fff" stroke="#9cc4ee" stroke-width="3"/><text x="26" y="48" font-size="22">🔍</text><text x="62" y="47" font-size="19" fill="#34495e">${t}</text></svg>`;
+function art(t){for(const [re,f] of RULES){const m=t.match(re);if(m)return typeof f=='function'?f(m,t):f}return''}
+function showQ(){show('#sQuiz');const q=G.list[G.i];$('#qNo').textContent=`CÂU ${G.i+1} / ${N} · chặng ${G.i+1}`;$('#qTx').textContent=q[0];$('#qArt').innerHTML=art(q[0]);$('#fb').textContent='';$('#fb').style.color='';
 [$('#bT'),$('#bF')].forEach(b=>{b.disabled=false;b.className=b.id=='bT'?'bt':'bf'});G.lock=false;hud()}
 function answer(v){if(G.lock)return;G.lock=true;const q=G.list[G.i],ok=v===q[1];$('#bT').disabled=$('#bF').disabled=true;(v?$('#bT'):$('#bF')).classList.add('pick');(q[1]?$('#bT'):$('#bF')).classList.add('right');
 const fb=$('#fb');let msg;
