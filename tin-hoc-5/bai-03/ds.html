@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leo Núi Tri Thức – Đúng hay Sai</title>
+<style>
+:root{color-scheme:light;--ink:#16324f;--ok:#22a06b;--no:#e5484d;--pri:#ff8a1f;--blue:#2b7de9;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;height:100%;position:relative;overflow:hidden;font-family:"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:linear-gradient(160deg,#e6f4ff,#fff7e6);background-color:#eaf6ff}
+.scr{position:absolute;inset:0;display:none;overflow:auto}
+.scr.on{display:flex}
+.card{background:#fff;border-radius:26px;box-shadow:0 10px 30px rgba(43,125,233,.15)}
+.start,.end{align-items:center;justify-content:center;padding:16px}
+.box{max-width:480px;width:100%;padding:34px;text-align:center}
+.box h1{margin:.2em 0;font-size:clamp(26px,5vw,36px);color:var(--blue)}
+.box p{margin:.4em 0;color:#4b6785}
+input{width:100%;padding:14px 16px;font-size:18px;border:3px solid #cfe3fb;border-radius:14px;margin:14px 0;text-align:center;outline:none;font-family:inherit}
+input:focus{border-color:var(--blue)}
+.go{background:linear-gradient(#ffa64d,var(--pri));color:#fff;border:0;border-radius:16px;padding:14px 28px;font-size:20px;font-weight:700;cursor:pointer;box-shadow:0 5px 0 #c9660d;font-family:inherit}
+.go:active{transform:translateY(3px);box-shadow:0 2px 0 #c9660d}
+.quiz{gap:22px;padding:22px;align-items:stretch}
+.left{flex:1.8;padding:clamp(18px,3vw,36px);display:flex;flex-direction:column;justify-content:center;gap:22px;position:relative}
+.tag{font-weight:700;color:var(--blue);letter-spacing:.5px}
+.qt{font-size:clamp(20px,2.6vw,32px);line-height:1.45;font-weight:600;margin:0}
+.ans{display:flex;gap:16px}
+.ans button{flex:1;font-size:clamp(20px,2.4vw,28px);font-weight:800;border:0;border-radius:18px;padding:20px 8px;color:#fff;cursor:pointer;font-family:inherit;transition:transform .12s,opacity .2s}
+.ans button:hover:not(:disabled){transform:translateY(-3px)}
+.bt{background:var(--ok);box-shadow:0 6px 0 #167a50}
+.bf{background:var(--no);box-shadow:0 6px 0 #b0343a}
+.ans button:disabled{cursor:default;opacity:.35;box-shadow:none}
+.ans button.pick{opacity:1;outline:5px solid #ffd54a}
+.ans button.right{opacity:1}
+.fb{min-height:28px;font-size:20px;font-weight:700}
+.right{flex:1;padding:26px;display:flex;flex-direction:column;gap:14px;justify-content:center;text-align:center;background:linear-gradient(#fff,#f3f9ff)}
+.right h2{margin:0;font-size:clamp(24px,3vw,36px);color:var(--blue);line-height:1.2}
+.right .sub{color:#4b6785;font-size:15px}
+.stat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat div{background:#eef6ff;border-radius:14px;padding:10px;font-size:14px;color:#4b6785}
+.stat b{display:block;font-size:24px;color:var(--ink)}
+.bar{height:14px;background:#dbe9fb;border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb347,#ff8a1f);transition:width .5s}
+.climb{flex-direction:column;background:linear-gradient(#bfe6ff,#f4fbff 70%)}
+.hud{display:flex;justify-content:center;gap:12px;padding:12px;flex-wrap:wrap}
+.hud span{background:#fff;border-radius:20px;padding:8px 18px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.08)}
+#scene{flex:1;min-height:0;width:100%}
+#climber{transition:transform 1s cubic-bezier(.4,.1,.3,1)}
+.bounce{animation:bn .5s 2}
+@keyframes bn{50%{transform:translateY(-14px)}}
+.toast{position:absolute;left:50%;top:18%;transform:translate(-50%,-20px);background:#fff;border-radius:22px;padding:14px 28px;font-size:clamp(20px,3vw,30px);font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.2);opacity:0;pointer-events:none;transition:.35s;text-align:center;max-width:90%}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+#flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:20}
+#flash.go1{animation:fl .7s}
+@keyframes fl{0%{opacity:.55}100%{opacity:0}}
+.sp{position:fixed;font-size:26px;pointer-events:none;z-index:30;animation:sp 1.1s ease-out forwards}
+@keyframes sp{to{transform:translate(var(--dx),var(--dy)) scale(.4) rotate(240deg);opacity:0}}
+.shake{animation:sh .4s}
+@keyframes sh{25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.tools{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:10px;display:flex;gap:8px;z-index:40}
+.tools button{width:42px;height:42px;border-radius:50%;border:0;background:#fff;box-shadow:0 3px 10px rgba(0,0,0,.18);font-size:20px;cursor:pointer}
+.big{font-size:64px;margin:0}
+.sc{font-size:56px;font-weight:800;color:var(--pri);margin:6px 0}
+@media(max-width:760px){.quiz{flex-direction:column;padding:12px;gap:12px;padding-top:56px}.right{order:-1;padding:14px;gap:8px}.right .sub,.stat div:nth-child(n+3){display:none}.stat{grid-template-columns:1fr 1fr}.ans{flex-direction:column}}
+</style></head><body>
+<div class="tools"><button id="snd" title="Âm thanh">🔊</button><button id="fs" title="Toàn màn hình">⛶</button></div>
+<div id="flash"></div>
+
+<section class="scr start on" id="sStart"><div class="card box">
+<p class="big">⛰️</p><h1>Leo Núi Tri Thức</h1>
+<p>Đúng hay Sai · Tìm kiếm thông tin trong giải quyết vấn đề</p>
+<p>30 câu = 30 chặng đường lên đỉnh núi. Nhặt quà dọc đường nhé!</p>
+<input id="nm" maxlength="24" placeholder="Nhập tên của em..." autocomplete="off">
+<button class="go" id="bStart">🚀 Bắt đầu leo núi</button>
+<p id="best" style="font-size:14px"></p></div></section>
+
+<section class="scr quiz" id="sQuiz">
+<div class="card left" id="qBox"><div class="tag" id="qNo"></div><p class="qt" id="qTx"></p>
+<div class="ans"><button class="bt" id="bT">✔ ĐÚNG</button><button class="bf" id="bF">✘ SAI</button></div><div class="fb" id="fb"></div></div>
+<aside class="card right"><div style="font-size:48px">🧗</div><h2>Leo Núi<br>Tri Thức</h2><div class="sub">Bài 3 · Tìm kiếm thông tin trong giải quyết vấn đề</div>
+<div class="bar"><i id="pg"></i></div>
+<div class="stat"><div>Người chơi<b id="hN" style="font-size:18px"></b></div><div>Điểm<b id="hS">0</b></div><div>Chuỗi đúng<b id="hK">0</b></div><div>Khiên<b id="hD">0</b></div></div></aside></section>
+
+<section class="scr climb" id="sClimb"><div class="hud"><span id="cStep"></span><span id="cScore"></span><span id="cShield"></span></div>
+<svg id="scene" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid meet"></svg><div class="toast" id="toast"></div></section>
+
+<section class="scr end" id="sEnd"><div class="card box"><p class="big">🏆</p><h1>Chinh phục đỉnh núi!</h1>
+<p id="eN"></p><div class="sc" id="eS"></div><p id="eD"></p><p id="eR" style="font-weight:700"></p><br><button class="go" id="bAgain">🔁 Leo lại</button></div></section>
+
+<script>
+const Q=[
+["Để giải quyết vấn đề, em cần đưa ra quyết định.",1],["Để có được quyết định, em cần có thông tin.",1],["Thông tin không có vai trò gì trong giải quyết vấn đề.",0],["Thu thập, tìm kiếm thông tin liên quan rất quan trọng khi giải quyết vấn đề.",1],["Có đầy đủ thông tin sẽ giúp em giải quyết vấn đề tốt hơn.",1],
+["Thiếu thông tin sẽ khiến em gặp khó khăn khi giải quyết vấn đề.",1],["Nha Trang là thành phố biển, thời tiết quanh năm nắng nóng.",1],["Đà Lạt là thành phố cao nguyên, thời tiết mát mẻ, đêm khá lạnh.",1],["Đi nghỉ ở Đà Lạt, em nên mang theo áo ấm.",1],["Khi Việt Nam là mùa hè thì ở Úc cũng là mùa hè.",0],
+["Úc là nước nằm ở Nam bán cầu.",1],["Minh mang toàn áo mùa hè sang Úc vào dịp hè của Việt Nam nên kì nghỉ không như mong đợi.",1],["Trước khi đi Nha Trang, An đã tìm hiểu thông tin về địa điểm sẽ đến.",1],["Khoa và Minh đều đã tìm hiểu kĩ thông tin trước chuyến đi.",0],["Khoa không biết đêm Đà Lạt lạnh nên thiếu quần áo ấm.",1],
+["Để chuẩn bị đi tham quan cùng lớp, thông tin về vị trí điểm tham quan là cần thiết.",1],["Thông tin dự báo thời tiết ngày đi tham quan là không cần thiết.",0],["Thông tin về chương trình tham quan giúp em chuẩn bị tốt hơn.",1],["Đánh giá, nhận xét của người đã đến địa điểm đó có thể là thông tin hữu ích.",1],["Chỉ vấn đề lớn mới cần tìm kiếm thông tin, vấn đề nhỏ thì không cần.",0],
+["Hợp tác để giải quyết vấn đề sẽ hiệu quả hơn.",1],["Khi làm việc nhóm, bạn nào giỏi thì nên làm hộ cả nhóm.",0],["Khi làm việc nhóm, cần có tinh thần trách nhiệm.",1],["Khi làm việc nhóm, cần thảo luận và phân công theo điểm mạnh của mỗi người.",1],["Cách hợp lí nhất để làm bài trình chiếu nhóm là cả ba bạn cùng đóng góp công sức.",1],
+["Mỗi bạn làm một bài riêng rồi chọn bài hay nhất là cách hợp tác tốt nhất.",0],["Chia việc thành nhiều việc nhỏ, phân công theo điểm mạnh là phương án hợp lí.",1],["Khi được phân công, em chỉ làm phần mình, không cần giúp đỡ bạn.",0],["Hợp tác là cùng đóng góp và giúp đỡ nhau để hoàn thành công việc chung.",1],["Trong ví dụ của bài, Khoa ghép các trang chiếu thành bài trình chiếu hoàn chỉnh.",1],
+["Trong ví dụ của bài, An chỉnh sửa hình ảnh còn Minh chỉnh sửa văn bản.",0],["Trong ví dụ, mỗi bạn tự chuẩn bị nội dung cho trang chiếu về kì nghỉ hè của mình.",1],["Thông tin có thể tìm từ ti vi, sách, báo và những người xung quanh.",1],["Internet là nguồn thông tin duy nhất.",0],["Internet là nguồn thông tin rất phong phú để tìm kiếm.",1],
+["Tìm thông tin du lịch ở website chính thức của địa phương là lựa chọn hợp lí.",1],["Google là một máy tìm kiếm.",1],["Từ khoá là từ hoặc cụm từ mô tả thông tin em muốn tìm.",1],["Dùng từ khoá \"Các điểm tham quan ở Sa Pa\" sẽ cho kết quả về điểm tham quan ở Sa Pa.",1],["Kết quả phù hợp nhất với từ khoá thường được xếp ở cuối danh sách.",0],
+["Em nháy chuột vào kết quả tìm kiếm để mở trang web chứa thông tin.",1],["Chỉ cần đọc tiêu đề kết quả, không cần mở trang web để đọc thông tin.",0],["Sa Pa có rất nhiều điểm tham quan.",1],["Nhà thờ đá, hồ Sa Pa, chợ đêm Sa Pa là các điểm tham quan ở gần.",1],["Đèo Ô Quy Hồ là điểm tham quan phải đi xa.",1],
+["Đỉnh Phan Xi Păng là điểm tham quan phải trèo đèo, lội suối.",1],["Ruộng bậc thang, Cổng trời là nơi có chỗ chụp ảnh đẹp.",1],["Việc chọn điểm tham quan phụ thuộc vào số ngày, thành phần tham gia và nhu cầu của mọi người.",1],["Đoàn có nhiều người già, trẻ em thì nên chọn điểm phải trèo đèo, lội suối.",0],["Chọn điểm tham quan chỉ cần dựa vào sở thích của một người.",0],
+["Thông tin tìm được cần được lựa chọn cho phù hợp với vấn đề cần giải quyết.",1],["Website sodulich.hanoi.gov.vn là của Sở Du lịch Hà Nội.",1],["Hà Nội là Thủ đô của Việt Nam.",1],["Tìm giá tiền và nơi bán của bộ truyện giúp em quyết định mua sách.",1],["Nên ghi lại thông tin tìm được vào một tệp văn bản trên máy tính.",1],
+["Trước khi tìm kiếm, em cần xác định vấn đề mình cần giải quyết.",1],["Mọi thông tin trên Internet đều chính xác, không cần kiểm tra.",0],["Nên so sánh thông tin từ nhiều nguồn để chọn thông tin phù hợp.",1],["Thông tin không liên quan đến vấn đề vẫn nên đưa vào cách giải quyết.",0],["Cát Cát là khu dân cư ở Sa Pa.",1],
+["Nhà thờ đá Sa Pa là một nhà thờ Công giáo.",1],["Phan Xi Păng là một đỉnh núi.",1],["Em nên thu thập thông tin trước khi đưa ra quyết định.",1],["Quyết định đưa ra mà không có thông tin luôn luôn đúng.",0],["Trước khi nghỉ hè ở nơi mới, em nên tìm hiểu thời tiết nơi đó.",1],
+["Tìm kiếm thông tin trên mạng chỉ dành cho người lớn.",0],["Kết quả tìm kiếm có thể gồm cả hình ảnh, đánh giá và danh sách địa điểm.",1],["Khi làm việc nhóm, mỗi người cần có ý thức hoàn thành phần việc của mình.",1],["Hợp tác nhóm thì không cần thảo luận.",0],["Phân công công việc nên dựa vào điểm mạnh của từng người.",1],
+["Nhóm làm việc tốt nhất khi một người làm tất cả, những người khác chỉ xem.",0],["Giúp đỡ bạn trong nhóm là biểu hiện của sự hợp tác.",1],["An chỉ cần mang đồ mùa hè, đồ bơi, kính bơi, kem chống nắng khi đi Nha Trang.",1],["Tháng Việt Nam là mùa hè thì ở Úc là mùa đông nên cần quần áo ấm.",1],["Máy tìm kiếm giúp em tìm thông tin trên Internet.",1],
+["Sách và báo cũng là nguồn thông tin.",1],["Hỏi người xung quanh cũng là một cách thu thập thông tin.",1],["Cứ tin ngay kết quả đầu tiên của máy tìm kiếm mà không cần suy nghĩ.",0],["Kì nghỉ hè của Khoa và Minh không như mong đợi vì thiếu thông tin.",1],["Thông tin cần tìm phụ thuộc vào vấn đề cần giải quyết.",1],
+["Trước khi tìm kiếm, nên chọn từ khoá phù hợp.",1],["Từ khoá càng mơ hồ thì kết quả tìm được càng chính xác.",0],["Để lập danh sách điểm tham quan ở Thủ đô, em có thể tra cứu website của Sở Du lịch Hà Nội.",1],["Sa Pa thuộc tỉnh Lào Cai.",1],["Em có thể tìm thông tin về Sa Pa ở website chính thức của thành phố Lào Cai và Sa Pa.",1],
+["Thông tin về giá tiền và nơi bán giúp em quyết định mua bộ truyện.",1],["Hợp tác giúp công việc chung hoàn thành hiệu quả hơn.",1],["Làm việc nhóm thì không cần tinh thần trách nhiệm.",0],["Một mục tiêu của bài học là giải thích được sự cần thiết của việc tìm kiếm thông tin.",1],["Nếu bạn trong nhóm gặp khó khăn, em nên giúp đỡ bạn.",1],
+["Tìm kiếm xong là dùng ngay, không cần lựa chọn thông tin.",0],["Đường đi vất vả, phải trèo đèo, lội suối không phù hợp với người già và trẻ nhỏ.",1],["Số ngày tham quan ảnh hưởng đến việc chọn điểm tham quan.",1],["Nhu cầu chung của mọi người trong đoàn cần được xem xét khi chọn điểm tham quan.",1],["Hình 17 trong bài là kết quả tìm kiếm với từ khoá \"Các điểm tham quan ở Sa Pa\".",1],
+["Ở Bước 2, em đọc và thu thập thông tin liên quan đến vấn đề mình quan tâm.",1],["Khi chọn bộ truyện, chỉ cần xem bìa đẹp là đủ, không cần thông tin gì khác.",0],["Thu thập thông tin chỉ có ích khi đi du lịch.",0],["Hồ Sa Pa là một điểm tham quan ở gần trung tâm Sa Pa.",1],["Thiếu thông tin thì quyết định thường kém hiệu quả hơn.",1]];
+const $=s=>document.querySelector(s),N=30;
+let AC,mute=false;
+function tone(f,d=.15,t='sine',v=.15,w=0){if(mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+w;o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d)}catch(e){}}
+const sfx={ok:()=>[523,659,784].forEach((f,i)=>tone(f,.18,'triangle',.2,i*.09)),no:()=>{tone(180,.35,'sawtooth',.12);tone(130,.4,'sawtooth',.12,.12)},step:()=>{tone(300,.07,'square',.06);tone(400,.07,'square',.06,.12)},gift:()=>[784,988,1175,1568].forEach((f,i)=>tone(f,.2,'sine',.2,i*.08)),win:()=>[523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,.28,'triangle',.22,i*.14)),go:()=>[392,523,659].forEach((f,i)=>tone(f,.15,'triangle',.2,i*.08))};
+function show(id){document.querySelectorAll('.scr').forEach(e=>e.classList.remove('on'));$(id).classList.add('on')}
+function flash(c){const f=$('#flash');f.style.background=c;f.classList.remove('go1');void f.offsetWidth;f.classList.add('go1')}
+function burst(x,y,em,n=14){for(let i=0;i<n;i++){const s=document.createElement('span');s.className='sp';s.textContent=em[i%em.length];s.style.left=x+'px';s.style.top=y+'px';const a=Math.random()*6.28,r=60+Math.random()*140;s.style.setProperty('--dx',Math.cos(a)*r+'px');s.style.setProperty('--dy',Math.sin(a)*r+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),1200)}}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const pts=[];for(let i=0;i<=N;i++){const t=i/N;pts.push([500+330*Math.sin(i*.75)*(1-.55*t),565-480*t])}
+const RW={star:{e:'⭐',t:'Ngôi sao! +5 điểm'},gem:{e:'💎',t:'Kim cương! +15 điểm'},shield:{e:'🛡️',t:'Nhận khiên bảo vệ chuỗi đúng!'},chest:{e:'🎁',t:''}};
+let G={};
+function buildScene(){let s=`<defs><linearGradient id="gm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb4d9"/><stop offset="1" stop-color="#5f8f6a"/></linearGradient></defs>
+<circle cx="880" cy="70" r="40" fill="#ffd54a"/><g fill="#fff" opacity=".9"><ellipse cx="170" cy="80" rx="70" ry="22"/><ellipse cx="220" cy="68" rx="45" ry="20"/><ellipse cx="700" cy="130" rx="60" ry="18"/></g>
+<polygon points="-200,600 180,230 560,600" fill="#a9c7e4"/><polygon points="500,600 840,260 1200,600" fill="#9dbddb"/>
+<polygon points="-90,610 500,40 1090,610" fill="url(#gm)"/><polygon points="500,40 425,115 470,100 500,128 535,100 580,115" fill="#fff"/>
+<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+<polyline points="${pts.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#c98a4b" stroke-width="5" stroke-dasharray="3 12" stroke-linecap="round"/>`;
+pts.forEach((p,i)=>{if(i)s+=`<circle cx="${p[0]}" cy="${p[1]}" r="7" fill="${i%5?'#ffe3b8':'#ff8a1f'}" stroke="#fff" stroke-width="2"/>`});
+Object.keys(G.rw).forEach(k=>{const p=pts[k];s+=`<text id="rw${k}" x="${p[0]}" y="${p[1]-14}" font-size="34" text-anchor="middle">${RW[G.rw[k]].e}</text>`});
+s+=`<text x="${pts[N][0]}" y="${pts[N][1]-12}" font-size="46" text-anchor="middle">🚩</text><g id="climber"><text font-size="46" text-anchor="middle" y="-6">🧗</text></g>`;
+$('#scene').innerHTML=s;const c=$('#climber');c.style.transition='none';c.style.transform=`translate(${pts[0][0]}px,${pts[0][1]}px)`;void c.getBoundingClientRect();c.style.transition=''}
+function newGame(){const name=$('#nm').value.trim();G={name,list:shuffle(Q).slice(0,N),i:0,score:0,streak:0,shield:0,right:0,lock:false,rw:{}};
+const types=['star','gem','shield','chest','star','gem','chest','shield','star'];shuffle(Array.from({length:28},(_,i)=>i+2)).slice(0,9).forEach((k,j)=>G.rw[k]=types[j]);
+buildScene();sfx.go();showQ()}
+function hud(){$('#hN').textContent=G.name;$('#hS').textContent=G.score;$('#hK').textContent=G.streak+(G.streak>1?' 🔥':'');$('#hD').textContent=G.shield?'🛡️×'+G.shield:'0';$('#pg').style.width=(G.i/N*100)+'%'}
+function showQ(){show('#sQuiz');const q=G.list[G.i];$('#qNo').textContent=`CÂU ${G.i+1} / ${N} · chặng ${G.i+1}`;$('#qTx').textContent=q[0];$('#fb').textContent='';$('#fb').style.color='';
+[$('#bT'),$('#bF')].forEach(b=>{b.disabled=false;b.className=b.id=='bT'?'bt':'bf'});G.lock=false;hud()}
+function answer(v){if(G.lock)return;G.lock=true;const q=G.list[G.i],ok=v===q[1];$('#bT').disabled=$('#bF').disabled=true;(v?$('#bT'):$('#bF')).classList.add('pick');(q[1]?$('#bT'):$('#bF')).classList.add('right');
+const fb=$('#fb');let msg;
+if(ok){G.right++;G.streak++;const bonus=Math.min(G.streak-1,5)*2;G.score+=10+bonus;msg=`🎉 Chính xác! +${10+bonus} điểm`+(bonus?` (chuỗi ${G.streak} 🔥)`:'');fb.style.color='var(--ok)';sfx.ok();flash('#6df0a8')}
+else{if(G.shield>0){G.shield--;msg=`🛡️ Chưa đúng — khiên đã giữ chuỗi cho em! Đáp án: ${q[1]?'ĐÚNG':'SAI'}`}else{G.streak=0;msg=`😅 Chưa đúng. Đáp án là ${q[1]?'ĐÚNG':'SAI'}`}fb.style.color='var(--no)';sfx.no();flash('#ff8a8f');$('#qBox').classList.remove('shake');void $('#qBox').offsetWidth;$('#qBox').classList.add('shake')}
+fb.textContent=msg;hud();setTimeout(()=>climb(ok),1300)}
+function toast(t,ms=1500){const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),ms)}
+function chud(){$('#cStep').textContent=`⛰️ Chặng ${G.i}/${N}`;$('#cScore').textContent=`⭐ ${G.score} điểm`;$('#cShield').textContent=G.shield?`🛡️ ×${G.shield}`:'🧗 '+G.name}
+function climb(ok){show('#sClimb');chud();const c=$('#climber');
+setTimeout(()=>{G.i++;const p=pts[G.i];c.style.transform=`translate(${p[0]}px,${p[1]}px)`;sfx.step();setTimeout(sfx.step,300);setTimeout(sfx.step,600)},500);
+setTimeout(()=>{chud();const r=c.getBoundingClientRect(),x=r.left+r.width/2,y=r.top;const k=G.rw[G.i];let ms=700;
+if(G.i>=N){sfx.win();flash('#ffd54a');burst(x,y,['🎉','⭐','✨','🎊'],36);toast('🚩 Đã lên đến đỉnh núi!',1800);setTimeout(end,2200);return}
+if(k){const rk=G.rw[k];let t=RW[rk].t;if(rk=='star')G.score+=5;else if(rk=='gem')G.score+=15;else if(rk=='shield')G.shield++;else{const b=10+Math.floor(Math.random()*21);G.score+=b;t=`Rương báu! +${b} điểm`}
+const m=$('#rw'+G.i);if(m)m.style.display='none';sfx.gift();flash('#ffe28a');burst(x,y,['⭐','✨',RW[rk].e]);toast(RW[rk].e+' '+t,1500);ms=1800;chud()}
+else if(!ok)toast('Trượt chân nhẹ nhưng vẫn tiến lên! 💪',1000);
+setTimeout(showQ,ms+300)},1750)}
+function end(){show('#sEnd');$('#eN').textContent=`Chúc mừng ${G.name}!`;$('#eS').textContent=G.score+' điểm';$('#eD').textContent=`Đúng ${G.right}/${N} câu`;const p=G.right/N;$('#eR').textContent=p>=.9?'🥇 Nhà leo núi xuất sắc!':p>=.7?'🥈 Nhà leo núi giỏi!':p>=.5?'🥉 Nhà leo núi khá!':'🌱 Cố gắng hơn ở lần sau nhé!';
+let b=0;try{b=+localStorage.getItem('lntt_best')||0;if(G.score>b){b=G.score;localStorage.setItem('lntt_best',b)}}catch(e){}
+$('#eD').textContent+=b?` · Điểm cao nhất: ${b}`:'';sfx.win();burst(innerWidth/2,innerHeight/3,['🎉','🎊','⭐'],30)}
+function start(){const v=$('#nm').value.trim();if(!v){$('#nm').focus();$('#nm').style.borderColor='var(--no)';return}newGame()}
+$('#bStart').onclick=start;$('#nm').onkeydown=e=>{if(e.key=='Enter')start()};
+$('#bT').onclick=()=>answer(1);$('#bF').onclick=()=>answer(0);
+$('#bAgain').onclick=()=>{newGame()};
+document.addEventListener('keydown',e=>{if(!$('#sQuiz').classList.contains('on'))return;if(e.key=='ArrowLeft'||e.key.toLowerCase()=='d')answer(1);if(e.key=='ArrowRight'||e.key.toLowerCase()=='s')answer(0)});
+$('#snd').onclick=()=>{mute=!mute;$('#snd').textContent=mute?'🔇':'🔊'};
+$('#fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+try{const b=+localStorage.getItem('lntt_best');if(b)$('#best').textContent='🏅 Điểm cao nhất: '+b}catch(e){}
+</script></body></html>
