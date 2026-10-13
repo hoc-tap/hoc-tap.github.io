@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" data-theme="light">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,52 +9,81 @@
   <style>
     /* ── Tokens ──────────────────────────────────────────────── */
     :root {
-      --bg:        #edf2f8;
-      --bg2:       #f8fafc;
-      --surface:   #ffffff;
-      --border:    #dce4ed;
-      --text:      #17251f;
-      --text2:     #4a5e54;
-      --green:     #087938;
-      --green-lt:  #e5f5eb;
-      --shadow:    rgba(30, 50, 74, .07);
-      --nav-bg:    rgba(248,250,253,.95);
-      --card-bg:   rgba(255,255,255,.95);
-      --lesson-bg: linear-gradient(180deg,#fff,#f9fbfa);
+      --bg: #edf2f8;
+      --bg2: #f8fafc;
+      --surface: #ffffff;
+      --border: #dce4ed;
+      --text: #17251f;
+      --text2: #4a5e54;
+      --green: #087938;
+      --green-lt: #e5f5eb;
+      --shadow: rgba(30, 50, 74, .07);
+      --nav-bg: rgba(248, 250, 253, .95);
+      --card-bg: rgba(255, 255, 255, .95);
+      --lesson-bg: linear-gradient(180deg, #fff, #f9fbfa);
       --lesson-hover: #f2fbf4;
-      --badge-bg:  #075a39;
+      --badge-bg: #075a39;
       color-scheme: light;
     }
+
     [data-theme="dark"] {
-      --bg:        #111a14;
-      --bg2:       #151f18;
-      --surface:   #1c2820;
-      --border:    #2c3d32;
-      --text:      #d8ede0;
-      --text2:     #7aaa8a;
-      --green:     #45c47a;
-      --green-lt:  #183023;
-      --shadow:    rgba(0,0,0,.3);
-      --nav-bg:    rgba(17,26,20,.96);
-      --card-bg:   rgba(28,40,32,.97);
-      --lesson-bg: linear-gradient(180deg,#1e2e22,#192619);
+      --bg: #111a14;
+      --bg2: #151f18;
+      --surface: #1c2820;
+      --border: #2c3d32;
+      --text: #d8ede0;
+      --text2: #7aaa8a;
+      --green: #45c47a;
+      --green-lt: #183023;
+      --shadow: rgba(0, 0, 0, .3);
+      --nav-bg: rgba(17, 26, 20, .96);
+      --card-bg: rgba(28, 40, 32, .97);
+      --lesson-bg: linear-gradient(180deg, #1e2e22, #192619);
       --lesson-hover: #1e3324;
-      --badge-bg:  #1f6640;
+      --badge-bg: #1f6640;
       color-scheme: dark;
     }
 
     /* ── Reset ───────────────────────────────────────────────── */
-    *,::before,::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-family: Inter,"Segoe UI",Arial,sans-serif; font-size: 16px;
-           -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-    body { min-height: 100vh; background: var(--bg); color: var(--text);
-           display: flex; flex-direction: column; }
-    a { color: inherit; text-decoration: none; }
-    button, input { font: inherit; color: inherit; }
+    *,
+    ::before,
+    ::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+      color: inherit;
+    }
 
     /* ── Navbar ──────────────────────────────────────────────── */
     .navbar {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
@@ -67,28 +97,60 @@
 
     /* Brand */
     .brand {
-      display: flex; align-items: center; gap: 11px;
-      white-space: nowrap; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-    .brand-leaf { width: 36px; height: 40px; flex: 0 0 auto; }
-    .brand-copy { display: flex; flex-direction: column; line-height: 1.2; }
+
+    .brand-leaf {
+      width: 36px;
+      height: 40px;
+      flex: 0 0 auto;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
     .brand-name {
-      font-size: 1.18rem; font-weight: 800; letter-spacing: .02em;
-      text-transform: uppercase; color: var(--green);
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: var(--green);
     }
-    .brand-sub { font-size: .75rem; color: var(--text2); font-weight: 500; }
+
+    .brand-sub {
+      font-size: .75rem;
+      color: var(--text2);
+      font-weight: 500;
+    }
 
     /* Search */
     .search-area {
-      max-width: 480px; width: 100%;
-      position: relative; justify-self: center;
+      max-width: 480px;
+      width: 100%;
+      position: relative;
+      justify-self: center;
     }
+
     .search-area .g-logo {
-      position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
-      width: 20px; height: 20px; pointer-events: none;
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
     }
+
     .search-box {
-      width: 100%; height: 40px;
+      width: 100%;
+      height: 40px;
       padding: 0 14px 0 40px;
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -99,37 +161,83 @@
       outline: none;
       transition: border-color .18s, box-shadow .18s;
     }
-    .search-box:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(8,121,56,.15); }
-    .search-box::placeholder { color: var(--text2); }
+
+    .search-box:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(8, 121, 56, .15);
+    }
+
+    .search-box::placeholder {
+      color: var(--text2);
+    }
 
     /* Actions */
     .nav-actions {
-      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
+
     .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 6px; height: 36px; padding: 0 14px;
-      border: 1px solid var(--border); border-radius: 8px;
-      background: transparent; cursor: pointer; font-size: .82rem; font-weight: 650;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-size: .82rem;
+      font-weight: 650;
       transition: background .15s, border-color .15s;
       white-space: nowrap;
     }
-    .btn:hover { background: var(--green-lt); border-color: var(--green); }
-    .btn.icon-btn { width: 36px; padding: 0; }
-    .btn.game-btn { color: var(--green); border-color: var(--green); }
-    .btn.game-btn:hover { background: var(--green); color: #fff; }
+
+    .btn:hover {
+      background: var(--green-lt);
+      border-color: var(--green);
+    }
+
+    .btn.icon-btn {
+      width: 36px;
+      padding: 0;
+    }
+
+    .btn.game-btn {
+      color: var(--green);
+      border-color: var(--green);
+    }
+
+    .btn.game-btn:hover {
+      background: var(--green);
+      color: #fff;
+    }
 
     /* Dark/Light toggle */
-    .theme-btn svg { pointer-events: none; }
+    .theme-btn svg {
+      pointer-events: none;
+    }
 
     /* ── Main content ────────────────────────────────────────── */
-    .main { flex: 1; width: 100%; max-width: 1780px;
-            align-self: center; padding: 20px clamp(12px,3vw,44px) 28px; }
+    .main {
+      flex: 1;
+      width: 100%;
+      max-width: 1780px;
+      align-self: center;
+      padding: 20px clamp(12px, 3vw, 44px) 28px;
+    }
 
     /* Status row */
     .statusbar {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 14px; font-size: .78rem; color: var(--text2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      font-size: .78rem;
+      color: var(--text2);
     }
 
     /* ── Grade grid (4 cols) ─────────────────────────────────── */
@@ -141,36 +249,58 @@
 
     /* For 7 grades arranged in 4 cols: rows are calculated automatically */
     .grade-card {
-      display: flex; flex-direction: column;
-      border: 1px solid var(--border); border-radius: 12px;
-      background: var(--card-bg); overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card-bg);
+      overflow: hidden;
       box-shadow: 0 3px 10px var(--shadow);
       height: calc(100vh - 180px);
       min-height: 520px;
     }
+
     .grade-header {
-      position: sticky; top: 0; z-index: 2;
+      position: sticky;
+      top: 0;
+      z-index: 2;
       flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
       padding: 12px 10px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      font-weight: 750; font-size: clamp(.95rem,1.3vw,1.15rem);
+      font-weight: 750;
+      font-size: clamp(.95rem, 1.3vw, 1.15rem);
       color: var(--green);
     }
+
     .grade-num {
-      display: inline-grid; place-items: center;
-      width: 26px; height: 26px; border-radius: 50%;
-      background: var(--green); color: #fff; font-size: .82rem; font-weight: 800;
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #fff;
+      font-size: .82rem;
+      font-weight: 800;
     }
+
     .lesson-list {
       flex: 1 1 auto;
       min-height: 0;
       overflow-y: auto;
       padding: 8px 8px 12px;
-      display: flex; flex-direction: column; gap: 6px;
-      scrollbar-color: #c9d6cb transparent; scrollbar-width: thin;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      scrollbar-color: #c9d6cb transparent;
+      scrollbar-width: thin;
     }
+
     /* ── Bai accordion ───────────────────────────────────────── */
     .bai-group {
       flex-shrink: 0;
@@ -180,6 +310,7 @@
       background: var(--surface);
       transition: border-color .15s;
     }
+
     .bai-group:hover {
       border-color: #a8cfb1;
     }
@@ -201,7 +332,11 @@
       color: var(--text);
       transition: background .14s;
     }
-    .bai-toggle:hover { background: var(--lesson-hover); }
+
+    .bai-toggle:hover {
+      background: var(--lesson-hover);
+    }
+
     .bai-toggle[aria-expanded="true"] {
       background: var(--green-lt);
       border-bottom: 1px solid var(--border);
@@ -221,10 +356,12 @@
       font-weight: 750;
       line-height: 1;
     }
+
     .bai-title {
       font-size: .84rem;
       color: var(--text);
     }
+
     .bai-arrow {
       margin-left: auto;
       flex-shrink: 0;
@@ -232,7 +369,11 @@
       transition: transform .18s;
       color: var(--text2);
     }
-    .bai-toggle[aria-expanded="true"] .bai-arrow { transform: rotate(90deg); }
+
+    .bai-toggle[aria-expanded="true"] .bai-arrow {
+      transform: rotate(90deg);
+    }
+
     .bai-file-count {
       color: var(--green);
       font-size: .75rem;
@@ -247,7 +388,10 @@
       background: var(--bg2);
       padding: 6px 8px 8px 14px;
     }
-    .bai-files.open { display: flex; }
+
+    .bai-files.open {
+      display: flex;
+    }
 
     .file-link {
       display: flex;
@@ -263,48 +407,103 @@
       background: var(--surface);
       transition: background .12s, color .12s, border-color .12s;
     }
+
     .file-link:hover {
       background: var(--lesson-hover);
       border-color: #a8cfb1;
       color: var(--green);
     }
-    .file-icon { flex-shrink: 0; font-size: .85rem; }
+
+    .file-icon {
+      flex-shrink: 0;
+      font-size: .85rem;
+    }
+
     .file-empty {
       padding: 6px 8px;
       font-size: .75rem;
       color: var(--text2);
       font-style: italic;
     }
-    .bai-loading { color: var(--text2); font-size: .75rem; padding: 6px 8px; font-style: italic; }
 
-    .bai-group[hidden] { display: none; }
-    .grade-card[hidden] { display: none; }
+    .bai-loading {
+      color: var(--text2);
+      font-size: .75rem;
+      padding: 6px 8px;
+      font-style: italic;
+    }
+
+    .bai-group[hidden] {
+      display: none;
+    }
+
+    .grade-card[hidden] {
+      display: none;
+    }
 
     /* ── Footer ──────────────────────────────────────────────── */
     .footer {
-      text-align: center; padding: 14px 16px;
-      font-size: .74rem; color: var(--text2);
+      text-align: center;
+      padding: 14px 16px;
+      font-size: .74rem;
+      color: var(--text2);
       border-top: 1px solid var(--border);
     }
 
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 900px) {
-      .navbar { grid-template-columns: auto auto; }
-      .search-area { grid-column: 1 / -1; grid-row: 2; max-width: 100%; justify-self: stretch; }
-      .grade-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .navbar {
+        grid-template-columns: auto auto;
+      }
+
+      .search-area {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        max-width: 100%;
+        justify-self: stretch;
+      }
+
+      .grade-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
+
     @media (max-width: 600px) {
-      .brand-name { font-size: 1rem; }
-      .grade-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; }
-      .grade-card { height: calc(100vh - 200px); min-height: 420px; }
-      .btn { font-size: .76rem; height: 32px; padding: 0 10px; }
+      .brand-name {
+        font-size: 1rem;
+      }
+
+      .grade-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+
+      .grade-card {
+        height: calc(100vh - 200px);
+        min-height: 420px;
+      }
+
+      .btn {
+        font-size: .76rem;
+        height: 32px;
+        padding: 0 10px;
+      }
     }
+
     @media (max-width: 420px) {
-      .grade-grid { grid-template-columns: 1fr; }
-      .grade-card { height: auto; max-height: none; min-height: unset; }
+      .grade-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .grade-card {
+        height: auto;
+        max-height: none;
+        min-height: unset;
+      }
     }
   </style>
 </head>
+
 <body>
 
   <!-- ════════════════ NAVBAR ════════════════ -->
@@ -313,9 +512,10 @@
     <!-- Brand -->
     <a class="brand" href="./" aria-label="KHO HỌC LIỆU – Thầy Minh, về trang chủ">
       <svg class="brand-leaf" viewBox="0 0 48 52" role="img" aria-label="Logo chiếc lá">
-        <path fill="#167c3c" d="M12 7C4 13 3 27 11 35c2-8 5-15 11-22-3-3-6-5-10-6Z"/>
-        <path fill="#63b54b" d="M41 4C24 5 12 15 10 31c-1 9 3 15 8 18 0-13 6-24 23-34-4 11-12 19-22 27 17-1 29-15 27-38l-5 0Z"/>
-        <path fill="#a4d778" d="M18 45c3-11 10-20 21-28-8 10-13 19-15 29l-6-1Z"/>
+        <path fill="#167c3c" d="M12 7C4 13 3 27 11 35c2-8 5-15 11-22-3-3-6-5-10-6Z" />
+        <path fill="#63b54b"
+          d="M41 4C24 5 12 15 10 31c-1 9 3 15 8 18 0-13 6-24 23-34-4 11-12 19-22 27 17-1 29-15 27-38l-5 0Z" />
+        <path fill="#a4d778" d="M18 45c3-11 10-20 21-28-8 10-13 19-15 29l-6-1Z" />
       </svg>
       <span class="brand-copy">
         <span class="brand-name">KHO HỌC LIỆU</span>
@@ -326,15 +526,16 @@
     <!-- Search (Google) -->
     <div class="search-area" role="search">
       <svg class="g-logo" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#4285F4" d="M21.35 12.2c0-.7-.06-1.37-.18-2.02H12v3.82h5.24a4.48 4.48 0 0 1-1.94 2.94v2.4h3.14c1.84-1.7 2.91-4.2 2.91-7.14Z"/>
-        <path fill="#34A853" d="M12 21.7c2.63 0 4.83-.87 6.44-2.36l-3.14-2.4c-.87.58-1.98.92-3.3.92-2.54 0-4.7-1.72-5.47-4.04H3.28v2.47A9.72 9.72 0 0 0 12 21.7Z"/>
-        <path fill="#FBBC05" d="M6.53 13.82a5.84 5.84 0 0 1 0-3.64V7.71H3.28a9.72 9.72 0 0 0 0 8.58l3.25-2.47Z"/>
-        <path fill="#EA4335" d="M12 6.14c1.43 0 2.71.49 3.72 1.47l2.79-2.79C16.82 3.2 14.63 2.3 12 2.3a9.72 9.72 0 0 0-8.72 5.41l3.25 2.47c.77-2.32 2.93-4.04 5.47-4.04Z"/>
+        <path fill="#4285F4"
+          d="M21.35 12.2c0-.7-.06-1.37-.18-2.02H12v3.82h5.24a4.48 4.48 0 0 1-1.94 2.94v2.4h3.14c1.84-1.7 2.91-4.2 2.91-7.14Z" />
+        <path fill="#34A853"
+          d="M12 21.7c2.63 0 4.83-.87 6.44-2.36l-3.14-2.4c-.87.58-1.98.92-3.3.92-2.54 0-4.7-1.72-5.47-4.04H3.28v2.47A9.72 9.72 0 0 0 12 21.7Z" />
+        <path fill="#FBBC05" d="M6.53 13.82a5.84 5.84 0 0 1 0-3.64V7.71H3.28a9.72 9.72 0 0 0 0 8.58l3.25-2.47Z" />
+        <path fill="#EA4335"
+          d="M12 6.14c1.43 0 2.71.49 3.72 1.47l2.79-2.79C16.82 3.2 14.63 2.3 12 2.3a9.72 9.72 0 0 0-8.72 5.41l3.25 2.47c.77-2.32 2.93-4.04 5.47-4.04Z" />
       </svg>
-      <input id="search-box" class="search-box" type="text" readonly
-             placeholder="Bấm để tìm kiếm trên Google..."
-             aria-label="Bấm để mở Google tìm kiếm"
-             placeholder="Bấm để tìm kiếm trên Google...">
+      <input id="search-box" class="search-box" type="text" readonly placeholder="Bấm để tìm kiếm trên Google..."
+        aria-label="Bấm để mở Google tìm kiếm" placeholder="Bấm để tìm kiếm trên Google...">
     </div>
 
     <!-- Actions -->
@@ -343,24 +544,35 @@
       <a id="game-btn" class="btn game-btn" href="./tro-choi/">🧠 Trò chơi trí tuệ</a>
 
       <!-- Dark / Light mode -->
-      <button id="theme-btn" class="btn icon-btn theme-btn" type="button"
-              aria-label="Chuyển chế độ tối/sáng" title="Sáng / Tối">
-        <svg id="icon-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      <button id="theme-btn" class="btn icon-btn theme-btn" type="button" aria-label="Chuyển chế độ tối/sáng"
+        title="Sáng / Tối">
+        <svg id="icon-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
         </svg>
-        <svg id="icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        <svg id="icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
       </button>
 
       <!-- Fullscreen -->
-      <button id="fs-btn" class="btn icon-btn" type="button"
-              aria-label="Bật toàn màn hình" title="Toàn màn hình">
-        <svg id="icon-fs-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/>
+      <button id="fs-btn" class="btn icon-btn" type="button" aria-label="Bật toàn màn hình" title="Toàn màn hình">
+        <svg id="icon-fs-expand" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5" />
         </svg>
-        <svg id="icon-fs-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
-          <path d="M8 8H3M8 3v5M16 8h5M16 3v5M16 16h5M16 21v-5M8 16H3M8 21v-5"/>
+        <svg id="icon-fs-collapse" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+          <path d="M8 8H3M8 3v5M16 8h5M16 3v5M16 16h5M16 21v-5M8 16H3M8 21v-5" />
         </svg>
       </button>
     </nav>
@@ -388,18 +600,18 @@
   <!-- ════════════════ SCRIPT ════════════════ -->
   <script>
     /* ── State ───────────────────────────────────────────────── */
-    let isDark    = false;
+    let isDark = false;
 
     /* ── Elements ────────────────────────────────────────────── */
-    const html         = document.documentElement;
-    const gradeGrid    = document.getElementById('grade-grid');
-    const searchBox    = document.getElementById('search-box');
-    const countLabel   = document.getElementById('count-label');
-    const themeBtn     = document.getElementById('theme-btn');
-    const iconSun      = document.getElementById('icon-sun');
-    const iconMoon     = document.getElementById('icon-moon');
-    const fsBtn        = document.getElementById('fs-btn');
-    const iconExpand   = document.getElementById('icon-fs-expand');
+    const html = document.documentElement;
+    const gradeGrid = document.getElementById('grade-grid');
+    const searchBox = document.getElementById('search-box');
+    const countLabel = document.getElementById('count-label');
+    const themeBtn = document.getElementById('theme-btn');
+    const iconSun = document.getElementById('icon-sun');
+    const iconMoon = document.getElementById('icon-moon');
+    const fsBtn = document.getElementById('fs-btn');
+    const iconExpand = document.getElementById('icon-fs-expand');
     const iconCollapse = document.getElementById('icon-fs-collapse');
 
     /* ── Static lesson data (generated from local filesystem) ──
@@ -407,33 +619,140 @@
     ────────────────────────────────────────────────────────── */
     const GRADE_DATA = {
       3: {
-        "bai-01": ["google_maps_satellite_embed (1).html", "kiem_tra_tin_8_GHKI (3).html", "test-nop-bai.html"],
-        "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [
+          "b_i_ki_m_tra_tin_h_c_6.html",
+          "b_i_ki_m_tra_tr_c_nghi_m_chinh_ph_c_nh_cao.html",
+          "google_maps_satellite_embed (1).html",
+          "kiem_tra_tin_8_GHKI (3).html",
+          "mo phong.html",
+          "mo_phong_hinh_hoc_lop_6.html",
+          "Qwen_html_20261008_fddwh13x8.html",
+          "sssss.html",
+          "test-nop-bai.html"
+        ],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       },
       4: {
-        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       },
       5: {
-        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       },
       6: {
-        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       },
       7: {
-        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       },
       8: {
-        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       },
       9: {
-        "bai-01": [], "bai-02": [], "bai-03": [], "bai-04": [], "bai-05": [], "bai-06": [], "bai-07": [], "bai-08": [],
-        "bai-09": [], "bai-10": [], "bai-11": [], "bai-12": [], "bai-13": [], "bai-14": [], "bai-15": [], "bai-16": []
+        "bai-01": [],
+        "bai-02": [],
+        "bai-03": [],
+        "bai-04": [],
+        "bai-05": [],
+        "bai-06": [],
+        "bai-07": [],
+        "bai-08": [],
+        "bai-09": [],
+        "bai-10": [],
+        "bai-11": [],
+        "bai-12": [],
+        "bai-13": [],
+        "bai-14": [],
+        "bai-15": [],
+        "bai-16": []
       }
     };
 
@@ -494,14 +813,14 @@
 
     /* ── Build one bai-group ─────────────────────────────────── */
     function makeBaiGroup(baiName, grade) {
-      const num   = parseInt(baiName.replace('bai-', ''), 10);
+      const num = parseInt(baiName.replace('bai-', ''), 10);
       const files = (GRADE_DATA[grade] || {})[baiName] || [];
       const label = `Bài ${num}`;
 
       const group = document.createElement('div');
       group.className = 'bai-group';
-      group.dataset.bai    = baiName;
-      group.dataset.grade  = String(grade);
+      group.dataset.bai = baiName;
+      group.dataset.grade = String(grade);
       group.dataset.search = `bai ${num} lop ${grade} lesson ${num} grade ${grade}`;
 
       const toggle = document.createElement('button');
@@ -563,7 +882,7 @@
       const list = document.createElement('div');
       list.className = 'lesson-list';
 
-      const baiNames = Object.keys(GRADE_DATA[grade] || {}).sort((a,b) => a.localeCompare(b, 'vi'));
+      const baiNames = Object.keys(GRADE_DATA[grade] || {}).sort((a, b) => a.localeCompare(b, 'vi'));
       if (baiNames.length === 0) {
         const p = document.createElement('p');
         p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
@@ -586,116 +905,17 @@
       updateCount();
     }
 
-    /* ── Tự động quét file từ repo ──────────────────────────────────
-       Thứ tự: 1) Cache localStorage (TTL 30 phút)
-               2) GitHub Trees API
-               3) jsDelivr CDN (fallback nếu GitHub bị rate-limit)
-    ─────────────────────────────────────────────────────────────── */
-    const CACHE_KEY = 'hoc-tap-tree';
-    const CACHE_TTL = 30 * 60 * 1000; // 30 phút
-
-    function applyTree(paths) {
-      let hasNewFile = false;
-      paths.forEach(path => {
-        const m = path.match(/^tin-hoc-(\d+)\/(bai-\d+)\/([^/]+\.html?)$/i);
-        if (m) {
-          const [, gStr, bStr, fileName] = m;
-          const g = parseInt(gStr, 10);
-          if (!GRADE_DATA[g]) GRADE_DATA[g] = {};
-          if (!GRADE_DATA[g][bStr]) GRADE_DATA[g][bStr] = [];
-          if (!GRADE_DATA[g][bStr].includes(fileName)) {
-            GRADE_DATA[g][bStr].push(fileName);
-            hasNewFile = true;
-          }
-        }
-      });
-      if (hasNewFile) {
-        document.querySelectorAll('.bai-group').forEach(group => {
-          const g  = parseInt(group.dataset.grade, 10);
-          const bn = group.dataset.bai;
-          const files = (GRADE_DATA[g] || {})[bn] || [];
-          const countEl = group.querySelector('.bai-file-count');
-          if (countEl) countEl.textContent = files.length > 0 ? `(${files.length})` : '';
-          const filesEl = group.querySelector('.bai-files');
-          if (filesEl && filesEl.classList.contains('open')) renderBaiFiles(filesEl, g, bn);
-        });
-        updateCount();
-      }
-    }
-
-    async function fetchFromGitHub() {
-      const res = await fetch(
-        'https://api.github.com/repos/hoc-tap/hoc-tap.github.io/git/trees/main?recursive=1',
-        { headers: { 'Accept': 'application/vnd.github+json' } }
-      );
-      if (!res.ok) throw new Error('GitHub API ' + res.status);
-      const data = await res.json();
-      if (!data || !Array.isArray(data.tree)) throw new Error('GitHub: dữ liệu không hợp lệ');
-      return data.tree
-        .filter(item => item.type === 'blob' && item.path)
-        .map(item => item.path);
-    }
-
-    async function fetchFromJsdelivr() {
-      const res = await fetch(
-        `https://data.jsdelivr.com/v1/package/gh/hoc-tap/hoc-tap.github.io@main/flat`
-      );
-      if (!res.ok) throw new Error('jsDelivr ' + res.status);
-      const data = await res.json();
-      if (!data || !Array.isArray(data.files)) throw new Error('jsDelivr: dữ liệu không hợp lệ');
-      // jsDelivr trả về path có dấu "/" đầu → bỏ đi
-      return data.files.map(f => f.name.replace(/^\//, ''));
-    }
-
-    async function autoFetchLessons() {
-      try {
-        // 1️⃣ Kiểm tra cache localStorage trước
-        const raw = localStorage.getItem(CACHE_KEY);
-        if (raw) {
-          const { ts, paths } = JSON.parse(raw);
-          if (Date.now() - ts < CACHE_TTL) {
-            applyTree(paths);
-            return; // Dùng cache, không cần gọi API
-          }
-        }
-      } catch (_) {}
-
-      // 2️⃣ Gọi GitHub API
-      let paths = null;
-      try {
-        paths = await fetchFromGitHub();
-      } catch (err) {
-        console.warn('GitHub API lỗi, thử jsDelivr...', err.message);
-        // 3️⃣ Fallback jsDelivr
-        try {
-          paths = await fetchFromJsdelivr();
-        } catch (err2) {
-          console.info('Không thể tải danh sách bài học.', err2.message);
-          return;
-        }
-      }
-
-      if (paths) {
-        applyTree(paths);
-        // Lưu vào cache localStorage
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), paths }));
-        } catch (_) {}
-      }
-    }
-
-
     /* ── Count ───────────────────────────────────────────────── */
     function updateCount() {
-      const cards  = gradeGrid.querySelectorAll('.grade-card:not([hidden])');
+      const cards = gradeGrid.querySelectorAll('.grade-card:not([hidden])');
       const groups = gradeGrid.querySelectorAll('.bai-group:not([hidden])');
       countLabel.textContent = `${groups.length} bài học · ${cards.length} lớp`;
     }
 
     /* ── Theme ───────────────────────────────────────────────── */
     function applyTheme() {
-      html.dataset.theme    = isDark ? 'dark' : 'light';
-      iconSun.style.display  = isDark ? 'none' : '';
+      html.dataset.theme = isDark ? 'dark' : 'light';
+      iconSun.style.display = isDark ? 'none' : '';
       iconMoon.style.display = isDark ? '' : 'none';
       themeBtn.title = isDark
         ? 'Chế độ Sáng'
@@ -703,23 +923,23 @@
     }
 
     /* ── Events ──────────────────────────────────────────────── */
-    searchBox.addEventListener('click',   () => { window.location.href = 'https://www.google.com.vn/'; });
-    searchBox.addEventListener('keydown', e  => { if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/'; });
+    searchBox.addEventListener('click', () => { window.location.href = 'https://www.google.com.vn/'; });
+    searchBox.addEventListener('keydown', e => { if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/'; });
 
     themeBtn.addEventListener('click', () => {
       isDark = !isDark; applyTheme();
-      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(_) {}
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) { }
     });
 
     fsBtn.addEventListener('click', async () => {
       try {
         if (document.fullscreenElement) await document.exitFullscreen();
         else await document.documentElement.requestFullscreen();
-      } catch (_) {}
+      } catch (_) { }
     });
     document.addEventListener('fullscreenchange', () => {
       const full = Boolean(document.fullscreenElement);
-      iconExpand.style.display   = full ? 'none' : '';
+      iconExpand.style.display = full ? 'none' : '';
       iconCollapse.style.display = full ? '' : 'none';
       fsBtn.setAttribute('aria-label', full
         ? 'Thoát toàn màn hình'
@@ -731,12 +951,12 @@
       try {
         const saved = localStorage.getItem('theme');
         isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      } catch(_) {}
+      } catch (_) { }
       applyTheme();
       renderAllGrades();
-      autoFetchLessons();
     })();
   </script>
 
 </body>
+
 </html>
