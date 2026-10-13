@@ -93,6 +93,8 @@ aside.col{overflow-y:auto;overflow-x:hidden}
 #tlx span{color:var(--mu);font-weight:700;margin-right:.6em}#tlx i{font-style:normal;margin-right:.9em}#tlx i:last-child{margin-right:0}#tlx b{color:var(--ac)}
 #ti{height:clamp(84px,16.5vh,150px);font-size:clamp(20px,3.4vh,30px);line-height:1.4;background:#fff;color:#0f172a;caret-color:#2563eb;border:2px solid #cbd5e1;padding:10px 14px}
 #ti:focus{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb33}#ti::placeholder{color:#94a3b8}
+#hint.bd{font-size:15px;font-weight:700;color:var(--er)}#hint.bd b{color:var(--er)}
+#ti.er{border-color:#ef4444;box-shadow:0 0 0 3px #ef444455}
 </style></head><body>
 <div id="app">
 <aside class="col">
@@ -132,7 +134,7 @@ const FM={};FING.forEach((f,i)=>[...f[2]].forEach(c=>FM[c]=i));
 const SH={'!':'1','@':'2','#':'3','$':'4','%':'5','^':'6','&':'7','*':'8','(':'9',')':'0','_':'-','+':'=','{':'[','}':']',':':';','"':"'",'<':',','>':'.','?':'/','|':'\\','~':'`'};
 const BASE=c=>SH[c]||c.toLowerCase(),NS=c=>!!SH[c]||c!==c.toLowerCase();
 const KE={};
-(function(){const R=[[...'`1234567890-=',['Bksp',2]],[['Tab',1.5],...'qwertyuiop[]\\'],[['Caps',1.8],...'asdfghjkl;\'',['Enter',2.3]],[['Shift',2.4,'shl'],...'zxcvbnm,./',['Shift',2.9,'shr']],[['Ctrl',1.3],['Alt',1.3],['Space',7,' '],['Alt',1.3],['Ctrl',1.3]]];
+(function(){const R=[[...'`1234567890-=',['←',2,'bk']],[['Tab',1.5],...'qwertyuiop[]\\'],[['Caps',1.8],...'asdfghjkl;\'',['Enter',2.3]],[['Shift',2.4,'shl'],...'zxcvbnm,./',['Shift',2.9,'shr']],[['Ctrl',1.3],['Alt',1.3],['Space',7,' '],['Alt',1.3],['Ctrl',1.3]]];
 R.forEach(r=>{const d=document.createElement('div');d.className='kr';r.forEach(it=>{const k=document.createElement('div');let id;
  if(typeof it=='string'){k.className='k'+('fj'.includes(it)?' b':'');k.textContent=it;id=it;k.style.setProperty('--c',FING[FM[it]][1])}
  else{k.className='k'+(it[2]==' '?'':' m');k.textContent=it[0];k.style.flexGrow=it[1];id=it[2];if(id==' ')k.style.setProperty('--c',FING[4][1])}
@@ -195,8 +197,10 @@ const S={m:2,tx:'',i:0,er:0,t0:0,ac:0,pa:0,run:0,sp:[],h:Array(9).fill(0),e:Arra
 const st=()=>{const ms=S.ac+(S.t0?Date.now()-S.t0:0);return{ms,w:ms>0&&S.i?Math.round(S.i/5/(ms/60000)):0,a:S.ok+S.er?Math.round(S.ok/(S.ok+S.er)*100):100}};
 function draw(){const x=st(),s=Math.floor(x.ms/1000);$('#sw').textContent=x.w;$('#sa').textContent=x.a+'%';$('#stm').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');$('#sc').textContent=S.i+'/'+S.tx.length;$('#pg').style.width=(S.tx.length?S.i/S.tx.length*100:0)+'%';
  FING.forEach((f,i)=>{const p=S.h[i]?Math.round((S.h[i]-S.e[i])/S.h[i]*100):100;$('#fa'+i).textContent=p+'%';$('#fb'+i).style.width=p+'%'})}
-function hl(){document.querySelectorAll('.k.next,.fg.on,.fl.on,.f.on').forEach(x=>x.classList.remove('next','on'));
+function hl(){$('#hint').className='';document.querySelectorAll('.k.next,.fg.on,.fl.on,.f.on').forEach(x=>x.classList.remove('next','on'));
  if(!S.run||S.i>=S.tx.length){$('#hint').textContent=S.run?'':'Hoàn thành!';fingers({});return}
+ if(S.bd){const k=KE.bk;k.style.setProperty('--c',FING[8][1]);k.classList.add('next');document.querySelectorAll('[data-f="8"]').forEach(x=>x.classList.add('on'));
+  $('#hint').className='bd';$('#hint').innerHTML='❌ Gõ sai! Ấn nút <b>←</b> (Backspace) để xóa bằng <b>Ngón Út Phải</b>';fingers({8:k});return}
  const c=S.tx[S.i],ex=S.ks[S.j],b=BASE(ex),fi=FM[b],sh=NS(ex),f=FING[fi],on=i=>document.querySelectorAll('[data-f="'+i+'"]').forEach(x=>x.classList.add('on'));
  const tp={};tp[fi]=KE[b];KE[b]&&KE[b].classList.add('next');on(fi);let h='Gõ phím <b>'+(ex==' '?'Space':ex.toUpperCase())+'</b> bằng <b>Ngón '+f[0]+'</b>';
  if(sh){const si=fi<4?8:0,k=KE[fi<4?'shr':'shl'];k.style.setProperty('--c',FING[si][1]);k.classList.add('next');tp[si]=k;on(si);h+=' + giữ <b>Shift '+(fi<4?'phải':'trái')+'</b>'}
@@ -222,7 +226,7 @@ function sync(fk){if(!S.run||S.pa)return;const U=ti.value.replace(/[\r\n]/g,'').
  const fi=FM[BASE(S.ks[S.j]||'f')]??4;let i=0,M=0,bad=uw.length>tw.length,j=0;
  for(let w=0;w<tw.length&&w<uw.length;w++){const r=cmp(uw[w]+(w<uw.length-1?' ':''),tw[w],w<tw.length-1);i+=r.d;M+=r.n;if(r.bad)bad=true;if(r.d<r.nc||r.bad){j=r.j;break}}
  if(M>S.mx){const d=M-S.mx;S.ok+=d;S.h[fi]+=d;S.mx=M}
- const nb=bad&&!S.bd;if(nb){S.er++;S.e[fi]++;S.h[fi]++}S.bd=bad;
+ const nb=bad&&!S.bd;if(nb){S.er++;S.e[fi]++;S.h[fi]++}S.bd=bad;ti.classList.toggle('er',bad);
  if(nb)S.sk=0;else if(i>S.hw){const a=S.sk;S.sk+=i-S.hw;S.hw=i;praise(a,S.sk,i)}
  $('#cb').textContent=S.sk>=3?'🔥 '+S.sk+' liên tiếp':'';
  S.i=i;S.j=j;S.ks=seq(S.tx[i]||' ');
@@ -266,7 +270,7 @@ document.addEventListener('keydown',e=>{if(IN||e.ctrlKey||e.metaKey||e.altKey)re
  if(document.activeElement!==ti)ti.focus();
  if(!e.shiftKey&&ti.selectionStart===ti.selectionEnd&&ti.selectionStart!==ti.value.length)ti.setSelectionRange(ti.value.length,ti.value.length);
  if(/^(Enter|Tab|Page\w+)$/.test(e.key)||(!e.shiftKey&&/^(Arrow\w+|Home|End|Delete)$/.test(e.key))){e.preventDefault();return}
- if(e.key=='Backspace')return;
+ if(e.key=='Backspace'){flash('bk',1);return}
  S.lk=e.code.startsWith('Key')?e.code.slice(3).toLowerCase():e.code.startsWith('Digit')?e.code.slice(5):KC[e.code];S.fk=1});
 ti.addEventListener('input',e=>{if(MD[S.m].game){ti.value='';return}if(!e.isComposing)ti.setSelectionRange(ti.value.length,ti.value.length);const k=S.fk;S.fk=0;S.lv=ti.value;sync(k)});
 ti.addEventListener('compositionend',()=>{S.lv=ti.value;sync(0)});
