@@ -145,7 +145,7 @@ function climb(ok){show('#sClimb');chud();const c=$('#climber');
 setTimeout(()=>{G.i++;const p=pts[G.i];c.style.transform=`translate(${p[0]}px,${p[1]}px)`;sfx.step();setTimeout(sfx.step,300);setTimeout(sfx.step,600)},500);
 setTimeout(()=>{chud();const r=c.getBoundingClientRect(),x=r.left+r.width/2,y=r.top;const k=G.rw[G.i];let ms=700;
 if(G.i>=N){sfx.win();flash('#ffd54a');burst(x,y,['🎉','⭐','✨','🎊'],36);toast('🚩 Đã lên đến đỉnh núi!',1800);setTimeout(end,2200);return}
-if(k){const rk=G.rw[k];let t=RW[rk].t;if(rk=='star')G.score+=5;else if(rk=='gem')G.score+=15;else if(rk=='shield')G.shield++;else{const b=10+Math.floor(Math.random()*21);G.score+=b;t=`Rương báu! +${b} điểm`}
+if(k){const rk=k;let t=RW[rk].t;if(rk=='star')G.score+=5;else if(rk=='gem')G.score+=15;else if(rk=='shield')G.shield++;else{const b=10+Math.floor(Math.random()*21);G.score+=b;t=`Rương báu! +${b} điểm`}
 const m=$('#rw'+G.i);if(m)m.style.display='none';sfx.gift();flash('#ffe28a');burst(x,y,['⭐','✨',RW[rk].e]);toast(RW[rk].e+' '+t,1500);ms=1800;chud()}
 else if(!ok)toast('Trượt chân nhẹ nhưng vẫn tiến lên! 💪',1000);
 setTimeout(showQ,ms+300)},1750)}
