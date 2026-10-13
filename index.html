@@ -649,7 +649,7 @@
       4: {
         "bai-01": [],
         "bai-02": [],
-        "bai-03": [],
+        "bai-03": [['trắc nghiệm đúng sai', 'ds.html'], "lala.html"],
         "bai-04": [],
         "bai-05": [],
         "bai-06": [],
@@ -667,7 +667,7 @@
       5: {
         "bai-01": [],
         "bai-02": [],
-        "bai-03": ['ds.html'],
+        "bai-03": [['trắc nghiệm đúng sai', 'ds.html'], "lala.html"],
         "bai-04": [],
         "bai-05": [],
         "bai-06": [],
@@ -756,8 +756,9 @@
       }
     };
 
-    /* ── Pretty file name ────────────────────────────────────── */
+    /* ── Pretty file name (fallback) ────────────────────────── */
     function prettyName(filename) {
+      if (typeof filename !== 'string') return '';
       return filename
         .replace(/\.html?$/i, '')
         .replace(/[-_()\[\]]+/g, ' ')
@@ -765,36 +766,67 @@
         .trim();
     }
 
+    /* ── Chuẩn hóa thông tin bài học [tên hiển thị, tên file] ─── */
+    function getLessonInfo(item) {
+      if (!item) return null;
+      if (Array.isArray(item)) {
+        if (item.length === 0) return null;
+        const label = item[0] !== undefined && item[0] !== null ? String(item[0]).trim() : '';
+        const file = item[1] !== undefined && item[1] !== null ? String(item[1]).trim() : label;
+        if (!file && !label) return null;
+        return {
+          displayName: label || prettyName(file) || file,
+          fileName: file || label
+        };
+      }
+      if (typeof item === 'string') {
+        const file = item.trim();
+        if (!file) return null;
+        return {
+          displayName: prettyName(file) || file,
+          fileName: file
+        };
+      }
+      return null;
+    }
+
     /* ── Build a file sub-link ───────────────────────────────── */
-    function makeFileLink(grade, baiName, fileName) {
+    function makeFileLink(grade, baiName, item) {
+      const info = getLessonInfo(item);
+      if (!info) return null;
+
       const a = document.createElement('a');
       a.className = 'file-link';
-      a.href = `./tin-hoc-${grade}/${baiName}/${encodeURIComponent(fileName)}`;
+      a.href = `./tin-hoc-${grade}/${baiName}/${encodeURIComponent(info.fileName)}`;
       a.target = '_blank';
       a.rel = 'noopener';
-      a.setAttribute('aria-label', prettyName(fileName));
+      a.setAttribute('aria-label', info.displayName);
 
       const icon = document.createElement('span');
       icon.className = 'file-icon';
       icon.setAttribute('aria-hidden', 'true');
       icon.textContent = '\uD83D\uDCC4';
 
-      a.append(icon, document.createTextNode(prettyName(fileName)));
+      a.append(icon, document.createTextNode(info.displayName));
       return a;
     }
 
     /* ── Render list of files inside an open bai ─────────────── */
     function renderBaiFiles(filesEl, grade, baiName) {
-      const files = (GRADE_DATA[grade] || {})[baiName] || [];
+      const rawFiles = (GRADE_DATA[grade] || {})[baiName] || [];
+      const validFiles = rawFiles.map(getLessonInfo).filter(Boolean);
       filesEl.innerHTML = '';
 
-      if (files.length === 0) {
+      if (validFiles.length === 0) {
         const empty = document.createElement('span');
         empty.className = 'file-empty';
         empty.textContent = 'Chưa có bài học nào.';
         filesEl.append(empty);
       } else {
-        files.forEach(fn => filesEl.append(makeFileLink(grade, baiName, fn)));
+        validFiles.forEach(info => {
+          const link = makeFileLink(grade, baiName, [info.displayName, info.fileName]);
+          if (link) filesEl.append(link);
+        });
       }
       filesEl.dataset.rendered = '1';
     }
@@ -814,7 +846,8 @@
     /* ── Build one bai-group ─────────────────────────────────── */
     function makeBaiGroup(baiName, grade) {
       const num = parseInt(baiName.replace('bai-', ''), 10);
-      const files = (GRADE_DATA[grade] || {})[baiName] || [];
+      const rawFiles = (GRADE_DATA[grade] || {})[baiName] || [];
+      const validCount = rawFiles.filter(item => getLessonInfo(item) !== null).length;
       const label = `Bài ${num}`;
 
       const group = document.createElement('div');
@@ -841,7 +874,7 @@
       const fileCount = document.createElement('span');
       fileCount.className = 'bai-file-count';
       fileCount.setAttribute('aria-hidden', 'true');
-      fileCount.textContent = files.length > 0 ? `(${files.length})` : '';
+      fileCount.textContent = validCount > 0 ? `(${validCount})` : '';
 
       const arrow = document.createElement('span');
       arrow.className = 'bai-arrow';
