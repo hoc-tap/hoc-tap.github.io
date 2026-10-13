@@ -122,20 +122,6 @@
     /* Dark/Light toggle */
     .theme-btn svg { pointer-events: none; }
 
-    /* Language toggle */
-    .lang-pill {
-      display: inline-flex; align-items: center; gap: 4px;
-      height: 36px; padding: 0 10px;
-      border: 1px solid var(--border); border-radius: 8px;
-      background: transparent; cursor: pointer; font-size: .78rem; font-weight: 700;
-      transition: background .15s;
-    }
-    .lang-pill:hover { background: var(--green-lt); border-color: var(--green); }
-    .lang-pill .dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--green); flex-shrink: 0;
-    }
-
     /* ── Main content ────────────────────────────────────────── */
     .main { flex: 1; width: 100%; max-width: 1780px;
             align-self: center; padding: 20px clamp(12px,3vw,44px) 28px; }
@@ -332,8 +318,8 @@
         <path fill="#a4d778" d="M18 45c3-11 10-20 21-28-8 10-13 19-15 29l-6-1Z"/>
       </svg>
       <span class="brand-copy">
-        <span class="brand-name" data-vi="KHO HỌC LIỆU" data-en="LEARNING HUB">KHO HỌC LIỆU</span>
-        <span class="brand-sub" data-vi="thầy Minh" data-en="by Thầy Minh">thầy Minh</span>
+        <span class="brand-name">KHO HỌC LIỆU</span>
+        <span class="brand-sub">thầy Minh</span>
       </span>
     </a>
 
@@ -348,15 +334,13 @@
       <input id="search-box" class="search-box" type="text" readonly
              placeholder="Bấm để tìm kiếm trên Google..."
              aria-label="Bấm để mở Google tìm kiếm"
-             data-vi="Bấm để tìm kiếm trên Google..."
-             data-en="Click to search on Google...">
+             placeholder="Bấm để tìm kiếm trên Google...">
     </div>
 
     <!-- Actions -->
     <nav class="nav-actions" aria-label="Tiện ích">
       <!-- Game button → /tro-choi/ -->
-      <a id="game-btn" class="btn game-btn" href="./tro-choi/"
-         data-vi="🧠 Trò chơi trí tuệ" data-en="🧠 Brain Games">🧠 Trò chơi trí tuệ</a>
+      <a id="game-btn" class="btn game-btn" href="./tro-choi/">🧠 Trò chơi trí tuệ</a>
 
       <!-- Dark / Light mode -->
       <button id="theme-btn" class="btn icon-btn theme-btn" type="button"
@@ -367,12 +351,6 @@
         <svg id="icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
         </svg>
-      </button>
-
-      <!-- Language VI / EN -->
-      <button id="lang-btn" class="lang-pill" type="button" aria-label="Chuyển ngôn ngữ" aria-pressed="false">
-        <span class="dot" aria-hidden="true"></span>
-        <span id="lang-label">VI</span>
       </button>
 
       <!-- Fullscreen -->
@@ -391,7 +369,7 @@
   <!-- ════════════════ CONTENT ════════════════ -->
   <main class="main" aria-label="Thư viện học liệu Tin học">
     <div class="statusbar">
-      <span id="status-label" data-vi="Tin học lớp 3 – 9" data-en="Computer Science Grade 3–9">Tin học lớp 3 – 9</span>
+      <span id="status-label">Tin học lớp 3 – 9</span>
       <span id="count-label" aria-live="polite">Đang tải...</span>
     </div>
 
@@ -402,8 +380,7 @@
 
   <!-- ════════════════ FOOTER ════════════════ -->
   <footer class="footer">
-    <span data-vi="© Kho học liệu Thầy Minh · Tin học lớp 3 – 9 · Dùng cho mục đích học tập"
-          data-en="© Learning Hub by Thầy Minh · Computer Science Grade 3–9 · For educational use">
+    <span>
       © Kho học liệu Thầy Minh · Tin học lớp 3 – 9 · Dùng cho mục đích học tập
     </span>
   </footer>
@@ -411,7 +388,6 @@
   <!-- ════════════════ SCRIPT ════════════════ -->
   <script>
     /* ── State ───────────────────────────────────────────────── */
-    let isEnglish = false;
     let isDark    = false;
 
     /* ── Elements ────────────────────────────────────────────── */
@@ -419,8 +395,6 @@
     const gradeGrid    = document.getElementById('grade-grid');
     const searchBox    = document.getElementById('search-box');
     const countLabel   = document.getElementById('count-label');
-    const langBtn      = document.getElementById('lang-btn');
-    const langLabel    = document.getElementById('lang-label');
     const themeBtn     = document.getElementById('theme-btn');
     const iconSun      = document.getElementById('icon-sun');
     const iconMoon     = document.getElementById('icon-moon');
@@ -498,7 +472,7 @@
       if (files.length === 0) {
         const empty = document.createElement('span');
         empty.className = 'file-empty';
-        empty.textContent = isEnglish ? 'No files yet.' : 'Chưa có bài học nào.';
+        empty.textContent = 'Chưa có bài học nào.';
         filesEl.append(empty);
       } else {
         files.forEach(fn => filesEl.append(makeFileLink(grade, baiName, fn)));
@@ -522,7 +496,7 @@
     function makeBaiGroup(baiName, grade) {
       const num   = parseInt(baiName.replace('bai-', ''), 10);
       const files = (GRADE_DATA[grade] || {})[baiName] || [];
-      const label = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
+      const label = `Bài ${num}`;
 
       const group = document.createElement('div');
       group.className = 'bai-group';
@@ -534,7 +508,7 @@
       toggle.className = 'bai-toggle';
       toggle.type = 'button';
       toggle.setAttribute('aria-expanded', 'false');
-      toggle.setAttribute('aria-label', `${label}, ${isEnglish ? 'Grade' : 'Lớp'} ${grade}`);
+      toggle.setAttribute('aria-label', `${label}, Lớp ${grade}`);
 
       const badge = document.createElement('span');
       badge.className = 'bai-badge';
@@ -572,7 +546,7 @@
       card.className = 'grade-card';
       card.id = `card-grade-${grade}`;
       card.dataset.grade = grade;
-      card.setAttribute('aria-label', (isEnglish ? 'Grade ' : 'Lớp ') + grade);
+      card.setAttribute('aria-label', `Lớp ${grade}`);
 
       const header = document.createElement('div');
       header.className = 'grade-header';
@@ -582,9 +556,7 @@
       numBadge.textContent = grade;
 
       const lbl = document.createElement('span');
-      lbl.dataset.vi = `Lớp ${grade}`;
-      lbl.dataset.en = `Grade ${grade}`;
-      lbl.textContent = isEnglish ? `Grade ${grade}` : `Lớp ${grade}`;
+      lbl.textContent = `Lớp ${grade}`;
 
       header.append(numBadge, lbl);
 
@@ -595,7 +567,7 @@
       if (baiNames.length === 0) {
         const p = document.createElement('p');
         p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
-        p.textContent = isEnglish ? 'No lessons yet.' : 'Chưa có bài học.';
+        p.textContent = 'Chưa có bài học.';
         list.append(p);
       } else {
         baiNames.forEach(bn => list.append(makeBaiGroup(bn, grade)));
@@ -669,36 +641,7 @@
     function updateCount() {
       const cards  = gradeGrid.querySelectorAll('.grade-card:not([hidden])');
       const groups = gradeGrid.querySelectorAll('.bai-group:not([hidden])');
-      countLabel.textContent = isEnglish
-        ? `${groups.length} lessons · ${cards.length} grades`
-        : `${groups.length} bài học · ${cards.length} lớp`;
-    }
-
-    /* ── Language ────────────────────────────────────────────── */
-    function applyLanguage() {
-      document.querySelectorAll('[data-vi]').forEach(el => {
-        const val = el.dataset[isEnglish ? 'en' : 'vi'];
-        if (!val) return;
-        if (el.tagName === 'INPUT') el.placeholder = val;
-        else el.textContent = val;
-      });
-      gradeGrid.querySelectorAll('.grade-card').forEach(card => {
-        const g = card.dataset.grade;
-        const lbl = card.querySelector('.grade-header span:last-child');
-        if (lbl) lbl.textContent = isEnglish ? `Grade ${g}` : `Lớp ${g}`;
-        card.querySelectorAll('.bai-group').forEach(group => {
-          const baiName = group.dataset.bai || '';
-          const num  = parseInt(baiName.replace('bai-', ''), 10) || '?';
-          const text = isEnglish ? `Lesson ${num}` : `Bài ${num}`;
-          const titleEl = group.querySelector('.bai-title');
-          if (titleEl) titleEl.textContent = text;
-          const tog  = group.querySelector('.bai-toggle');
-          if (tog) tog.setAttribute('aria-label', `${text}, ${isEnglish ? 'Grade' : 'Lớp'} ${g}`);
-        });
-      });
-      langLabel.textContent = isEnglish ? 'EN' : 'VI';
-      langBtn.setAttribute('aria-pressed', String(isEnglish));
-      updateCount();
+      countLabel.textContent = `${groups.length} bài học · ${cards.length} lớp`;
     }
 
     /* ── Theme ───────────────────────────────────────────────── */
@@ -707,8 +650,8 @@
       iconSun.style.display  = isDark ? 'none' : '';
       iconMoon.style.display = isDark ? '' : 'none';
       themeBtn.title = isDark
-        ? (isEnglish ? 'Switch to Light' : 'Chế độ Sáng')
-        : (isEnglish ? 'Switch to Dark'  : 'Chế độ Tối');
+        ? 'Chế độ Sáng'
+        : 'Chế độ Tối';
     }
 
     /* ── Events ──────────────────────────────────────────────── */
@@ -719,8 +662,6 @@
       isDark = !isDark; applyTheme();
       try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(_) {}
     });
-
-    langBtn.addEventListener('click', () => { isEnglish = !isEnglish; applyLanguage(); });
 
     fsBtn.addEventListener('click', async () => {
       try {
@@ -733,8 +674,8 @@
       iconExpand.style.display   = full ? 'none' : '';
       iconCollapse.style.display = full ? '' : 'none';
       fsBtn.setAttribute('aria-label', full
-        ? (isEnglish ? 'Exit fullscreen' : 'Thoát toàn màn hình')
-        : (isEnglish ? 'Fullscreen'      : 'Bật toàn màn hình'));
+        ? 'Thoát toàn màn hình'
+        : 'Bật toàn màn hình');
     });
 
     /* ── Init ────────────────────────────────────────────────── */
