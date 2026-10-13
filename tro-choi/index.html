@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -18,7 +19,9 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       min-width: 320px;
@@ -29,7 +32,9 @@
         #f4f7f2;
     }
 
-    a { color: inherit; }
+    a {
+      color: inherit;
+    }
 
     .page {
       width: min(1120px, calc(100% - 40px));
@@ -72,7 +77,9 @@
       text-decoration: none;
     }
 
-    .home-link:hover { color: #16743a; }
+    .home-link:hover {
+      color: #16743a;
+    }
 
     .hero {
       position: relative;
@@ -180,7 +187,9 @@
       box-shadow: 0 12px 26px rgba(37, 75, 46, .1);
     }
 
-    .game-card:focus-visible, .home-link:focus-visible, .brand:focus-visible {
+    .game-card:focus-visible,
+    .home-link:focus-visible,
+    .brand:focus-visible {
       outline: 3px solid #72b77b;
       outline-offset: 4px;
     }
@@ -224,7 +233,9 @@
       transition: transform .18s ease;
     }
 
-    .game-card:hover .card-action span { transform: translateX(3px); }
+    .game-card:hover .card-action span {
+      transform: translateX(3px);
+    }
 
     footer {
       padding: 26px 0 4px;
@@ -234,30 +245,73 @@
     }
 
     @media (max-width: 760px) {
-      .page { width: min(100% - 30px, 620px); padding-top: 20px; }
-      .topbar { margin-bottom: 28px; }
-      .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .page {
+        width: min(100% - 30px, 620px);
+        padding-top: 20px;
+      }
+
+      .topbar {
+        margin-bottom: 28px;
+      }
+
+      .game-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 480px) {
-      .page { width: calc(100% - 24px); }
-      .hero { margin-bottom: 26px; padding: 27px 22px; border-radius: 20px; }
-      .hero::after { top: -98px; right: -112px; }
-      .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; }
-      .game-grid { grid-template-columns: 1fr; gap: 11px; }
-      .game-card { min-height: 0; padding: 18px; }
-      .game-icon { margin-bottom: 12px; }
-      .home-link { font-size: .82rem; }
+      .page {
+        width: calc(100% - 24px);
+      }
+
+      .hero {
+        margin-bottom: 26px;
+        padding: 27px 22px;
+        border-radius: 20px;
+      }
+
+      .hero::after {
+        top: -98px;
+        right: -112px;
+      }
+
+      .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .game-grid {
+        grid-template-columns: 1fr;
+        gap: 11px;
+      }
+
+      .game-card {
+        min-height: 0;
+        padding: 18px;
+      }
+
+      .game-icon {
+        margin-bottom: 12px;
+      }
+
+      .home-link {
+        font-size: .82rem;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
+
+      *,
+      *::before,
+      *::after {
         scroll-behavior: auto !important;
         transition-duration: .01ms !important;
       }
     }
   </style>
 </head>
+
 <body>
   <main class="page">
     <header class="topbar">
@@ -277,62 +331,108 @@
     <section aria-labelledby="games-title">
       <div class="section-heading">
         <h2 id="games-title">Chọn trò chơi của bạn</h2>
-        <span>6 trò chơi · 1 trải nghiệm khám phá</span>
+        <span id="game-count"></span>
       </div>
 
-      <div class="game-grid">
-        <a class="game-card" href="sudoku.html" style="--icon-bg: #f0edff">
-          <span class="game-icon" aria-hidden="true">🔢</span>
-          <h3>Sudoku</h3>
-          <p>Rèn tư duy logic với những ô số đầy thử thách.</p>
-          <span class="card-action">Chơi ngay <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a class="game-card" href="luyen-go-ban-phim.html" style="--icon-bg: #e7f7fa">
-          <span class="game-icon" aria-hidden="true">⌨️</span>
-          <h3>Luyện gõ bàn phím</h3>
-          <p>Luyện kỹ năng gõ phím nhanh và chính xác.</p>
-          <span class="card-action">Luyện tập <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a class="game-card" href="co-vua.html" style="--icon-bg: #f2eee5">
-          <span class="game-icon" aria-hidden="true">♟️</span>
-          <h3>Cờ vua</h3>
-          <p>Thử sức chiến thuật qua từng nước cờ.</p>
-          <span class="card-action">Vào bàn cờ <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a class="game-card" href="co-tuong.html" style="--icon-bg: #fff1e5">
-          <span class="game-icon" aria-hidden="true">🏮</span>
-          <h3>Cờ tướng</h3>
-          <p>Đấu trí và sắp xếp thế trận thật khéo léo.</p>
-          <span class="card-action">Vào bàn cờ <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a class="game-card" href="bao-tap-ban-phim.html" style="--icon-bg: #fff4dc">
-          <span class="game-icon" aria-hidden="true">⚡</span>
-          <h3>Bão táp gõ phím</h3>
-          <p>Tăng tốc độ gõ phím trong thử thách sôi động.</p>
-          <span class="card-action">Thử thách ngay <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a class="game-card" href="qua-song.html" style="--icon-bg: #e5f4f5">
-          <span class="game-icon" aria-hidden="true">🌉</span>
-          <h3>Qua sông</h3>
-          <p>Vượt qua thử thách bằng những bước đi khéo léo.</p>
-          <span class="card-action">Giải câu đố <span aria-hidden="true">→</span></span>
-        </a>
-
-        <a class="game-card" href="ban-do.html" style="--icon-bg: #eaf4e6">
-          <span class="game-icon" aria-hidden="true">🗺️</span>
-          <h3>Bản đồ Tà Đùng</h3>
-          <p>Khám phá bản đồ vệ tinh Tà Đùng.</p>
-          <span class="card-action">Khám phá <span aria-hidden="true">→</span></span>
-        </a>
-      </div>
+      <div id="game-grid" class="game-grid"></div>
     </section>
 
     <footer>Chúc bạn có những phút giây học tập thật vui!</footer>
   </main>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════
+       DANH SÁCH TRÒ CHƠI – chỉ cần sửa mảng này
+       Mỗi object gồm:
+         href    – tên file html
+         icon    – emoji
+         iconBg  – màu nền icon (mã hex)
+         title   – tên hiển thị
+         desc    – mô tả ngắn
+         action  – chữ trên nút "→"
+    ═══════════════════════════════════════════════════════════ */
+    const GAMES = [
+      {
+        href: "ban-do.html",
+        icon: "🗺️",
+        iconBg: "#eaf4e6",
+        title: "Bản đồ trường TH&THCS Nguyễn Du",
+        desc: "Khám phá bản đồ vệ tinh Trường TH&THCS Nguyễn Du.",
+        action: "Khám phá"
+      },
+      {
+        href: "luyen-go-ban-phim.html",
+        icon: "⌨️",
+        iconBg: "#e7f7fa",
+        title: "Luyện gõ bàn phím",
+        desc: "Luyện kỹ năng gõ phím nhanh và chính xác.",
+        action: "Luyện tập"
+      },
+
+      {
+        href: "bao-tap-ban-phim.html",
+        icon: "⚡",
+        iconBg: "#fff4dc",
+        title: "Bão táp gõ phím",
+        desc: "Tăng tốc độ gõ phím trong thử thách sôi động.",
+        action: "Thử thách ngay"
+      },
+
+      {
+        href: "qua-song.html",
+        icon: "🌉",
+        iconBg: "#e5f4f5",
+        title: "Qua sông",
+        desc: "Vượt qua thử thách bằng những bước đi khéo léo.",
+        action: "Giải câu đố"
+      },
+      // {
+      //   href: "co-vua.html",
+      //   icon: "♟️",
+      //   iconBg: "#f2eee5",
+      //   title: "Cờ vua",
+      //   desc: "Thử sức chiến thuật qua từng nước cờ.",
+      //   action: "Vào bàn cờ"
+      // },
+      // {
+      //   href: "co-tuong.html",
+      //   icon: "🏮",
+      //   iconBg: "#fff1e5",
+      //   title: "Cờ tướng",
+      //   desc: "Đấu trí và sắp xếp thế trận thật khéo léo.",
+      //   action: "Vào bàn cờ"
+      // },
+      // {
+      //   href: "sudoku.html",
+      //   icon: "🔢",
+      //   iconBg: "#f0edff",
+      //   title: "Sudoku",
+      //   desc: "Rèn tư duy logic với những ô số đầy thử thách.",
+      //   action: "Chơi ngay"
+      // },
+    ];
+
+    /* ── Render tự động ─────────────────────────────────────── */
+    const grid = document.getElementById('game-grid');
+    const countEl = document.getElementById('game-count');
+
+    countEl.textContent = `${GAMES.length} trò chơi`;
+
+    GAMES.forEach(g => {
+      const a = document.createElement('a');
+      a.className = 'game-card';
+      a.href = g.href;
+      a.style.setProperty('--icon-bg', g.iconBg);
+      a.innerHTML = `
+        <span class="game-icon" aria-hidden="true">${g.icon}</span>
+        <h3>${g.title}</h3>
+        <p>${g.desc}</p>
+        <span class="card-action">${g.action} <span aria-hidden="true">→</span></span>
+      `;
+      grid.append(a);
+    });
+  </script>
+
 </body>
+
 </html>
