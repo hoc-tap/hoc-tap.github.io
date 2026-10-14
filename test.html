@@ -1,138 +1,103 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <base target="_top">
-    <meta charset="utf-8">
-    <title>Giải phương trình bậc nhất</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f7f6;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-      .container {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        width: 350px;
-      }
-      h2 {
-        text-align: center;
-        color: #333;
-      }
-      .form-group {
-        margin-bottom: 15px;
-      }
-      label {
-        display: block;
-        margin-bottom: 5px;
-        color: #555;
-        font-weight: bold;
-      }
-      input {
-        width: 100%;
-        padding: 8px;
-        box-sizing: border-box;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-      button {
-        width: 100%;
-        padding: 10px;
-        background-color: #007BFF;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: #0056b3;
-      }
-      #result {
-        margin-top: 15px;
-        padding: 10px;
-        background-color: #e9ecef;
-        border-radius: 4px;
-        text-align: center;
-        font-weight: bold;
-        color: #333;
-      }
-      #status {
-        margin-top: 8px;
-        text-align: center;
-        font-size: 12px;
-        color: #28a745;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h2>Giải Phương Trình Bậc Nhất</h2>
-      <p style="text-align: center; color: #666; font-size: 14px;">Dạng: ax + b = 0</p>
-      
-      <div class="form-group">
-        <label for="a">Nhập hệ số a:</label>
-        <input type="number" id="a" placeholder="Ví dụ: 2">
-      </div>
-      
-      <div class="form-group">
-        <label for="b">Nhập hệ số b:</label>
-        <input type="number" id="b" placeholder="Ví dụ: -4">
-      </div>
-      
-      <button onclick="giaiPhuongTrinh()">Giải và lưu kết quả</button>
-      
-      <div id="result">Kết quả sẽ hiển thị ở đây</div>
-      <div id="status"></div>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giải Phương Trình Bậc Nhất</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 350px;
+    }
+    h2 { text-align: center; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { width: 100%; padding: 10px; background-color: #007BFF; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    #result { margin-top: 15px; padding: 10px; background-color: #e9ecef; border-radius: 4px; text-align: center; font-weight: bold; }
+    #status { margin-top: 8px; text-align: center; font-size: 13px; color: #28a745; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Giải Phương Trình Bậc Nhất</h2>
+    <p style="text-align: center; color: #666; font-size: 14px;">Dạng: ax + b = 0</p>
+    
+    <div class="form-group">
+      <label for="a">Nhập hệ số a:</label>
+      <input type="number" id="a" placeholder="Ví dụ: 2">
     </div>
+    
+    <div class="form-group">
+      <label for="b">Nhập hệ số b:</label>
+      <input type="number" id="b" placeholder="Ví dụ: -4">
+    </div>
+    
+    <button onclick="giaiPhuongTrinh()">Giải và Lưu vào Google Sheet</button>
+    
+    <div id="result">Kết quả sẽ hiển thị ở đây</div>
+    <div id="status"></div>
+  </div>
 
-    <script>
-      function giaiPhuongTrinh() {
-        let a = parseFloat(document.getElementById('a').value);
-        let b = parseFloat(document.getElementById('b').value);
-        let resultDiv = document.getElementById('result');
-        let statusDiv = document.getElementById('status');
-        
-        if (isNaN(a) || isNaN(b)) {
-          resultDiv.innerHTML = "Vui lòng nhập đầy đủ số a và b!";
-          resultDiv.style.color = "#d9534f";
-          statusDiv.innerHTML = "";
-          return;
-        }
-        
-        let ketQuaStr = "";
-        if (a === 0) {
-          if (b === 0) {
-            ketQuaStr = "Phương trình có vô số nghiệm!";
-          } else {
-            ketQuaStr = "Phương trình vô nghiệm!";
-          }
-        } else {
-          let x = -b / a;
-          ketQuaStr = "x = " + x.toFixed(4);
-        }
-        
-        resultDiv.innerHTML = "Nghiệm: " + ketQuaStr;
-        resultDiv.style.color = "#333";
-        statusDiv.innerHTML = "Đang lưu vào Google Sheet...";
-        
-        // Gọi hàm Apps Script ở phía server để lưu dữ liệu
-        google.script.run
-          .withSuccessHandler(function(responseMessage) {
-            statusDiv.innerHTML = responseMessage;
-          })
-          .withFailureHandler(function(error) {
-            statusDiv.innerHTML = "Lỗi: " + error.message;
-            statusDiv.style.color = "#d9534f";
-          })
-          .saveToSheet(a, b, ketQuaStr);
+  <script>
+    // THAY THẾ LINK DƯỚI ĐÂY BẰNG WEB APP URL CỦA BẠN TỪ GOOGLE APPS SCRIPT
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4QMF5Lp7h_ne-dnXMQInNBPKG0WTV7kdfHrjIWTxb2OoqjU8oJLT6cjEvJb3fw6zCnw/exec";
+
+    function giaiPhuongTrinh() {
+      let a = parseFloat(document.getElementById('a').value);
+      let b = parseFloat(document.getElementById('b').value);
+      let resultDiv = document.getElementById('result');
+      let statusDiv = document.getElementById('status');
+      
+      if (isNaN(a) || isNaN(b)) {
+        resultDiv.innerHTML = "Vui lòng nhập đầy đủ số a và b!";
+        resultDiv.style.color = "#d9534f";
+        statusDiv.innerHTML = "";
+        return;
       }
-    </script>
-  </body>
+      
+      let ketQuaStr = "";
+      if (a === 0) {
+        ketQuaStr = (b === 0) ? "Phương trình có vô số nghiệm!" : "Phương trình vô nghiệm!";
+      } else {
+        let x = -b / a;
+        ketQuaStr = "x = " + x.toFixed(4);
+      }
+      
+      resultDiv.innerHTML = "Nghiệm: " + ketQuaStr;
+      resultDiv.style.color = "#333";
+      statusDiv.innerHTML = "Đang gửi dữ liệu về Google Sheet...";
+      statusDiv.style.color = "#007BFF";
+
+      // Gửi request POST tới Google Apps Script API
+      fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // Bắt buộc cho Google Apps Script khi gọi跨域 (CORS) từ trình duyệt
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ a: a, b: b, ketQua: ketQuaStr })
+      })
+      .then(() => {
+        statusDiv.innerHTML = "Đã gửi dữ liệu thành công!";
+        statusDiv.style.color = "#28a745";
+      })
+      .catch(error => {
+        statusDiv.innerHTML = "Lỗi khi gửi dữ liệu!";
+        statusDiv.style.color = "#d9534f";
+      });
+    }
+  </script>
+</body>
 </html>
