@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BÃO TÁP GÕ PHÍM - Typing Hero</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#0a0e17',
+                            card: '#121826',
+                            accent: '#00f0ff',
+                            purple: '#7000ff',
+                            pink: '#ff007f',
+                            yellow: '#ffe600',
+                            green: '#00ff66'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'Consolas', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Tùy chỉnh CSS bổ sung cho hiệu ứng game */
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .font-code {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Hiệu ứng Shake khi gõ sai */
+        .shake-screen {
+            animation: shake 0.25s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-3px, 0, 0); }
+            20%, 80% { transform: translate3d(5px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+        /* Custom scrollbar mỏng cho bảng xếp hạng */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.6);
+        }
+        /* Hiệu ứng viền phát sáng Glow */
+        .glow-accent {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        .glow-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden transition-colors duration-300">
+
+    <!-- BỐ CỤC 3 CỘT KHÔNG CÓ NAVBAR - TRÀN TOÀN MÀN HÌNH -->
+    <div class="grid grid-cols-12 h-screen w-screen p-3 gap-3 overflow-hidden box-border">
+
+        <!-- ==================== CỘT TRÁI (LEFT PANEL - ~25%) ==================== -->
+        <div class="col-span-3 flex flex-col justify-between h-full gap-3 overflow-hidden">
+            
+            <!-- Thẻ 1: Tiêu đề trò chơi -->
+            <div class="bg-slate-900/90 border border-cyan-500/30 dark:border-cyan-500/30 rounded-2xl p-4 shadow-lg backdrop-blur flex flex-col items-center justify-center text-center relative overflow-hidden shrink-0">
+                <div class="absolute -right-6 -top-6 w-20 h-20 bg-cyan-500/10 rounded-full blur-xl pointer-events-none"></div>
+                <div class="flex items-center gap-2 mb-1">
+                    <i class="fa-solid font-bold fa-keyboard text-cyan-400 text-2xl animate-bounce"></i>
+                    <h1 class="text-xl font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-400">
+                        BÃO TÁP GÕ PHÍM
+                    </h1>
+                </div>
+                <p class="text-[10px] uppercase tracking-widest text-cyan-300/70 font-semibold">Typing Hero - Vô Địch Phản Xạ</p>
+            </div>
+
+            <!-- Thẻ 2: Cấu hình chế độ & độ khó -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg flex flex-col gap-3 shrink-0">
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-gamepad text-cyan-400"></i> Chế Độ Chơi:
+                    </label>
+                    <div class="grid grid-cols-1 gap-1.5" id="modeSelector">
+                        <button data-mode="1" class="mode-btn active px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between bg-cyan-500 text-slate-950 shadow-md">
+                            <span><i class="fa-solid fa-font mr-1.5"></i> Chữ cái đơn (A-Z)</span>
+                            <i class="fa-solid fa-circle-check text-xs"></i>
+                        </button>
+                        <button data-mode="2" class="mode-btn px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between bg-slate-800 text-slate-300 hover:bg-slate-700">
+                            <span><i class="fa-solid fa-microchip mr-1.5"></i> Tin học Cơ bản</span>
+                            <i class="fa-solid fa-circle opacity-0 text-xs"></i>
+                        </button>
+                        <button data-mode="3" class="mode-btn px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-between bg-slate-800 text-slate-300 hover:bg-slate-700">
+                            <span><i class="fa-solid fa-code mr-1.5"></i> Thuật ngữ Nâng cao</span>
+                            <i class="fa-solid fa-circle opacity-0 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-gauge-high text-yellow-400"></i> Mức Độ Khó:
+                    </label>
+                    <div class="grid grid-cols-3 gap-1.5" id="diffSelector">
+                        <button data-diff="easy" class="diff-btn active py-1.5 rounded-xl text-xs font-bold bg-emerald-500 text-slate-950 transition-all text-center">Dễ</button>
+                        <button data-diff="medium" class="diff-btn py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all text-center">Vừa</button>
+                        <button data-diff="hard" class="diff-btn py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all text-center">Khó</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thẻ 3: Bảng Thống kê Trực tiếp (Live Stats) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg flex-1 flex flex-col justify-around">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
+                    <span><i class="fa-solid fa-chart-line text-pink-400 mr-1"></i> Thống kê Trận đấu</span>
+                    <span id="comboBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 animate-pulse">
+                        COMBO x1
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- Điểm số -->
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-2 flex flex-col items-center justify-center">
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase">Điểm Số</span>
+                        <span id="scoreText" class="text-xl font-black text-cyan-400 font-code">0</span>
+                    </div>
+                    <!-- Tốc độ WPM -->
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-2 flex flex-col items-center justify-center">
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase">Tốc độ (WPM)</span>
+                        <span id="wpmText" class="text-xl font-black text-emerald-400 font-code">0</span>
+                    </div>
+                    <!-- Độ chính xác % -->
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-2 flex flex-col items-center justify-center">
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase">Chính xác</span>
+                        <span id="accuracyText" class="text-xl font-black text-yellow-400 font-code">100%</span>
+                    </div>
+                    <!-- Chuỗi đúng -->
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-2 flex flex-col items-center justify-center">
+                        <span class="text-[10px] text-slate-400 font-semibold uppercase">Chuỗi Max</span>
+                        <span id="maxComboText" class="text-xl font-black text-pink-500 font-code">0</span>
+                    </div>
+                </div>
+
+                <!-- Mạng / Máu (Lives) -->
+                <div class="mt-2 bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-300">Sinh Mạng:</span>
+                    <div id="livesContainer" class="flex gap-1 text-red-500 text-base">
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                        <i class="fa-solid fa-heart animate-pulse"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thẻ 4: Các Nút Điều Khiển Chính -->
+            <div class="flex gap-2 shrink-0">
+                <button id="btnStart" class="flex-1 py-3 px-4 rounded-xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> BẮT ĐẦU
+                </button>
+                <button id="btnPause" disabled class="py-3 px-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-400 opacity-50 cursor-not-allowed hover:bg-slate-700 transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-pause"></i>
+                </button>
+                <button id="btnReset" class="py-3 px-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ==================== CỘT GIỮA (CENTER PANEL - SÂN CHƠI CANVAS ~50%) ==================== -->
+        <div class="col-span-6 h-full flex flex-col relative rounded-2xl border border-cyan-500/30 bg-slate-900/80 shadow-2xl overflow-hidden" id="arenaWrapper">
+            
+            <!-- Thanh trạng thái nhỏ đầu sân chơi -->
+            <div class="absolute top-0 left-0 right-0 p-3 flex justify-between items-center pointer-events-none z-10 bg-gradient-to-b from-slate-950/80 to-transparent">
+                <div class="flex items-center gap-2">
+                    <span id="targetStatus" class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-800/80 text-cyan-400 border border-cyan-500/30">
+                        MỤC TIÊU: <span class="text-white font-black" id="activeWordHint">---</span>
+                    </span>
+                </div>
+                <div id="gameStatusBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-slate-800/80 text-yellow-400 border border-yellow-500/30 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span> SẴN SÀNG
+                </div>
+            </div>
+
+            <!-- Canvas sân chơi chính rơi bong bóng -->
+            <canvas id="gameCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+
+            <!-- Vạch Đáy Cảnh Báo (Danger Zone line) -->
+            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-pink-500 to-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)] pointer-events-none"></div>
+
+            <!-- Overlay Màn hình bắt đầu / Tạm dừng / Game over -->
+            <div id="overlayModal" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 transition-all duration-300">
+                <div class="max-w-md w-full bg-slate-900 border border-cyan-500/40 rounded-2xl p-6 shadow-2xl flex flex-col items-center relative overflow-hidden">
+                    <div class="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 text-3xl mb-4">
+                        <i id="overlayIcon" class="fa-solid fa-keyboard"></i>
+                    </div>
+                    <h2 id="overlayTitle" class="text-2xl font-black text-white uppercase tracking-wide mb-2">SẴN SÀNG CHINH PHỤC?</h2>
+                    <p id="overlayDesc" class="text-xs text-slate-300 mb-6 leading-relaxed">
+                        Nhấn phím bất kỳ hoặc chọn nút Bắt Đầu bên dưới để gõ nổ các bong bóng trước khi chúng chạm vạch đỏ!
+                    </p>
+
+                    <!-- Kết quả thống kê sau khi thua game -->
+                    <div id="gameOverStats" class="w-full grid grid-cols-2 gap-2 mb-6 hidden">
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400">ĐIỂM CUỐI CÙNG</div>
+                            <div id="finalScore" class="text-lg font-black text-cyan-400 font-code">0</div>
+                        </div>
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400">TỐC ĐỘ WPM</div>
+                            <div id="finalWpm" class="text-lg font-black text-emerald-400 font-code">0</div>
+                        </div>
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400">ĐỘ CHÍNH XÁC</div>
+                            <div id="finalAcc" class="text-lg font-black text-yellow-400 font-code">0%</div>
+                        </div>
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                            <div class="text-[10px] text-slate-400">CHUỖI CAO NHẤT</div>
+                            <div id="finalCombo" class="text-lg font-black text-pink-500 font-code">0</div>
+                        </div>
+                    </div>
+
+                    <button id="overlayActionBtn" class="w-full py-3 rounded-xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 shadow-lg active:scale-95 transition-all">
+                        BẮT ĐẦU NGAY (Space)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== CỘT PHẢI (RIGHT PANEL - CÀI ĐẶT & KỶ LỤC ~25%) ==================== -->
+        <div class="col-span-3 flex flex-col justify-between h-full gap-3 overflow-hidden">
+            
+            <!-- Thẻ 1: Khung Cài Đặt (Settings) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg shrink-0">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i> Cài Đặt Ứng Dụng
+                </div>
+
+                <div class="space-y-2">
+                    <!-- Bật/tắt Dark/Light Mode -->
+                    <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-moon text-indigo-400"></i> Chế độ Tối/Sáng
+                        </span>
+                        <button id="btnThemeToggle" class="w-10 h-5 bg-cyan-600 rounded-full relative transition-colors p-0.5">
+                            <div id="themeDot" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-5"></div>
+                        </button>
+                    </div>
+
+                    <!-- Bật/tắt Âm thanh FX -->
+                    <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                            <i id="sfxIcon" class="fa-solid fa-volume-high text-emerald-400"></i> Âm Thanh (SFX)
+                        </span>
+                        <button id="btnSfxToggle" class="w-10 h-5 bg-cyan-600 rounded-full relative transition-colors p-0.5">
+                            <div id="sfxDot" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-5"></div>
+                        </button>
+                    </div>
+
+                    <!-- Bật/tắt Nhạc Nền (BGM Synth) -->
+                    <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                            <i id="bgmIcon" class="fa-solid fa-music text-pink-400"></i> Nhạc Nền (BGM)
+                        </span>
+                        <button id="btnBgmToggle" class="w-10 h-5 bg-slate-700 rounded-full relative transition-colors p-0.5">
+                            <div id="bgmDot" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-0"></div>
+                        </button>
+                    </div>
+
+                    <!-- Toggle Fullscreen -->
+                    <button id="btnFullscreen" class="w-full py-2 px-3 bg-slate-950/60 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-bold text-slate-300 flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-expand text-yellow-400"></i> Chế độ Toàn Màn Hình
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thẻ 2: Bảng Xếp Hạng & Kỷ Lục (High Scores) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg flex-1 flex flex-col overflow-hidden">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span><i class="fa-solid fa-trophy text-yellow-400 mr-1"></i> Bảng Kỷ Lục</span>
+                    <button id="btnClearScores" class="text-[10px] text-slate-500 hover:text-red-400 font-normal">Xóa dữ liệu</button>
+                </div>
+
+                <div id="scoresList" class="flex-1 overflow-y-auto space-y-1.5 pr-1">
+                    <!-- Danh sách kỷ lục sẽ nạp bằng JS -->
+                    <div class="text-center py-4 text-xs text-slate-500 italic">Chưa có kỷ lục nào. Hãy bắt đầu chơi!</div>
+                </div>
+            </div>
+
+            <!-- Thẻ 3: Khung Hướng Dẫn Nhanh (Instructions) -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg shrink-0">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                    <i class="fa-solid fa-lightbulb text-amber-400"></i> Mẹo Gõ Phím 10 Ngón
+                </div>
+                <ul class="text-[11px] text-slate-300 space-y-1 list-disc pl-4 leading-snug">
+                    <li>Đặt tay đúng vị trí <b>A S D F</b> (tay trái) & <b>J K L ;</b> (tay phải).</li>
+                    <li>Nắm vững từ đang rơi để chủ động gõ phím đầu tiên.</li>
+                    <li>Tận dụng <b>Combo x2, x3</b> bằng cách gõ liên tục không sai phím nào!</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        /**
+         * BÃO TÁP GÕ PHÍM - TYPING HERO ENGINE
+         * Tác giả: Chuyên gia Web Game Frontend & UI/UX
+         */
+
+        // =========================================================================
+        // 1. ÂM THANH TỔNG HỢP (WEB AUDIO API - KHÔNG DÙNG FILE NGOÀI)
+        // =========================================================================
+        class AudioSynth {
+            constructor() {
+                this.ctx = null;
+                this.sfxEnabled = true;
+                this.bgmEnabled = false;
+                this.bgmTimer = null;
+                this.bgmNoteIndex = 0;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Tiếng gõ đúng phím / nổ bong bóng
+            playPop(pitchMultiplier = 1) {
+                if (!this.sfxEnabled) return;
+                this.init();
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                const baseFreq = 440 * pitchMultiplier;
+                osc.frequency.setValueAtTime(baseFreq, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(baseFreq * 2, this.ctx.currentTime + 0.1);
+
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            }
+
+            // Tiếng gõ sai (Buzz / Shake)
+            playBuzz() {
+                if (!this.sfxEnabled) return;
+                this.init();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(130, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(90, this.ctx.currentTime + 0.15);
+
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+
+            // Tiếng nổ pháo hoa lớn khi tiêu diệt từ dài
+            playExplosion() {
+                if (!this.sfxEnabled) return;
+                this.init();
+
+                // Tạo tiếng Noise đơn giản
+                const bufferSize = this.ctx.sampleRate * 0.2;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+
+                noise.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                noise.start();
+            }
+
+            // Tiếng mất mạng khi bong bóng chạm đất
+            playDamage() {
+                if (!this.sfxEnabled) return;
+                this.init();
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(55, this.ctx.currentTime + 0.3);
+
+                gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+            }
+
+            // Phát giai điệu nhạc nền synth bằng câu lệnh lặp
+            toggleBgm(enable) {
+                this.bgmEnabled = enable;
+                if (enable) {
+                    this.init();
+                    if (!this.bgmTimer) {
+                        const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; // C4, E4, G4, C5...
+                        this.bgmTimer = setInterval(() => {
+                            if (!this.bgmEnabled) return;
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.type = 'sine';
+                            osc.frequency.setValueAtTime(notes[this.bgmNoteIndex], this.ctx.currentTime);
+                            gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+                            osc.connect(gain);
+                            gain.connect(this.ctx.destination);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.25);
+                            this.bgmNoteIndex = (this.bgmNoteIndex + 1) % notes.length;
+                        }, 300);
+                    }
+                } else {
+                    if (this.bgmTimer) {
+                        clearInterval(this.bgmTimer);
+                        this.bgmTimer = null;
+                    }
+                }
+            }
+        }
+
+        const audio = new AudioSynth();
+
+        // =========================================================================
+        // 2. DỮ LIỆU TỪ VỰNG TIN HỌC (DỄ DÀNG CHỈNH SỬA BỞI GIÁO VIÊN)
+        // =========================================================================
+        const VOCABULARY_LISTS = {
+            // Chế độ 1: Chữ cái đơn A-Z
+            mode1: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""),
+
+            // Chế độ 2: Từ vựng Tin học Cơ bản
+            mode2: [
+                "RAM", "CPU", "BYTE", "FILE", "DATA", "WEB", "WIFI", "DISK",
+                "MOUSE", "KEY", "LINK", "CODE", "ICON", "USER", "PORT", "APP",
+                "MAIL", "SAVE", "TEXT", "HTML", "HOST", "CHAT", "PINT", "PING"
+            ],
+
+            // Chế độ 3: Thuật ngữ Tin học Nâng cao
+            mode3: [
+                "ALGORITHM", "HARDWARE", "SOFTWARE", "NETWORK", "INTERNET",
+                "DATABASE", "PYTHON", "SECURITY", "COMPILER", "VARIABLE",
+                "FUNCTION", "PROTOCOL", "FIREWALL", "MONITOR", "GRAPHICS",
+                "MEMORIES", "ENCRYPTION", "OVERFLOW", "KEYBOARD"
+            ]
+        };
+
+        // =========================================================================
+        // 3. KHỞI TẠO BIẾN TRẠNG THÁI GAME (GAME STATE)
+        // =========================================================================
+        const state = {
+            isPlaying: false,
+            isPaused: false,
+            mode: '1',               // '1', '2', '3'
+            difficulty: 'easy',      // 'easy', 'medium', 'hard'
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            lives: 5,
+            totalKeyPresses: 0,
+            correctKeyPresses: 0,
+            startTime: null,
+            elapsedTime: 0,
+            
+            // Cấu hình nhịp rơi & spawn
+            spawnTimer: 0,
+            spawnInterval: 120,      // tính theo frame
+            speedMultiplier: 1.0,
+
+            // Đối tượng đang được ngắm gõ
+            activeBubble: null
+        };
+
+        // Mảng chứa thực thể
+        let bubbles = [];
+        let particles = [];
+
+        // =========================================================================
+        // 4. LỚP ĐỐI TƯỢNG BONG BÓNG (BUBBLE ENTITY)
+        // =========================================================================
+        class Bubble {
+            constructor(canvasWidth, text, speed) {
+                this.text = text;
+                this.typedIndex = 0; // Số ký tự đã gõ đúng
+                
+                // Kích thước bong bóng theo độ dài từ
+                this.radius = Math.max(26, text.length * 7 + 14);
+                this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
+                this.y = -this.radius;
+                this.speed = speed;
+                
+                // Mẫu màu Gradient sinh động
+                const colorPalettes = [
+                    { bg: '#00f0ff', text: '#0a0e17' }, // Cyan
+                    { bg: '#ff007f', text: '#ffffff' }, // Pink
+                    { bg: '#7000ff', text: '#ffffff' }, // Purple
+                    { bg: '#ffe600', text: '#0a0e17' }, // Yellow
+                    { bg: '#00ff66', text: '#0a0e17' }  // Green
+                ];
+                this.colorScheme = colorPalettes[Math.floor(Math.random() * colorPalettes.length)];
+                
+                this.shakeOffset = 0;
+                this.isTargeted = false;
+            }
+
+            update() {
+                this.y += this.speed;
+                if (this.shakeOffset > 0) {
+                    this.shakeOffset -= 0.5;
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x + (Math.sin(Date.now() * 0.05) * this.shakeOffset), this.y);
+
+                // Hiệu ứng vòng sáng quanh bong bóng nếu đang được gõ nhắm vào
+                if (this.isTargeted) {
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.radius + 6, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#00f0ff';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([6, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                // Vẽ bong bóng chính
+                ctx.beginPath();
+                ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.colorScheme.bg;
+                ctx.shadowColor = this.colorScheme.bg;
+                ctx.shadowBlur = this.isTargeted ? 18 : 8;
+                ctx.fill();
+
+                // Ánh kim bóng bẩy trên bong bóng
+                ctx.beginPath();
+                ctx.arc(-this.radius * 0.3, -this.radius * 0.3, this.radius * 0.25, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.fill();
+
+                // Vẽ chữ inside bong bóng
+                ctx.font = `bold ${this.radius * 0.55}px 'Fira Code', monospace`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                if (this.typedIndex > 0) {
+                    // Highlight chữ đã gõ đúng màu Xanh lá lá cây sáng, chữ chưa gõ màu tối
+                    const typedPart = this.text.substring(0, this.typedIndex);
+                    const remainingPart = this.text.substring(this.typedIndex);
+
+                    const typedWidth = ctx.measureText(typedPart).width;
+                    const fullWidth = ctx.measureText(this.text).width;
+                    const startX = -fullWidth / 2;
+
+                    // Phần đã gõ
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#10b981'; // Green accent
+                    ctx.fillText(typedPart, startX, 0);
+
+                    // Phần chưa gõ
+                    ctx.fillStyle = this.colorScheme.text;
+                    ctx.fillText(remainingPart, startX + typedWidth, 0);
+                } else {
+                    ctx.fillStyle = this.colorScheme.text;
+                    ctx.fillText(this.text, 0, 0);
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // =========================================================================
+        // 5. HỆ THỐNG HẠT NỔ PHÁO HOA (PARTICLE EXPLOSION)
+        // =========================================================================
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.radius = Math.random() * 4 + 2;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.03 + 0.015;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.1; // Trọng lực nhẹ
+                this.alpha -= this.decay;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function createExplosion(x, y, color, count = 25) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        // =========================================================================
+        // 6. KHỞI TẠO CANVAS & RESIZE
+        // =========================================================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const arenaWrapper = document.getElementById('arenaWrapper');
+
+        function resizeCanvas() {
+            canvas.width = arenaWrapper.clientWidth;
+            canvas.height = arenaWrapper.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // =========================================================================
+        // 7. THUẬT TOÁN XỬ LÝ PHÍM GÕ (INPUT RECOGNITION LOGIC)
+        // =========================================================================
+        window.addEventListener('keydown', (e) => {
+            // Bỏ qua các phím điều khiển hệ thống ngoại trừ Space khi tạm dừng
+            if (e.key === ' ' && (!state.isPlaying || state.isPaused)) {
+                e.preventDefault();
+                togglePlayStart();
+                return;
+            }
+
+            if (!state.isPlaying || state.isPaused) return;
+
+            const charTyped = e.key.toUpperCase();
+
+            // Chỉ nhận ký tự A-Z hoặc chữ cái
+            if (charTyped.length !== 1 || !/[A-Z]/.test(charTyped)) return;
+
+            state.totalKeyPresses++;
+
+            // 1. Nếu đã có Active Bubble đang gõ dở
+            if (state.activeBubble) {
+                const targetChar = state.activeBubble.text[state.activeBubble.typedIndex];
+                if (charTyped === targetChar) {
+                    // Gõ đúng ký tự tiếp theo
+                    state.correctKeyPresses++;
+                    state.activeBubble.typedIndex++;
+                    audio.playPop(1 + state.activeBubble.typedIndex * 0.1);
+
+                    // Kiểm tra xem đã hoàn thành toàn bộ từ chưa
+                    if (state.activeBubble.typedIndex >= state.activeBubble.text.length) {
+                        popBubble(state.activeBubble);
+                        state.activeBubble = null;
+                    }
+                    updateStatsDisplay();
+                    return;
+                } else {
+                    // Gõ sai trong từ đang nhắm đến
+                    handleMistake(state.activeBubble);
+                    updateStatsDisplay();
+                    return;
+                }
+            }
+
+            // 2. Nếu chưa có Active Bubble, tìm bong bóng thấp nhất chứa phím đầu tiên
+            let candidateBubbles = bubbles.filter(b => b.text[0] === charTyped);
+            
+            if (candidateBubbles.length > 0) {
+                // Ưu tiên chọn bong bóng nằm thấp nhất (gần chạm đất nhất)
+                candidateBubbles.sort((a, b) => b.y - a.y);
+                const target = candidateBubbles[0];
+
+                target.isTargeted = true;
+                target.typedIndex = 1;
+                state.correctKeyPresses++;
+                audio.playPop(1.1);
+
+                if (target.typedIndex >= target.text.length) {
+                    popBubble(target);
+                } else {
+                    state.activeBubble = target;
+                }
+            } else {
+                // Không có bong bóng nào bắt đầu bằng ký tự này -> Gõ sai!
+                handleMistake(null);
+            }
+
+            updateStatsDisplay();
+        });
+
+        // Xử lý khi gõ sai
+        function handleMistake(bubble) {
+            state.combo = 0;
+            audio.playBuzz();
+
+            // Hiệu ứng rung màn hình Arena
+            arenaWrapper.classList.remove('shake-screen');
+            void arenaWrapper.offsetWidth; // Trigger reflow
+            arenaWrapper.classList.add('shake-screen');
+
+            if (bubble) {
+                bubble.shakeOffset = 10;
+            }
+        }
+
+        // Xử lý khi gõ nổ bong bóng thành công
+        function popBubble(bubble) {
+            state.combo++;
+            if (state.combo > state.maxCombo) {
+                state.maxCombo = state.combo;
+            }
+
+            // Tính điểm: (Độ dài từ * Mức khó * Combo)
+            const diffBonus = state.difficulty === 'easy' ? 10 : (state.difficulty === 'medium' ? 20 : 35);
+            const comboMultiplier = 1 + Math.floor(state.combo / 5) * 0.5;
+            const pointsEarned = Math.round(bubble.text.length * diffBonus * comboMultiplier);
+
+            state.score += pointsEarned;
+
+            // Âm thanh pháo hoa & hạt nổ
+            createExplosion(bubble.x, bubble.y, bubble.colorScheme.bg, 20 + bubble.text.length * 3);
+            audio.playExplosion();
+
+            // Xóa khỏi mảng bubbles
+            bubbles = bubbles.filter(b => b !== bubble);
+        }
+
+        // =========================================================================
+        // 8. CẬP NHẬT THỐNG KÊ (WPM & ACCURACY CALCULATIONS)
+        // =========================================================================
+        function updateStatsDisplay() {
+            document.getElementById('scoreText').innerText = state.score.toLocaleString();
+            document.getElementById('maxComboText').innerText = state.maxCombo;
+
+            // Tính % Chính xác
+            const acc = state.totalKeyPresses > 0 
+                ? Math.round((state.correctKeyPresses / state.totalKeyPresses) * 100) 
+                : 100;
+            document.getElementById('accuracyText').innerText = `${acc}%`;
+
+            // Tính WPM: (Số ký tự đúng / 5) / Phút
+            if (state.startTime) {
+                const elapsedMinutes = (Date.now() - state.startTime) / 60000;
+                const wpm = elapsedMinutes > 0 ? Math.round((state.correctKeyPresses / 5) / elapsedMinutes) : 0;
+                document.getElementById('wpmText').innerText = wpm;
+            }
+
+            // Hiển thị Badge Combo
+            const comboBadge = document.getElementById('comboBadge');
+            if (state.combo >= 3) {
+                comboBadge.innerText = `COMBO x${state.combo}`;
+                comboBadge.classList.remove('hidden');
+            } else {
+                comboBadge.classList.add('hidden');
+            }
+
+            // Cập nhật trạng thái mục tiêu gợi ý
+            const activeWordHint = document.getElementById('activeWordHint');
+            if (state.activeBubble) {
+                activeWordHint.innerText = state.activeBubble.text;
+            } else {
+                activeWordHint.innerText = '---';
+            }
+
+            // Cập nhật Trái tim Mạng
+            const livesContainer = document.getElementById('livesContainer');
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < 5; i++) {
+                if (i < state.lives) {
+                    livesContainer.innerHTML += '<i class="fa-solid fa-heart animate-pulse"></i>';
+                } else {
+                    livesContainer.innerHTML += '<i class="fa-regular fa-heart opacity-30"></i>';
+                }
+            }
+        }
+
+        // =========================================================================
+        // 9. VÒNG LẶP CHÍNH (MAIN GAME LOOP)
+        // =========================================================================
+        let animationFrameId = null;
+
+        function gameLoop() {
+            if (!state.isPlaying || state.isPaused) return;
+
+            // xóa canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Tự động Spawn Bong bóng mới
+            state.spawnTimer++;
+            if (state.spawnTimer >= state.spawnInterval) {
+                spawnBubble();
+                state.spawnTimer = 0;
+            }
+
+            // Cập nhật & Vẽ Bong bóng
+            for (let i = bubbles.length - 1; i >= 0; i--) {
+                const b = bubbles[i];
+                b.update();
+                b.draw(ctx);
+
+                // Khi Bong bóng chạm đáy (Mặt đất)
+                if (b.y + b.radius >= canvas.height - 5) {
+                    audio.playDamage();
+                    createExplosion(b.x, canvas.height - 10, '#ef4444', 30);
+                    
+                    // Trừ 1 Mạng
+                    state.lives--;
+                    state.combo = 0;
+
+                    if (state.activeBubble === b) {
+                        state.activeBubble = null;
+                    }
+
+                    bubbles.splice(i, 1);
+                    updateStatsDisplay();
+
+                    // Xử lý thua trận (Game Over)
+                    if (state.lives <= 0) {
+                        gameOver();
+                        return;
+                    }
+                }
+            }
+
+            // Cập nhật & Vẽ Hạt Nổ Particle
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw(ctx);
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            animationFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        // Sinh bong bóng mới dựa trên Chế độ & Độ khó
+        function spawnBubble() {
+            const vocabList = VOCABULARY_LISTS[`mode${state.mode}`];
+            const randomText = vocabList[Math.floor(Math.random() * vocabList.length)];
+
+            // Tốc độ rơi theo độ khó
+            let baseSpeed = 1.0;
+            if (state.difficulty === 'medium') baseSpeed = 1.6;
+            if (state.difficulty === 'hard') baseSpeed = 2.4;
+
+            const bubble = new Bubble(canvas.width, randomText, baseSpeed * state.speedMultiplier);
+            bubbles.push(bubble);
+        }
+
+        // =========================================================================
+        // 10. ĐIỀU KHIỂN TRẠNG THÁI GAME (START, PAUSE, RESET, GAME OVER)
+        // =========================================================================
+        function startGame() {
+            state.isPlaying = true;
+            state.isPaused = false;
+            state.score = 0;
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.lives = 5;
+            state.totalKeyPresses = 0;
+            state.correctKeyPresses = 0;
+            state.startTime = Date.now();
+            state.spawnTimer = 0;
+            state.activeBubble = null;
+            bubbles = [];
+            particles = [];
+
+            // Cấu hình nhịp spawn theo độ khó
+            if (state.difficulty === 'easy') state.spawnInterval = 130;
+            if (state.difficulty === 'medium') state.spawnInterval = 90;
+            if (state.difficulty === 'hard') state.spawnInterval = 60;
+
+            document.getElementById('overlayModal').classList.add('hidden');
+            document.getElementById('btnStart').disabled = true;
+            document.getElementById('btnStart').classList.add('opacity-50');
+            document.getElementById('btnPause').disabled = false;
+            document.getElementById('btnPause').classList.remove('opacity-50', 'cursor-not-allowed');
+
+            document.getElementById('gameStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> ĐANG CHƠI`;
+            document.getElementById('gameStatusBadge').className = `text-xs font-bold px-3 py-1 rounded-full bg-slate-800/80 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5`;
+
+            updateStatsDisplay();
+            cancelAnimationFrame(animationFrameId);
+            gameLoop();
+        }
+
+        function togglePause() {
+            if (!state.isPlaying) return;
+
+            state.isPaused = !state.isPaused;
+            const btnPause = document.getElementById('btnPause');
+
+            if (state.isPaused) {
+                btnPause.innerHTML = `<i class="fa-solid fa-play"></i>`;
+                document.getElementById('overlayTitle').innerText = 'ĐANG TẠM DỪNG';
+                document.getElementById('overlayDesc').innerText = 'Nhấn Nút Bắt đầu hoặc phím Space để tiếp tục trận đấu.';
+                document.getElementById('overlayIcon').className = 'fa-solid fa-pause';
+                document.getElementById('gameOverStats').classList.add('hidden');
+                document.getElementById('overlayModal').classList.remove('hidden');
+            } else {
+                btnPause.innerHTML = `<i class="fa-solid fa-pause"></i>`;
+                document.getElementById('overlayModal').classList.add('hidden');
+                gameLoop();
+            }
+        }
+
+        function resetGame() {
+            state.isPlaying = false;
+            state.isPaused = false;
+            bubbles = [];
+            particles = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStart').classList.remove('opacity-50');
+            document.getElementById('btnPause').disabled = true;
+            document.getElementById('btnPause').classList.add('opacity-50', 'cursor-not-allowed');
+
+            document.getElementById('overlayTitle').innerText = 'SẴN SÀNG CHINH PHỤC?';
+            document.getElementById('overlayDesc').innerText = 'Chọn chế độ chơi và nhấn Bắt Đầu để thử thách kỹ năng gõ phím của bạn!';
+            document.getElementById('overlayIcon').className = 'fa-solid fa-keyboard';
+            document.getElementById('gameOverStats').classList.add('hidden');
+            document.getElementById('overlayModal').classList.remove('hidden');
+
+            document.getElementById('gameStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-400 animate-ping"></span> SẴN SÀNG`;
+            document.getElementById('gameStatusBadge').className = `text-xs font-bold px-3 py-1 rounded-full bg-slate-800/80 text-yellow-400 border border-yellow-500/30 flex items-center gap-1.5`;
+
+            updateStatsDisplay();
+        }
+
+        function gameOver() {
+            state.isPlaying = false;
+            
+            // Lưu kết quả vào LocalStorage
+            saveHighScore();
+
+            // Hiển thị Modal Game Over
+            document.getElementById('overlayTitle').innerText = 'KẾT THÚC TRẬN ĐẤU!';
+            document.getElementById('overlayDesc').innerText = 'Bạn đã hết sinh mạng. Hãy xem lại kết quả gõ phím ấn tượng của bạn bên dưới:';
+            document.getElementById('overlayIcon').className = 'fa-solid fa-trophy text-yellow-400';
+
+            const elapsedMinutes = (Date.now() - state.startTime) / 60000;
+            const wpm = elapsedMinutes > 0 ? Math.round((state.correctKeyPresses / 5) / elapsedMinutes) : 0;
+            const acc = state.totalKeyPresses > 0 ? Math.round((state.correctKeyPresses / state.totalKeyPresses) * 100) : 100;
+
+            document.getElementById('finalScore').innerText = state.score.toLocaleString();
+            document.getElementById('finalWpm').innerText = wpm;
+            document.getElementById('finalAcc').innerText = `${acc}%`;
+            document.getElementById('finalCombo').innerText = state.maxCombo;
+
+            document.getElementById('gameOverStats').classList.remove('hidden');
+            document.getElementById('overlayActionBtn').innerText = 'CHƠI LẠI TRẬN MỚI (Space)';
+            document.getElementById('overlayModal').classList.remove('hidden');
+
+            document.getElementById('btnStart').disabled = false;
+            document.getElementById('btnStart').classList.remove('opacity-50');
+            document.getElementById('btnPause').disabled = true;
+            document.getElementById('btnPause').classList.add('opacity-50');
+        }
+
+        function togglePlayStart() {
+            if (!state.isPlaying) {
+                startGame();
+            } else if (state.isPaused) {
+                togglePause();
+            }
+        }
+
+        // =========================================================================
+        // 11. XỬ LÝ LƯU KỶ LỤC LOCALSTORAGE & RENDER BẢNG XẾP HẠNG
+        // =========================================================================
+        function saveHighScore() {
+            const elapsedMinutes = (Date.now() - state.startTime) / 60000;
+            const wpm = elapsedMinutes > 0 ? Math.round((state.correctKeyPresses / 5) / elapsedMinutes) : 0;
+            
+            const newRecord = {
+                score: state.score,
+                wpm: wpm,
+                mode: state.mode,
+                date: new Date().toLocaleDateString('vi-VN')
+            };
+
+            let scores = JSON.parse(localStorage.getItem('typing_hero_scores') || '[]');
+            scores.push(newRecord);
+            scores.sort((a, b) => b.score - a.score);
+            scores = scores.slice(0, 5); // Giữ Top 5
+
+            localStorage.setItem('typing_hero_scores', JSON.stringify(scores));
+            renderHighScores();
+        }
+
+        function renderHighScores() {
+            const scoresList = document.getElementById('scoresList');
+            const scores = JSON.parse(localStorage.getItem('typing_hero_scores') || '[]');
+
+            if (scores.length === 0) {
+                scoresList.innerHTML = `<div class="text-center py-4 text-xs text-slate-500 italic">Chưa có kỷ lục nào. Hãy bắt đầu chơi!</div>`;
+                return;
+            }
+
+            scoresList.innerHTML = scores.map((item, idx) => `
+                <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-2 flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full ${idx === 0 ? 'bg-yellow-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-300 font-bold'} flex items-center justify-center text-[10px]">
+                            ${idx + 1}
+                        </span>
+                        <div>
+                            <div class="font-bold text-cyan-400 font-code">${item.score.toLocaleString()} đ</div>
+                            <div class="text-[9px] text-slate-500">Chế độ ${item.mode} • ${item.date}</div>
+                        </div>
+                    </div>
+                    <span class="font-bold text-emerald-400 font-code">${item.wpm} WPM</span>
+                </div>
+            `).join('');
+        }
+
+        // =========================================================================
+        // 12. GẮN SỰ KIỆN CHO NÚT ĐIỀU KHIỂN & CÀI ĐẶT
+        // =========================================================================
+        document.getElementById('btnStart').addEventListener('click', startGame);
+        document.getElementById('btnPause').addEventListener('click', togglePause);
+        document.getElementById('btnReset').addEventListener('click', resetGame);
+        document.getElementById('overlayActionBtn').addEventListener('click', togglePlayStart);
+
+        // Chuyển đổi Chế độ Chơi
+        document.querySelectorAll('#modeSelector .mode-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#modeSelector .mode-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-cyan-500', 'text-slate-950', 'shadow-md');
+                    b.classList.add('bg-slate-800', 'text-slate-300');
+                    b.querySelector('.fa-circle-check, .fa-circle')?.classList.add('opacity-0');
+                });
+
+                const target = e.currentTarget;
+                target.classList.add('active', 'bg-cyan-500', 'text-slate-950', 'shadow-md');
+                target.classList.remove('bg-slate-800', 'text-slate-300');
+                target.querySelector('.fa-circle-check, .fa-circle')?.classList.remove('opacity-0');
+
+                state.mode = target.dataset.mode;
+                resetGame();
+            });
+        });
+
+        // Chuyển đổi Mức Độ Khó
+        document.querySelectorAll('#diffSelector .diff-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('#diffSelector .diff-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-emerald-500', 'bg-yellow-500', 'bg-red-500', 'text-slate-950');
+                    b.classList.add('bg-slate-800', 'text-slate-300');
+                });
+
+                const target = e.currentTarget;
+                const diff = target.dataset.diff;
+                state.difficulty = diff;
+
+                if (diff === 'easy') target.classList.add('bg-emerald-500', 'text-slate-950');
+                if (diff === 'medium') target.classList.add('bg-yellow-500', 'text-slate-950');
+                if (diff === 'hard') target.classList.add('bg-red-500', 'text-slate-950');
+
+                target.classList.remove('bg-slate-800', 'text-slate-300');
+                resetGame();
+            });
+        });
+
+        // Toggle Theme Sáng / Tối
+        document.getElementById('btnThemeToggle').addEventListener('click', () => {
+            const html = document.documentElement;
+            const themeDot = document.getElementById('themeDot');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeDot.classList.remove('translate-x-5');
+                themeDot.classList.add('translate-x-0');
+            } else {
+                html.classList.add('dark');
+                themeDot.classList.remove('translate-x-0');
+                themeDot.classList.add('translate-x-5');
+            }
+        });
+
+        // Toggle Âm thanh SFX
+        document.getElementById('btnSfxToggle').addEventListener('click', () => {
+            audio.sfxEnabled = !audio.sfxEnabled;
+            const sfxDot = document.getElementById('sfxDot');
+            const sfxIcon = document.getElementById('sfxIcon');
+            if (audio.sfxEnabled) {
+                sfxDot.classList.add('translate-x-5');
+                sfxDot.classList.remove('translate-x-0');
+                sfxIcon.className = 'fa-solid fa-volume-high text-emerald-400';
+            } else {
+                sfxDot.classList.remove('translate-x-5');
+                sfxDot.classList.add('translate-x-0');
+                sfxIcon.className = 'fa-solid fa-volume-xmark text-slate-500';
+            }
+        });
+
+        // Toggle Nhạc Nền BGM
+        document.getElementById('btnBgmToggle').addEventListener('click', () => {
+            const bgmDot = document.getElementById('bgmDot');
+            const bgmBtn = document.getElementById('btnBgmToggle');
+            const isEnabled = !audio.bgmEnabled;
+            audio.toggleBgm(isEnabled);
+
+            if (isEnabled) {
+                bgmDot.classList.add('translate-x-5');
+                bgmDot.classList.remove('translate-x-0');
+                bgmBtn.classList.add('bg-cyan-600');
+                bgmBtn.classList.remove('bg-slate-700');
+            } else {
+                bgmDot.classList.remove('translate-x-5');
+                bgmDot.classList.add('translate-x-0');
+                bgmBtn.classList.remove('bg-cyan-600');
+                bgmBtn.classList.add('bg-slate-700');
+            }
+        });
+
+        // Toggle Fullscreen
+        document.getElementById('btnFullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        });
+
+        // Xóa Kỷ Lục
+        document.getElementById('btnClearScores').addEventListener('click', () => {
+            localStorage.removeItem('typing_hero_scores');
+            renderHighScores();
+        });
+
+        // Tải danh sách Kỷ lục khi khởi động
+        renderHighScores();
+    </script>
+</body>
+</html>
