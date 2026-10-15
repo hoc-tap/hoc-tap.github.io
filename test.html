@@ -2,52 +2,22 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hiển thị JSON bằng JavaScript</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-            background-color: #f9f9f9;
-        }
-        h2 {
-            color: #333;
-        }
-        /* Thẻ pre giúp giữ nguyên định dạng khoảng trắng và xuống dòng của JSON */
-        pre {
-            background-color: #ffffff;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            font-family: Consolas, monospace;
-            font-size: 14px;
-            color: #d63384;
-        }
-    </style>
+    <title>JSON API Data</title>
 </head>
 <body>
-
-    <h2>Dữ liệu JSON hiển thị từ JavaScript</h2>
-    
-    <!-- Nơi chứa nội dung JSON -->
-    <pre id="json-output">Đang tải dữ liệu...</pre>
-
     <script>
-        // Bước 1: Tạo mảng hoặc đối tượng dữ liệu trong JavaScript
-        const danhSachHocSinh = [
-            { id: 1, hoTen: "Nguyễn Văn An", lop: "8A", diemTB: 8.5 },
-            { id: 2, hoTen: "Trần Thị Bình", lop: "8B", diemTB: 9.0 },
-            { id: 3, hoTen: "Lê Văn Cường", lop: "8C", diemTB: 7.8 }
+        // 1. Tạo dữ liệu bằng JavaScript thuần
+        const danhSach = [
+            { id: 1, hoTen: "Nguyễn Văn An", monHoc: "Tin học", diem: 9.5 },
+            { id: 2, hoTen: "Trần Thị Bình", monHoc: "Tin học", diem: 8.8 },
+            { id: 3, hoTen: "Lê Văn Cường", monHoc: "Tin học", diem: 9.0 }
         ];
 
-        // Bước 2: Chuyển đối tượng JS thành chuỗi JSON
-        // Tham số thứ 3 (số 2) dùng để thụt lề (indent) giúp JSON đẹp và dễ đọc hơn
-        const jsonString = JSON.stringify(danhSachHocSinh, null, 2);
+        // 2. Chuyển đối tượng/mảng thành chuỗi JSON (có thụt lề 2 khoảng trắng để dễ nhìn)
+        const chuoiJson = JSON.stringify(danhSach, null, 2);
 
-        // Bước 3: Đưa chuỗi JSON vào phần tử HTML thông qua ID
-        document.getElementById("json-output").textContent = jsonString;
+        // 3. In toàn bộ chuỗi JSON ra nội dung của trang (văn bản thuần túy)
+        document.body.innerText = chuoiJson;
     </script>
-
 </body>
 </html>
