@@ -2,22 +2,42 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>JSON API Data</title>
+    <title>JSON API tùy chỉnh theo URL</title>
 </head>
 <body>
     <script>
-        // 1. Tạo dữ liệu bằng JavaScript thuần
+        // 1. Dữ liệu mẫu (giống như cơ sở dữ liệu)
         const danhSach = [
-            { id: 1, hoTen: "Nguyễn Văn An", monHoc: "Tin học", diem: 9.5 },
-            { id: 2, hoTen: "Trần Thị Bình", monHoc: "Tin học", diem: 8.8 },
-            { id: 3, hoTen: "Lê Văn Cường", monHoc: "Tin học", diem: 9.0 }
+            { id: 1, hoTen: "Nguyễn Văn An", lop: "8A", diem: 9.5 },
+            { id: 2, hoTen: "Trần Thị Bình", lop: "8B", diem: 8.8 },
+            { id: 3, hoTen: "Lê Văn Cường", lop: "8A", diem: 9.0 },
+            { id: 4, hoTen: "Phạm Thị Dung", lop: "8C", diem: 7.5 }
         ];
 
-        // 2. Chuyển đối tượng/mảng thành chuỗi JSON (có thụt lề 2 khoảng trắng để dễ nhìn)
-        const chuoiJson = JSON.stringify(danhSach, null, 2);
+        // 2. Đọc tham số từ URL (ví dụ: ?id=2 hoặc ?lop=8A)
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const lop = urlParams.get('lop');
 
-        // 3. In toàn bộ chuỗi JSON ra nội dung của trang (văn bản thuần túy)
-        document.body.innerText = chuoiJson;
+        let ketQua;
+
+        // 3. Xử lý logic lọc dữ liệu dựa vào tham số truyền vào URL
+        if (id) {
+            // Nếu URL có ?id=... -> Tìm kiếm chính xác 1 phần tử
+            ketQua = danhSach.find(item => item.id == id) || { thongBao: "Không tìm thấy ID phù hợp" };
+        } else if (lop) {
+            // Nếu URL có ?lop=... -> Lọc ra danh sách theo lớp
+            ketQua = danhSach.filter(item => item.lop.toLowerCase() === lop.toLowerCase());
+            if (ketQua.length === 0) {
+                ketQua = { thongBao: "Không tìm thấy lớp phù hợp" };
+            }
+        } else {
+            // Nếu không truyền tham số gì -> Trả về toàn bộ danh sách
+            ketQua = danhSach;
+        }
+
+        // 4. In kết quả dạng JSON thô ra trang
+        document.body.innerText = JSON.stringify(ketQua, null, 2);
     </script>
 </body>
 </html>
