@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Du hành Hệ Mặt Trời – Tin học 8 Bài 5</title>
+<style>
+:root{--bg:#eef3ff;--panel:rgba(255,255,255,.92);--line:rgba(90,110,200,.28);--tx:#1c2545;--mute:#5a678f;--ok:#12b774;--bad:#e5385a;--warn:#e08a00;--pri:#5b7cff;--acc:#ff9f43}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(ellipse at 20% 10%,#ffffff 0%,#e7eeff 45%,#d8e3ff 100%);color:var(--tx);overflow:hidden}
+#bg{display:none}
+#fx{position:fixed;inset:0;z-index:60;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+.hide{display:none!important}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 30px;width:min(560px,100%);box-shadow:0 20px 50px rgba(60,80,160,.22);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.logo{font-size:56px;text-align:center;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
+.card h1{text-align:center;font-size:26px;margin:6px 0 4px;background:linear-gradient(90deg,#ff7a18,#ff3d77,#7a4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .sub{text-align:center;color:var(--mute);font-size:14px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 5px;font-weight:600}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--tx);font-size:16px;outline:none;transition:.2s}
+input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(91,124,255,.22)}
+input.err{border-color:var(--bad);animation:shake .4s}
+.rules{margin:16px 0;padding:12px 14px;border-radius:12px;background:#eef2ff;font-size:13.5px;line-height:1.7;color:#34406b}
+.btn{border:none;border-radius:14px;padding:13px 22px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#5b7cff,#8b5bff);box-shadow:0 6px 18px rgba(91,124,255,.35);transition:.2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.go{width:100%;margin-top:6px;background:linear-gradient(135deg,#ff9f43,#ff4d79);box-shadow:0 6px 18px rgba(255,100,90,.35)}
+.btn.ghost{background:#eef2ff;color:var(--tx);box-shadow:none;border:1px solid var(--line);font-weight:600;font-size:14px;padding:10px 16px}
+.row{display:flex;gap:10px;margin-top:10px}
+.row .btn{flex:1}
+#game{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,26vw,440px);gap:14px;padding:14px}
+.left,.right{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:0;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(60,80,160,.15)}
+.left{padding:18px 22px;overflow:hidden;position:relative}
+.qwrap{flex:1;overflow-y:auto;padding-right:4px}
+.pips{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.pip{padding:5px 14px;border-radius:99px;font-size:clamp(13px,1.3vw,20px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
+.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.08)}
+.pip.ok{background:#d6f7e8;color:#0b7a53}
+.pip.no{background:#ffdfe6;color:#c42b4b}
+.tbar{height:8px;border-radius:99px;background:#e2e8f8;overflow:hidden;margin-bottom:14px}
+.tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#ffc93c);transform-origin:left}
+.tbar.low i{background:linear-gradient(90deg,#ff5d7a,#ff9f43)}
+.lvl{display:inline-block;padding:6px 16px;border-radius:99px;font-size:clamp(14px,1.4vw,22px);font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl.NB{background:#d4f7e8;color:#0b7a53}.lvl.TH{background:#fff1c2;color:#8a6100}.lvl.VD{background:#ffd9ec;color:#a3195f}
+.qtext{font-size:clamp(22px,2.5vw,42px);line-height:1.4;font-weight:700;margin-bottom:20px}
+.enter{animation:slideIn .55s cubic-bezier(.2,1,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:18px 20px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--tx);font-weight:600;font-size:clamp(21px,2.4vw,40px);line-height:1.3;transition:.18s;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:var(--pri);transform:translateY(-3px);background:#f1f4ff}
+.opt b{flex:none;width:clamp(40px,3.6vw,64px);height:clamp(40px,3.6vw,64px);border-radius:50%;display:grid;place-items:center;background:#e3e9ff;color:#3a4a9a;font-size:clamp(20px,2.2vw,36px)}
+.opt span{word-break:break-word}
+.opt:disabled{cursor:default}
+.opt.good{border-color:var(--ok);background:#dcf8ec;animation:glow 1s ease 2}
+.opt.good b{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:#ffe3e9;animation:shake .45s}
+.opt.wrong b{background:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+@keyframes glow{50%{box-shadow:0 0 24px rgba(18,183,116,.55)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.fb{margin-top:16px;border-radius:14px;padding:14px 16px;animation:slideIn .5s}
+.fb.ok{background:#e4faf0;border:1px solid var(--ok)}
+.fb.no{background:#ffecef;border:1px solid var(--bad)}
+.fb h3{font-size:clamp(20px,2.2vw,34px);margin-bottom:8px}
+.fb p{line-height:1.5;font-size:clamp(17px,1.8vw,30px);color:#2a3560}
+.fb .ans{margin-bottom:6px;font-weight:600}
+.nextrow{display:flex;justify-content:flex-end;padding-top:12px}
+.nextrow .btn{font-size:clamp(17px,1.7vw,28px);padding:14px 28px}
+.illus{margin:0 0 16px;padding:10px 12px;border-radius:14px;background:#f3f6ff;border:1px dashed var(--line);overflow-x:auto}
+.sheet{border-collapse:collapse;font-size:clamp(15px,1.6vw,26px);margin:auto;background:#fff;color:#1b2540;box-shadow:0 4px 14px rgba(60,80,160,.25)}
+.sheet th{background:#e8ecf5;font-weight:700;color:#4a5578;padding:4px 10px;border:1px solid #c5cce0;min-width:36px}
+.sheet td{padding:7px 14px;border:1px solid #d0d6e6;min-width:clamp(90px,9vw,150px);text-align:center;font-family:Consolas,monospace;height:clamp(32px,3vw,52px)}
+.sheet td.hd{background:#dfe7ff;font-weight:700;font-family:inherit}
+.sheet td.tbl{background:#fff4c9}
+.sheet td.src{background:#cfe3ff;outline:3px solid #3b82f6;outline-offset:-3px;font-weight:700}
+.sheet td.tgt{background:#ffe2c2;outline:3px solid #ff8a1f;outline-offset:-3px;font-weight:800;animation:pulse 1.2s infinite}
+.sheet td.tgtok{background:#c9f7de;outline:3px solid #19c37d;outline-offset:-3px;font-weight:800;animation:pop .5s}
+@keyframes pulse{50%{background:#fff0dc}}
+.cap{text-align:center;font-size:clamp(13px,1.3vw,20px);color:var(--mute);margin-top:7px}
+.right{padding:14px;gap:10px;overflow:hidden}
+.right h2{font-size:clamp(15px,1.3vw,22px);line-height:1.35;text-align:center;color:#4b34d8}
+.right h2 small{display:block;color:var(--mute);font-weight:500;font-size:12px;margin-top:2px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#eef2ff;border-radius:12px;padding:7px 10px;min-width:0}
+.chip small{display:block;font-size:10.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
+.chip b{font-size:clamp(15px,1.3vw,22px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.big b{font-size:clamp(22px,2vw,34px);color:#d97706}
+.timer{display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:8px 12px}
+.timer svg{width:clamp(62px,5vw,86px);height:clamp(62px,5vw,86px);flex:none}
+.timer .ring{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.timer .t{font-size:clamp(34px,3.2vw,54px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.timer small{color:var(--mute);font-size:12px}
+.timer.low .t{color:var(--bad);animation:beat .5s infinite}
+@keyframes beat{50%{transform:scale(1.18)}}
+.tools{display:flex;gap:8px}
+.tools .btn{flex:1;padding:8px 6px;font-size:13px}
+.skywrap{flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid #1d2a5c;background:radial-gradient(circle at center,#0d1a45,#04060f);position:relative}
+#sky{width:100%;height:100%;display:block}
+.hint{position:absolute;left:8px;bottom:6px;font-size:11px;color:#9aa8d8;pointer-events:none}
+/* hoạt cảnh toàn màn hình (giao diện tối) */
+#cine{position:fixed;inset:0;z-index:40;background:radial-gradient(circle at center,#0d1a45 0%,#04060f 75%);transform:scale(.12);opacity:0;border-radius:40px;pointer-events:none;transition:transform .7s cubic-bezier(.2,.9,.3,1),opacity .45s,border-radius .7s;overflow:hidden}
+#cine.on{transform:none;opacity:1;border-radius:0;pointer-events:auto}
+#bigsky{position:absolute;inset:0;width:100%;height:100%}
+#cineTitle{position:absolute;top:3.5vh;left:0;right:0;text-align:center;color:#fff;font-size:clamp(20px,3vw,38px);font-weight:800;text-shadow:0 0 24px rgba(255,200,80,.8);padding:0 16px}
+#cineSub{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:#ffe58a;font-size:clamp(16px,2vw,26px);font-weight:700}
+.score{font-size:76px;font-weight:900;text-align:center;line-height:1;background:linear-gradient(180deg,#ff9f1c,#ff4d79);-webkit-background-clip:text;background-clip:text;color:transparent}
+.score small{font-size:28px}
+.medal{text-align:center;font-size:19px;font-weight:700;margin:6px 0 12px}
+.rev{margin:10px 0;display:grid;gap:6px;max-height:240px;overflow:auto}
+.rev div{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#f1f4ff;border-radius:10px;padding:8px 10px}
+.rev .ok{border-left:4px solid var(--ok)}.rev .no{border-left:4px solid var(--bad)}
+.introsky{position:relative;flex:1 1 0;min-width:0;max-width:640px;height:min(660px,88vh);border-radius:22px;overflow:hidden;background:radial-gradient(circle at center,#0d1a45,#04060f);border:1px solid #1d2a5c;box-shadow:0 20px 50px rgba(20,30,90,.4);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+#introsky{width:100%;height:100%;display:block}
+.introcap{position:absolute;top:14px;left:0;right:0;text-align:center;color:#ffe58a;font-weight:800;font-size:clamp(16px,1.7vw,28px);text-shadow:0 0 16px rgba(255,200,80,.7);pointer-events:none}
+#end{background:radial-gradient(ellipse at center,#0a0f26 0%,#03050d 70%,#000 100%);overflow:auto}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#end .card{position:relative;z-index:2;background:#fff;box-shadow:0 0 70px rgba(255,255,255,.28)}
+#start{gap:28px}
+#start .introsky{order:2}
+#start .card{flex:0 1 540px}
+@media(max-width:900px){
+ #start{flex-direction:column;justify-content:flex-start}
+ #start .introsky{order:-1}
+ .introsky{flex:none;width:100%;max-width:560px;height:240px}
+ .opts{grid-template-columns:1fr}
+ body{overflow:auto}#game{grid-template-columns:1fr;height:auto;min-height:100%}
+ .right{order:-1}.skywrap{min-height:230px}.left{min-height:70vh}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div id="cine"><canvas id="bigsky"></canvas><div id="cineTitle"></div><div id="cineSub"></div></div>
+
+<!-- MÀN HÌNH BẮT ĐẦU -->
+<div class="overlay" id="start">
+  <div class="introsky"><canvas id="introsky"></canvas><div class="introcap">🌌 Hệ Mặt Trời</div></div>
+  <div class="card">
+    <div class="logo">🚀</div>
+    <h1>DU HÀNH HỆ MẶT TRỜI</h1>
+    <div class="sub">Tin học 8 – Bài 5: Sử dụng bảng tính giải quyết bài toán thực tế</div>
+    <label for="inName">Họ và tên</label>
+    <input id="inName" maxlength="40" placeholder="Nhập họ và tên của em" autocomplete="off">
+    <label for="inClass">Lớp</label>
+    <input id="inClass" maxlength="12" placeholder="Ví dụ: 8A1" autocomplete="off">
+    <div class="rules">
+      🎯 <b>5 câu ngẫu nhiên</b>: 3 Nhận biết (⏱ 30 giây) · 1 Thông hiểu (⏱ 45 giây) · 1 Vận dụng (⏱ 60 giây)<br>
+      ✅ Trả lời đúng: <b>+2 điểm</b>. Mỗi lần chuyển câu, Hệ Mặt Trời phóng to toàn màn hình: tàu bay lần lượt Mặt Trời → Thủy tinh → Kim tinh → Hỏa tinh → Mộc tinh → về Trái Đất<br>
+      🎁 Trên đường bay có <b>20%</b> cơ hội có hộp quà 🎁 rơi xuống, tàu nhặt được sẽ nhận <b>+0,5 điểm</b><br>
+      ⏰ Hết giờ sẽ tính là trả lời sai · Điểm tối đa <b>10</b>
+    </div>
+    <button class="btn go" id="btnStart">🚀 BẮT ĐẦU CHƠI</button>
+    <div class="row"><button class="btn ghost" id="btnFsStart">⛶ Toàn màn hình</button></div>
+  </div>
+</div>
+
+<!-- GIAO DIỆN CHƠI -->
+<div id="game" class="hide">
+  <section class="left">
+    <div class="pips" id="pips"></div>
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="qwrap" id="qwrap">
+      <div id="qbox">
+        <span class="lvl" id="lvl"></span>
+        <div class="qtext" id="qtext"></div>
+        <div class="illus hide" id="illus"></div>
+        <div class="opts" id="opts"></div>
+        <div id="fb"></div>
+      </div>
+    </div>
+    <div class="nextrow"><button class="btn hide" id="btnNext">Câu tiếp theo ➜</button></div>
+  </section>
+
+  <aside class="right">
+    <h2>📘 Tin học 8 – Bài 5<small>Sử dụng bảng tính giải quyết bài toán thực tế</small></h2>
+    <div class="info">
+      <div class="chip"><small>Họ tên</small><b id="hName">-</b></div>
+      <div class="chip"><small>Lớp</small><b id="hClass">-</b></div>
+      <div class="chip"><small>Câu hỏi</small><b id="hQ">1/5</b></div>
+      <div class="chip big"><small>Điểm</small><b id="hScore">0</b></div>
+    </div>
+    <div class="timer" id="timer">
+      <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="7"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#2ee59d" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
+      <div><div class="t" id="tnum">30</div><small id="tlab">giây còn lại</small></div>
+    </div>
+    <div class="tools">
+      <button class="btn ghost" id="btnFs">⛶ Toàn màn hình</button>
+      <button class="btn ghost" id="btnSnd">🔊 Âm thanh</button>
+    </div>
+    <div class="skywrap"><canvas id="sky"></canvas><div class="hint">Bấm “Câu tiếp theo” để phóng tàu 🚀</div></div>
+  </aside>
+</div>
+
+<!-- MÀN HÌNH KẾT QUẢ -->
+<div class="overlay hide" id="end">
+  <canvas id="fw"></canvas>
+  <div class="card">
+    <div class="logo" id="endIcon">🏆</div>
+    <h1 id="endName"></h1>
+    <div class="sub" id="endSub"></div>
+    <div class="score"><span id="endScore">0</span><small> / 10</small></div>
+    <div class="medal" id="endMedal"></div>
+    <div class="rev" id="rev"></div>
+    <div class="row"><button class="btn" id="btnAgain">🔄 Chơi lại</button><button class="btn ghost" id="btnChange">👤 Đổi người chơi</button></div>
+  </div>
+</div>
+
+<script>
+const QS = [{"n": 1, "lv": "NB", "q": "Ưu điểm nổi bật nhất của chương trình bảng tính khi sử dụng công thức là gì?", "opts": ["Tự động thay đổi màu sắc ô tính.", "Tự động tính toán lại khi dữ liệu thay đổi.", "Tự động tạo biểu đồ cho mọi loại dữ liệu.", "Tự động lưu tệp tin sau mỗi giây."], "ans": 1, "exp": "Đặc điểm nổi bật của bảng tính là tính toán tự động, kết quả sẽ tự cập nhật khi dữ liệu nguồn thay đổi."}, {"n": 2, "lv": "NB", "q": "Trong chương trình bảng tính, địa chỉ ô được mặc định tạo ra khi người dùng nháy chuột chọn ô là loại địa chỉ nào?", "opts": ["Địa chỉ tương đối.", "Địa chỉ tuyệt đối.", "Địa chỉ hỗn hợp.", "Địa chỉ cố định."], "ans": 0, "exp": "Khi nhập địa chỉ ô cho một công thức bằng thao tác nháy chuột, chương trình bảng tính mặc định lấy địa chỉ đó là địa chỉ tương đối."}, {"n": 4, "lv": "NB", "q": "Đặc điểm của địa chỉ tuyệt đối khi sao chép công thức sang một ô tính khác là gì?", "opts": ["Thay đổi theo hướng sao chép.", "Không thay đổi trong mọi trường hợp.", "Chỉ thay đổi tên cột.", "Chỉ thay đổi tên hàng."], "ans": 1, "exp": "Địa chỉ tuyệt đối có tính chất không thay đổi vị trí cột và hàng khi sao chép công thức sang bất kỳ vị trí nào khác."}, {"n": 5, "lv": "NB", "q": "Kí hiệu nào được sử dụng để đánh dấu một địa chỉ là địa chỉ tuyệt đối trong phần mềm bảng tính?", "opts": ["Dấu thăng (#).", "Dấu sao (*).", "Dấu đô la ($).", "Dấu và (&)."], "ans": 2, "exp": "Trong phần mềm bảng tính, dấu $ được đặt trước tên cột và tên hàng để quy định đó là địa chỉ tuyệt đối."}, {"n": 6, "lv": "NB", "q": "Địa chỉ nào sau đây là địa chỉ tương đối?", "opts": ["$E$5", "E5", "$E5", "E$5"], "ans": 1, "exp": "Địa chỉ tương đối chỉ gồm tên cột và tên hàng ghép lại, không chứa kí tự đặc biệt nào."}, {"n": 7, "lv": "NB", "q": "Địa chỉ nào sau đây là địa chỉ tuyệt đối?", "opts": ["$C$3", "C3", "$C3", "C$3"], "ans": 0, "exp": "Địa chỉ tuyệt đối bắt buộc phải có dấu $ đứng trước cả tên cột và tên hàng."}, {"n": 8, "lv": "NB", "q": "Trong địa chỉ tuyệt đối, kí hiệu $ đứng ở những vị trí nào?", "opts": ["Chỉ đứng trước tên hàng.", "Chỉ đứng trước tên cột.", "Đứng trước tên cột và đứng sau tên hàng.", "Đứng trước tên cột và đứng trước tên hàng."], "ans": 3, "exp": "Để cố định cả cột và hàng, dấu $ phải đứng trước chữ cái tên cột (F) và con số tên hàng (2)."}, {"n": 9, "lv": "NB", "q": "Sau khi nhập địa chỉ tương đối, phím tắt nào trên bàn phím được sử dụng để chuyển đổi nhanh thành địa chỉ tuyệt đối?", "opts": ["Phím F2.", "Phím F3.", "Phím F4.", "Phím F5."], "ans": 2, "exp": "Nhấn phím F4 sau khi chọn địa chỉ tương đối sẽ tự động thêm dấu $ để chuyển thành địa chỉ tuyệt đối."}, {"n": 10, "lv": "NB", "q": "Người dùng có thể tạo địa chỉ tuyệt đối bằng thao tác thủ công nào sau đây?", "opts": ["Gõ trực tiếp kí hiệu $ từ bàn phím khi nhập địa chỉ ô.", "Gõ trực tiếp kí hiệu @ từ bàn phím khi nhập địa chỉ ô.", "Gõ trực tiếp kí hiệu ! từ bàn phím khi nhập địa chỉ ô.", "Gõ trực tiếp kí hiệu # từ bàn phím khi nhập địa chỉ ô."], "ans": 0, "exp": "Người dùng hoàn toàn có thể nhập dấu $ trực tiếp bằng tay từ bàn phím thay vì dùng phím tắt."}, {"n": 11, "lv": "NB", "q": "Khi bắt đầu nhập một công thức tính toán vào ô tính, kí tự đầu tiên bắt buộc phải gõ là gì?", "opts": ["Dấu cộng (+).", "Dấu bằng (=).", "Dấu ngoặc đơn (().", "Dấu nháy kép (\")."], "ans": 1, "exp": "Mọi công thức trong phần mềm bảng tính đều phải bắt đầu bằng dấu bằng (=)."}, {"n": 13, "lv": "NB", "q": "Trong công thức =C4*D4, các địa chỉ C4 và D4 được gọi là gì?", "opts": ["Địa chỉ tuyệt đối.", "Địa chỉ tương đối.", "Địa chỉ hỗn hợp.", "Địa chỉ chuỗi."], "ans": 1, "exp": "C4 và D4 không chứa kí hiệu $ nên chúng là các địa chỉ tương đối."}, {"n": 15, "lv": "NB", "q": "Việc sao chép dữ liệu từ phần mềm soạn thảo văn bản sang phần mềm bảng tính mang lại lợi ích cơ bản nào?", "opts": ["Thay đổi định dạng văn bản gốc.", "Giúp công việc tính toán được giải quyết nhanh chóng.", "Xóa dữ liệu ở tệp nguồn.", "Nén dung lượng tệp tin văn bản."], "ans": 1, "exp": "Sao chép bảng dữ liệu sẵn có sang bảng tính giúp tiết kiệm thời gian nhập liệu, tận dụng khả năng tính toán nhanh chóng của bảng tính."}, {"n": 16, "lv": "NB", "q": "Tổ hợp phím nào sau đây được sử dụng để thực hiện lệnh sao chép dữ liệu?", "opts": ["Ctrl + X", "Ctrl + V", "Ctrl + C", "Ctrl + Z"], "ans": 2, "exp": "Ctrl + C là tổ hợp phím tiêu chuẩn để thực hiện lệnh Copy (sao chép)."}, {"n": 17, "lv": "NB", "q": "Lệnh nào sau đây dùng để dán dữ liệu đã sao chép vào bảng tính?", "opts": ["Copy", "Cut", "Paste", "Format Painter"], "ans": 2, "exp": "Lệnh Paste được sử dụng để đưa (dán) dữ liệu từ bộ nhớ tạm vào vị trí đang được chọn."}, {"n": 20, "lv": "NB", "q": "Có thể sao chép một bảng dữ liệu từ phần mềm nào sau đây vào phần mềm bảng tính để tính toán?", "opts": ["Phần mềm soạn thảo văn bản hoặc phần mềm trình chiếu.", "Phần mềm chỉnh sửa ảnh.", "Phần mềm diệt virus.", "Phần mềm nghe nhạc."], "ans": 0, "exp": "Word (soạn thảo) và PowerPoint (trình chiếu) thường chứa bảng biểu có thể sao chép trực tiếp sang Excel để tính toán."}, {"n": 21, "lv": "NB", "q": "Nếu một địa chỉ không chứa bất kỳ kí hiệu nào ngoài tên cột và tên hàng, đó chắc chắn là loại địa chỉ nào?", "opts": ["Địa chỉ tuyệt đối.", "Địa chỉ tương đối.", "Địa chỉ hỗn hợp cột.", "Địa chỉ hỗn hợp hàng."], "ans": 1, "exp": "Địa chỉ tương đối là dạng địa chỉ cơ bản nhất, chỉ bao gồm chữ cái chỉ cột và con số chỉ hàng (ví dụ: A1)."}, {"n": 22, "lv": "NB", "q": "Trong bảng tính, tên cột thường được biểu diễn bằng kí tự nào?", "opts": ["Các con số (1, 2, 3...).", "Các chữ cái in hoa (A, B, C...).", "Các kí tự đặc biệt (@, #, $...).", "Các chữ số La Mã (I, II, III...)."], "ans": 1, "exp": "Trong giao diện chuẩn của bảng tính, các cột được đánh dấu bằng các chữ cái in hoa từ A đến Z, rồi AA, AB..."}, {"n": 23, "lv": "NB", "q": "Trong bảng tính, tên hàng thường được biểu diễn bằng kí tự nào?", "opts": ["Các con số (1, 2, 3...).", "Các chữ cái in hoa (A, B, C...).", "Các kí tự đặc biệt (@, #, $...).", "Các chữ số La Mã (I, II, III...)."], "ans": 0, "exp": "Các hàng trong bảng tính được đánh số thứ tự 1, 2, 3... liên tục từ trên xuống dưới."}, {"n": 28, "lv": "NB", "q": "Địa chỉ ô B2 nằm ở giao điểm của thành phần nào?", "opts": ["Cột 2, hàng B.", "Cột B, hàng 2.", "Cột B, hàng B.", "Cột 2, hàng 2."], "ans": 1, "exp": "Địa chỉ ô luôn đọc tên cột trước (chữ cái B) và tên hàng sau (con số 2)."}, {"n": 29, "lv": "NB", "q": "Nếu sao chép công thức chứa toàn địa chỉ tuyệt đối sang một vị trí khác, kết quả tính toán sẽ như thế nào so với ô ban đầu?", "opts": ["Luôn luôn khác nhau.", "Hoàn toàn giống nhau.", "Trả về giá trị 0.", "Trả về thông báo lỗi."], "ans": 1, "exp": "Vì các thành phần trong công thức đều bị cố định (không đổi vị trí tham chiếu), kết quả tính toán sẽ y hệt ô ban đầu."}, {"n": 32, "lv": "NB", "q": "Cách viết công thức tính đúng chuẩn trong chương trình bảng tính là cách nào sau đây?", "opts": ["=A1*B1", "A1*B1=", "= A1 x B1", "=A1+B1="], "ans": 0, "exp": "Công thức luôn bắt đầu bằng dấu =, theo sau là địa chỉ ô và các toán tử chuẩn (*, /, +, -)."}, {"n": 38, "lv": "NB", "q": "Để bắt đầu nhập công thức =C4*D4 vào ô E4, thao tác đầu tiên cần làm trên bảng tính là gì?", "opts": ["Chọn toàn bộ cột E.", "Nháy chuột chọn ô E4.", "Nhấn tổ hợp phím Ctrl + V.", "Nháy đúp chuột vào ô C4."], "ans": 1, "exp": "Để nhập dữ liệu hoặc công thức vào một ô cụ thể, ta luôn phải nháy chuột chọn ô đó làm ô hiện thời trước."}, {"n": 40, "lv": "NB", "q": "Lợi ích lớn nhất của việc dùng tổ hợp phím F4 để tạo địa chỉ tuyệt đối là gì?", "opts": ["Tăng tốc độ nhập liệu so với gõ tay.", "Máy tính tự động tính ra kết quả.", "Lưu file an toàn hơn.", "In đậm công thức hiển thị."], "ans": 0, "exp": "Dùng phím tắt F4 nhanh chóng chuyển đổi loại địa chỉ mà không cần di chuyển con trỏ để gõ dấu $ thủ công nhiều lần."}, {"n": 1, "lv": "TH", "q": "Đặc điểm của địa chỉ tương đối trong chương trình bảng tính là gì?", "opts": ["Tự động thay đổi để tương ứng với vị trí mới khi sao chép công thức.", "Luôn giữ cố định tọa độ cột nhưng cho phép thay đổi tọa độ hàng khi sao chép.", "Được khóa chặt hoàn toàn mọi tham chiếu tọa độ bất kể người dùng dán công thức vào vị trí nào trên trang tính.", "Yêu cầu người dùng phải tự nhập lại tọa độ bằng phương pháp thủ công sau mỗi lần sao chép."], "ans": 0, "exp": "Trong chương trình bảng tính, địa chỉ tương đối sẽ tự động thay đổi khi sao chép để tương ứng với vị trí mới của ô chứa công thức."}, {"n": 2, "lv": "TH", "q": "Địa chỉ tuyệt đối trong công thức bảng tính có đặc điểm gì?", "opts": ["Tự động cập nhật tham chiếu hàng và cột dựa trên khoảng cách di chuyển của ô chứa công thức.", "Không thay đổi khi thực hiện thao tác sao chép công thức sang một ô tính khác.", "Thay đổi giá trị hiển thị bên trong ô nhưng vẫn giữ nguyên hoàn toàn định dạng của chữ số.", "Bắt buộc phải kết hợp với hàm logic phức tạp để giữ nguyên giá trị dữ liệu nguồn trong toàn bộ quá trình xử lí thông tin."], "ans": 1, "exp": "Một địa chỉ ô trong công thức không thay đổi khi sao chép công thức thì địa chỉ đó là địa chỉ tuyệt đối."}, {"n": 3, "lv": "TH", "q": "Trong phần mềm bảng tính, kí hiệu nào được sử dụng để quy định một địa chỉ là địa chỉ tuyệt đối?", "opts": ["&", "@", "$", "#"], "ans": 2, "exp": "Phần mềm bảng tính quy định địa chỉ tuyệt đối có dấu $ đứng trước tên cột và tên hàng."}, {"n": 4, "lv": "TH", "q": "Phím tắt nào trên bàn phím được sử dụng để chuyển đổi nhanh từ địa chỉ tương đối sang địa chỉ tuyệt đối sau khi nhập địa chỉ ô?", "opts": ["F2", "F3", "F4", "F5"], "ans": 2, "exp": "Sau khi nhập địa chỉ tương đối, nhấn phím F4 để chuyển địa chỉ tương đối thành địa chỉ tuyệt đối."}, {"n": 5, "lv": "TH", "q": "Địa chỉ ô nào sau đây được định dạng đúng theo chuẩn của địa chỉ tuyệt đối?", "opts": ["A1", "$A$1", "A$1", "$A1"], "ans": 1, "exp": "Địa chỉ tuyệt đối hợp lệ phải có dấu $ đặt trước cả tên cột và tên hàng."}, {"n": 6, "lv": "TH", "q": "Địa chỉ ô E4 trong bảng tính thuộc loại địa chỉ nào?", "opts": ["Địa chỉ tương đối", "Địa chỉ tuyệt đối", "Địa chỉ hỗn hợp", "Địa chỉ cố định"], "ans": 0, "exp": "Địa chỉ không có dấu $ đính kèm được định nghĩa là địa chỉ tương đối."}, {"n": 8, "lv": "TH", "q": "Để sao chép một bảng dữ liệu từ phần mềm soạn thảo văn bản, tổ hợp phím nào sau đây được sử dụng?", "opts": ["Ctrl + X", "Ctrl + P", "Ctrl + V", "Ctrl + C"], "ans": 3, "exp": "Trong phần mềm soạn thảo văn bản, để sao chép dữ liệu em cần chọn bảng rồi nhấn tổ hợp phím Ctrl + C."}, {"n": 9, "lv": "TH", "q": "Sau khi đã sao chép bảng từ phần mềm trình chiếu, để dán dữ liệu đó vào bảng tính, em dùng tổ hợp phím nào?", "opts": ["Ctrl + D", "Ctrl + V", "Ctrl + S", "Ctrl + C"], "ans": 1, "exp": "Trong phần mềm bảng tính, chọn ô đích và nhấn tổ hợp phím Ctrl + V để thực hiện dán dữ liệu."}, {"n": 11, "lv": "TH", "q": "Khi thực hiện sao chép công thức =C4*$D$2 từ ô E4 xuống ô E5, thành phần nào trong công thức sẽ bị thay đổi?", "opts": ["C4", "$D$2", "Dấu *", "Không có thành phần nào thay đổi"], "ans": 0, "exp": "C4 là địa chỉ tương đối, do đó nó sẽ tự động thay đổi tọa độ khi bị sao chép sang vị trí mới."}, {"n": 12, "lv": "TH", "q": "Khi thực hiện sao chép công thức =C4*$D$2 từ ô E4 xuống ô E5, thành phần nào trong công thức sẽ được giữ nguyên?", "opts": ["C4", "$D$2", "Không có thành phần nào được giữ nguyên", "Toàn bộ công thức được giữ nguyên"], "ans": 1, "exp": "$D$2 là địa chỉ tuyệt đối, do đó nó sẽ không thay đổi khi thực hiện sao chép công thức."}, {"n": 14, "lv": "TH", "q": "Để dán dữ liệu đã được sao chép vào phần mềm bảng tính bằng thanh công cụ, em sử dụng lệnh gì?", "opts": ["Lệnh Copy", "Lệnh Paste", "Lệnh Cut", "Lệnh Format Painter"], "ans": 1, "exp": "Lệnh Paste trên thanh công cụ được sử dụng để dán vùng dữ liệu đã sao chép."}, {"n": 17, "lv": "TH", "q": "Trong công thức =E4*$F$2, địa chỉ ô E4 đóng vai trò gì?", "opts": ["Là địa chỉ hỗn hợp", "Là địa chỉ tương đối", "Là địa chỉ tuyệt đối", "Là hằng số"], "ans": 1, "exp": "Bất kì địa chỉ nào không có kí hiệu dấu $ đứng trước đều là địa chỉ tương đối."}, {"n": 19, "lv": "VD", "q": "Giả sử tại ô D4 có công thức =B4*C4. Nếu em sao chép công thức này từ ô D4 xuống ô D5, công thức tại ô D5 sẽ là gì?", "opts": ["=B4*C4", "=B5*C5", "=C4*D4", "=B5*C4"], "ans": 1, "exp": "B4 và C4 là địa chỉ tương đối. Khi sao chép xuống 1 hàng, chỉ số hàng tự động tăng thêm 1 đơn vị."}, {"n": 20, "lv": "VD", "q": "Tại ô F4 có công thức =E4*$F$2. Khi sao chép công thức này từ ô F4 xuống ô F5, kết quả công thức nhận được tại ô F5 là gì?", "opts": ["=E4*$F$2", "=E5*$F$3", "=E5*$F$2", "=E4*$F$3"], "ans": 2, "exp": "Khi sao chép xuống 1 hàng, địa chỉ tương đối E4 tự động đổi thành E5, còn địa chỉ tuyệt đối $F$2 giữ nguyên."}, {"n": 21, "lv": "VD", "q": "Tại ô C2 có công thức =A2+B2. Nếu sao chép công thức này từ ô C2 sang ô D2, công thức tại ô D2 sẽ là gì?", "opts": ["=A2+B2", "=B2+C2", "=B3+C3", "=A3+B3"], "ans": 1, "exp": "A2 và B2 là địa chỉ tương đối. Khi sao chép sang phải 1 cột, chỉ số cột sẽ tự động tịnh tiến thêm 1 kí tự."}, {"n": 22, "lv": "VD", "q": "Bảng tính có cột C chứa Đơn giá, cột D chứa Số lượt mua. Để tính Doanh thu tại ô E4 theo công thức Doanh thu = Đơn giá * Số lượt mua, em sẽ nhập công thức nào để có thể sao chép hàng loạt cho các ô bên dưới?", "opts": ["=C4*$D$4", "=C4*D4", "=$C$4*$D$4", "=$C$4*D4"], "ans": 1, "exp": "Đơn giá và Số lượt mua đều là các giá trị thay đổi theo từng hàng, do đó cần sử dụng địa chỉ tương đối cho cả hai."}, {"n": 23, "lv": "VD", "q": "Ô F2 chứa Tỉ lệ doanh thu của công ti là 70%. Cột E từ hàng 4 đến 9 chứa Doanh thu các phần mềm. Công thức đúng tại ô F4 để tính Doanh thu công ti và có thể sao chép chính xác cho các ô bên dưới là gì?", "opts": ["=E4*F2", "=E4*$F$2", "=$E$4*F2", "=$E$4*$F$2"], "ans": 1, "exp": "Doanh thu của từng phần mềm thay đổi liên tục theo hàng nên dùng địa chỉ tương đối (E4), Tỉ lệ công ti là cố định nên dùng địa chỉ tuyệt đối ($F$2)."}, {"n": 25, "lv": "VD", "q": "Giả sử em có một bảng Số liệu thống kê từ phần mềm soạn thảo văn bản gồm 5 hàng và 3 cột. Nếu em sao chép toàn bộ bảng này và chọn ô B2 trong phần mềm bảng tính làm ô đích để dán, dữ liệu nằm ở góc dưới cùng bên phải của bảng gốc sẽ xuất hiện tại ô nào?", "opts": ["C6", "D6", "E5", "D5"], "ans": 1, "exp": "Bảng bắt đầu từ B2, chiếm 3 cột (B, C, D) và 5 hàng (2, 3, 4, 5, 6), do đó ô cuối cùng nằm tại giao điểm của cột D và hàng 6."}, {"n": 26, "lv": "VD", "q": "Trong bài toán tính tiền, cột C chứa Đơn giá, ô D2 chứa Tỉ lệ giảm giá cố định. Công thức tính Số tiền được giảm tại ô D4, sao cho có thể kéo sao chép chính xác xuống toàn bộ các hàng bên dưới là gì?", "opts": ["=C4*D2", "=C4*$D$2", "=$C$4*D2", "=$C$4*$D$2"], "ans": 1, "exp": "Đơn giá của từng mặt hàng sử dụng địa chỉ tương đối (C4), tỉ lệ giảm giá chung phải được cố định bằng địa chỉ tuyệt đối ($D$2)."}, {"n": 27, "lv": "VD", "q": "Từ công thức tính tiền giảm giá =C4*$D$2, công thức tính Đơn giá sau giảm (bằng Đơn giá ban đầu trừ đi Số tiền được giảm) gộp lại tại ô E4 được viết như thế nào?", "opts": ["=C4 - C4*$D$2", "=$C$4 - $C$4*D2", "=C4 - $C$4*D2", "=C4 - C4*D2"], "ans": 0, "exp": "Lấy Đơn giá (địa chỉ tương đối C4) trừ cho phần tích của Đơn giá nhân Tỉ lệ giảm (C4*$D$2)."}, {"n": 28, "lv": "VD", "q": "Tại ô D5 có công thức =B5*C5. Nếu em thực hiện lệnh Copy ô D5 và Paste vào ô F7, công thức nhận được tại F7 là gì?", "opts": ["=D7*E7", "=B5*C5", "=B7*C7", "=D5*E5"], "ans": 0, "exp": "Ô đích cách ô nguồn 2 cột sang phải và 2 hàng xuống dưới. Địa chỉ B5 dịch chuyển tương ứng thành D7, địa chỉ C5 dịch chuyển thành E7."}];
+
+/* ---------- Hình minh họa bảng tính cho các câu cần hình ---------- */
+const rng=(a,b)=>{const c1=a.charCodeAt(0),c2=b.charCodeAt(0),r1=+a.slice(1),r2=+b.slice(1),o=[];for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)o.push(String.fromCharCode(c)+r);return o};
+const CAP_COPY='🟦 Ô nguồn (có công thức) · 🟧 Ô đích cần xác định';
+const ILLUS={
+ 'NB38':{cols:['C','D','E'],rows:[3,4,5],head:['C3','D3','E3'],cells:{C3:'Đơn giá',D3:'Số lượng',E3:'Thành tiền',C4:'50',D4:'3',C5:'20',D5:'4'},tgt:'E4',tgtReveal:'=C4*D4',cap:'🟧 Ô cần nhập công thức'},
+ 'TH11':{cols:['C','D','E'],rows:[2,3,4,5],head:['C3','E3'],cells:{C2:'Tỉ lệ',D2:'10%',C3:'Đơn giá',E3:'Tiền',C4:'50',C5:'80',E4:'=C4*$D$2'},src:'E4',tgt:'E5',tgtReveal:'=C5*$D$2',cap:CAP_COPY},
+ 'TH12':{cols:['C','D','E'],rows:[2,3,4,5],head:['C3','E3'],cells:{C2:'Tỉ lệ',D2:'10%',C3:'Đơn giá',E3:'Tiền',C4:'50',C5:'80',E4:'=C4*$D$2'},src:'E4',tgt:'E5',tgtReveal:'=C5*$D$2',cap:CAP_COPY},
+ 'VD19':{cols:['B','C','D'],rows:[3,4,5],head:['B3','C3','D3'],cells:{B3:'Đơn giá',C3:'Số lượng',D3:'Thành tiền',B4:'5',C4:'3',B5:'8',C5:'2',D4:'=B4*C4'},src:'D4',tgt:'D5',cap:CAP_COPY},
+ 'VD20':{cols:['E','F'],rows:[2,3,4,5],head:['E3','F3'],cells:{E2:'Hệ số',F2:'5%',E3:'Doanh thu',F3:'Kết quả',E4:'100',E5:'200',F4:'=E4*$F$2'},src:'F4',tgt:'F5',cap:CAP_COPY},
+ 'VD21':{cols:['A','B','C','D'],rows:[1,2,3],cells:{A2:'4',B2:'6',C2:'=A2+B2'},src:'C2',tgt:'D2',cap:CAP_COPY+' (sao chép sang phải)'},
+ 'VD22':{cols:['C','D','E'],rows:[3,4,5,6],head:['C3','D3','E3'],cells:{C3:'Đơn giá',D3:'Số lượt mua',E3:'Doanh thu',C4:'25',D4:'4',C5:'40',D5:'2',C6:'15',D6:'10'},tgt:'E4',tgtReveal:null,cap:'🟧 Ô E4 cần nhập công thức rồi kéo xuống các ô dưới'},
+ 'VD23':{cols:['E','F'],rows:[2,3,4,5,6,7,8,9],head:['E3','F3'],cells:{E2:'Tỉ lệ',F2:'70%',E3:'Doanh thu PM',F3:'Doanh thu công ti',E4:'900',E5:'600',E6:'450',E7:'300',E8:'800',E9:'250'},tgt:'F4',cap:'🟧 Ô F4 cần nhập công thức rồi kéo xuống F9'},
+ 'VD25':{cols:['A','B','C','D','E','F'],rows:[1,2,3,4,5,6,7],tbl:rng('B2','D6'),cells:{B2:'▶ dán'},tgt:'D6',tgtReveal:'D6',cap:'🟨 Vùng bảng 3 cột × 5 hàng được dán từ ô B2 · 🟧 Ô góc dưới bên phải'},
+ 'VD26':{cols:['C','D'],rows:[2,3,4,5,6],head:['C3','D3'],cells:{C2:'Tỉ lệ giảm',D2:'15%',C3:'Đơn giá',D3:'Số tiền giảm',C4:'200',C5:'300',C6:'150'},tgt:'D4',cap:'🟧 Ô D4 cần nhập công thức rồi kéo xuống D6'},
+ 'VD27':{cols:['C','D','E'],rows:[2,3,4,5],head:['C3','D3','E3'],cells:{C2:'Tỉ lệ giảm',D2:'15%',C3:'Đơn giá',D3:'Số tiền giảm',E3:'Đơn giá sau giảm',C4:'200',C5:'300',D4:'=C4*$D$2'},src:'D4',tgt:'E4',cap:'🟦 Công thức tính tiền giảm · 🟧 Ô E4 cần nhập công thức'},
+ 'VD28':{cols:['B','C','D','E','F','G'],rows:[4,5,6,7,8],cells:{B5:'4',C5:'5',D5:'=B5*C5'},src:'D5',tgt:'F7',cap:'🟦 Ô nguồn D5 (Copy) · 🟧 Ô đích F7 (Paste)'}
+};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sheetHTML(cfg,q,revealed){
+  let h='<table class="sheet"><tr><th></th>'+cfg.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  cfg.rows.forEach(r=>{h+=`<tr><th>${r}</th>`;cfg.cols.forEach(c=>{
+    const a=c+r;let t=(cfg.cells&&cfg.cells[a])||'';const cl=[];
+    if(cfg.tbl&&cfg.tbl.includes(a))cl.push('tbl');
+    if(cfg.head&&cfg.head.includes(a))cl.push('hd');
+    if(a===cfg.src)cl.push('src');
+    if(a===cfg.tgt){cl.push(revealed?'tgtok':'tgt');t=revealed?(cfg.tgtReveal||q.opts[q.ans]):'?';}
+    h+=`<td class="${cl.join(' ')}">${esc(t)}</td>`;});h+='</tr>';});
+  return h+'</table>'+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:'');
+}
+
+/* ---------- Tiện ích ---------- */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={NB:{t:30,name:'Nhận biết'},TH:{t:45,name:'Thông hiểu'},VD:{t:60,name:'Vận dụng'}};
+const PTS=2, GIFT_V=.5;
+const GIFT_P=Math.min(1,Math.max(0,(parseFloat(new URLSearchParams(location.search).get('qua'))||20)/100)); // mặc định 20%; thử nhanh: thêm ?qua=100 sau tên file
+const fmt=n=>(Math.round(n*10)/10).toString().replace('.',',');
+
+/* ---------- Âm thanh (Web Audio, không cần file ngoài) ---------- */
+let AC=null,master,musicOn=true,musicTimer=null,step=0;
+function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);}catch(e){AC=null}if(AC&&AC.state==='suspended')AC.resume();}
+function tone(f,d=.15,type='sine',v=.2,t0=0,slide){if(!AC)return;const t=AC.currentTime+t0,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);}
+function noise(d,f0,f1,v){if(!AC)return;const n=AC.sampleRate*d|0,b=AC.createBuffer(1,n,AC.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=2;const t=AC.currentTime;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+const sfx={
+ click(){tone(660,.07,'triangle',.12)},
+ start(){[392,523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.2,i*.09))},
+ correct(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.22,i*.08))},
+ wrong(){tone(240,.4,'sawtooth',.16,0,100);tone(180,.45,'square',.09,.12,70)},
+ timeout(){[440,330,220].forEach((f,i)=>tone(f,.2,'square',.11,i*.2))},
+ tick(){tone(950,.05,'square',.06)},
+ launch(){noise(1.4,250,3000,.2);tone(90,1.4,'sawtooth',.07,0,500)},
+ boom(){noise(.35,2500,250,.07);tone(140,.3,'sine',.07,0,50)},
+ drop(){tone(1800,.7,'sine',.14,0,500);tone(900,.5,'triangle',.08,.1,300)},
+ gift(){[1200,1500,1800,2400,3000].forEach((f,i)=>tone(f,.16,'sine',.14,i*.05))},
+ arrive(){tone(300,.35,'sine',.2,0,1000);tone(600,.25,'triangle',.12,.1,1500)},
+ fanfare(){[523,659,784,659,784,1047,1319].forEach((f,i)=>tone(f,.28,'triangle',.22,i*.13))},
+ sad(){[392,370,349,330].forEach((f,i)=>tone(f,.35,'sine',.18,i*.25))}
+};
+const SCALE=[262,294,330,392,440,523,440,392,330,294];
+function musicTick(){if(!AC||!musicOn)return;const f=SCALE[step%SCALE.length];tone(f,.5,'triangle',.045);if(step%4===0)tone(f/2,.9,'sine',.06);if(step%8===4)tone(f*2,.3,'sine',.03,.12);step++;}
+function setMusic(on){musicOn=on;clearInterval(musicTimer);if(on&&AC)musicTimer=setInterval(musicTick,340);$('btnSnd').textContent=on?'🔊 Âm thanh':'🔇 Tắt tiếng';}
+
+/* ---------- Nền sao ---------- */
+const bg=$('bg'),bgc=bg.getContext('2d');let stars=[];
+function initStars(){bg.width=innerWidth;bg.height=innerHeight;stars=Array.from({length:140},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}))}
+addEventListener('resize',initStars);initStars();
+function drawStars(t){bgc.clearRect(0,0,bg.width,bg.height);stars.forEach(s=>{bgc.globalAlpha=.35+.65*Math.abs(Math.sin(t/1000*s.s+s.p));bgc.fillStyle='#fff';bgc.beginPath();bgc.arc(s.x,s.y,s.r,0,6.3);bgc.fill()});bgc.globalAlpha=1}
+
+/* ---------- Pháo hoa giấy ---------- */
+const fx=$('fx'),fxc=fx.getContext('2d');let conf=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight}addEventListener('resize',sizeFx);sizeFx();
+function confetti(n=90,ox=innerWidth/2,oy=innerHeight/3){const cols=['#ffb100','#ff4d79','#5b7cff','#12b774','#ff7a18','#a46bff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*9+3;conf.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-5,w:Math.random()*8+4,h:Math.random()*5+3,r:Math.random()*6,vr:Math.random()*.4-.2,c:cols[Math.random()*6|0],life:1})}}
+function drawConf(){fxc.clearRect(0,0,fx.width,fx.height);conf=conf.filter(p=>p.life>0);conf.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.28;p.vx*=.99;p.r+=p.vr;p.life-=.008;fxc.save();fxc.globalAlpha=Math.max(0,p.life);fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.w/2,-p.h/2,p.w,p.h);fxc.restore()})}
+
+/* ---------- Hệ Mặt Trời (canvas nhỏ + hoạt cảnh toàn màn hình, nền tối) ---------- */
+let sc=null,W=300,H=300,K=1;
+const CV={mini:{cv:$('sky'),W:300,H:300},big:{cv:$('bigsky'),W:800,H:600},intro:{cv:$('introsky'),W:500,H:500}};
+CV.intro.ctx=CV.intro.cv.getContext('2d');CV.mini.ctx=CV.mini.cv.getContext('2d');CV.big.ctx=CV.big.cv.getContext('2d');
+function sizeCv(o,w,h){const d=Math.min(2,devicePixelRatio||1);o.W=w;o.H=h;o.cv.width=w*d;o.cv.height=h*d;o.ctx.setTransform(d,0,0,d,0,0)}
+function sizeSky(){const r=CV.mini.cv.getBoundingClientRect();sizeCv(CV.mini,Math.max(120,r.width),Math.max(120,r.height));sizeCv(CV.big,innerWidth,innerHeight);const r2=CV.intro.cv.getBoundingClientRect();sizeCv(CV.intro,Math.max(160,r2.width),Math.max(160,r2.height))}
+function useCv(o,big,k){sc=o.ctx;W=o.W;H=o.H;K=k||(big?Math.max(1.5,Math.min(W,H)/300):1)}
+new ResizeObserver(sizeSky).observe(CV.mini.cv.parentElement);new ResizeObserver(sizeSky).observe(CV.intro.cv.parentElement);addEventListener('resize',sizeSky);
+const PL=[
+ {n:'Thủy tinh',c1:'#d9d9d9',c2:'#6f6f6f',r:3.6,o:.17,sp:1.6,ph:.5},
+ {n:'Kim tinh',c1:'#ffe3a8',c2:'#c98b2e',r:5,o:.27,sp:1.2,ph:2.2},
+ {n:'Trái Đất',c1:'#7fd0ff',c2:'#1b5fb5',r:5.4,o:.38,sp:1.0,ph:4},
+ {n:'Hỏa tinh',c1:'#ff9f7a',c2:'#a8321a',r:4.4,o:.48,sp:.8,ph:1},
+ {n:'Mộc tinh',c1:'#f3d6a8',c2:'#a8744a',r:9,o:.62,sp:.5,ph:3.3},
+ {n:'Thổ tinh',c1:'#f1e0a6',c2:'#b79545',r:7.8,o:.75,sp:.38,ph:5.2,ring:1},
+ {n:'Thiên Vương',c1:'#bff3f0',c2:'#4ab5b5',r:6,o:.86,sp:.28,ph:.2},
+ {n:'Hải Vương',c1:'#8aa9ff',c2:'#2b3fb5',r:6,o:.96,sp:.22,ph:2.8}
+];
+const ROUTE=[0,1,3,4,2]; // câu 1..5 -> Thủy, Kim, Hỏa, Mộc, rồi về Trái Đất
+let SK={shipAt:null,visited:[],flight:null,parts:[],warp:0,asteroid:null,rings:[],floaters:[],onEnd:null};
+const sunPos=()=>({x:W/2,y:H/2});
+function plPos(i,t){const p=PL[i],a=p.ph+t/1000*(K>1?.1:.4)*p.sp,m=12*K;return{x:W/2+Math.cos(a)*p.o*(W/2-m),y:H/2+Math.sin(a)*p.o*(H/2-m),a}}
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function originPos(f,t){return f.from==null?sunPos():plPos(f.from,t)}
+function flightPos(f,p,t){const s=originPos(f,t),e=plPos(f.idx,t),k=ease(p),dx=e.x-s.x,dy=e.y-s.y,L=Math.hypot(dx,dy)||1,arc=Math.sin(Math.PI*p)*L*.14;return{x:s.x+dx*k-dy/L*arc,y:s.y+dy*k+dx/L*arc}}
+function spark(x,y,n,c,sp=2){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*sp*K;SK.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.02+Math.random()*.03,c,r:(Math.random()*2+1)*K*.8})}}
+function drawShip(x,y,ang,sz){sc.save();sc.translate(x,y);sc.rotate(ang);sc.scale(sz,sz);
+ const fl=10+Math.random()*7;sc.fillStyle='#ffb23c';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-6-fl,0);sc.lineTo(-6,3);sc.fill();sc.fillStyle='#fff3a0';sc.beginPath();sc.moveTo(-6,-1.6);sc.lineTo(-6-fl*.55,0);sc.lineTo(-6,1.6);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(-5,-4);sc.lineTo(-10,-8);sc.lineTo(-9,-1);sc.fill();sc.beginPath();sc.moveTo(-5,4);sc.lineTo(-10,8);sc.lineTo(-9,1);sc.fill();
+ sc.fillStyle='#eef3ff';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(5,-5,-6,-4);sc.lineTo(-6,4);sc.quadraticCurveTo(5,5,11,0);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(8,-3,5,-4);sc.lineTo(5,4);sc.quadraticCurveTo(8,3,11,0);sc.fill();
+ sc.fillStyle='#4fc3f7';sc.beginPath();sc.arc(0,0,2.2,0,6.3);sc.fill();sc.restore()}
+function drawPlanet(p,x,y){const r=p.r*K;
+ if(p.ring){sc.save();sc.translate(x,y);sc.rotate(-.4);sc.strokeStyle='rgba(240,220,160,.8)';sc.lineWidth=2*K*.7;sc.beginPath();sc.ellipse(0,0,r*1.9,r*.6,0,0,6.3);sc.stroke();sc.restore()}
+ const g=sc.createRadialGradient(x-r*.35,y-r*.35,r*.1,x,y,r);g.addColorStop(0,p.c1);g.addColorStop(1,p.c2);sc.fillStyle=g;sc.beginPath();sc.arc(x,y,r,0,6.3);sc.fill();
+ if(p.n==='Trái Đất'){sc.fillStyle='rgba(60,200,100,.75)';sc.beginPath();sc.arc(x-r*.28,y-r*.2,r*.4,0,6.3);sc.fill()}
+}
+function frameSky(t,big,intro){
+ sc.clearRect(0,0,W,H);
+ if(big||intro){stars.forEach(s=>{sc.globalAlpha=.3+.7*Math.abs(Math.sin(t/1000*s.s+s.p));sc.fillStyle='#fff';sc.beginPath();sc.arc(s.x*W/bg.width,s.y*H/bg.height,s.r*1.2,0,6.3);sc.fill()});sc.globalAlpha=1}
+ sc.strokeStyle='rgba(150,170,255,.16)';sc.lineWidth=1;const m=12*K;
+ PL.forEach(p=>{sc.beginPath();sc.ellipse(W/2,H/2,p.o*(W/2-m),p.o*(H/2-m),0,0,6.3);sc.stroke()});
+ const sr=(11+Math.sin(t/400)*1.2+SK.warp*3)*K,gl=sc.createRadialGradient(W/2,H/2,2,W/2,H/2,sr*3.2);gl.addColorStop(0,'rgba(255,220,100,.9)');gl.addColorStop(.35,'rgba(255,150,40,.35)');gl.addColorStop(1,'rgba(255,100,0,0)');
+ sc.fillStyle=gl;sc.beginPath();sc.arc(W/2,H/2,sr*3.2,0,6.3);sc.fill();
+ const sg=sc.createRadialGradient(W/2-3*K,H/2-3*K,2,W/2,H/2,sr);sg.addColorStop(0,'#fff6b0');sg.addColorStop(1,'#ff9f1c');sc.fillStyle=sg;sc.beginPath();sc.arc(W/2,H/2,sr,0,6.3);sc.fill();
+ const cur=S&&S.i!=null?ROUTE[S.i]:-1;
+ PL.forEach((p,i)=>{const q=plPos(i,t),r=p.r*K;
+  if(i===cur&&!SK.visited[i]&&S.active){sc.strokeStyle='rgba(255,216,107,'+(.4+.4*Math.sin(t/200))+')';sc.lineWidth=K*.8;sc.setLineDash([3*K,3*K]);sc.beginPath();sc.arc(q.x,q.y,r+(6+Math.sin(t/200)*1.5)*K,0,6.3);sc.stroke();sc.setLineDash([])}
+  drawPlanet(p,q.x,q.y);
+  if(SK.visited[i]){sc.strokeStyle='#2ee59d';sc.lineWidth=2*K*.7;sc.beginPath();sc.arc(q.x,q.y,r+4*K,0,6.3);sc.stroke();sc.fillStyle='#2ee59d';sc.font=`bold ${11*K}px sans-serif`;sc.textAlign='center';sc.fillText('✓',q.x,q.y-r-7*K)}
+  if(i<5||big||intro){sc.fillStyle='rgba(220,230,255,.8)';sc.font=`${9.5*K}px sans-serif`;sc.textAlign='center';sc.fillText(p.n,q.x,q.y+r+11*K)}
+ });
+ if(!(big&&SK.flight)){ // tàu đang đậu tại Mặt Trời hoặc hành tinh đã tới
+  const at=SK.shipAt,base=at==null?{x:W/2,y:H/2}:plPos(at,t),R=at==null?sr:PL[at].r*K,ang=-.7,d=R+(at==null?12:9)*K;
+  drawShip(base.x+Math.cos(ang)*d,base.y+Math.sin(ang)*d,ang,(big?1.1:.85)*K);
+ }
+ if(!big)return;
+ SK.rings=SK.rings.filter(r=>r.l>0);SK.rings.forEach(r=>{r.l-=.022;r.r+=1.3*K;const q=plPos(r.i,t);sc.strokeStyle=`rgba(46,229,157,${r.l})`;sc.lineWidth=3;sc.beginPath();sc.arc(q.x,q.y,r.r,0,6.3);sc.stroke()});
+ if(SK.asteroid){const a=SK.asteroid;a.x+=a.vx;a.y+=a.vy;a.l-=.008;sc.save();sc.translate(a.x,a.y);sc.rotate(t/150);sc.scale(K*1.4,K*1.4);sc.fillStyle='#8a6a55';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-2,-7);sc.lineTo(5,-4);sc.lineTo(7,2);sc.lineTo(1,7);sc.lineTo(-6,4);sc.fill();sc.restore();
+  spark(a.x,a.y,2,'#ff9f43',1);if(a.l<=0)SK.asteroid=null}
+ const f=SK.flight;
+ if(f){const p=Math.min(1,(t-f.t0)/f.dur),pos=flightPos(f,p,t),pp=flightPos(f,Math.max(0,p-.02),t),ang=Math.atan2(pos.y-pp.y,pos.x-pp.x);
+  if(f.gift&&!f.taken){
+   if(!f.ann&&p>=.04){f.ann=true;sfx.drop();$('cineTitle').textContent='🎁 Có quà bất ngờ rơi xuống! Tàu hãy nhặt nhé!'}
+   const gp=flightPos(f,.5,t),gk=Math.min(1,Math.max(0,(p-.04)/.3)),fall=(1-(1-Math.pow(1-gk,3)))*(gp.y+60*K),bob=gk>=1?Math.sin(t/160)*4*K:0,gy=gp.y-fall+bob;
+   if(gk>0){const pulse=1+.12*Math.sin(t/120);
+    const rg=sc.createRadialGradient(gp.x,gy,4,gp.x,gy,46*K*pulse);rg.addColorStop(0,'rgba(255,230,120,.75)');rg.addColorStop(1,'rgba(255,200,60,0)');sc.fillStyle=rg;sc.beginPath();sc.arc(gp.x,gy,46*K*pulse,0,6.3);sc.fill();
+    sc.save();sc.translate(gp.x,gy);sc.rotate(gk<1?Math.sin(t/90)*.3:0);sc.shadowColor='#ffd86b';sc.shadowBlur=28;sc.font=`${44*K*pulse}px sans-serif`;sc.textAlign='center';sc.textBaseline='middle';sc.fillText('🎁',0,0);sc.restore();
+    spark(gp.x,gy,2,'#ffd86b',1.2)}
+  }
+  if(f.gift&&!f.taken&&p>=.5){f.taken=true;S.bonus+=GIFT_V;S.bonusCount++;sfx.gift();spark(pos.x,pos.y,90,'#ffd86b',5);SK.floaters.push({x:pos.x,y:pos.y,l:2,txt:'🎁 +0,5 điểm!'});$('cineTitle').textContent='🎉 Nhận quà! +0,5 điểm';updHud();$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10  🎁 +0,5';confetti(50,innerWidth/2,innerHeight/2)}
+  spark(pos.x-Math.cos(ang)*8*K,pos.y-Math.sin(ang)*8*K,2,'#ffb23c',1.2);
+  drawShip(pos.x,pos.y,ang,1.35*K);
+  if(p>=1){SK.flight=null;SK.shipAt=f.idx;SK.visited[f.idx]=true;SK.rings.push({i:f.idx,r:PL[f.idx].r*K+3,l:1});const q=plPos(f.idx,t);spark(q.x,q.y,50,'#2ee59d',3);sfx.arrive();if(SK.onEnd){const fn=SK.onEnd;SK.onEnd=null;fn()}}}
+ SK.parts=SK.parts.filter(p=>p.l>0);SK.parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l-=p.d;sc.globalAlpha=Math.max(0,p.l);sc.fillStyle=p.c;sc.beginPath();sc.arc(p.x,p.y,p.r,0,6.3);sc.fill()});sc.globalAlpha=1;
+ SK.floaters=SK.floaters.filter(f=>f.l>0);SK.floaters.forEach(f=>{f.y-=.7;f.l-=.012;sc.globalAlpha=Math.min(1,Math.max(0,f.l));sc.fillStyle='#ffe58a';sc.font=`bold ${26*K}px sans-serif`;sc.textAlign='center';sc.fillText(f.txt,f.x,f.y-14*K);sc.globalAlpha=1});
+}
+
+/* ---------- Logic trò chơi ---------- */
+let S={i:0,active:false};
+const player={name:'',cls:''};
+function pickPositions(n){ // vị trí đáp án đúng: rải đều A–D, không chữ nào quá 2 lần, ít nhất 3 chữ khác nhau
+ let p,g=0;do{p=Array.from({length:n},()=>Math.random()*4|0);g++}while(g<500&&([0,1,2,3].some(k=>p.filter(x=>x===k).length>2)||new Set(p).size<3));return p}
+function pickQuestions(){
+ const by=lv=>shuffle(QS.filter(q=>q.lv===lv));
+ const pos=pickPositions(5);
+ return [...by('NB').slice(0,3),...by('TH').slice(0,1),...by('VD').slice(0,1)].map((q,i)=>{
+  const wrong=shuffle([0,1,2,3].filter(k=>k!==q.ans)),opts=[];let w=0;
+  for(let k=0;k<4;k++)opts[k]=k===pos[i]?q.opts[q.ans]:q.opts[wrong[w++]];
+  return{...q,key:q.lv+q.n,opts,ans:pos[i]};});
+}
+function newGame(){
+ S={qs:pickQuestions(),i:0,base:0,bonus:0,bonusCount:0,res:[],active:true,answered:false,deadline:0,dur:30,lastTick:-1};
+ SK.visited=[];SK.flight=null;SK.parts=[];SK.rings=[];SK.floaters=[];SK.asteroid=null;SK.onEnd=null;SK.shipAt=null;S.busy=false;
+ $('start').classList.add('hide');$('end').classList.add('hide');$('game').classList.remove('hide');
+ $('hName').textContent=player.name;$('hClass').textContent=player.cls;
+ sizeSky();updHud();loadQ();
+}
+const total=()=>Math.min(10,S.base+S.bonus);
+function updHud(){$('hScore').textContent=fmt(total());$('hQ').textContent=(Math.min(S.i+1,5))+'/5'}
+function renderPips(){
+ $('pips').innerHTML=S.qs.map((q,i)=>{const r=S.res[i];return`<span class="pip ${i===S.i?'cur':''} ${r?(r.ok?'ok':'no'):''}">${i+1}. ${q.lv}${r?(r.ok?' ✓':' ✗'):''}</span>`}).join('');
+}
+function loadQ(){
+ const q=S.qs[S.i],L=LV[q.lv];S.answered=false;S.dur=L.t;S.deadline=performance.now()+L.t*1000;S.lastTick=-1;
+ renderPips();updHud();
+ $('lvl').className='lvl '+q.lv;$('lvl').textContent=`${q.lv} · ${L.name} · ⏱ ${L.t} giây`;
+ $('qtext').textContent=`Câu ${S.i+1}. ${q.q}`;
+ const il=$('illus'),cfg=ILLUS[q.key];
+ if(cfg){il.innerHTML=sheetHTML(cfg,q,false);il.classList.remove('hide')}else il.classList.add('hide');
+ $('opts').innerHTML='';
+ q.opts.forEach((t,k)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<b>${'ABCD'[k]}</b><span></span>`;b.querySelector('span').textContent=t;b.onclick=()=>answer(k);$('opts').appendChild(b)});
+ $('fb').innerHTML='';$('btnNext').classList.add('hide');
+ const box=$('qbox');box.classList.remove('enter');void box.offsetWidth;box.classList.add('enter');$('qwrap').scrollTop=0;
+ sfx.click();
+ $('timer').classList.remove('low');$('tbar').classList.remove('low');
+}
+function answer(k){
+ if(S.answered)return;S.answered=true;
+ const q=S.qs[S.i],ok=k===q.ans,to=k<0;
+ const btns=[...$('opts').children];btns.forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('good');else if(i===k)b.classList.add('wrong');else b.classList.add('dim')});
+ S.res[S.i]={ok,to,q};
+ if(ok){S.base+=PTS;sfx.correct();confetti(70,innerWidth*.35,innerHeight*.5);}
+ else{to?sfx.timeout():sfx.wrong();
+  $('qbox').classList.remove('enter');$('qbox').style.animation='shake .45s'; setTimeout(()=>$('qbox').style.animation='',500)}
+ const cfg=ILLUS[q.key];if(cfg)$('illus').innerHTML=sheetHTML(cfg,q,true);
+ const fb=$('fb');fb.innerHTML='';const d=document.createElement('div');d.className='fb '+(ok?'ok':'no');
+ const h=document.createElement('h3');h.textContent=ok?`✅ Chính xác! +${PTS} điểm — bấm “Câu tiếp theo” để ${S.i===4?'đưa tàu về Trái Đất! 🌍':'phóng tàu tới '+PL[ROUTE[S.i]].n+'! 🚀'}`:(to?'⏰ Hết giờ! Câu này tính là sai.':'❌ Chưa đúng rồi, cố lên nhé!');
+ const a=document.createElement('p');a.className='ans';a.textContent=`Đáp án đúng: ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;
+ const e=document.createElement('p');e.textContent='💡 Giải thích: '+q.exp;
+ d.append(h,a,e);fb.appendChild(d);
+ renderPips();updHud();
+ const nb=$('btnNext');nb.textContent=S.i===4?'🏆 Xem kết quả':'Câu tiếp theo ➜';nb.classList.remove('hide');nb.disabled=false;
+ setTimeout(()=>$('qwrap').scrollTo({top:$('qwrap').scrollHeight,behavior:'smooth'}),150);
+}
+function launchShip(){
+ const f={idx:ROUTE[S.i],from:SK.shipAt,t0:performance.now(),dur:4200,gift:Math.random()<GIFT_P,taken:false};
+ SK.flight=f;sfx.launch();useCv(CV.big,true);const sp=sunPos();spark(sp.x,sp.y,50,'#ffb23c',4);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function cinematic(){
+ if(S.busy)return;S.busy=true;$('btnNext').disabled=true;
+ const r=S.res[S.i],pl=PL[ROUTE[S.i]],from=SK.shipAt==null?'Mặt Trời':PL[SK.shipAt].n,el=$('cine'),rc=CV.mini.cv.getBoundingClientRect();
+ el.style.transformOrigin=`${rc.left+rc.width/2}px ${rc.top+rc.height/2}px`;
+ $('cineTitle').textContent=r.ok?(S.i===4?`🌍 Chặng cuối: tàu vũ trụ bay từ ${from} về Trái Đất!`:`🚀 Tàu vũ trụ bay từ ${from} tới ${pl.n}!`):(r.to?`⏰ Hết giờ – tàu phải đợi tại ${from}!`:`☄️ Trả lời sai – thiên thạch chặn đường, tàu đứng yên tại ${from}!`);
+ $('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10';
+ sizeSky();SK.warp=1;el.classList.add('on');
+ await sleep(800);
+ if(r.ok){await new Promise(res=>{SK.onEnd=res;launchShip()});$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10'+(SK.lastGiftTxt||'');await sleep(S.i===4?2400:1400);if(S.i===4)confetti(120,innerWidth/2,innerHeight/2)}
+ else{SK.asteroid={x:CV.big.W+30,y:CV.big.H*(.2+Math.random()*.3),vx:-6,vy:2.6,l:1};await sleep(2600)}
+ el.classList.remove('on');await sleep(750);
+ S.busy=false;nextQ();
+}
+function nextQ(){
+ if(S.i>=4){finish();return}
+ S.i++;SK.warp=1;loadQ();
+}
+function finish(){
+ S.active=false;const sc2=total();
+ $('game').classList.add('hide');$('end').classList.remove('hide');
+ $('endName').textContent=player.name;$('endSub').textContent=`Lớp ${player.cls} · Tin học 8 – Bài 5`;
+ const right=S.res.filter(r=>r&&r.ok).length;
+ let medal,icon;
+ if(sc2>=9){medal='👨‍🚀 Thuyền trưởng Hệ Mặt Trời!';icon='🏆'}else if(sc2>=7){medal='🌟 Phi hành gia giỏi!';icon='🥇'}else if(sc2>=5){medal='🚀 Phi hành đoàn khá!';icon='🥈'}else{medal='🔭 Cần luyện tập thêm, thử lại nhé!';icon='🌠'}
+ $('endMedal').textContent=medal+` (đúng ${right}/5${S.bonusCount?`, nhận ${S.bonusCount} quà 🎁`:''})`;$('endIcon').textContent=icon;
+ const rv=$('rev');rv.innerHTML='';
+ S.qs.forEach((q,i)=>{const r=S.res[i],d=document.createElement('div');d.className=r&&r.ok?'ok':'no';d.textContent=`${r&&r.ok?'✅':'❌'} Câu ${i+1} [${q.lv}] ${q.q}  → ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;rv.appendChild(d)});
+ let n=0;const el=$('endScore'),id=setInterval(()=>{n+=.1;if(n>=sc2){n=sc2;clearInterval(id)}el.textContent=fmt(n)},45);
+ if(sc2>=5)sfx.fanfare();else sfx.sad();startFw(sc2);
+}
+
+/* ---------- Pháo hoa màn hình tổng kết ---------- */
+const fwc=$('fw'),fwx=fwc.getContext('2d');
+let FW={r:[],p:[],next:0,rate:700,power:1};
+function sizeFw(){fwc.width=innerWidth;fwc.height=innerHeight}addEventListener('resize',sizeFw);
+function fwLaunch(){const w=fwc.width,h=fwc.height;FW.r.push({x:w*(.1+Math.random()*.8),y:h+10,ty:h*(.1+Math.random()*.35),vy:-(11+Math.random()*3)*h/800,h:Math.random()*360})}
+function fwExplode(r){
+ const h=fwc.height,k=h/800,n=Math.round((70+Math.random()*60)*FW.power),type=Math.random()<.35?'ring':'sphere',h2=(r.h+120+Math.random()*120)%360;
+ sfx.boom();
+ for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.1,v=(type==='ring'?5.5:Math.random()*6.5+1)*k*(.85+FW.power*.15);
+  FW.p.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.009+Math.random()*.01,h:Math.random()<.65?r.h:h2,s:k})}
+}
+function startFw(score){
+ sizeFw();fwx.fillStyle='#03050d';fwx.fillRect(0,0,fwc.width,fwc.height);
+ FW.r=[];FW.p=[];
+ FW.power=score>=9?1.3:score>=7?1:score>=5?.8:.6;FW.rate=score>=9?450:score>=7?650:score>=5?900:1400;
+ const n=score>=5?5:2;for(let i=0;i<n;i++)setTimeout(fwLaunch,i*220);
+ FW.next=performance.now()+1200;
+}
+function frameFw(t){
+ fwx.globalCompositeOperation='source-over';fwx.fillStyle='rgba(3,5,13,.2)';fwx.fillRect(0,0,fwc.width,fwc.height);
+ if(t>FW.next){const c=1+(Math.random()<.4?1:0)+(FW.power>1?1:0);for(let i=0;i<c;i++)setTimeout(fwLaunch,i*140);FW.next=t+FW.rate*(.6+Math.random()*.8)}
+ fwx.globalCompositeOperation='lighter';
+ const k=fwc.height/800;
+ FW.r=FW.r.filter(r=>{r.y+=r.vy;r.vy*=.985;fwx.fillStyle=`hsl(${r.h},100%,75%)`;fwx.beginPath();fwx.arc(r.x,r.y,2.2*k,0,6.3);fwx.fill();
+  if(Math.random()<.8){FW.p.push({x:r.x,y:r.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,l:.6,d:.04,h:r.h,s:k*.6})}
+  if(r.y<=r.ty||r.vy>-1.8){fwExplode(r);return false}return true});
+ FW.p=FW.p.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.vx*=.985;p.vy=p.vy*.985+.05*p.s;p.l-=p.d;if(p.l<=0)return false;
+  fwx.fillStyle=`hsla(${p.h},100%,${55+p.l*20}%,${Math.min(1,p.l*1.4)})`;fwx.beginPath();fwx.arc(p.x,p.y,(1.2+p.l*1.8)*p.s*1.3,0,6.3);fwx.fill();return true});
+ fwx.globalCompositeOperation='source-over';
+}
+
+/* ---------- Vòng lặp chính (đồng hồ + hoạt cảnh) ---------- */
+const ring=$('ring');
+function loop(t){
+ drawConf();
+ if(!$('end').classList.contains('hide'))frameFw(t);
+ if(!$('start').classList.contains('hide')){useCv(CV.intro,false,Math.max(1.2,Math.min(CV.intro.W,CV.intro.H)/300));frameSky(t,false,true)}
+ useCv(CV.mini,false);frameSky(t,false);
+ if(S.busy){useCv(CV.big,true);frameSky(t,true)}
+ SK.warp=Math.max(0,SK.warp-.005);
+ if(S.active&&!S.answered){
+  const left=Math.max(0,(S.deadline-performance.now())/1000),frac=left/S.dur,sec=Math.ceil(left);
+  $('tnum').textContent=sec;$('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
+  const low=left<=5||frac<.25;$('timer').classList.toggle('low',low);$('tbar').classList.toggle('low',low);
+  ring.style.stroke=frac>.5?'#12b774':frac>.25?'#ffc93c':'#ff5d7a';
+  if(left<=5&&sec!==S.lastTick&&sec>0){S.lastTick=sec;sfx.tick()}
+  if(left<=0)answer(-1);
+ }
+ requestAnimationFrame(loop);
+}
+
+/* ---------- Sự kiện ---------- */
+function toggleFs(){const d=document;if(!d.fullscreenElement&&!d.webkitFullscreenElement){(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement).catch(()=>{})}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}
+document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('btnFs').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';$('btnFsStart').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';setTimeout(()=>{sizeSky();initStars();sizeFx()},200)});
+$('btnFs').onclick=$('btnFsStart').onclick=toggleFs;
+$('btnSnd').onclick=()=>{initAudio();setMusic(!musicOn)};
+$('btnStart').onclick=()=>{
+ const n=$('inName').value.trim(),c=$('inClass').value.trim();let bad=false;
+ [['inName',n],['inClass',c]].forEach(([id,v])=>{const el=$(id);el.classList.remove('err');if(!v){void el.offsetWidth;el.classList.add('err');bad=true}});
+ if(bad)return;
+ player.name=n;player.cls=c;initAudio();sfx.start();setMusic(true);newGame();
+};
+['inName','inClass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('btnStart').click()}));
+$('btnNext').onclick=()=>{sfx.click();cinematic()};
+$('btnAgain').onclick=()=>{initAudio();sfx.start();newGame()};
+$('btnChange').onclick=()=>{$('end').classList.add('hide');$('start').classList.remove('hide');$('inName').value='';$('inClass').value='';$('inName').focus()};
+addEventListener('keydown',e=>{
+ if(!S.active||$('game').classList.contains('hide'))return;
+ const k=e.key.toUpperCase(),i='ABCD'.indexOf(k),j='1234'.indexOf(k);
+ if(!S.answered&&(i>=0||j>=0)&&k.length===1)answer(i>=0?i:j);
+ else if(e.key==='Enter'&&S.answered&&!S.busy&&!$('btnNext').disabled&&!$('btnNext').classList.contains('hide'))$('btnNext').click();
+});
+sizeSky();requestAnimationFrame(loop);
+$('inName').focus();
+</script>
+</body>
+</html>
