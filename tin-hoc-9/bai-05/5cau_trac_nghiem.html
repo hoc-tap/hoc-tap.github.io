@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THỬ SỨC TRÌNH ĐỘ - HÀNH TRÌNH CHINH PHỤC HỆ MẶT TRỜI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800;900&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: #f0f4f9;
+            color: #1e293b;
+            overflow-x: hidden;
+            user-select: none;
+            font-size: 18px; /* Larger base font size */
+        }
+
+        .font-heading {
+            font-family: 'Fredoka', 'Lexend', sans-serif;
+        }
+
+        /* Bright sky / outer space gradient background */
+        .bright-bg {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 40%, #eef2ff 100%);
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+        }
+
+        /* Bright Glassmorphism Cards */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 2px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 2px solid #e2e8f0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+        }
+
+        .glass-card:hover:not(:disabled) {
+            background: #ffffff;
+            border-color: #2563eb;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Glowing text effect for Bright Mode */
+        .glow-text-blue {
+            text-shadow: 0 0 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .glow-text-gold {
+            text-shadow: 0 0 12px rgba(217, 119, 6, 0.4);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 6px;
+        }
+
+        /* Orbit Simulation Styles */
+        .orbit-container {
+            position: relative;
+            width: 100%;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border-radius: 1.5rem;
+            background: radial-gradient(circle, #ffffff 0%, #e0f2fe 70%, #bae6fd 100%);
+            border: 2px solid #cbd5e1;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+        }
+
+        .sun-center {
+            position: absolute;
+            width: 54px;
+            height: 54px;
+            background: radial-gradient(circle, #fde047 0%, #f59e0b 80%, #d97706 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 25px #f59e0b, 0 0 50px rgba(245, 158, 11, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            z-index: 10;
+            animation: sunPulse 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes sunPulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px #f59e0b; }
+            100% { transform: scale(1.12); box-shadow: 0 0 35px #f59e0b, 0 0 60px rgba(245, 158, 11, 0.8); }
+        }
+
+        .orbit-ring {
+            position: absolute;
+            border: 2px dashed rgba(148, 163, 184, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .planet-orbiting {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -18px;
+            margin-left: -18px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.5s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+
+        .planet-orbiting.visited {
+            box-shadow: 0 0 15px #10b981;
+            border: 2px solid #10b981;
+        }
+
+        .planet-orbiting.active-target {
+            transform: scale(1.35);
+            box-shadow: 0 0 20px #2563eb;
+            border: 3px solid #2563eb;
+            animation: pulseActive 1.5s infinite alternate;
+        }
+
+        @keyframes pulseActive {
+            0% { transform: scale(1.25); }
+            100% { transform: scale(1.45); }
+        }
+
+        /* Spaceship in Orbit */
+        #orbitSpaceship {
+            position: absolute;
+            font-size: 28px;
+            z-index: 20;
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        /* Timer animation stroke */
+        .timer-circle {
+            transition: stroke-dashoffset 1s linear;
+        }
+
+        /* Option buttons extra font styling */
+        .option-btn {
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+
+        /* Responsive Grid for Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .options-grid.grid-2col {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Space Journey Animation Keyframes */
+        @keyframes spaceFlight {
+            0% {
+                transform: translate(-120px, 40px) scale(0.6) rotate(-15deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translate(0px, 0px) scale(1.1) rotate(5deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(130px, -40px) scale(0.8) rotate(20deg);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes planetRotate {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.08); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes starStreak {
+            0% { transform: translateX(100%); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateX(-100%); opacity: 0; }
+        }
+
+        .spaceship-animated {
+            animation: spaceFlight 2.8s ease-in-out infinite alternate;
+        }
+
+        .planet-animated {
+            animation: planetRotate 20s linear infinite;
+        }
+
+        .star-streak {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+            border-radius: 999px;
+            animation: starStreak 1.5s linear infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative overflow-x-hidden overflow-y-auto">
+
+    <!-- Bright Background Canvas -->
+    <div class="bright-bg"></div>
+
+    <!-- MAIN GAME CONTAINER (Removed header bar) -->
+    <main class="flex-grow container mx-auto px-4 py-6 max-w-7xl flex flex-col justify-center relative z-10">
+
+        <!-- SCREEN 1: START SCREEN -->
+        <div id="startScreen" class="glass-panel p-8 md:p-12 rounded-3xl max-w-3xl mx-auto text-center space-y-6 transform transition-all duration-300 my-auto">
+            <div class="inline-block p-5 bg-blue-100 rounded-full border-2 border-blue-300 mb-2 shadow-inner">
+                <i class="fa-solid fa-user-astronaut text-7xl text-blue-600"></i>
+            </div>
+            <h2 id="appTitleDisplay" class="font-heading text-3xl md:text-4xl font-extrabold text-blue-700 tracking-wide">
+                THỬ SỨC TRÌNH ĐỘ
+            </h2>
+            <p id="appSubTitleDisplay" class="text-slate-700 text-lg md:text-xl leading-relaxed font-semibold">
+                Môn: Tin Học 9 - Bài 5: Tìm hiểu phần mềm mô phỏng
+            </p>
+            <p class="text-slate-600 text-base md:text-lg leading-relaxed font-medium">
+                Hãy cùng tàu vũ trụ du ngoạn qua <b>5 hành tinh trong Hệ Mặt Trời</b> bằng cách vượt qua <b>5 câu hỏi trắc nghiệm Tin học 9</b>!
+            </p>
+
+            <!-- Player Information Input Form -->
+            <div class="bg-white/80 p-5 rounded-2xl border-2 border-blue-200 text-left max-w-xl mx-auto space-y-4 shadow-sm">
+                <h3 class="font-heading font-extrabold text-blue-800 text-base md:text-lg flex items-center">
+                    <i class="fa-solid fa-id-card text-blue-600 mr-2"></i> THÔNG TIN HỌC SINH
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="sm:col-span-2">
+                        <label for="studentNameInput" class="block text-xs font-bold text-slate-600 uppercase mb-1">Họ và tên <span class="text-rose-500">*</span></label>
+                        <input type="text" id="studentNameInput" placeholder="Ví dụ: Nguyễn Văn A" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 focus:border-blue-500 focus:outline-none font-semibold text-slate-800 text-base bg-slate-50 transition" />
+                    </div>
+                    <div>
+                        <label for="studentClassInput" class="block text-xs font-bold text-slate-600 uppercase mb-1">Lớp <span class="text-rose-500">*</span></label>
+                        <input type="text" id="studentClassInput" placeholder="Ví dụ: 9A1" class="w-full px-4 py-2.5 rounded-xl border-2 border-slate-300 focus:border-blue-500 focus:outline-none font-semibold text-slate-800 text-base bg-slate-50 transition" />
+                    </div>
+                </div>
+                <p id="inputErrorMsg" class="hidden text-rose-600 font-bold text-sm flex items-center">
+                    <i class="fa-solid fa-circle-exclamation mr-1.5"></i> Vui lòng nhập đầy đủ Họ tên và Lớp trước khi bắt đầu!
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left max-w-2xl mx-auto my-6">
+                <div class="p-4 glass-card rounded-2xl border-l-8 border-emerald-500 shadow-sm">
+                    <p class="font-extrabold text-emerald-700 text-lg">3 Câu Nhận biết</p>
+                    <p class="text-slate-600 text-sm font-semibold">30 giây / câu</p>
+                </div>
+                <div class="p-4 glass-card rounded-2xl border-l-8 border-amber-500 shadow-sm">
+                    <p class="font-extrabold text-amber-700 text-lg">1 Câu Thông hiểu</p>
+                    <p class="text-slate-600 text-sm font-semibold">45 giây / câu</p>
+                </div>
+                <div class="p-4 glass-card rounded-2xl border-l-8 border-rose-500 shadow-sm">
+                    <p class="font-extrabold text-rose-700 text-lg">1 Câu Vận dụng</p>
+                    <p class="text-slate-600 text-sm font-semibold">60 giây / câu</p>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-2xl border-2 border-blue-200 text-base font-bold text-blue-900 shadow-sm">
+                <i class="fa-solid fa-gift text-amber-500 text-xl mr-2"></i> Trả lời đúng nhận 2.0 điểm/câu + 20% cơ hội mở <b>Túi quà vũ trụ (+0.5đ)</b>!
+            </div>
+
+            <button onclick="startGame()" class="w-full md:w-auto px-10 py-5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white font-heading font-extrabold rounded-2xl shadow-xl shadow-blue-500/30 transform hover:-translate-y-1 transition duration-200 text-xl tracking-wide">
+                <i class="fa-solid fa-play mr-3"></i> BẮT ĐẦU KHÁM PHÁ HỆ MẶT TRỜI
+            </button>
+        </div>
+
+        <!-- SCREEN 2: GAMEPLAY SCREEN -->
+        <div id="gameplayScreen" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT PANEL: QUESTION & OPTIONS (8 Columns) -->
+            <div class="lg:col-span-8 space-y-5">
+                <div class="glass-panel p-6 md:p-8 rounded-3xl relative overflow-hidden">
+                    <!-- Category Badge & Counter -->
+                    <div class="flex justify-between items-center mb-6">
+                        <span id="levelBadge" class="px-4 py-1.5 rounded-full text-sm font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border-2 border-emerald-300">
+                            Nhận biết
+                        </span>
+                        <span id="questionCounter" class="text-base font-bold text-slate-600">
+                            CHẶNG: <strong class="text-blue-700 text-xl font-heading">1/5</strong>
+                        </span>
+                    </div>
+
+                    <!-- Question Text (Large font) -->
+                    <h3 id="questionText" class="text-xl md:text-2xl font-bold text-slate-900 mb-6 leading-snug">
+                        Nội dung câu hỏi sẽ hiển thị ở đây...
+                    </h3>
+
+                    <!-- Options Grid (2 Columns if 4 options) -->
+                    <div id="optionsContainer" class="options-grid">
+                        <!-- Options injected dynamically -->
+                    </div>
+
+                    <!-- Feedback Box -->
+                    <div id="feedbackBox" class="hidden mt-6 p-5 rounded-2xl text-base transition-all duration-300">
+                        <div id="feedbackHeader" class="font-extrabold text-lg mb-2 flex items-center space-x-2"></div>
+                        <p id="explanationText" class="text-base font-medium text-slate-800 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Next Question / Travel Button -->
+                    <div class="mt-8 flex justify-end">
+                        <button id="nextBtn" onclick="nextQuestionOrJourney()" disabled class="px-8 py-4 bg-slate-300 text-slate-500 cursor-not-allowed font-heading font-extrabold text-lg rounded-2xl transition flex items-center space-x-3 shadow">
+                            <span>BAY TỚI HÀNH TINH TIẾP THEO</span>
+                            <i class="fa-solid fa-rocket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: ORBIT SIMULATION & DASHBOARD (4 Columns - Reduced Width) -->
+            <div class="lg:col-span-4 space-y-4">
+                <!-- Header Info Integrated into Right Column -->
+                <div class="glass-panel p-4 rounded-3xl space-y-3">
+                    <div class="flex items-center justify-between border-b-2 border-slate-200/80 pb-2">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg shadow-md shadow-blue-500/20">
+                                <i class="fa-solid fa-rocket animate-pulse"></i>
+                            </div>
+                            <div>
+                                <h1 class="font-heading font-extrabold text-base text-blue-700 leading-tight">
+                                    THỬ SỨC TRÌNH ĐỘ
+                                </h1>
+                                <p class="text-[11px] font-semibold text-slate-500">Tin Học 9 - Bài 5</p>
+                            </div>
+                        </div>
+                        <button id="fullscreenBtn" onclick="toggleFullScreen()" class="glass-card px-2.5 py-1 rounded-xl text-xs font-bold flex items-center space-x-1 text-slate-700 hover:text-blue-600 hover:border-blue-500 transition">
+                            <i class="fa-solid fa-expand text-xs"></i>
+                            <span class="hidden sm:inline">Toàn màn hình</span>
+                        </button>
+                    </div>
+
+                    <!-- Student Profile Bar -->
+                    <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-2.5 flex items-center justify-between text-xs font-bold text-slate-700">
+                        <div class="flex items-center space-x-2 truncate">
+                            <i class="fa-solid fa-user-graduate text-blue-600 text-sm"></i>
+                            <span id="playerBadgeName" class="truncate text-blue-900 font-extrabold">Họ và tên</span>
+                        </div>
+                        <span id="playerBadgeClass" class="bg-blue-600 text-white px-2 py-0.5 rounded-lg text-[11px] shrink-0 font-extrabold">Lớp</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5 pt-0.5">
+                        <!-- Countdown Timer -->
+                        <div class="glass-card p-2.5 rounded-2xl flex items-center space-x-2 border-2 border-blue-200">
+                            <div class="relative w-11 h-11 flex items-center justify-center shrink-0">
+                                <svg class="w-11 h-11 transform -rotate-90">
+                                    <circle cx="22" cy="22" r="18" stroke="currentColor" stroke-width="4" class="text-slate-200" fill="transparent" />
+                                    <circle id="timerCircle" cx="22" cy="22" r="18" stroke="currentColor" stroke-width="4" class="text-blue-600 timer-circle" fill="transparent" stroke-dasharray="113" stroke-dashoffset="0" />
+                                </svg>
+                                <span id="timerText" class="absolute font-heading font-extrabold text-sm text-blue-700">30</span>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-bold text-slate-500 uppercase">THỜI GIAN</p>
+                                <p id="timeLabel" class="text-xs font-extrabold text-slate-800 truncate">30 Giây</p>
+                            </div>
+                        </div>
+
+                        <!-- Score Display -->
+                        <div class="glass-card p-2.5 rounded-2xl flex items-center space-x-2 border-2 border-amber-300 bg-amber-50/50">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-md shrink-0">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[10px] font-bold text-slate-500 uppercase">ĐIỂM SỐ</p>
+                                <p id="scoreDisplay" class="text-xl font-heading font-black text-amber-600 truncate">0.0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-xs font-bold text-slate-700">
+                            <span>Tiến độ chinh phục</span>
+                            <span id="progressPercent" class="text-blue-600 font-heading">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-200 rounded-full overflow-hidden p-0.5 border border-slate-300">
+                            <div id="progressBar" class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC SOLAR SYSTEM ORBIT CONTAINER -->
+                <div class="glass-panel p-4 rounded-3xl flex flex-col items-center">
+                    <div class="w-full flex justify-between items-center mb-2">
+                        <h4 class="text-xs font-heading font-extrabold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+                            <i class="fa-solid fa-sun text-amber-500 animate-spin" style="animation-duration: 12s;"></i>
+                            <span>HỆ MẶT TRỜI</span>
+                        </h4>
+                        <span id="currentDestinationBadge" class="text-[11px] font-bold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full border border-blue-300">
+                            Đang dừng: Sao Hải Vương
+                        </span>
+                    </div>
+
+                    <!-- Orbit Graphic Box -->
+                    <div id="orbitGraphicContainer" class="orbit-container" style="height: 250px;">
+                        <!-- Sun in Center with rotating flare -->
+                        <div class="sun-center" title="Mặt Trời ☀️">
+                            <span class="animate-spin inline-block" style="animation-duration: 20s;">☀️</span>
+                        </div>
+
+                        <!-- Orbit Rings & Planets will be injected dynamically by JS -->
+
+                        <!-- Spaceship Icon moving around and landing -->
+                        <div id="orbitSpaceship" title="Tàu Vũ Trụ 🚀">🚀</div>
+                    </div>
+
+                    <p class="text-[11px] font-semibold text-slate-500 mt-2 text-center">
+                        Mặt trời xoay ở trung tâm - Tàu vũ trụ đáp trực tiếp xuống từng hành tinh!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: INTERACTIVE SPACE JOURNEY & GIFT OPENING ANIMATION OVERLAY -->
+        <div id="journeyAnimationOverlay" class="hidden fixed inset-0 z-50 glass-panel bg-sky-50/95 flex flex-col items-center justify-center p-4 md:p-6 text-center overflow-y-auto">
+            <div class="max-w-xl w-full space-y-4 my-auto py-4">
+                <!-- Planet Arrival Indicator -->
+                <div class="space-y-1">
+                    <p class="text-xs md:text-sm font-heading font-extrabold text-blue-600 uppercase tracking-widest animate-pulse">
+                        <i class="fa-solid fa-plane-arrival mr-1"></i> TÀU VŨ TRỤ ĐANG HẠ CÁNH...
+                    </p>
+                    <h3 id="travelDestinationText" class="text-2xl md:text-3xl font-heading font-black text-slate-900 glow-text-blue">
+                        ĐÁP XUỐNG SAO HẢI VƯƠNG
+                    </h3>
+                </div>
+
+                <!-- Flight Visual Component with Landing Animation -->
+                <div class="relative w-full h-52 md:h-60 bg-gradient-to-b from-sky-100 via-blue-100 to-indigo-100 rounded-3xl border-2 border-blue-300 overflow-hidden flex items-center justify-center shadow-inner">
+                    <!-- Star Streaks Background -->
+                    <div class="star-streak w-24 top-6 right-0" style="animation-delay: 0s;"></div>
+                    <div class="star-streak w-36 top-20 right-0" style="animation-delay: 0.4s;"></div>
+                    <div class="star-streak w-28 bottom-8 right-0" style="animation-delay: 0.8s;"></div>
+                    
+                    <!-- Sun light glow background element -->
+                    <div class="absolute -left-12 -top-12 w-32 h-32 bg-amber-300/40 rounded-full blur-xl animate-pulse"></div>
+                    
+                    <!-- Target Planet graphic with landing platform -->
+                    <div class="relative flex flex-col items-center justify-center">
+                        <div id="animPlanetGraphic" class="planet-animated relative z-0 w-28 h-28 md:w-36 md:h-36 rounded-full shadow-2xl flex items-center justify-center text-5xl md:text-7xl transition-all duration-1000 border-2 border-white/60">
+                            🪐
+                        </div>
+                        <div id="landingBadge" class="mt-2 px-3 py-1 bg-emerald-500 text-white font-heading font-black text-xs rounded-full shadow-lg border border-white animate-bounce">
+                            📍 ĐÃ ĐÁP XUỐNG AN TOÀN
+                        </div>
+                    </div>
+
+                    <!-- Flying Spaceship landing directly onto planet center -->
+                    <div class="spaceship-animated absolute z-10 text-4xl md:text-5xl drop-shadow-2xl">
+                        🚀
+                    </div>
+
+                    <div class="absolute bottom-3 left-4 text-xs font-bold text-blue-600/80 uppercase tracking-wider">
+                        <i class="fa-solid fa-circle-check mr-1 text-emerald-500"></i> Trạng thái: Đã kết nối quỹ đạo
+                    </div>
+                </div>
+
+                <!-- REWARD GIFT BOX INTERACTIVE SECTION -->
+                <div id="rewardBoxContainer" class="hidden p-5 glass-card rounded-3xl border-4 border-amber-400 bg-gradient-to-r from-amber-100 via-yellow-50 to-amber-100 shadow-xl transition-all duration-500">
+                    <div id="giftPreOpen" class="flex flex-col items-center space-y-2 cursor-pointer group" onclick="openGiftBox()">
+                        <div class="text-6xl md:text-7xl transform group-hover:scale-110 group-active:scale-95 transition duration-300 drop-shadow-md animate-bounce">
+                            🎁
+                        </div>
+                        <p class="font-heading font-extrabold text-amber-900 text-lg">NHẤN VÀO TÚI QUÀ ĐỂ MỞ!</p>
+                        <span class="text-xs font-bold text-amber-700 bg-amber-200 px-3 py-1 rounded-full border border-amber-300">Cơ hội nhận +0.5 điểm thưởng</span>
+                    </div>
+
+                    <div id="giftPostOpen" class="hidden flex flex-col items-center space-y-2 animate-fade-in">
+                        <div class="text-6xl md:text-7xl animate-pulse">
+                            🎉
+                        </div>
+                        <p class="font-heading font-black text-emerald-700 text-xl">CHÚC MỪNG BẠN!</p>
+                        <p class="text-slate-800 font-extrabold text-base">Bạn đã nhận được túi quà vũ trụ: <strong class="text-amber-600 text-lg font-black">+0.5 Điểm!</strong></p>
+                    </div>
+                </div>
+
+                <button id="continueBtn" onclick="completeJourneyStep()" class="w-full py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-800 text-white font-heading font-extrabold text-lg md:text-xl rounded-2xl shadow-lg shadow-blue-500/30 transition transform hover:scale-[1.02] active:scale-95 cursor-pointer">
+                    <i class="fa-solid fa-circle-right mr-2"></i> TIẾP TỤC HÀNH TRÌNH
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: SUMMARY & RESULTS SCREEN -->
+        <div id="resultScreen" class="hidden glass-panel p-8 md:p-12 rounded-3xl max-w-2xl mx-auto text-center space-y-6">
+            <div class="inline-block p-5 bg-amber-100 rounded-full border-2 border-amber-300 mb-2">
+                <i class="fa-solid fa-trophy text-7xl text-amber-500"></i>
+            </div>
+
+            <h2 class="font-heading text-3xl md:text-4xl font-black text-slate-800">
+                HOÀN THÀNH HÀNH TRÌNH HỆ MẶT TRỜI!
+            </h2>
+
+            <!-- Student Summary Card -->
+            <div class="glass-card p-4 rounded-2xl border-2 border-blue-200 max-w-md mx-auto flex items-center justify-between text-slate-800">
+                <div class="text-left font-bold">
+                    <p class="text-xs uppercase text-slate-500">HỌC SINH THỰC HIỆN</p>
+                    <p id="resultStudentName" class="text-lg text-blue-900 font-heading font-extrabold">--</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs uppercase text-slate-500">LỚP</p>
+                    <span id="resultStudentClass" class="inline-block bg-blue-600 text-white px-3 py-1 rounded-xl text-sm font-extrabold font-heading">--</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 max-w-md mx-auto">
+                <div class="p-4 glass-card rounded-2xl">
+                    <p class="text-xs font-bold text-slate-500 uppercase">TỔNG ĐIỂM</p>
+                    <p id="finalScore" class="text-3xl font-black font-heading text-amber-600">0.0</p>
+                </div>
+                <div class="p-4 glass-card rounded-2xl">
+                    <p class="text-xs font-bold text-slate-500 uppercase">SỐ CÂU ĐÚNG</p>
+                    <p id="finalCorrect" class="text-3xl font-black font-heading text-emerald-600">0/5</p>
+                </div>
+                <div class="p-4 glass-card rounded-2xl">
+                    <p class="text-xs font-bold text-slate-500 uppercase">QUÀ NHẬN ĐƯỢC</p>
+                    <p id="finalGifts" class="text-3xl font-black font-heading text-blue-600">0</p>
+                </div>
+            </div>
+
+            <!-- Review Message Box -->
+            <div id="evaluationBox" class="p-5 glass-card rounded-2xl border-2 border-blue-200 text-lg font-bold text-blue-900">
+                <p id="evaluationText">Lời nhận xét sẽ xuất hiện ở đây...</p>
+            </div>
+
+            <div class="pt-4">
+                <button onclick="resetGame()" class="px-10 py-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-heading font-extrabold text-xl rounded-2xl shadow-xl shadow-emerald-500/30 transition transform hover:-translate-y-1">
+                    <i class="fa-solid fa-rotate-right mr-3"></i> CHƠI LẠI BỘ CÂU MỚI
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full py-4 text-center text-sm font-semibold text-slate-500 glass-panel border-t-2 border-slate-200 z-10">
+        Trò chơi học tập tương tác • Tin Học 9 Bài 5 • Giao diện sáng & Cỡ chữ phóng to
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // =========================================================================
+        // QUESTION BANK DATA (Parsed from Tin 9 bài 5.docx)
+        // =========================================================================
+        const QUESTION_BANK = {
+            NB: [
+                {
+                    q: "Phần mềm mô phỏng là loại phần mềm có chức năng chính nào sau đây?",
+                    options: [
+                        "A. Thể hiện trực quan sự vận động của đối tượng và cho phép người dùng tương tác.",
+                        "B. Soạn thảo văn bản và trình bày các bài trình chiếu chuyên nghiệp.",
+                        "C. Quản lý hệ điều hành và bảo vệ máy tính khỏi các phần mềm độc hại.",
+                        "D. Lập trình tạo ra các phần mềm ứng dụng và hệ thống máy tính."
+                    ],
+                    answer: 0,
+                    exp: "Phần mềm mô phỏng giúp thể hiện trực quan sự vận động của một đối tượng và cho phép người dùng tương tác để tìm hiểu cách thức hoạt động."
+                },
+                {
+                    q: "Phần mềm nào sau đây được sử dụng để mô phỏng các thí nghiệm vật lý?",
+                    options: [
+                        "A. GeoGebra",
+                        "B. Crocodile Physics",
+                        "C. ChemLab",
+                        "D. Flowgorithm"
+                    ],
+                    answer: 1,
+                    exp: "Crocodile Physics là phần mềm chuyên dùng để mô phỏng các thí nghiệm thuộc lĩnh vực vật lý."
+                },
+                {
+                    q: "Phần mềm Crocodile Chemistry hỗ trợ mô phỏng hoạt động thuộc lĩnh vực nào?",
+                    options: [
+                        "A. Thí nghiệm vật lý",
+                        "B. Thí nghiệm hóa học",
+                        "C. Vẽ hình hình học",
+                        "D. Mô phỏng giao thông"
+                    ],
+                    answer: 1,
+                    exp: "Crocodile Chemistry là phần mềm mô phỏng các thí nghiệm hóa học trực quan trên máy tính."
+                },
+                {
+                    q: "Địa chỉ website phet.colorado.edu cung cấp các phần mềm mô phỏng thuộc dự án nào?",
+                    options: [
+                        "A. Dự án mô phỏng sơ đồ khối",
+                        "B. Dự án mô phỏng giao thông đô thị",
+                        "C. Dự án mô phỏng thí nghiệm khoa học trực tuyến",
+                        "D. Dự án thiết kế mô hình đồ họa ba chiều"
+                    ],
+                    answer: 2,
+                    exp: "PhET tại phet.colorado.edu cung cấp các thí nghiệm khoa học trực tuyến phong phú."
+                },
+                {
+                    q: "Phần mềm GeoGebra chủ yếu hỗ trợ người dùng thực hiện công việc nào?",
+                    options: [
+                        "A. Chạy thử thuật toán sơ đồ khối",
+                        "B. Vẽ các hình hình học và giải toán",
+                        "C. Pha trộn màu sắc hội họa",
+                        "D. Mô phỏng lưu lượng giao thông"
+                    ],
+                    answer: 1,
+                    exp: "GeoGebra hỗ trợ vẽ hình hình học và giải bài tập toán học."
+                },
+                {
+                    q: "Phần mềm nào cho phép chạy thử thuật toán dạng sơ đồ khối trước khi cài đặt?",
+                    options: [
+                        "A. Flowgorithm",
+                        "B. Cabri II Plus",
+                        "C. ChemLab",
+                        "D. Trycolors"
+                    ],
+                    answer: 0,
+                    exp: "Flowgorithm giúp người dùng chạy thử và kiểm tra hoạt động của thuật toán được biểu diễn bằng sơ đồ khối."
+                },
+                {
+                    q: "Trang web trycolors.com cung cấp công cụ mô phỏng hoạt động nào?",
+                    options: [
+                        "A. Tương tác giữa các phân tử",
+                        "B. Lắp ráp mạch điện",
+                        "C. Quá trình pha màu",
+                        "D. Thuật toán tìm kiếm"
+                    ],
+                    answer: 2,
+                    exp: "Trycolors là trang web mô phỏng pha màu, cho phép thay đổi tỉ lệ màu sắc để quan sát kết quả."
+                },
+                {
+                    q: "Một trong những lợi ích quan trọng nhất của phần mềm mô phỏng là gì?",
+                    options: [
+                        "A. Thay thế hoàn toàn người giáo viên",
+                        "B. Nghiên cứu đối tượng trực quan với chi phí thấp",
+                        "C. Tăng dung lượng lưu trữ của máy tính",
+                        "D. Tự động sửa lỗi phần cứng"
+                    ],
+                    answer: 1,
+                    exp: "Phần mềm mô phỏng giúp học sinh nghiên cứu đối tượng trực quan với chi phí thấp."
+                },
+                {
+                    q: "Sử dụng phần mềm mô phỏng trong thí nghiệm mang lại ưu điểm gì về mặt an toàn?",
+                    options: [
+                        "A. Hạn chế tình huống hỏng hóc thiết bị hoặc nguy hiểm",
+                        "B. Đảm bảo mọi phản ứng xảy ra chính xác tuyệt đối",
+                        "C. Giúp máy tính hoạt động nhanh hơn",
+                        "D. Loại bỏ hoàn toàn nhu cầu mua sắm thiết bị"
+                    ],
+                    answer: 0,
+                    exp: "Mô phỏng giúp thực hiện các thí nghiệm nguy hiểm hoặc dễ gây hư hỏng thiết bị trên môi trường ảo an toàn."
+                },
+                {
+                    q: "Khi sử dụng phần mềm pha màu, người dùng thực hiện thao tác nào để thay đổi kết quả?",
+                    options: [
+                        "A. Tăng hoặc giảm tỉ lệ các màu đầu vào",
+                        "B. Đổi mã nguồn của phần mềm",
+                        "C. Thay đổi độ phân giải màn hình",
+                        "D. Cài đặt lại hệ điều hành"
+                    ],
+                    answer: 0,
+                    exp: "Người dùng điều chỉnh, tăng giảm tỉ lệ giữa các màu sắc để quan sát sự thay đổi màu tổng hợp."
+                }
+            ],
+            TH: [
+                {
+                    q: "Phần mềm mô phỏng có chức năng chính là gì?",
+                    options: [
+                        "A. Thể hiện trực quan sự vận động của đối tượng để người dùng tương tác và tìm hiểu.",
+                        "B. Tự động hóa hoàn toàn việc tính toán các công thức toán học phức tạp.",
+                        "C. Lưu trữ dữ liệu văn bản và hình ảnh dưới dạng cơ sở dữ liệu tra cứu tĩnh.",
+                        "D. Bảo vệ máy tính khỏi các tác nhân gây hại từ môi trường mạng."
+                    ],
+                    answer: 0,
+                    exp: "Phần mềm mô phỏng thể hiện trực quan sự vận động của đối tượng, cho phép tương tác và nghiên cứu."
+                },
+                {
+                    q: "Phần mềm nào sau đây hỗ trợ việc vẽ các hình hình học và giải toán?",
+                    options: [
+                        "A. GeoGebra",
+                        "B. Flowgorithm",
+                        "C. ChemLab",
+                        "D. Crocodile Physics"
+                    ],
+                    answer: 0,
+                    exp: "GeoGebra, Cabri, Geometer's Sketchpad là các phần mềm giúp vẽ hình hình học và giải toán."
+                },
+                {
+                    q: "Lợi ích nổi bật của việc sử dụng phần mềm mô phỏng thí nghiệm khoa học nguy hiểm là gì?",
+                    options: [
+                        "A. Hạn chế những tình huống có thể làm hỏng thiết bị hoặc gây nguy hiểm cho con người.",
+                        "B. Tạo ra môi trường thực tế ảo chính xác tuyệt đối không có sai số.",
+                        "C. Giảm bớt dung lượng lưu trữ trên ổ cứng máy tính.",
+                        "D. Tăng tốc độ kết nối mạng Internet khi học trực tuyến."
+                    ],
+                    answer: 0,
+                    exp: "Mô phỏng tạo ra môi trường an toàn, tránh hỏng hóc thiết bị và đảm bảo an toàn cho con người."
+                },
+                {
+                    q: "PhET là nền tảng thường được sử dụng để mô phỏng trong lĩnh vực nào?",
+                    options: [
+                        "A. Thí nghiệm vật lí",
+                        "B. Lập trình trực quan",
+                        "C. Xử lý đồ họa",
+                        "D. Soạn thảo văn bản"
+                    ],
+                    answer: 0,
+                    exp: "PhET (phet.colorado.edu) là nền tảng trực tuyến mô phỏng nhiều thí nghiệm khoa học và vật lí."
+                }
+            ],
+            VD: [
+                {
+                    q: "Một nhóm học sinh muốn lắp ráp mạch điện đơn giản nhưng không có sẵn linh kiện. Các em nên dùng nền tảng nào?",
+                    options: [
+                        "A. PhET",
+                        "B. Photoshop / Illustrator",
+                        "C. Cabri 3D",
+                        "D. Flowgorithm"
+                    ],
+                    answer: 0,
+                    exp: "PhET cung cấp thí nghiệm ảo về vật lý bao gồm cả mô phỏng lắp ráp mạch điện đơn giản."
+                },
+                {
+                    q: "Bạn An muốn đề xuất phương án phân luồng giao thông mới tại vòng xuyến mà không làm xáo trộn giao thông thực tế. An nên làm gì?",
+                    options: [
+                        "A. Sử dụng phần mềm mô phỏng giao thông để chạy thử các kịch bản.",
+                        "B. Gửi văn bản yêu cầu sở giao thông cung cấp toàn bộ sơ đồ cơ sở hạ tầng.",
+                        "C. Dùng Crocodile Physics để tính toán lực ma sát của bánh xe.",
+                        "D. Mua mô hình xe ô tô đồ chơi để xếp ra sân trường."
+                    ],
+                    answer: 0,
+                    exp: "Phần mềm mô phỏng giao thông giúp nghiên cứu và thử nghiệm giải pháp an toàn trước khi áp dụng thực tế."
+                },
+                {
+                    q: "Khi thực hành trộn màu ánh sáng hệ RGB, nếu kết hợp ánh sáng Đỏ (Red) và Lục (Green), kết quả hiển thị là màu gì?",
+                    options: [
+                        "A. Yellow (Vàng)",
+                        "B. Purple (Tím)",
+                        "C. Cyan (Xanh lơ)",
+                        "D. Black (Đen)"
+                    ],
+                    answer: 0,
+                    exp: "Trong hệ màu cộng RGB, sự kết hợp giữa Đỏ (Red) và Lục (Green) sẽ tạo ra màu Vàng (Yellow)."
+                },
+                {
+                    q: "Một học sinh gặp khó khăn khi hình dung góc nhìn từ trên xuống của hình chóp tứ giác đều. Công cụ nào hỗ trợ tốt nhất?",
+                    options: [
+                        "A. Phần mềm Cabri 3D",
+                        "B. Cắt dán mô hình bằng bìa các tông thủ công",
+                        "C. Phần mềm Flowgorithm",
+                        "D. Trình mô phỏng màu mixing colors simulator"
+                    ],
+                    answer: 0,
+                    exp: "Cabri 3D hỗ trợ quan sát và xoay khối hình 3D trực quan từ mọi góc độ."
+                }
+            ]
+        };
+
+        const CONFIG = {
+            testTitle: "THỬ SỨC TRÌNH ĐỘ - TIN HỌC 9",
+            testSubTitle: "Bài 5: Tìm hiểu phần mềm mô phỏng",
+            questionStructure: { NB: 3, TH: 1, VD: 1 },
+            timePerLevel: { NB: 30, TH: 45, VD: 60 },
+            pointsPerQuestion: 2.0,
+            bonusPoints: 0.5,
+            bonusProbability: 0.2,
+            maxScore: 10.0,
+            planets: [
+                { name: "Sao Hải Vương", radius: 110, icon: "🪐", bg: "from-blue-500 to-indigo-700" },
+                { name: "Sao Thiên Vương", radius: 90, icon: "🌐", bg: "from-cyan-400 to-teal-600" },
+                { name: "Sao Thổ", radius: 72, icon: "🪐", bg: "from-amber-400 to-orange-600" },
+                { name: "Sao Mộc", radius: 54, icon: "🌕", bg: "from-orange-500 to-amber-700" },
+                { name: "Sao Hỏa", radius: 36, icon: "🔴", bg: "from-red-500 to-rose-700" }
+            ]
+        };
+
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let correctAnswersCount = 0;
+        let giftCount = 0;
+        let timer = null;
+        let timeLeft = 0;
+        let totalTimeForQuestion = 0;
+        let isAnswered = false;
+        let hasOpenedCurrentGift = false;
+        let studentInfo = { name: '', class: '' };
+
+        let planetAngles = [0, 72, 144, 216, 288];
+        let orbitAnimFrame = null;
+
+        const elements = {
+            appTitleDisplay: document.getElementById('appTitleDisplay'),
+            appSubTitleDisplay: document.getElementById('appSubTitleDisplay'),
+            startScreen: document.getElementById('startScreen'),
+            gameplayScreen: document.getElementById('gameplayScreen'),
+            resultScreen: document.getElementById('resultScreen'),
+            journeyAnimationOverlay: document.getElementById('journeyAnimationOverlay'),
+            studentNameInput: document.getElementById('studentNameInput'),
+            studentClassInput: document.getElementById('studentClassInput'),
+            inputErrorMsg: document.getElementById('inputErrorMsg'),
+            playerBadgeName: document.getElementById('playerBadgeName'),
+            playerBadgeClass: document.getElementById('playerBadgeClass'),
+            resultStudentName: document.getElementById('resultStudentName'),
+            resultStudentClass: document.getElementById('resultStudentClass'),
+            levelBadge: document.getElementById('levelBadge'),
+            questionCounter: document.getElementById('questionCounter'),
+            questionText: document.getElementById('questionText'),
+            optionsContainer: document.getElementById('optionsContainer'),
+            feedbackBox: document.getElementById('feedbackBox'),
+            feedbackHeader: document.getElementById('feedbackHeader'),
+            explanationText: document.getElementById('explanationText'),
+            nextBtn: document.getElementById('nextBtn'),
+            timerText: document.getElementById('timerText'),
+            timerCircle: document.getElementById('timerCircle'),
+            timeLabel: document.getElementById('timeLabel'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            progressPercent: document.getElementById('progressPercent'),
+            progressBar: document.getElementById('progressBar'),
+            travelDestinationText: document.getElementById('travelDestinationText'),
+            animPlanetGraphic: document.getElementById('animPlanetGraphic'),
+            rewardBoxContainer: document.getElementById('rewardBoxContainer'),
+            giftPreOpen: document.getElementById('giftPreOpen'),
+            giftPostOpen: document.getElementById('giftPostOpen'),
+            finalScore: document.getElementById('finalScore'),
+            finalCorrect: document.getElementById('finalCorrect'),
+            finalGifts: document.getElementById('finalGifts'),
+            evaluationText: document.getElementById('evaluationText'),
+            orbitGraphicContainer: document.getElementById('orbitGraphicContainer'),
+            currentDestinationBadge: document.getElementById('currentDestinationBadge'),
+            orbitSpaceship: document.getElementById('orbitSpaceship')
+        };
+
+        elements.appTitleDisplay.textContent = CONFIG.testTitle;
+        elements.appSubTitleDisplay.textContent = CONFIG.testSubTitle;
+
+        initOrbitSystem();
+
+        function initOrbitSystem() {
+            CONFIG.planets.forEach((p, idx) => {
+                const ring = document.createElement('div');
+                ring.className = 'orbit-ring';
+                ring.style.width = `${p.radius * 2}px`;
+                ring.style.height = `${p.radius * 2}px`;
+                elements.orbitGraphicContainer.appendChild(ring);
+
+                const planetEl = document.createElement('div');
+                planetEl.id = `planetNode_${idx}`;
+                planetEl.className = `planet-orbiting bg-gradient-to-br ${p.bg} text-white font-bold`;
+                planetEl.title = p.name;
+                planetEl.innerHTML = p.icon;
+                elements.orbitGraphicContainer.appendChild(planetEl);
+            });
+
+            animateOrbits();
+        }
+
+        function animateOrbits() {
+            const speed = [0.003, 0.005, 0.007, 0.009, 0.012];
+
+            CONFIG.planets.forEach((p, idx) => {
+                planetAngles[idx] += speed[idx];
+                const angle = planetAngles[idx];
+                const x = Math.cos(angle) * p.radius;
+                const y = Math.sin(angle) * p.radius * 0.55;
+
+                const node = document.getElementById(`planetNode_${idx}`);
+                if (node) {
+                    node.style.transform = `translate(${x}px, ${y}px)`;
+                }
+
+                if (idx === currentIndex && elements.orbitSpaceship) {
+                    const shipX = x + 14;
+                    const shipY = y - 16;
+                    elements.orbitSpaceship.style.transform = `translate(${shipX}px, ${shipY}px) rotate(${angle * 57.3}deg)`;
+                }
+            });
+
+            orbitAnimFrame = requestAnimationFrame(animateOrbits);
+        }
+
+        function getRandomItems(arr, count) {
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        function updateScoreDisplay() {
+            if (elements.scoreDisplay) {
+                elements.scoreDisplay.textContent = score.toFixed(1);
+            }
+        }
+
+        function startGame() {
+            const name = elements.studentNameInput.value.trim();
+            const cls = elements.studentClassInput.value.trim();
+
+            if (!name || !cls) {
+                elements.inputErrorMsg.classList.remove('hidden');
+                if (!name) elements.studentNameInput.classList.add('border-rose-400');
+                if (!cls) elements.studentClassInput.classList.add('border-rose-400');
+                return;
+            }
+
+            elements.inputErrorMsg.classList.add('hidden');
+            elements.studentNameInput.classList.remove('border-rose-400');
+            elements.studentClassInput.classList.remove('border-rose-400');
+
+            studentInfo.name = name;
+            studentInfo.class = cls;
+
+            elements.playerBadgeName.textContent = studentInfo.name;
+            elements.playerBadgeClass.textContent = studentInfo.class;
+
+            score = 0;
+            correctAnswersCount = 0;
+            giftCount = 0;
+            currentIndex = 0;
+            updateScoreDisplay();
+
+            const selectedNB = getRandomItems(QUESTION_BANK.NB.map(q => ({ ...q, level: 'NB' })), CONFIG.questionStructure.NB);
+            const selectedTH = getRandomItems(QUESTION_BANK.TH.map(q => ({ ...q, level: 'TH' })), CONFIG.questionStructure.TH);
+            const selectedVD = getRandomItems(QUESTION_BANK.VD.map(q => ({ ...q, level: 'VD' })), CONFIG.questionStructure.VD);
+
+            currentQuestions = [...selectedNB, ...selectedTH, ...selectedVD];
+
+            elements.startScreen.classList.add('hidden');
+            elements.resultScreen.classList.add('hidden');
+            elements.gameplayScreen.classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            clearInterval(timer);
+
+            const q = currentQuestions[currentIndex];
+            const currentPlanet = CONFIG.planets[currentIndex];
+
+            elements.currentDestinationBadge.textContent = `Đang dừng: ${currentPlanet.name}`;
+
+            CONFIG.planets.forEach((_, idx) => {
+                const node = document.getElementById(`planetNode_${idx}`);
+                if (node) {
+                    node.classList.remove('visited', 'active-target');
+                    if (idx < currentIndex) node.classList.add('visited');
+                    if (idx === currentIndex) node.classList.add('active-target');
+                }
+            });
+
+            if (q.level === 'NB') {
+                elements.levelBadge.textContent = 'Nhận biết';
+                elements.levelBadge.className = 'px-4 py-1.5 rounded-full text-sm font-extrabold uppercase tracking-wider bg-emerald-100 text-emerald-800 border-2 border-emerald-300';
+            } else if (q.level === 'TH') {
+                elements.levelBadge.textContent = 'Thông hiểu';
+                elements.levelBadge.className = 'px-4 py-1.5 rounded-full text-sm font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800 border-2 border-amber-300';
+            } else {
+                elements.levelBadge.textContent = 'Vận dụng';
+                elements.levelBadge.className = 'px-4 py-1.5 rounded-full text-sm font-extrabold uppercase tracking-wider bg-rose-100 text-rose-800 border-2 border-rose-300';
+            }
+
+            elements.questionCounter.innerHTML = `CHẶNG: <strong class="text-blue-700 text-xl font-heading">${currentIndex + 1}/5</strong>`;
+            elements.questionText.textContent = q.q;
+
+            elements.optionsContainer.innerHTML = '';
+            elements.optionsContainer.className = q.options.length === 4 ? 'options-grid grid-2col' : 'options-grid';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full h-full text-left p-4 rounded-2xl glass-card text-slate-800 font-bold text-base md:text-lg transition flex items-center space-x-3 option-btn';
+                btn.innerHTML = `<span class="inline-block shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-black flex items-center justify-center text-sm border border-blue-300">${String.fromCharCode(65 + idx)}</span> <span class="flex-grow">${opt.replace(/^[A-D]\.\s*/, '')}</span>`;
+                btn.onclick = () => selectOption(idx, btn);
+                elements.optionsContainer.appendChild(btn);
+            });
+
+            elements.feedbackBox.classList.add('hidden');
+            elements.nextBtn.disabled = true;
+            elements.nextBtn.className = 'px-8 py-4 bg-slate-300 text-slate-500 cursor-not-allowed font-heading font-extrabold text-lg rounded-2xl transition flex items-center space-x-3 shadow';
+
+            const progressPct = ((currentIndex) / 5) * 100;
+            elements.progressPercent.textContent = `${Math.round(progressPct)}%`;
+            elements.progressBar.style.width = `${progressPct}%`;
+
+            totalTimeForQuestion = CONFIG.timePerLevel[q.level];
+            timeLeft = totalTimeForQuestion;
+            startTimer();
+        }
+
+        function startTimer() {
+            updateTimerUI();
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            elements.timerText.textContent = timeLeft;
+            elements.timeLabel.textContent = `${timeLeft} Giây`;
+            const dashoffset = 113 * (1 - timeLeft / totalTimeForQuestion);
+            elements.timerCircle.style.strokeDashoffset = dashoffset;
+        }
+
+        function handleTimeout() {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const q = currentQuestions[currentIndex];
+            const allOptionBtns = elements.optionsContainer.querySelectorAll('button');
+
+            allOptionBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.answer) {
+                    btn.className = 'w-full h-full text-left p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-500 text-emerald-800 font-bold text-base md:text-lg flex items-center space-x-3';
+                }
+            });
+
+            showFeedback(false, "Đã hết thời gian làm bài! " + q.exp, false);
+            enableNextButton();
+        }
+
+        function selectOption(selectedIndex, selectedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+            clearInterval(timer);
+
+            const q = currentQuestions[currentIndex];
+            const isCorrect = selectedIndex === q.answer;
+            const allOptionBtns = elements.optionsContainer.querySelectorAll('button');
+
+            allOptionBtns.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                selectedBtn.className = 'w-full h-full text-left p-4 rounded-2xl bg-emerald-100 border-4 border-emerald-500 text-emerald-950 font-bold text-base md:text-lg flex items-center space-x-3 shadow-md';
+                
+                correctAnswersCount++;
+                score += CONFIG.pointsPerQuestion;
+
+                let gotBonus = Math.random() < CONFIG.bonusProbability;
+                if (gotBonus) {
+                    giftCount++;
+                }
+                
+                if (score > CONFIG.maxScore) score = CONFIG.maxScore;
+
+                showFeedback(true, q.exp, gotBonus);
+            } else {
+                selectedBtn.className = 'w-full h-full text-left p-4 rounded-2xl bg-rose-100 border-4 border-rose-500 text-rose-950 font-bold text-base md:text-lg flex items-center space-x-3 shadow-md';
+                
+                allOptionBtns.forEach(btn => {
+                    if (btn.textContent.includes(q.options[q.answer].replace(/^[A-D]\.\s*/, ''))) {
+                        btn.className = 'w-full h-full text-left p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-500 text-emerald-800 font-bold text-base md:text-lg flex items-center space-x-3';
+                    }
+                });
+
+                showFeedback(false, q.exp, false);
+            }
+
+            updateScoreDisplay();
+            enableNextButton();
+        }
+
+        function showFeedback(isCorrect, exp, gotBonus) {
+            elements.feedbackBox.classList.remove('hidden');
+            if (isCorrect) {
+                elements.feedbackBox.className = 'mt-6 p-5 rounded-2xl text-base transition-all duration-300 bg-emerald-50 border-2 border-emerald-300 text-emerald-950';
+                elements.feedbackHeader.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i><span>CHÍNH XÁC! +${CONFIG.pointsPerQuestion.toFixed(1)} Điểm</span>`;
+            } else {
+                elements.feedbackBox.className = 'mt-6 p-5 rounded-2xl text-base transition-all duration-300 bg-rose-50 border-2 border-rose-300 text-rose-950';
+                elements.feedbackHeader.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 text-xl"></i><span>RẤT TIẾC, CHƯA CHÍNH XÁC!</span>`;
+            }
+            elements.explanationText.textContent = exp;
+            elements.journeyAnimationOverlay.dataset.bonus = gotBonus ? "true" : "false";
+        }
+
+        function enableNextButton() {
+            elements.nextBtn.disabled = false;
+            elements.nextBtn.className = 'px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-heading font-extrabold text-lg rounded-2xl transition flex items-center space-x-3 shadow-lg shadow-blue-500/30 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer';
+        }
+
+        function nextQuestionOrJourney() {
+            const planet = CONFIG.planets[currentIndex];
+            const gotBonus = elements.journeyAnimationOverlay.dataset.bonus === "true";
+
+            elements.travelDestinationText.textContent = `ĐÁP XUỐNG ${planet.name.toUpperCase()}`;
+            elements.animPlanetGraphic.textContent = planet.icon;
+            elements.animPlanetGraphic.className = `planet-animated relative z-0 w-28 h-28 md:w-36 md:h-36 rounded-full bg-gradient-to-br ${planet.bg} shadow-2xl flex items-center justify-center text-5xl md:text-7xl border-2 border-white/60`;
+
+            hasOpenedCurrentGift = false;
+            if (gotBonus) {
+                elements.rewardBoxContainer.classList.remove('hidden');
+                elements.giftPreOpen.classList.remove('hidden');
+                elements.giftPostOpen.classList.add('hidden');
+            } else {
+                elements.rewardBoxContainer.classList.add('hidden');
+            }
+
+            elements.journeyAnimationOverlay.classList.remove('hidden');
+            elements.journeyAnimationOverlay.scrollTop = 0;
+        }
+
+        function openGiftBox() {
+            if (hasOpenedCurrentGift) return;
+            hasOpenedCurrentGift = true;
+
+            elements.giftPreOpen.classList.add('hidden');
+            elements.giftPostOpen.classList.remove('hidden');
+
+            score += CONFIG.bonusPoints;
+            if (score > CONFIG.maxScore) score = CONFIG.maxScore;
+            updateScoreDisplay();
+
+            triggerConfetti();
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 150,
+                    spread: 90,
+                    origin: { y: 0.5 }
+                });
+            }
+        }
+
+        function completeJourneyStep() {
+            elements.journeyAnimationOverlay.classList.add('hidden');
+            currentIndex++;
+
+            if (currentIndex < 5) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            elements.gameplayScreen.classList.add('hidden');
+            elements.resultScreen.classList.remove('hidden');
+
+            elements.resultStudentName.textContent = studentInfo.name;
+            elements.resultStudentClass.textContent = studentInfo.class;
+
+            elements.finalScore.textContent = score.toFixed(1);
+            elements.finalCorrect.textContent = `${correctAnswersCount}/5`;
+            elements.finalGifts.textContent = giftCount;
+
+            let evalText = "";
+            if (score >= 9.0) {
+                evalText = `🌟 XUẤT SẮC ${studentInfo.name.toUpperCase()}! Bạn là một phi hành gia tài ba với kiến thức Tin học 9 cực kỳ vững chắc!`;
+            } else if (score >= 7.0) {
+                evalText = `👏 GIỎI LẮM ${studentInfo.name.toUpperCase()}! Bạn đã hoàn thành chuyến du hành vũ trụ rất ấn tượng!`;
+            } else if (score >= 5.0) {
+                evalText = `👍 KHÁ TỐT ${studentInfo.name.toUpperCase()}! Hãy tiếp tục ôn tập để chinh phục các hành tinh một cách hoàn hảo hơn nhé!`;
+            } else {
+                evalText = `💪 CỐ GẮNG LÊN ${studentInfo.name.toUpperCase()}! Hãy chơi lại để củng cố kiến thức Bài 5 Tin học 9 nhé!`;
+            }
+
+            elements.evaluationText.textContent = evalText;
+            triggerConfetti();
+        }
+
+        function resetGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
