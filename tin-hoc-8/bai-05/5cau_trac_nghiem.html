@@ -34,17 +34,18 @@ input.err{border-color:var(--bad);animation:shake .4s}
 .row .btn{flex:1}
 #game{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,26vw,440px);gap:14px;padding:14px}
 .left,.right{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:0;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(60,80,160,.15)}
-.left{padding:18px 22px;overflow:hidden;position:relative}
+.left{padding:16px 24px;overflow:hidden;position:relative}
 .qwrap{flex:1;overflow-y:auto;padding-right:4px}
-.pips{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-.pip{padding:5px 14px;border-radius:99px;font-size:clamp(13px,1.3vw,20px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
-.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.08)}
+.pips{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.pip{padding:6px 2px;text-align:center;white-space:nowrap;border-radius:99px;font-size:clamp(11px,1vw,16px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
+.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.06)}
 .pip.ok{background:#d6f7e8;color:#0b7a53}
 .pip.no{background:#ffdfe6;color:#c42b4b}
 .tbar{height:8px;border-radius:99px;background:#e2e8f8;overflow:hidden;margin-bottom:14px}
 .tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#ffc93c);transform-origin:left}
 .tbar.low i{background:linear-gradient(90deg,#ff5d7a,#ff9f43)}
-.lvl{display:inline-block;padding:6px 16px;border-radius:99px;font-size:clamp(14px,1.4vw,22px);font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl{display:inline-block;padding:6px 18px;border-radius:99px;font-size:clamp(16px,1.6vw,26px);font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl.low{background:#ffdfe6!important;color:#c42b4b!important;animation:beat .5s infinite}
 .lvl.NB{background:#d4f7e8;color:#0b7a53}.lvl.TH{background:#fff1c2;color:#8a6100}.lvl.VD{background:#ffd9ec;color:#a3195f}
 .qtext{font-size:clamp(22px,2.5vw,42px);line-height:1.4;font-weight:700;margin-bottom:20px}
 .enter{animation:slideIn .55s cubic-bezier(.2,1,.3,1)}
@@ -82,13 +83,13 @@ input.err{border-color:var(--bad);animation:shake .4s}
 @keyframes pulse{50%{background:#fff0dc}}
 .cap{text-align:center;font-size:clamp(13px,1.3vw,20px);color:var(--mute);margin-top:7px}
 .right{padding:14px;gap:10px;overflow:hidden}
-.right h2{font-size:clamp(15px,1.3vw,22px);line-height:1.35;text-align:center;color:#4b34d8}
-.right h2 small{display:block;color:var(--mute);font-weight:500;font-size:12px;margin-top:2px}
+.right h2{font-size:clamp(20px,1.9vw,32px);line-height:1.35;text-align:center;color:#4b34d8}
+.right h2 small{display:block;color:var(--mute);font-weight:600;font-size:clamp(14px,1.3vw,22px);line-height:1.3;margin-top:4px}
 .info{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .chip{background:#eef2ff;border-radius:12px;padding:7px 10px;min-width:0}
-.chip small{display:block;font-size:10.5px;color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
-.chip b{font-size:clamp(15px,1.3vw,22px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chip.big b{font-size:clamp(22px,2vw,34px);color:#d97706}
+.chip small{display:block;font-size:clamp(10px,.9vw,14px);color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
+.chip b{font-size:clamp(16px,1.5vw,26px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.big b{font-size:clamp(20px,2vw,34px);color:#d97706}
 .timer{display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:8px 12px}
 .timer svg{width:clamp(62px,5vw,86px);height:clamp(62px,5vw,86px);flex:none}
 .timer .ring{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
@@ -96,6 +97,14 @@ input.err{border-color:var(--bad);animation:shake .4s}
 .timer small{color:var(--mute);font-size:12px}
 .timer.low .t{color:var(--bad);animation:beat .5s infinite}
 @keyframes beat{50%{transform:scale(1.18)}}
+.info.three{grid-template-columns:.9fr .9fr 1.5fr}
+.chip.tm{display:flex;align-items:center;gap:8px}
+.chip.tm small{white-space:nowrap}
+#hName{white-space:normal;line-height:1.2}
+.chip.tm svg{width:clamp(26px,2.2vw,40px);height:clamp(26px,2.2vw,40px);flex:none}
+.chip.tm b{font-size:clamp(20px,2vw,34px);font-variant-numeric:tabular-nums}
+.chip.tm.low b{color:var(--bad);animation:beat .5s infinite}
+.ring{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
 .tools{display:flex;gap:8px}
 .tools .btn{flex:1;padding:8px 6px;font-size:13px}
 .skywrap{flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid #1d2a5c;background:radial-gradient(circle at center,#0d1a45,#04060f);position:relative}
@@ -162,7 +171,6 @@ input.err{border-color:var(--bad);animation:shake .4s}
 <!-- GIAO DIỆN CHƠI -->
 <div id="game" class="hide">
   <section class="left">
-    <div class="pips" id="pips"></div>
     <div class="tbar" id="tbar"><i id="tfill"></i></div>
     <div class="qwrap" id="qwrap">
       <div id="qbox">
@@ -181,13 +189,16 @@ input.err{border-color:var(--bad);animation:shake .4s}
     <div class="info">
       <div class="chip"><small>Họ tên</small><b id="hName">-</b></div>
       <div class="chip"><small>Lớp</small><b id="hClass">-</b></div>
+    </div>
+    <div class="info three">
       <div class="chip"><small>Câu hỏi</small><b id="hQ">1/5</b></div>
       <div class="chip big"><small>Điểm</small><b id="hScore">0</b></div>
+      <div class="chip tm" id="timer">
+        <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="9"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#12b774" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
+        <div><small>Thời gian</small><b><span id="tnum">30</span>s</b></div>
+      </div>
     </div>
-    <div class="timer" id="timer">
-      <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="7"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#2ee59d" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
-      <div><div class="t" id="tnum">30</div><small id="tlab">giây còn lại</small></div>
-    </div>
+    <div class="pips" id="pips"></div>
     <div class="tools">
       <button class="btn ghost" id="btnFs">⛶ Toàn màn hình</button>
       <button class="btn ghost" id="btnSnd">🔊 Âm thanh</button>
@@ -393,7 +404,7 @@ function renderPips(){
 function loadQ(){
  const q=S.qs[S.i],L=LV[q.lv];S.answered=false;S.dur=L.t;S.deadline=performance.now()+L.t*1000;S.lastTick=-1;
  renderPips();updHud();
- $('lvl').className='lvl '+q.lv;$('lvl').textContent=`${q.lv} · ${L.name} · ⏱ ${L.t} giây`;
+ $('lvl').className='lvl '+q.lv;S.lvlBase=`${q.lv} · ${L.name} · ⏱ `;S.lvlSec=L.t;$('lvl').textContent=S.lvlBase+L.t+' giây';
  $('qtext').textContent=`Câu ${S.i+1}. ${q.q}`;
  const il=$('illus'),cfg=ILLUS[q.key];
  if(cfg){il.innerHTML=sheetHTML(cfg,q,false);il.classList.remove('hide')}else il.classList.add('hide');
@@ -500,7 +511,7 @@ function loop(t){
  SK.warp=Math.max(0,SK.warp-.005);
  if(S.active&&!S.answered){
   const left=Math.max(0,(S.deadline-performance.now())/1000),frac=left/S.dur,sec=Math.ceil(left);
-  $('tnum').textContent=sec;$('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
+  $('tnum').textContent=sec;if(sec!==S.lvlSec){S.lvlSec=sec;$('lvl').textContent=S.lvlBase+sec+' giây'}$('lvl').classList.toggle('low',left<=5);$('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
   const low=left<=5||frac<.25;$('timer').classList.toggle('low',low);$('tbar').classList.toggle('low',low);
   ring.style.stroke=frac>.5?'#12b774':frac>.25?'#ffc93c':'#ff5d7a';
   if(left<=5&&sec!==S.lastTick&&sec>0){S.lastTick=sec;sfx.tick()}
