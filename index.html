@@ -5,13 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="google" content="notranslate">
-  <meta name="theme-color" content="#edf2f8">
+  <meta name="theme-color" content="#293c55">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <title>Kho Học Liệu – Thầy Minh</title>
   <style>
     /* ── Tokens ──────────────────────────────────────────────── */
     :root {
-      --bg: #edf2f8;
+      --bg: #293c55;
       --bg2: #f8fafc;
       --surface: #ffffff;
       --border: #dce4ed;
@@ -239,7 +239,7 @@
       justify-content: space-between;
       margin-bottom: 14px;
       font-size: .78rem;
-      color: var(--text2);
+      color: #e2e8f0;
     }
 
     /* ── Grade grid (7 cols) ─────────────────────────────────── */
@@ -306,6 +306,10 @@
     }
 
     .bai-group:hover {
+      border-color: #a8cfb1;
+    }
+
+    .bai-group.is-open {
       border-color: #a8cfb1;
     }
 
@@ -412,7 +416,7 @@
       text-align: center;
       padding: 14px 16px;
       font-size: .74rem;
-      color: var(--text2);
+      color: #e2e8f0;
       border-top: 1px solid var(--border);
     }
 
@@ -1054,6 +1058,7 @@
 
       toggleEl.setAttribute('aria-expanded', String(!expanded));
       filesEl.classList.toggle('open', !expanded);
+      filesEl.parentElement.classList.toggle('is-open', !expanded);
 
       if (!expanded) {
         renderBaiFiles(filesEl, grade, baiName);
