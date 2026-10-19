@@ -1,0 +1,658 @@
+/* ==========================================================================
+   KHO HỌC LIỆU – THẦY MINH
+   Trang chủ: Giao diện học liệu Tin học lớp 3 – 9
+   ========================================================================== */
+
+/* ── 1. DESIGN TOKENS (Biến giao diện) ──────────────────────────────────── */
+:root {
+  /* Nền và bề mặt */
+  --bg: #f8fafc;
+  --bg-subtle: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+
+  /* Văn bản */
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+
+  /* Màu chủ đạo (Xanh lá thiên nhiên theo logo chiếc lá) */
+  --primary: #16803d;
+  --primary-hover: #14532d;
+  --primary-light: #f0fdf4;
+  --primary-border: #bbf7d0;
+
+  /* Đổ bóng */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 10px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 20px -3px rgba(15, 23, 42, 0.08);
+
+  /* Phối màu riêng từng khối lớp (Hài hòa, dịu mắt) */
+  --g3-color: #059669; --g3-tint: #f0fdf4; --g3-border: #a7f3d0;
+  --g4-color: #0d9488; --g4-tint: #f0fdfa; --g4-border: #99f6e4;
+  --g5-color: #0284c7; --g5-tint: #f0f9ff; --g5-border: #bae6fd;
+  --g6-color: #4f46e5; --g6-tint: #eef2ff; --g6-border: #c7d2fe;
+  --g7-color: #7c3aed; --g7-tint: #f5f3ff; --g7-border: #ddd6fe;
+  --g8-color: #d97706; --g8-tint: #fffbeb; --g8-border: #fde68a;
+  --g9-color: #e11d48; --g9-tint: #fff1f2; --g9-border: #fecdd3;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* Nền và bề mặt tối */
+  --bg: #090e17;
+  --bg-subtle: #0f172a;
+  --surface: #152033;
+  --border: #23334d;
+  --border-hover: #33486b;
+
+  /* Văn bản */
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+
+  /* Màu chủ đạo chế độ tối */
+  --primary: #4ade80;
+  --primary-hover: #22c55e;
+  --primary-light: rgba(34, 197, 94, 0.12);
+  --primary-border: rgba(34, 197, 94, 0.3);
+
+  /* Đổ bóng */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.55);
+
+  /* Phối màu từng lớp trong nền tối */
+  --g3-color: #34d399; --g3-tint: rgba(52, 211, 153, 0.1); --g3-border: rgba(52, 211, 153, 0.3);
+  --g4-color: #2dd4bf; --g4-tint: rgba(45, 212, 191, 0.1); --g4-border: rgba(45, 212, 191, 0.3);
+  --g5-color: #38bdf8; --g5-tint: rgba(56, 189, 248, 0.1); --g5-border: rgba(56, 189, 248, 0.3);
+  --g6-color: #818cf8; --g6-tint: rgba(129, 140, 248, 0.1); --g6-border: rgba(129, 140, 248, 0.3);
+  --g7-color: #a78bfa; --g7-tint: rgba(167, 139, 250, 0.1); --g7-border: rgba(167, 139, 250, 0.3);
+  --g8-color: #fbbf24; --g8-tint: rgba(251, 191, 36, 0.1); --g8-border: rgba(251, 191, 36, 0.3);
+  --g9-color: #fb7185; --g9-tint: rgba(251, 113, 133, 0.1); --g9-border: rgba(251, 113, 133, 0.3);
+
+  color-scheme: dark;
+}
+
+/* ── 2. RESET & NỀN TẢNG ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── 3. THANH ĐIỀU HƯỚNG (NAVBAR) ───────────────────────────────────────── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px clamp(16px, 3.5vw, 48px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+}
+
+/* Thương hiệu: Logo + Tiêu đề */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.brand-leaf {
+  width: 36px;
+  height: 40px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.brand:hover .brand-leaf {
+  transform: scale(1.06);
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.brand-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Ô tìm kiếm Google chính hãng */
+.search-area {
+  max-width: 440px;
+  width: 100%;
+  position: relative;
+  justify-self: center;
+}
+
+.search-area .g-logo {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.search-box {
+  width: 100%;
+  height: 38px;
+  padding: 0 16px 0 42px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-box:hover {
+  background: var(--surface);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-box:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-box::placeholder {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* Khu vực nút tiện ích */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-hover);
+}
+
+.btn.icon-btn {
+  width: 36px;
+  padding: 0;
+}
+
+/* Nút Trò chơi trí tuệ */
+.btn.game-btn {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+  color: var(--primary);
+}
+
+.btn.game-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-btn svg {
+  pointer-events: none;
+}
+
+/* ── 4. NỘI DUNG CHÍNH (MAIN & STATUSBAR) ────────────────────────────────── */
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 16px clamp(12px, 2.5vw, 36px) 24px;
+}
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 6px 4px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+#status-label {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+/* ── 5. LƯỚI KHỐI LỚP (GRADE GRID & CARDS) ───────────────────────────────── */
+.grade-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+/* Thẻ khối lớp */
+.grade-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--card-border, var(--border));
+  border-top: 3.5px solid var(--card-accent, var(--primary));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grade-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Gán màu nhận diện riêng cho từng lớp */
+.grade-card[data-grade="3"] { --card-accent: var(--g3-color); --card-tint: var(--g3-tint); --card-border: var(--g3-border); }
+.grade-card[data-grade="4"] { --card-accent: var(--g4-color); --card-tint: var(--g4-tint); --card-border: var(--g4-border); }
+.grade-card[data-grade="5"] { --card-accent: var(--g5-color); --card-tint: var(--g5-tint); --card-border: var(--g5-border); }
+.grade-card[data-grade="6"] { --card-accent: var(--g6-color); --card-tint: var(--g6-tint); --card-border: var(--g6-border); }
+.grade-card[data-grade="7"] { --card-accent: var(--g7-color); --card-tint: var(--g7-tint); --card-border: var(--g7-border); }
+.grade-card[data-grade="8"] { --card-accent: var(--g8-color); --card-tint: var(--g8-tint); --card-border: var(--g8-border); }
+.grade-card[data-grade="9"] { --card-accent: var(--g9-color); --card-tint: var(--g9-tint); --card-border: var(--g9-border); }
+
+/* Đầu thẻ lớp (Header) */
+.grade-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  background: var(--card-tint, var(--bg-subtle));
+  border-bottom: 1px solid var(--card-border, var(--border));
+  font-weight: 750;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--card-accent, var(--text));
+  text-transform: uppercase;
+}
+
+.grade-num {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--card-accent, var(--primary));
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Danh sách các bài học */
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 6px 10px;
+}
+
+/* ── 6. CÁC BÀI HỌC DẠNG ACCORDION (.bai-group) ─────────────────────────── */
+.bai-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.bai-group:hover {
+  border-color: var(--card-border, var(--border-hover));
+}
+
+.bai-group.is-open {
+  border-color: var(--card-accent, var(--primary));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Nút bấm mở/đóng bài học */
+.bai-toggle {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.35;
+  color: var(--text);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bai-toggle:hover {
+  background: var(--card-tint, var(--bg-subtle));
+}
+
+.bai-toggle[aria-expanded="true"] {
+  background: var(--card-tint, var(--primary-light));
+  border-bottom: 1px solid var(--card-border, var(--border));
+}
+
+/* Tiêu đề bài học */
+.bai-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.bai-group.is-open .bai-title {
+  color: var(--card-accent, var(--primary));
+  font-weight: 600;
+}
+
+/* Số lượng file trong bài */
+.bai-file-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--card-accent, var(--primary));
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+/* Mũi tên chỉ thị trạng thái mở/đóng */
+.bai-toggle::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-right: 1.5px solid var(--text-light);
+  border-bottom: 1.5px solid var(--text-light);
+  transform: rotate(45deg);
+  margin-left: 2px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.bai-toggle[aria-expanded="true"]::after {
+  transform: rotate(-135deg);
+  border-color: var(--card-accent, var(--primary));
+}
+
+/* Khung chứa các tệp HTML con */
+.bai-files {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 6px 8px;
+  background: var(--surface);
+}
+
+.bai-files.open {
+  display: flex;
+}
+
+/* Đường link từng tệp bài học */
+.file-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  transition: all 0.15s ease;
+  word-break: break-word;
+}
+
+.file-link::before {
+  content: "📄";
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.file-link:hover {
+  background: var(--card-tint, var(--primary-light));
+  border-color: var(--card-border, var(--primary-border));
+  color: var(--card-accent, var(--primary));
+  transform: translateX(2px);
+}
+
+.file-empty,
+.bai-loading {
+  padding: 6px 8px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Trạng thái ẩn */
+.bai-group[hidden],
+.grade-card[hidden] {
+  display: none !important;
+}
+
+/* ── 7. CHÂN TRANG (FOOTER) ────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 16px 20px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  margin-top: auto;
+}
+
+/* ── 8. CHẾ ĐỘ CHIA CẤP HỌC (?cap=1 hoặc ?cap=2) ───────────────────────── */
+/* Cấp 1 (Lớp 3-5) hoặc Cấp 2 (Lớp 6-9) hiển thị dạng 4 cột rộng rãi hơn */
+html[data-cap="1"] .grade-grid,
+html[data-cap="2"] .grade-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+html[data-cap="1"] .grade-header,
+html[data-cap="2"] .grade-header {
+  padding: 10px 8px;
+  font-size: 0.92rem;
+}
+
+html[data-cap="1"] .grade-num,
+html[data-cap="2"] .grade-num {
+  width: 26px;
+  height: 26px;
+  font-size: 0.78rem;
+}
+
+html[data-cap="1"] .lesson-list,
+html[data-cap="2"] .lesson-list {
+  padding: 10px 8px 12px;
+  gap: 8px;
+}
+
+html[data-cap="1"] .bai-toggle,
+html[data-cap="2"] .bai-toggle {
+  min-height: 36px;
+  padding: 8px 10px;
+}
+
+html[data-cap="1"] .bai-title,
+html[data-cap="2"] .bai-title {
+  font-size: 0.84rem;
+}
+
+html[data-cap="1"] .bai-file-count,
+html[data-cap="2"] .bai-file-count {
+  font-size: 0.75rem;
+}
+
+html[data-cap="1"] .file-link,
+html[data-cap="2"] .file-link {
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
+/* ── 9. THÍCH ỨNG THIẾT BỊ (RESPONSIVE) ─────────────────────────────────── */
+/* Màn hình trung bình / Tablet xoay ngang (<= 1100px) */
+@media (max-width: 1100px) {
+  .grade-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Tablet (<= 850px) */
+@media (max-width: 850px) {
+  .navbar {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .search-area {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: 100%;
+  }
+
+  .grade-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  html[data-cap="1"] .grade-grid,
+  html[data-cap="2"] .grade-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Điện thoại thông minh (<= 560px) */
+@media (max-width: 560px) {
+  .navbar {
+    padding: 10px 14px;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .nav-actions {
+    gap: 6px;
+  }
+
+  .btn {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 0.78rem;
+  }
+
+  .game-btn-label {
+    display: none;
+  }
+
+  .btn.game-btn {
+    padding: 0 10px;
+  }
+
+  .grade-grid,
+  html[data-cap="1"] .grade-grid,
+  html[data-cap="2"] .grade-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .bai-title {
+    font-size: 0.82rem;
+  }
+
+  .file-link {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+  }
+}
