@@ -240,14 +240,13 @@
       color: var(--text2);
     }
 
-    /* ── Grade grid (4 cols) ─────────────────────────────────── */
+    /* ── Grade grid (7 cols) ─────────────────────────────────── */
     .grade-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
     }
 
-    /* For 7 grades arranged in 4 cols: rows are calculated automatically */
     .grade-card {
       display: flex;
       flex-direction: column;
@@ -256,49 +255,42 @@
       background: var(--card-bg);
       overflow: hidden;
       box-shadow: 0 3px 10px var(--shadow);
-      height: calc(100vh - 180px);
-      min-height: 520px;
+      height: auto;
     }
 
     .grade-header {
-      position: sticky;
-      top: 0;
-      z-index: 2;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 12px 10px;
+      gap: 5px;
+      padding: 9px 5px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      font-weight: 750;
-      font-size: clamp(.95rem, 1.3vw, 1.15rem);
+      font-weight: 700;
+      font-size: .7rem;
       color: var(--green);
     }
 
     .grade-num {
       display: inline-grid;
       place-items: center;
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: var(--green);
       color: #fff;
-      font-size: .82rem;
-      font-weight: 800;
+      font-size: .62rem;
+      font-weight: 400;
     }
 
     .lesson-list {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 8px 8px 12px;
+      flex: 0 0 auto;
+      overflow: visible;
+      padding: 6px 5px 10px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      scrollbar-color: #c9d6cb transparent;
-      scrollbar-width: thin;
     }
 
     /* ── Bai accordion ───────────────────────────────────────── */
@@ -317,17 +309,17 @@
 
     .bai-toggle {
       width: 100%;
-      min-height: 38px;
+      min-height: 30px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 7px 10px;
+      gap: 5px;
+      padding: 5px 6px;
       background: var(--lesson-bg);
       border: none;
       cursor: pointer;
       text-align: left;
-      font-size: .84rem;
-      font-weight: 600;
+      font-size: .62rem;
+      font-weight: 400;
       line-height: 1.3;
       color: var(--text);
       transition: background .14s;
@@ -342,23 +334,12 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .bai-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
-      background: var(--badge-bg);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 750;
-      line-height: 1;
-    }
-
     .bai-title {
-      font-size: .84rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: .62rem;
       color: var(--text);
     }
 
@@ -376,8 +357,8 @@
 
     .bai-file-count {
       color: var(--green);
-      font-size: .75rem;
-      font-weight: 700;
+      font-size: .58rem;
+      font-weight: 400;
       flex-shrink: 0;
     }
 
@@ -400,7 +381,7 @@
       padding: 6px 8px;
       border-radius: 6px;
       border: 1px solid transparent;
-      font-size: .78rem;
+      font-size: .62rem;
       line-height: 1.35;
       color: var(--text);
       text-decoration: none;
@@ -476,11 +457,6 @@
       .grade-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 9px;
-      }
-
-      .grade-card {
-        height: calc(100vh - 200px);
-        min-height: 420px;
       }
 
       .btn {
@@ -701,7 +677,8 @@
         "bai-13": [],
         "bai-14": [],
         "bai-15": [],
-        "bai-16": []
+        "bai-16": [],
+        "bai-17": []
       },
       7: {
         "bai-01": [],
@@ -759,8 +736,140 @@
         "bai-13": [],
         "bai-14": [],
         "bai-15": [],
-        "bai-16": []
+        "bai-16": [],
+        "bai-17": []
       }
+    };
+
+    const GRADE_TITLES = {
+      3: [
+        "Thông tin và quyết định",
+        "Xử lí thông tin",
+        "Máy tính và em",
+        "Làm việc với máy tính",
+        "Sử dụng bàn phím",
+        "Khám phá thông tin trên Internet",
+        "Sắp xếp để dễ tìm",
+        "Sơ đồ hình cây. Tổ chức thông tin trong máy tính",
+        "Thực hành với tệp và thư mục trong máy tính",
+        "Bảo vệ thông tin khi dùng máy tính",
+        "Bài trình chiếu của em",
+        "Tìm hiểu về thế giới tự nhiên",
+        "Luyện tập sử dụng chuột",
+        "Em thực hiện công việc như thế nào",
+        "Công việc được thực hiện theo điều kiện",
+        "Công việc của em và sự trợ giúp của máy tính"
+      ],
+      4: [
+        "Phần cứng và phần mềm máy tính",
+        "Gõ bàn phím đúng cách",
+        "Thông tin trên trang web",
+        "Tìm kiếm và trao đổi thông tin",
+        "Thao tác với tệp và thư mục",
+        "Sử dụng phần mềm khi được phép",
+        "Tạo bài trình chiếu",
+        "Định dạng văn bản trên trang chiếu",
+        "Hiệu ứng chuyển trang",
+        "Phần mềm soạn thảo văn bản",
+        "Chỉnh sửa văn bản",
+        "Thực hành đa phương tiện / Phần mềm luyện gõ bàn phím",
+        "Chơi với máy tính",
+        "Khám phá môi trường lập trình trực quan",
+        "Tạo chương trình máy tính để diễn tả ý tưởng",
+        "Chương trình của em"
+      ],
+      5: [
+        "Em có thể làm gì với máy tính?",
+        "Tìm kiếm thông tin trên website",
+        "Tìm kiếm thông tin trong giải quyết vấn đề",
+        "Cây thư mục",
+        "Bản quyền nội dung thông tin",
+        "Định dạng kí tự và bố trí hình ảnh trong văn bản",
+        "Thực hành soạn thảo văn bản",
+        "Làm quen với phần mềm đồ họa / Làm sản phẩm thủ công theo video hướng dẫn",
+        "Sử dụng phần mềm đồ họa tạo sản phẩm số / Thực hành tạo đồ dùng gia đình theo video hướng dẫn",
+        "Cấu trúc tuần tự",
+        "Cấu trúc lặp",
+        "Thực hành sử dụng lệnh lặp",
+        "Cấu trúc rẽ nhánh",
+        "Sử dụng biến trong chương trình",
+        "Sử dụng biểu thức trong chương trình",
+        "Từ kịch bản đến chương trình"
+      ],
+      6: [
+        "Thông tin và dữ liệu",
+        "Xử lý thông tin",
+        "Thông tin trong máy tính",
+        "Mạng máy tính",
+        "Internet",
+        "Mạng thông tin toàn cầu",
+        "Tìm kiếm thông tin trên Internet",
+        "Thư điện tử",
+        "An toàn thông tin trên Internet",
+        "Sơ đồ tư duy",
+        "Định dạng văn bản",
+        "Trình bày thông tin ở dạng bảng",
+        "Thực hành: Tìm kiếm và thay thế",
+        "Thực hành tổng hợp: Hoàn thiện Sổ lưu niệm",
+        "Thuật toán",
+        "Cấu trúc điều khiển",
+        "Chương trình máy tính"
+      ],
+      7: [
+        "Thiết bị vào - ra",
+        "Phần mềm máy tính",
+        "Quản lí dữ liệu trong máy tính",
+        "Mạng xã hội và một số kênh trao đổi thông tin trên Internet",
+        "Ứng xử trên mạng",
+        "Làm quen với phần mềm bảng tính",
+        "Tính toán tự động trên bảng tính",
+        "Công cụ hỗ trợ tính toán",
+        "Trình bày bảng tính",
+        "Hoàn thiện bảng tính",
+        "Tạo bài trình chiếu",
+        "Định dạng đối tượng trên trang chiếu",
+        "Thực hành tổng hợp: Hoàn thiện bài trình chiếu",
+        "Thuật toán tìm kiếm tuần tự",
+        "Thuật toán tìm kiếm nhị phân",
+        "Thuật toán sắp xếp"
+      ],
+      8: [
+        "Lược sử công cụ tính toán",
+        "Thông tin trong môi trường số",
+        "Thực hành: Khai thác thông tin số",
+        "Đạo đức và văn hóa trong sử dụng công nghệ kĩ thuật số",
+        "Sử dụng bảng tính giải quyết bài toán thực tế",
+        "Sắp xếp và lọc dữ liệu",
+        "Trình bày dữ liệu bằng biểu đồ",
+        "Làm việc với danh sách dạng liệt kê và hình ảnh trong văn bản / Phần mềm chỉnh sửa ảnh",
+        "Tạo đầu trang, chân trang cho văn bản / Thay đổi khung hình, kích thước ảnh",
+        "Định dạng nâng cao cho trang chiếu / Thêm văn bản, tạo hiệu ứng cho ảnh",
+        "Sử dụng bản mẫu tạo bài trình chiếu / Thực hành tổng hợp",
+        "Từ thuật toán đến chương trình",
+        "Biểu diễn dữ liệu",
+        "Cấu trúc điều khiển",
+        "Gỡ lỗi",
+        "Tin học với nghề nghiệp"
+      ],
+      9: [
+        "Thế giới kĩ thuật số",
+        "Thông tin trong giải quyết vấn đề",
+        "Thực hành: Đánh giá chất lượng thông tin",
+        "Một số vấn đề pháp lí về sử dụng dịch vụ Internet",
+        "Tìm hiểu phần mềm mô phỏng",
+        "Thực hành: Khai thác phần mềm mô phỏng",
+        "Trình bày thông tin trong trao đổi và hợp tác",
+        "Thực hành: Sử dụng công cụ trực quan trình bày thông tin trong trao đổi và hợp tác",
+        "Sử dụng công cụ xác thực dữ liệu / Các chức năng chính của phần mềm làm video",
+        "Sử dụng hàm COUNTIF / Chuẩn bị dữ liệu và dựng video",
+        "Sử dụng hàm SUMIF / Thực hành: Dựng video theo kịch bản",
+        "Sử dụng hàm IF / Hoàn thành việc dựng video",
+        "Hoàn thiện bảng tính quản lí tài chính gia đình / Biên tập và xuất video",
+        "Giải quyết vấn đề",
+        "Bài toán tin học",
+        "Thực hành: Lập chương trình máy tính",
+        "Tin học và thế giới nghề nghiệp"
+      ]
     };
 
     /* ── Pretty file name (fallback) ────────────────────────── */
@@ -855,7 +964,7 @@
       const num = parseInt(baiName.replace('bai-', ''), 10);
       const rawFiles = (GRADE_DATA[grade] || {})[baiName] || [];
       const validCount = rawFiles.filter(item => getLessonInfo(item) !== null).length;
-      const label = `Bài ${num}`;
+      const label = `${num}. ${GRADE_TITLES[grade][num - 1]}`;
 
       const group = document.createElement('div');
       group.className = 'bai-group';
@@ -869,14 +978,10 @@
       toggle.setAttribute('aria-expanded', 'false');
       toggle.setAttribute('aria-label', `${label}, Lớp ${grade}`);
 
-      const badge = document.createElement('span');
-      badge.className = 'bai-badge';
-      badge.setAttribute('aria-hidden', 'true');
-      badge.textContent = num;
-
       const titleSpan = document.createElement('span');
       titleSpan.className = 'bai-title';
       titleSpan.textContent = label;
+      titleSpan.title = label;
 
       const fileCount = document.createElement('span');
       fileCount.className = 'bai-file-count';
@@ -888,7 +993,7 @@
       arrow.setAttribute('aria-hidden', 'true');
       arrow.textContent = '\u25B6';
 
-      toggle.append(badge, titleSpan, fileCount, arrow);
+      toggle.append(titleSpan, fileCount, arrow);
 
       const filesEl = document.createElement('div');
       filesEl.className = 'bai-files';
@@ -915,7 +1020,7 @@
       numBadge.textContent = grade;
 
       const lbl = document.createElement('span');
-      lbl.textContent = `Lớp ${grade}`;
+      lbl.textContent = `LỚP ${grade}`;
 
       header.append(numBadge, lbl);
 
