@@ -343,18 +343,6 @@
       color: var(--text);
     }
 
-    .bai-arrow {
-      margin-left: auto;
-      flex-shrink: 0;
-      font-size: .65rem;
-      transition: transform .18s;
-      color: var(--text2);
-    }
-
-    .bai-toggle[aria-expanded="true"] .bai-arrow {
-      transform: rotate(90deg);
-    }
-
     .bai-file-count {
       color: var(--green);
       font-size: .58rem;
@@ -395,11 +383,6 @@
       color: var(--green);
     }
 
-    .file-icon {
-      flex-shrink: 0;
-      font-size: .85rem;
-    }
-
     .file-empty {
       padding: 6px 8px;
       font-size: .75rem;
@@ -432,6 +415,44 @@
     }
 
     /* ── Responsive ──────────────────────────────────────────── */
+    @media (min-width: 901px) {
+      .main {
+        padding: 12px 12px 20px;
+      }
+
+      .grade-grid {
+        gap: 6px;
+      }
+
+      .grade-header {
+        padding: 6px 3px;
+      }
+
+      .lesson-list {
+        padding: 4px 3px 6px;
+        gap: 4px;
+      }
+
+      .bai-toggle {
+        gap: 3px;
+        padding: 3px 4px;
+      }
+
+      .bai-files {
+        padding: 6px 4px 6px 6px;
+      }
+
+      .file-link {
+        gap: 4px;
+        padding: 6px 4px;
+      }
+
+      .file-empty,
+      .bai-loading {
+        padding: 6px 4px;
+      }
+    }
+
     @media (max-width: 900px) {
       .navbar {
         grid-template-columns: auto auto;
@@ -476,6 +497,61 @@
         max-height: none;
         min-height: unset;
       }
+    }
+
+    html[data-cap="1"] .grade-grid,
+    html[data-cap="2"] .grade-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    html[data-cap="1"] .grade-header,
+    html[data-cap="2"] .grade-header {
+      gap: 8px;
+      padding: 10px 8px;
+      font-size: .95rem;
+    }
+
+    html[data-cap="1"] .grade-num,
+    html[data-cap="2"] .grade-num {
+      width: 28px;
+      height: 28px;
+      font-size: .8rem;
+    }
+
+    html[data-cap="1"] .lesson-list,
+    html[data-cap="2"] .lesson-list {
+      padding: 10px 8px 12px;
+      gap: 8px;
+    }
+
+    html[data-cap="1"] .bai-toggle,
+    html[data-cap="2"] .bai-toggle {
+      gap: 6px;
+      padding: 8px;
+      font-size: .85rem;
+    }
+
+    html[data-cap="1"] .bai-title,
+    html[data-cap="2"] .bai-title {
+      font-size: .85rem;
+    }
+
+    html[data-cap="1"] .bai-file-count,
+    html[data-cap="2"] .bai-file-count {
+      font-size: .75rem;
+    }
+
+    html[data-cap="1"] .bai-files,
+    html[data-cap="2"] .bai-files {
+      gap: 6px;
+      padding: 8px;
+    }
+
+    html[data-cap="1"] .file-link,
+    html[data-cap="2"] .file-link {
+      padding: 9px 8px;
+      font-size: .85rem;
     }
   </style>
 </head>
@@ -581,6 +657,7 @@
     /* ── Elements ────────────────────────────────────────────── */
     const html = document.documentElement;
     const gradeGrid = document.getElementById('grade-grid');
+    const statusLabel = document.getElementById('status-label');
     const searchBox = document.getElementById('search-box');
     const countLabel = document.getElementById('count-label');
     const themeBtn = document.getElementById('theme-btn');
@@ -589,6 +666,12 @@
     const fsBtn = document.getElementById('fs-btn');
     const iconExpand = document.getElementById('icon-fs-expand');
     const iconCollapse = document.getElementById('icon-fs-collapse');
+    const cap = new URLSearchParams(window.location.search).get('cap');
+
+    if (cap === '1' || cap === '2') {
+      html.dataset.cap = cap;
+      statusLabel.textContent = cap === '1' ? 'Tin học lớp 3 – 5' : 'Tin học lớp 6 – 9';
+    }
 
     /* ── Static lesson data (generated from local filesystem) ──
        Cập nhật dữ liệu này mỗi khi thêm file mới vào thư mục.
@@ -918,12 +1001,7 @@
       a.rel = 'noopener';
       a.setAttribute('aria-label', info.displayName);
 
-      const icon = document.createElement('span');
-      icon.className = 'file-icon';
-      icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = '\uD83D\uDCC4';
-
-      a.append(icon, document.createTextNode(info.displayName));
+      a.textContent = info.displayName;
       return a;
     }
 
@@ -988,12 +1066,7 @@
       fileCount.setAttribute('aria-hidden', 'true');
       fileCount.textContent = validCount > 0 ? `(${validCount})` : '';
 
-      const arrow = document.createElement('span');
-      arrow.className = 'bai-arrow';
-      arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '\u25B6';
-
-      toggle.append(titleSpan, fileCount, arrow);
+      toggle.append(titleSpan, fileCount);
 
       const filesEl = document.createElement('div');
       filesEl.className = 'bai-files';
@@ -1045,7 +1118,9 @@
     function renderAllGrades() {
       gradeGrid.innerHTML = '';
       for (let g = 3; g <= 9; g++) {
-        gradeGrid.append(createGradeCard(g));
+        const card = createGradeCard(g);
+        card.hidden = (cap === '1' && g > 5) || (cap === '2' && g < 6);
+        gradeGrid.append(card);
       }
       updateCount();
     }
