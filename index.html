@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="light">
+<html lang="vi" translate="no" data-theme="light">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
   <meta name="theme-color" content="#edf2f8">
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <title>Kho Học Liệu – Thầy Minh</title>
   <style>
     /* ── Tokens ──────────────────────────────────────────────── */
@@ -455,7 +457,7 @@
 
     @media (max-width: 900px) {
       .navbar {
-        grid-template-columns: auto auto;
+        grid-template-columns: minmax(0, 1fr) auto;
       }
 
       .search-area {
@@ -471,8 +473,27 @@
     }
 
     @media (max-width: 600px) {
+      .navbar {
+        gap: 8px;
+        padding: 10px 12px;
+      }
+
       .brand-name {
         font-size: 1rem;
+      }
+
+      .nav-actions {
+        gap: 4px;
+      }
+
+      .btn.icon-btn,
+      .btn.game-btn {
+        width: 32px;
+        padding: 0;
+      }
+
+      .game-btn-label {
+        display: none;
       }
 
       .grade-grid {
@@ -593,7 +614,9 @@
     <!-- Actions -->
     <nav class="nav-actions" aria-label="Tiện ích">
       <!-- Game button → /tro-choi/ -->
-      <a id="game-btn" class="btn game-btn" href="./tro-choi/">🧠 Trò chơi trí tuệ</a>
+      <a id="game-btn" class="btn game-btn" href="./tro-choi/" aria-label="Trò chơi trí tuệ">
+        🧠<span class="game-btn-label"> Trò chơi trí tuệ</span>
+      </a>
 
       <!-- Dark / Light mode -->
       <button id="theme-btn" class="btn icon-btn theme-btn" type="button" aria-label="Chuyển chế độ tối/sáng"
