@@ -128,7 +128,10 @@ const GRADE_DATA = {
     "bai-02": [],
     "bai-03": [],
     "bai-04": [],
-    "bai-05": [],
+    "bai-05":  [
+      ['5 Câu trắc nghiệm',
+      '5cau_trac_nghiem.html']
+      ],
     "bai-06": [],
     "bai-07": [],
     "bai-08": [],
