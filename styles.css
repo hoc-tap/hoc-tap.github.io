@@ -283,6 +283,323 @@ input {
   padding: 16px clamp(12px, 2.5vw, 36px) 24px;
 }
 
+/* ── 4.1. KHUNG GIỚI THIỆU CHƯƠNG TRÌNH (HERO BANNER) ─────────────────────── */
+.hero-banner {
+  display: grid;
+  grid-template-columns: 1.12fr 1fr;
+  align-items: center;
+  gap: 28px;
+  background-color: var(--surface);
+  background-image: radial-gradient(circle at top right, rgba(22, 163, 74, 0.08) 0%, transparent 55%),
+                    radial-gradient(circle at bottom left, rgba(13, 148, 136, 0.06) 0%, transparent 45%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .hero-banner {
+  background-image: radial-gradient(circle at top right, rgba(74, 222, 128, 0.12) 0%, transparent 55%),
+                    radial-gradient(circle at bottom left, rgba(45, 212, 191, 0.08) 0%, transparent 45%);
+}
+
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Huy hiệu phía trên */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.hero-badge .badge-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Tiêu đề chính */
+.hero-title {
+  font-size: clamp(1.3rem, 2.1vw, 1.68rem);
+  font-weight: 850;
+  line-height: 1.3;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.hero-title .highlight-green {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+/* Đoạn mô tả */
+.hero-desc {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 95%;
+}
+
+.hero-desc strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+/* Nhãn tóm tắt / Năng lực */
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.hero-pill:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+}
+
+.hero-pill .pill-icon {
+  font-size: 0.82rem;
+}
+
+/* Cột phải */
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Ô tìm kiếm nhanh trong Banner */
+.hero-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 10px 0 14px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.hero-search-box:hover {
+  background: var(--surface);
+  border-color: var(--border-hover);
+}
+
+.hero-search-box:focus-within {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.hero-search-box .search-icon {
+  width: 17px;
+  height: 17px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.hero-search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.hero-search-box input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.hero-search-box .btn-clear {
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: var(--border);
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hero-search-box .btn-clear:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* Khung hướng dẫn gõ UniKey Telex cao cấp */
+.hero-telex-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.telex-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.telex-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+
+.telex-icon-box svg {
+  width: 17px;
+  height: 17px;
+}
+
+.telex-head-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.telex-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.02em;
+}
+
+.telex-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.telex-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.telex-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.telex-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.telex-grid-7 {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.telex-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 4px 4px 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.14s ease;
+  white-space: nowrap;
+}
+
+.telex-chip:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.telex-chip kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+  background: var(--bg-subtle);
+  color: var(--primary);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--border-hover);
+}
+
+.telex-chip strong,
+.telex-chip span {
+  font-weight: 750;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+
+.telex-chip strong {
+  color: var(--primary);
+  font-size: 0.88rem;
+}
+
+[data-theme="dark"] .telex-chip {
+  background: #172338;
+  border-color: #2a3a52;
+}
+
+[data-theme="dark"] .telex-chip kbd {
+  background: #0f172a;
+  border-color: #334155;
+  border-bottom-color: #475569;
+}
+
 .statusbar {
   display: flex;
   align-items: center;
@@ -443,24 +760,6 @@ input {
   flex-shrink: 0;
 }
 
-/* Mũi tên chỉ thị trạng thái mở/đóng */
-.bai-toggle::after {
-  content: "";
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-right: 1.5px solid var(--text-light);
-  border-bottom: 1.5px solid var(--text-light);
-  transform: rotate(45deg);
-  margin-left: 2px;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-
-.bai-toggle[aria-expanded="true"]::after {
-  transform: rotate(-135deg);
-  border-color: var(--card-accent, var(--primary));
-}
 
 /* Khung chứa các tệp HTML con */
 .bai-files {
@@ -582,6 +881,12 @@ html[data-cap="2"] .file-link {
 /* ── 9. THÍCH ỨNG THIẾT BỊ (RESPONSIVE) ─────────────────────────────────── */
 /* Màn hình trung bình / Tablet xoay ngang (<= 1100px) */
 @media (max-width: 1100px) {
+  .hero-banner {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+    padding: 20px 22px;
+  }
+
   .grade-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 10px;
@@ -599,6 +904,20 @@ html[data-cap="2"] .file-link {
     grid-column: 1 / -1;
     grid-row: 2;
     max-width: 100%;
+  }
+
+  .hero-banner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .telex-grid-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .telex-grid-7 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .grade-grid {
@@ -638,6 +957,35 @@ html[data-cap="2"] .file-link {
 
   .btn.game-btn {
     padding: 0 10px;
+  }
+
+  .hero-banner {
+    padding: 16px 14px;
+    border-radius: 14px;
+    gap: 16px;
+  }
+
+  .hero-title {
+    font-size: 1.25rem;
+  }
+
+  .hero-pills {
+    gap: 6px;
+  }
+
+  .hero-pill {
+    padding: 5px 10px;
+    font-size: 0.74rem;
+  }
+
+  .hero-telex-card {
+    padding: 10px 12px;
+  }
+
+  .telex-grid-6,
+  .telex-grid-7 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
   }
 
   .grade-grid,

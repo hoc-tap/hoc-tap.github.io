@@ -15,9 +15,22 @@ const iconExpand = document.getElementById('icon-fs-expand');
 const iconCollapse = document.getElementById('icon-fs-collapse');
 const cap = new URLSearchParams(window.location.search).get('cap');
 
+const heroBadgeText = document.getElementById('hero-badge-text');
+const heroGradesPill = document.getElementById('hero-grades-pill');
+const heroSearchInput = document.getElementById('hero-search-input');
+const heroSearchClear = document.getElementById('hero-search-clear');
+
 if (cap === '1' || cap === '2') {
   html.dataset.cap = cap;
   statusLabel.textContent = cap === '1' ? 'Tin học lớp 3 – 5' : 'Tin học lớp 6 – 9';
+  if (heroBadgeText) {
+    heroBadgeText.textContent = cap === '1'
+      ? 'Chương trình GDPT 2018 • Tin học Lớp 3 – Lớp 5 (Tiểu học)'
+      : 'Chương trình GDPT 2018 • Tin học Lớp 6 – Lớp 9 (THCS)';
+  }
+  if (heroGradesPill) {
+    heroGradesPill.textContent = cap === '1' ? '3 Khối lớp (3 – 5)' : '4 Khối lớp (6 – 9)';
+  }
 }
 
 /* ── Static lesson data (generated from local filesystem) ──
@@ -514,6 +527,66 @@ document.addEventListener('fullscreenchange', () => {
     : 'Bật toàn màn hình');
 });
 
+/* ── Hero Search Filter ──────────────────────────────────── */
+function filterLessons(query) {
+  const q = (query || '').trim().toLowerCase();
+  if (heroSearchClear) {
+    heroSearchClear.style.display = q ? 'block' : 'none';
+  }
+
+  const allCards = gradeGrid.querySelectorAll('.grade-card');
+  let totalMatches = 0;
+
+  allCards.forEach(card => {
+    const g = parseInt(card.dataset.grade, 10);
+    const isCapHidden = (cap === '1' && g > 5) || (cap === '2' && g < 6);
+    if (isCapHidden) {
+      card.hidden = true;
+      return;
+    }
+
+    const groups = card.querySelectorAll('.bai-group');
+    let cardMatches = 0;
+
+    groups.forEach(group => {
+      if (!q) {
+        group.hidden = false;
+        cardMatches++;
+        return;
+      }
+
+      const title = (group.querySelector('.bai-title')?.textContent || '').toLowerCase();
+      const searchData = (group.dataset.search || '').toLowerCase();
+      const gradeStr = 'lớp ' + g + ' lop ' + g;
+
+      const isMatch = title.includes(q) || searchData.includes(q) || gradeStr.includes(q);
+      group.hidden = !isMatch;
+      if (isMatch) cardMatches++;
+    });
+
+    card.hidden = q ? (cardMatches === 0) : false;
+    totalMatches += cardMatches;
+  });
+
+  if (q) {
+    const visibleCards = gradeGrid.querySelectorAll('.grade-card:not([hidden])').length;
+    countLabel.textContent = 'Tìm thấy ' + totalMatches + ' bài học · ' + visibleCards + ' lớp';
+  } else {
+    updateCount();
+  }
+}
+
+if (heroSearchInput) {
+  heroSearchInput.addEventListener('input', e => filterLessons(e.target.value));
+}
+if (heroSearchClear) {
+  heroSearchClear.addEventListener('click', () => {
+    heroSearchInput.value = '';
+    filterLessons('');
+    heroSearchInput.focus();
+  });
+}
+
 /* ── Init ────────────────────────────────────────────────── */
 (function init() {
   try {
@@ -523,3 +596,4 @@ document.addEventListener('fullscreenchange', () => {
   applyTheme();
   renderAllGrades();
 })();
+
