@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Du hành Hệ Mặt Trời – Tin học 7 Bài 5</title>
+<style>
+:root{--bg:#eef3ff;--panel:rgba(255,255,255,.92);--line:rgba(90,110,200,.28);--tx:#1c2545;--mute:#5a678f;--ok:#12b774;--bad:#e5385a;--warn:#e08a00;--pri:#5b7cff;--acc:#ff9f43}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(ellipse at 20% 10%,#ffffff 0%,#e7eeff 45%,#d8e3ff 100%);color:var(--tx);overflow:hidden}
+#bg{display:none}
+#fx{position:fixed;inset:0;z-index:60;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+.hide{display:none!important}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 30px;width:min(560px,100%);box-shadow:0 20px 50px rgba(60,80,160,.22);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.logo{font-size:56px;text-align:center;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
+.card h1{text-align:center;font-size:26px;margin:6px 0 4px;background:linear-gradient(90deg,#ff7a18,#ff3d77,#7a4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .sub{text-align:center;color:var(--mute);font-size:14px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 5px;font-weight:600}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--tx);font-size:16px;outline:none;transition:.2s}
+input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(91,124,255,.22)}
+input.err{border-color:var(--bad);animation:shake .4s}
+.rules{margin:16px 0;padding:12px 14px;border-radius:12px;background:#eef2ff;font-size:13.5px;line-height:1.7;color:#34406b}
+.btn{border:none;border-radius:14px;padding:13px 22px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#5b7cff,#8b5bff);box-shadow:0 6px 18px rgba(91,124,255,.35);transition:.2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.go{width:100%;margin-top:6px;background:linear-gradient(135deg,#ff9f43,#ff4d79);box-shadow:0 6px 18px rgba(255,100,90,.35)}
+.btn.ghost{background:#eef2ff;color:var(--tx);box-shadow:none;border:1px solid var(--line);font-weight:600;font-size:14px;padding:10px 16px}
+.row{display:flex;gap:10px;margin-top:10px}
+.row .btn{flex:1}
+#game{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,26vw,440px);gap:14px;padding:14px}
+.left,.right{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:0;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(60,80,160,.15)}
+.left{padding:16px 24px;overflow:hidden;position:relative}
+.qwrap{flex:1;overflow-y:auto;padding-right:4px}
+.pips{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.pip{padding:6px 2px;text-align:center;white-space:nowrap;border-radius:99px;font-size:clamp(11px,1vw,16px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
+.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.06)}
+.pip.ok{background:#d6f7e8;color:#0b7a53}
+.pip.no{background:#ffdfe6;color:#c42b4b}
+.tbar{height:8px;border-radius:99px;background:#e2e8f8;overflow:hidden;margin-bottom:14px}
+.tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#ffc93c);transform-origin:left}
+.tbar.low i{background:linear-gradient(90deg,#ff5d7a,#ff9f43)}
+.lvl{display:inline-block;padding:6px 18px;border-radius:99px;font-size:clamp(16px,1.6vw,26px);font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl.low{background:#ffdfe6!important;color:#c42b4b!important;animation:beat .5s infinite}
+.lvl.NB{background:#d4f7e8;color:#0b7a53}.lvl.TH{background:#fff1c2;color:#8a6100}.lvl.VD{background:#ffd9ec;color:#a3195f}
+.qtext{font-size:clamp(22px,2.5vw,42px);line-height:1.4;font-weight:700;margin-bottom:20px}
+.enter{animation:slideIn .55s cubic-bezier(.2,1,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:18px 20px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--tx);font-weight:600;font-size:clamp(21px,2.4vw,40px);line-height:1.3;transition:.18s;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:var(--pri);transform:translateY(-3px);background:#f1f4ff}
+.opt b{flex:none;width:clamp(40px,3.6vw,64px);height:clamp(40px,3.6vw,64px);border-radius:50%;display:grid;place-items:center;background:#e3e9ff;color:#3a4a9a;font-size:clamp(20px,2.2vw,36px)}
+.opt span{word-break:break-word}
+.opt:disabled{cursor:default}
+.opt.good{border-color:var(--ok);background:#dcf8ec;animation:glow 1s ease 2}
+.opt.good b{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:#ffe3e9;animation:shake .45s}
+.opt.wrong b{background:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+@keyframes glow{50%{box-shadow:0 0 24px rgba(18,183,116,.55)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.fb{margin-top:16px;border-radius:14px;padding:14px 16px;animation:slideIn .5s}
+.fb.ok{background:#e4faf0;border:1px solid var(--ok)}
+.fb.no{background:#ffecef;border:1px solid var(--bad)}
+.fb h3{font-size:clamp(20px,2.2vw,34px);margin-bottom:8px}
+.fb p{line-height:1.5;font-size:clamp(17px,1.8vw,30px);color:#2a3560}
+.fb .ans{margin-bottom:6px;font-weight:600}
+.nextrow{display:flex;justify-content:flex-end;padding-top:12px}
+.nextrow .btn{font-size:clamp(17px,1.7vw,28px);padding:14px 28px}
+.illus{margin:0 0 16px;padding:10px 12px;border-radius:14px;background:#f3f6ff;border:1px dashed var(--line);overflow-x:auto}
+.sheet{border-collapse:collapse;font-size:clamp(15px,1.6vw,26px);margin:auto;background:#fff;color:#1b2540;box-shadow:0 4px 14px rgba(60,80,160,.25)}
+.sheet th{background:#e8ecf5;font-weight:700;color:#4a5578;padding:4px 10px;border:1px solid #c5cce0;min-width:36px}
+.sheet td{padding:7px 14px;border:1px solid #d0d6e6;min-width:clamp(90px,9vw,150px);text-align:center;font-family:Consolas,monospace;height:clamp(32px,3vw,52px)}
+.sheet td.hd{background:#dfe7ff;font-weight:700;font-family:inherit}
+.sheet td.tbl{background:#fff4c9}
+.sheet td.src{background:#cfe3ff;outline:3px solid #3b82f6;outline-offset:-3px;font-weight:700}
+.sheet td.tgt{background:#ffe2c2;outline:3px solid #ff8a1f;outline-offset:-3px;font-weight:800;animation:pulse 1.2s infinite}
+.sheet td.tgtok{background:#c9f7de;outline:3px solid #19c37d;outline-offset:-3px;font-weight:800;animation:pop .5s}
+@keyframes pulse{50%{background:#fff0dc}}
+.cap{text-align:center;font-size:clamp(13px,1.3vw,20px);color:var(--mute);margin-top:7px}
+.right{padding:14px;gap:10px;overflow:hidden}
+.right h2{font-size:clamp(20px,1.9vw,32px);line-height:1.35;text-align:center;color:#4b34d8}
+.right h2 small{display:block;color:var(--mute);font-weight:600;font-size:clamp(14px,1.3vw,22px);line-height:1.3;margin-top:4px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#eef2ff;border-radius:12px;padding:7px 10px;min-width:0}
+.chip small{display:block;font-size:clamp(10px,.9vw,14px);color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
+.chip b{font-size:clamp(16px,1.5vw,26px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.big b{font-size:clamp(20px,2vw,34px);color:#d97706}
+.timer{display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:8px 12px}
+.timer svg{width:clamp(62px,5vw,86px);height:clamp(62px,5vw,86px);flex:none}
+.timer .ring{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.timer .t{font-size:clamp(34px,3.2vw,54px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.timer small{color:var(--mute);font-size:12px}
+.timer.low .t{color:var(--bad);animation:beat .5s infinite}
+@keyframes beat{50%{transform:scale(1.18)}}
+.info.three{grid-template-columns:.9fr .9fr 1.5fr}
+.chip.tm{display:flex;align-items:center;gap:8px}
+.chip.tm small{white-space:nowrap}
+#hName{white-space:normal;line-height:1.2}
+.chip.tm svg{width:clamp(26px,2.2vw,40px);height:clamp(26px,2.2vw,40px);flex:none}
+.chip.tm b{font-size:clamp(20px,2vw,34px);font-variant-numeric:tabular-nums}
+.chip.tm.low b{color:var(--bad);animation:beat .5s infinite}
+.ring{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.tools{display:flex;gap:8px}
+.tools .btn{flex:1;padding:8px 6px;font-size:13px}
+.skywrap{flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid #1d2a5c;background:radial-gradient(circle at center,#0d1a45,#04060f);position:relative}
+#sky{width:100%;height:100%;display:block}
+.hint{position:absolute;left:8px;bottom:6px;font-size:11px;color:#9aa8d8;pointer-events:none}
+/* hoạt cảnh toàn màn hình (giao diện tối) */
+#cine{position:fixed;inset:0;z-index:40;background:radial-gradient(circle at center,#0d1a45 0%,#04060f 75%);transform:scale(.12);opacity:0;border-radius:40px;pointer-events:none;transition:transform .7s cubic-bezier(.2,.9,.3,1),opacity .45s,border-radius .7s;overflow:hidden}
+#cine.on{transform:none;opacity:1;border-radius:0;pointer-events:auto}
+#bigsky{position:absolute;inset:0;width:100%;height:100%}
+#cineTitle{position:absolute;top:3.5vh;left:0;right:0;text-align:center;color:#fff;font-size:clamp(20px,3vw,38px);font-weight:800;text-shadow:0 0 24px rgba(255,200,80,.8);padding:0 16px}
+#cineSub{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:#ffe58a;font-size:clamp(16px,2vw,26px);font-weight:700}
+.score{font-size:76px;font-weight:900;text-align:center;line-height:1;background:linear-gradient(180deg,#ff9f1c,#ff4d79);-webkit-background-clip:text;background-clip:text;color:transparent}
+.score small{font-size:28px}
+.medal{text-align:center;font-size:19px;font-weight:700;margin:6px 0 12px}
+.rev{margin:10px 0;display:grid;gap:6px;max-height:240px;overflow:auto}
+.rev div{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#f1f4ff;border-radius:10px;padding:8px 10px}
+.rev .ok{border-left:4px solid var(--ok)}.rev .no{border-left:4px solid var(--bad)}
+.introsky{position:relative;flex:1 1 0;min-width:0;max-width:640px;height:min(660px,88vh);border-radius:22px;overflow:hidden;background:radial-gradient(circle at center,#0d1a45,#04060f);border:1px solid #1d2a5c;box-shadow:0 20px 50px rgba(20,30,90,.4);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+#introsky{width:100%;height:100%;display:block}
+.introcap{position:absolute;top:14px;left:0;right:0;text-align:center;color:#ffe58a;font-weight:800;font-size:clamp(16px,1.7vw,28px);text-shadow:0 0 16px rgba(255,200,80,.7);pointer-events:none}
+#end{background:radial-gradient(ellipse at center,#0a0f26 0%,#03050d 70%,#000 100%);overflow:auto}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#end .card{position:relative;z-index:2;background:#fff;box-shadow:0 0 70px rgba(255,255,255,.28)}
+#start{gap:28px}
+#start .introsky{order:2}
+#start .card{flex:0 1 540px}
+.long .qtext{font-size:clamp(20px,2.1vw,36px)}
+.long .opt{font-size:clamp(17px,1.8vw,30px);padding:14px 16px}
+.xlong .qtext{font-size:clamp(18px,1.8vw,31px)}
+.xlong .opts{grid-template-columns:1fr}
+.xlong .opt{font-size:clamp(16px,1.6vw,27px);padding:11px 16px}
+@media(max-width:900px){
+ #start{flex-direction:column;justify-content:flex-start}
+ #start .introsky{order:-1}
+ .introsky{flex:none;width:100%;max-width:560px;height:240px}
+ .opts{grid-template-columns:1fr}
+ body{overflow:auto}#game{grid-template-columns:1fr;height:auto;min-height:100%}
+ .right{order:-1}.skywrap{min-height:230px}.left{min-height:70vh}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div id="cine"><canvas id="bigsky"></canvas><div id="cineTitle"></div><div id="cineSub"></div></div>
+
+<!-- MÀN HÌNH BẮT ĐẦU -->
+<div class="overlay" id="start">
+  <div class="introsky"><canvas id="introsky"></canvas><div class="introcap">🌌 Hệ Mặt Trời</div></div>
+  <div class="card">
+    <div class="logo">🚀</div>
+    <h1>DU HÀNH HỆ MẶT TRỜI</h1>
+    <div class="sub">Tin học 7 – Bài 5: Ứng xử trên mạng</div>
+    <label for="inName">Họ và tên</label>
+    <input id="inName" maxlength="40" placeholder="Nhập họ và tên của em" autocomplete="off">
+    <label for="inClass">Lớp</label>
+    <input id="inClass" maxlength="12" placeholder="Ví dụ: 7A1" autocomplete="off">
+    <div class="rules">
+      🎯 <b>5 câu ngẫu nhiên</b>: 3 Nhận biết (⏱ 30 giây) · 1 Thông hiểu (⏱ 45 giây) · 1 Vận dụng (⏱ 60 giây)<br>
+      ✅ Trả lời đúng: <b>+2 điểm</b>. Mỗi lần chuyển câu, Hệ Mặt Trời phóng to toàn màn hình: tàu bay lần lượt Mặt Trời → Thủy tinh → Kim tinh → Hỏa tinh → Mộc tinh → về Trái Đất<br>
+      🎁 Trên đường bay có <b>20%</b> cơ hội có hộp quà 🎁 rơi xuống, tàu nhặt được sẽ nhận <b>+0,5 điểm</b><br>
+      ⏰ Hết giờ sẽ tính là trả lời sai · Điểm tối đa <b>10</b>
+    </div>
+    <button class="btn go" id="btnStart">🚀 BẮT ĐẦU CHƠI</button>
+    <div class="row"><button class="btn ghost" id="btnFsStart">⛶ Toàn màn hình</button></div>
+  </div>
+</div>
+
+<!-- GIAO DIỆN CHƠI -->
+<div id="game" class="hide">
+  <section class="left">
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="qwrap" id="qwrap">
+      <div id="qbox">
+        <span class="lvl" id="lvl"></span>
+        <div class="qtext" id="qtext"></div>
+        <div class="illus hide" id="illus"></div>
+        <div class="opts" id="opts"></div>
+        <div id="fb"></div>
+      </div>
+    </div>
+    <div class="nextrow"><button class="btn hide" id="btnNext">Câu tiếp theo ➜</button></div>
+  </section>
+
+  <aside class="right">
+    <h2>📘 Tin học 7 – Bài 5<small>Ứng xử trên mạng</small></h2>
+    <div class="info">
+      <div class="chip"><small>Họ tên</small><b id="hName">-</b></div>
+      <div class="chip"><small>Lớp</small><b id="hClass">-</b></div>
+    </div>
+    <div class="info three">
+      <div class="chip"><small>Câu hỏi</small><b id="hQ">1/5</b></div>
+      <div class="chip big"><small>Điểm</small><b id="hScore">0</b></div>
+      <div class="chip tm" id="timer">
+        <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="9"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#12b774" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
+        <div><small>Thời gian</small><b><span id="tnum">30</span>s</b></div>
+      </div>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div class="tools">
+      <button class="btn ghost" id="btnFs">⛶ Toàn màn hình</button>
+      <button class="btn ghost" id="btnSnd">🔊 Âm thanh</button>
+    </div>
+    <div class="skywrap"><canvas id="sky"></canvas><div class="hint">Bấm “Câu tiếp theo” để phóng tàu 🚀</div></div>
+  </aside>
+</div>
+
+<!-- MÀN HÌNH KẾT QUẢ -->
+<div class="overlay hide" id="end">
+  <canvas id="fw"></canvas>
+  <div class="card">
+    <div class="logo" id="endIcon">🏆</div>
+    <h1 id="endName"></h1>
+    <div class="sub" id="endSub"></div>
+    <div class="score"><span id="endScore">0</span><small> / 10</small></div>
+    <div class="medal" id="endMedal"></div>
+    <div class="rev" id="rev"></div>
+    <div class="row"><button class="btn" id="btnAgain">🔄 Chơi lại</button><button class="btn ghost" id="btnChange">👤 Đổi người chơi</button></div>
+  </div>
+</div>
+
+<script>
+const QS = [{"n": 1, "lv": "NB", "q": "Trước khi có mạng Internet, con người KHÔNG thể giao tiếp qua phương thức nào?", "opts": ["Nói chuyện trực tiếp", "Gọi điện thoại bàn", "Gửi thư qua bưu điện", "Gửi và nhận thư điện tử"], "ans": 3, "exp": "Thư điện tử (email) đòi hỏi phải có mạng Internet để hoạt động."}, {"n": 2, "lv": "NB", "q": "Phương thức nào sau đây được coi là giao tiếp qua mạng?", "opts": ["Nhắn tin qua mạng xã hội", "Gặp gỡ ngoài công viên", "Nói chuyện trong lớp học", "Gửi thư viết tay"], "ans": 0, "exp": "Nhắn tin qua mạng xã hội sử dụng nền tảng Internet."}, {"n": 3, "lv": "NB", "q": "Một trong những đặc điểm của các mối quan hệ qua mạng là gì?", "opts": ["Phạm vi hẹp", "Ít đa dạng", "Dễ kiểm soát hơn đời thực", "Khó kiểm soát hơn đời thực"], "ans": 3, "exp": "Mối quan hệ qua mạng có phạm vi rộng và khó kiểm soát hơn."}, {"n": 4, "lv": "NB", "q": "Việc làm nào sau đây là NÊN làm khi giao tiếp qua mạng?", "opts": ["Sử dụng ngôn ngữ lịch sự", "Giấu bố mẹ khi bị bắt nạt", "Nói xấu người khác", "Đọc trộm email của bạn"], "ans": 0, "exp": "Sử dụng ngôn ngữ lịch sự thể hiện ứng xử có văn hóa."}, {"n": 5, "lv": "NB", "q": "Việc làm nào sau đây KHÔNG NÊN làm khi giao tiếp qua mạng?", "opts": ["Bảo vệ tài khoản cá nhân", "Tôn trọng mọi người", "Chia sẻ thông tin người khác khi chưa cho phép", "Tìm sự hỗ trợ khi bị đe dọa"], "ans": 2, "exp": "Chia sẻ thông tin của người khác khi chưa được phép là vi phạm quyền riêng tư."}, {"n": 6, "lv": "NB", "q": "Khi bị bắt nạt trên mạng, cách xử lý nào là TỐT NHẤT?", "opts": ["Nói lời xúc phạm lại người đó", "Cố gắng quên đi và tiếp tục chịu đựng", "Nhờ bố mẹ, thầy cô giúp đỡ, tư vấn", "Đe dọa lại người bắt nạt mình"], "ans": 2, "exp": "Người lớn sẽ có đủ kinh nghiệm để giúp em xử lý an toàn và triệt để."}, {"n": 7, "lv": "NB", "q": "Trang web nào sau đây chứa thông tin có nội dung xấu?", "opts": ["Trang web học toán trực tuyến", "Trang web kích động bạo lực", "Trang web thư viện điện tử", "Trang web báo nhi đồng"], "ans": 1, "exp": "Kích động bạo lực là nội dung xấu, độc hại."}, {"n": 8, "lv": "NB", "q": "Sử dụng phần mềm nào giúp ngăn chặn truy cập các trang web xấu?", "opts": ["Phần mềm nghe nhạc", "Phần mềm chặn truy cập trang web xấu", "Phần mềm vẽ tranh", "Phần mềm soạn thảo văn bản"], "ans": 1, "exp": "Phần mềm chặn web xấu được thiết kế chuyên biệt để bảo vệ người dùng."}, {"n": 9, "lv": "NB", "q": "Khi vô tình truy cập vào trang web có nội dung không phù hợp, em nên làm gì?", "opts": ["Tiếp tục truy cập để xem", "Đóng ngay trang web đó lại", "Gửi trang web đó cho bạn bè xem", "Lưu lại để hôm sau xem tiếp"], "ans": 1, "exp": "Đóng ngay để tránh tiếp xúc thêm với nội dung độc hại."}, {"n": 10, "lv": "NB", "q": "Một trong những biểu hiện của bệnh nghiện Internet là gì?", "opts": ["Thích tham gia hoạt động ngoài trời", "Sử dụng Internet quá nhiều, chán ăn, sụt cân", "Thường xuyên đọc sách giấy", "Chơi thể thao mỗi ngày"], "ans": 1, "exp": "Sử dụng quá nhiều dẫn đến bỏ bê sức khỏe là biểu hiện của nghiện mạng."}, {"n": 11, "lv": "NB", "q": "Người nghiện Internet thường có nguy cơ cao tham gia vào việc gì?", "opts": ["Các câu lạc bộ tình nguyện", "Các hoạt động thể thao", "Các vụ bắt nạt trên mạng", "Các khóa học kỹ năng mềm"], "ans": 2, "exp": "Người nghiện mạng dễ có hành vi hung hăng và tham gia bắt nạt trực tuyến."}, {"n": 12, "lv": "NB", "q": "Người nghiện trò chơi trực tuyến thường có tâm trạng thế nào khi KHÔNG được chơi?", "opts": ["Vui vẻ, hòa đồng", "Cáu gắt, lầm lì, bồn chồn", "Tập trung học tập hơn", "Thoải mái, thư giãn"], "ans": 1, "exp": "Sự thiếu hụt trò chơi gây ra hội chứng cai nghiện tâm lý, dẫn đến cáu gắt."}, {"n": 13, "lv": "NB", "q": "Cách phòng tránh bệnh nghiện Internet thông qua việc 'CHIA SẺ' là gì?", "opts": ["Chia sẻ tài khoản mạng cho bạn bè", "Chia sẻ thông tin cá nhân lên mạng", "Tâm sự, chia sẻ với người tin tưởng (bố mẹ, thầy cô)", "Chia sẻ các liên kết độc hại"], "ans": 2, "exp": "Chia sẻ với người tin tưởng giúp giải tỏa căng thẳng và nhận được lời khuyên."}, {"n": 14, "lv": "NB", "q": "Cách phòng tránh bệnh nghiện Internet thông qua việc 'RỜI XA' là gì?", "opts": ["Rời xa gia đình để lên mạng", "Rời xa trường học", "Di chuyển máy tính khỏi phòng riêng tới nơi sinh hoạt chung", "Rời xa các hoạt động thể thao"], "ans": 2, "exp": "Để máy tính ở nơi chung giúp mọi người dễ dàng giám sát thời gian sử dụng."}, {"n": 15, "lv": "NB", "q": "Cài đặt phần mềm giới hạn thời gian sử dụng mạng thuộc biện pháp phòng tránh nào?", "opts": ["Chia sẻ", "Rời xa", "Giới hạn", "Theo đuổi"], "ans": 2, "exp": "Giới hạn giúp quản lý chặt chẽ quỹ thời gian online."}, {"n": 16, "lv": "NB", "q": "Việc tìm và tham gia các sở thích như đọc sách, chơi thể thao thuộc biện pháp nào?", "opts": ["Chia sẻ", "Rời xa", "Giới hạn", "Theo đuổi"], "ans": 3, "exp": "Theo đuổi các thói quen tốt giúp thay thế thời gian dành cho Internet."}, {"n": 18, "lv": "NB", "q": "Đâu là một ví dụ về giao tiếp qua mạng có văn hóa?", "opts": ["Dùng tiếng lóng, từ ngữ thô tục", "Bình luận mang tính chất động viên, khen ngợi hợp lý", "Phát tán tin đồn thất thiệt", "Chửi bới người khác trên diễn đàn"], "ans": 1, "exp": "Động viên, khen ngợi lịch sự thể hiện sự tôn trọng người khác."}, {"n": 19, "lv": "NB", "q": "Hành động nào sau đây vi phạm quyền riêng tư trên mạng?", "opts": ["Thay đổi mật khẩu cá nhân thường xuyên", "Chia sẻ hình ảnh của bạn bè lên mạng khi chưa xin phép", "Gửi email cho giáo viên", "Tham gia diễn đàn học tập"], "ans": 1, "exp": "Hình ảnh cá nhân của người khác không được tự ý đăng tải."}, {"n": 20, "lv": "NB", "q": "Vì sao không nên dùng chung mật khẩu tài khoản mạng xã hội với người khác?", "opts": ["Để tài khoản không bị xóa", "Để bảo vệ thông tin cá nhân không bị đánh cắp", "Để tăng tốc độ truy cập", "Để máy tính không bị hỏng"], "ans": 1, "exp": "Mật khẩu là chìa khóa bảo vệ thông tin, dùng chung sẽ làm mất an toàn."}, {"n": 21, "lv": "NB", "q": "Nếu nhận được một email lạ có chứa liên kết (link), việc đầu tiên nên làm là gì?", "opts": ["Nhấp vào liên kết ngay", "Chuyển tiếp cho bạn bè", "Tuyệt đối không nhấp vào và hỏi ý kiến người lớn", "Phản hồi lại email đó"], "ans": 2, "exp": "Liên kết lạ có thể chứa mã độc hoặc lừa đảo."}, {"n": 22, "lv": "NB", "q": "Tác hại về mặt thể chất của bệnh nghiện Internet là gì?", "opts": ["Giảm thị lực, mệt mỏi, sụt cân", "Giao tiếp tốt hơn", "Học tập tiến bộ", "Nhiều bạn bè hơn"], "ans": 0, "exp": "Ngồi lâu trước màn hình và thức khuya làm suy giảm sức khỏe trầm trọng."}, {"n": 23, "lv": "NB", "q": "Nghiện Internet làm ảnh hưởng thế nào đến các mối quan hệ thực tế?", "opts": ["Làm cho mối quan hệ gia đình thêm khăng khít", "Thu hẹp và làm suy yếu các mối quan hệ với gia đình, bạn bè", "Tăng cường khả năng giao tiếp", "Giúp kết nối với mọi người tốt hơn"], "ans": 1, "exp": "Người nghiện chỉ tập trung vào thế giới ảo, bỏ bê người thân xung quanh."}, {"n": 24, "lv": "NB", "q": "Hành vi nào dưới đây là bắt nạt trên mạng?", "opts": ["Nhắn tin hỏi bài tập", "Để lại bình luận ác ý, chế giễu bạn trên Facebook", "Gửi lời chúc mừng sinh nhật", "Tham gia nhóm học tiếng Anh"], "ans": 1, "exp": "Bình luận ác ý nhằm hạ thấp người khác là hành vi bắt nạt."}, {"n": 25, "lv": "NB", "q": "Để tránh bị lôi kéo vào các trang web xấu, em nên tránh làm điều gì?", "opts": ["Chỉ truy cập các trang web quen thuộc", "Hỏi bố mẹ trước khi tải phần mềm", "Tự ý bấm vào các quảng cáo nhấp nháy, hấp dẫn trên mạng", "Sử dụng phần mềm chặn quảng cáo"], "ans": 2, "exp": "Quảng cáo hấp dẫn thường là mồi nhử dẫn đến các trang web độc hại."}, {"n": 26, "lv": "NB", "q": "Phụ huynh có vai trò gì trong việc giúp con phòng tránh nghiện Internet?", "opts": ["Cấm đoán hoàn toàn việc sử dụng mạng", "Giao toàn quyền cho con sử dụng", "Cởi mở giao tiếp, hướng dẫn con sử dụng an toàn", "Chỉ mua điện thoại đen trắng cho con"], "ans": 2, "exp": "Sự hướng dẫn và cởi mở giúp con tự giác và an toàn hơn."}, {"n": 27, "lv": "NB", "q": "Đâu là một biểu hiện của việc mất tập trung do sử dụng mạng quá nhiều?", "opts": ["Đọc hết một cuốn sách trong một ngày", "Cứ 10 phút lại kiểm tra tin nhắn điện thoại một lần", "Làm bài tập liên tục 2 tiếng không nghỉ", "Chú ý nghe thầy cô giảng bài"], "ans": 1, "exp": "Sự gián đoạn liên tục để kiểm tra điện thoại làm giảm khả năng tập trung."}, {"n": 28, "lv": "NB", "q": "Người nghiện trò chơi trực tuyến thường phải đối mặt với áp lực gì?", "opts": ["Phải chơi trong thời gian dài để đạt mục tiêu trong game", "Phải đạt điểm cao trong học tập", "Phải tham gia nhiều hoạt động ngoại khóa", "Phải đọc nhiều sách"], "ans": 0, "exp": "Trò chơi thiết kế các mục tiêu dài hạn khiến người chơi bị cuốn vào."}, {"n": 29, "lv": "NB", "q": "Trang web nào phù hợp với lứa tuổi học sinh THCS?", "opts": ["Trang web cá cược bóng đá", "Trang web cung cấp kiến thức khoa học, lịch sử", "Trang web chia sẻ video bạo lực", "Trang web mua bán vũ khí"], "ans": 1, "exp": "Kiến thức khoa học, lịch sử phục vụ tốt cho việc học tập."}, {"n": 30, "lv": "NB", "q": "Việc dành quá nhiều thời gian truy cập mạng sẽ dẫn đến hậu quả gì?", "opts": ["Có thêm nhiều kiến thức bổ ích", "Ảnh hưởng xấu tới học tập và sinh hoạt của bản thân", "Trở nên nổi tiếng", "Sức khỏe dẻo dai hơn"], "ans": 1, "exp": "Sử dụng quá nhiều thời gian gây mất cân bằng cuộc sống."}, {"n": 31, "lv": "NB", "q": "Tự chủ bản thân khi sử dụng mạng có nghĩa là gì?", "opts": ["Thích gì làm nấy trên mạng", "Kiểm soát được thời gian và hành vi của mình trên mạng", "Sử dụng mạng 24/24", "Cấm bản thân sử dụng mạng hoàn toàn"], "ans": 1, "exp": "Tự chủ là biết dừng lại đúng lúc và ứng xử đúng mực."}, {"n": 32, "lv": "NB", "q": "Hành động nào thể hiện sự tôn trọng người khác trên mạng?", "opts": ["Sử dụng từ ngữ lịch sự khi bình luận", "Lấy cắp thông tin cá nhân", "Đăng ảnh dìm hàng bạn bè", "Gửi tin nhắn rác liên tục"], "ans": 0, "exp": "Từ ngữ lịch sự là biểu hiện cơ bản nhất của sự tôn trọng."}, {"n": 33, "lv": "NB", "q": "Hoạt động nào trên mạng có nguy cơ gây nghiện cao nhất đối với học sinh?", "opts": ["Tra cứu tài liệu học tập", "Gửi email cho giáo viên", "Chơi trò chơi trực tuyến (game online)", "Đọc báo điện tử"], "ans": 2, "exp": "Game online có tính tương tác cao và thiết kế gây nghiện mạnh."}, {"n": 34, "lv": "NB", "q": "Một nguyên tắc quan trọng khi tạo mật khẩu cho tài khoản mạng là gì?", "opts": ["Sử dụng ngày sinh của mình", "Sử dụng số điện thoại", "Sử dụng mật khẩu mạnh gồm chữ cái, số và ký tự đặc biệt", "Sử dụng tên của mình"], "ans": 2, "exp": "Mật khẩu mạnh giúp chống lại việc bị kẻ xấu bẻ khóa."}, {"n": 35, "lv": "NB", "q": "Thông tin trên mạng lan truyền với tốc độ như thế nào?", "opts": ["Rất chậm", "Lan truyền rộng rãi và rất nhanh", "Chỉ lan truyền trong khu vực nhỏ", "Không thể lan truyền"], "ans": 1, "exp": "Nhờ tính kết nối toàn cầu, thông tin trên mạng lan truyền với tốc độ chóng mặt."}, {"n": 36, "lv": "NB", "q": "Việc thức khuya thường xuyên để sử dụng mạng sẽ gây ra điều gì?", "opts": ["Giúp cơ thể khỏe mạnh hơn", "Gây suy nhược cơ thể, tinh thần mệt mỏi", "Tăng khả năng ghi nhớ", "Phát triển tư duy logic"], "ans": 1, "exp": "Thức khuya phá vỡ nhịp sinh học, gây hại trực tiếp đến sức khỏe."}, {"n": 37, "lv": "NB", "q": "Để tránh bị lộ thông tin cá nhân, em KHÔNG nên làm gì?", "opts": ["Cài đặt chế độ riêng tư cho tài khoản", "Đăng tải địa chỉ nhà và số điện thoại công khai lên Facebook", "Không kết bạn với người lạ", "Sử dụng mật khẩu phức tạp"], "ans": 1, "exp": "Công khai thông tin cá nhân tạo cơ hội cho kẻ gian lợi dụng."}, {"n": 38, "lv": "NB", "q": "Khi thấy một bài đăng có nội dung xúc phạm bạn bè mình, em nên làm gì?", "opts": ["Hùa theo bình luận xúc phạm", "Báo cáo (Report) bài đăng đó với quản trị viên", "Chia sẻ bài đăng đó cho nhiều người biết", "Làm ngơ không quan tâm"], "ans": 1, "exp": "Báo cáo là hành động bảo vệ người bị hại và ngăn chặn nội dung xấu."}, {"n": 39, "lv": "NB", "q": "Đâu là một lợi ích của việc sử dụng Internet hợp lý?", "opts": ["Phục vụ tốt cho học tập, giải trí lành mạnh", "Trở thành người nghiện mạng", "Bị mất thông tin cá nhân", "Bị bắt nạt trên mạng"], "ans": 0, "exp": "Internet có kho tàng kiến thức khổng lồ nếu biết sử dụng đúng cách."}, {"n": 40, "lv": "NB", "q": "Ai là người phù hợp nhất để em chia sẻ khi gặp rắc rối trên mạng?", "opts": ["Một người bạn mới quen trên mạng", "Người lạ nhắn tin hỏi thăm", "Bố mẹ, thầy cô giáo hoặc người thân trong gia đình", "Không chia sẻ với ai"], "ans": 2, "exp": "Đây là những người đáng tin cậy và có khả năng bảo vệ em trong đời thực."}, {"n": 41, "lv": "TH", "q": "Tại sao việc bảo vệ tài khoản cá nhân trên mạng lại đặc biệt quan trọng?", "opts": ["Để tránh bị kẻ gian đánh cắp thông tin cá nhân và lợi dụng với mục đích xấu.", "Bởi vì khi bạn bảo vệ tài khoản, các hệ thống mạng sẽ tự động nâng cấp tốc độ.", "Để nhà cung cấp mạng không thu thêm phí sử dụng Internet hàng tháng.", "Để bạn bè có thể dễ dàng tìm thấy và kết bạn với bạn trên mạng xã hội hơn."], "ans": 0, "exp": "Tài khoản cá nhân chứa nhiều dữ liệu riêng tư, nếu bị lộ có thể gây hậu quả nghiêm trọng."}, {"n": 42, "lv": "TH", "q": "Vì sao không nên dùng tiếng lóng, từ ngữ thô tục khi giao tiếp qua mạng?", "opts": ["Vì nó thể hiện sự thiếu văn hóa, không tôn trọng người khác và làm xấu đi hình ảnh của chính mình.", "Bởi vì việc sử dụng từ ngữ thô tục sẽ làm cho máy tính của bạn bị nhiễm virus từ các hệ thống kiểm duyệt tự động trên toàn thế giới.", "Vì nhà mạng sẽ lập tức cắt kết nối Internet của gia đình bạn.", "Vì những từ ngữ đó không thể hiển thị trên màn hình máy tính."], "ans": 0, "exp": "Ngôn ngữ phản ánh văn hóa và đạo đức của người sử dụng."}, {"n": 43, "lv": "TH", "q": "Tại sao việc giấu bố mẹ, thầy cô khi bị bắt nạt trên mạng là sai lầm?", "opts": ["Vì sự việc có thể trở nên nghiêm trọng hơn và em không có đủ khả năng tự giải quyết.", "Bởi vì theo các chuyên gia, việc giấu giếm cảm xúc sẽ giúp bạn tự rèn luyện được tinh thần thép.", "Vì mạng xã hội sẽ tự động khóa tài khoản của kẻ bắt nạt.", "Vì bố mẹ sẽ luôn biết mọi thứ em làm thông qua hệ thống mạng."], "ans": 0, "exp": "Sự trợ giúp của người lớn là cần thiết để ngăn chặn kẻ xấu kịp thời."}, {"n": 44, "lv": "TH", "q": "Vì sao phần mềm chặn trang web xấu không phải là giải pháp bảo vệ tuyệt đối?", "opts": ["Vì mỗi ngày có hàng ngàn trang web mới xuất hiện, phần mềm không thể cập nhật và chặn hết được.", "Bởi vì các phần mềm chặn web hiện nay đều được lập trình để cố tình bỏ lọt những trang web có chứa nội dung quảng cáo.", "Vì phần mềm chặn web sẽ làm máy tính không thể truy cập Internet.", "Vì học sinh có thể dễ dàng xóa bỏ phần mềm này bằng một cú nhấp chuột."], "ans": 0, "exp": "Công nghệ luôn thay đổi, ý thức người dùng mới là lớp khiên bảo vệ tốt nhất."}, {"n": 45, "lv": "TH", "q": "Tại sao ý thức của người sử dụng lại là 'công cụ' bảo vệ tốt nhất trên mạng?", "opts": ["Vì ý thức giúp ta chủ động nhận diện rủi ro và quyết định dừng lại trước những thông tin độc hại.", "Bởi vì ý thức con người có khả năng tự động mã hóa mọi dữ liệu tải về máy tính thành những thông tin an toàn tuyệt đối.", "Vì ý thức giúp tăng cường sóng wifi cho các thiết bị điện tử.", "Vì ý thức làm cho các trang web xấu tự động biến mất."], "ans": 0, "exp": "Chỉ có ý thức chủ động mới linh hoạt đối phó được với mọi tình huống bất ngờ trên mạng."}, {"n": 46, "lv": "TH", "q": "Vì sao việc để máy tính ở không gian sinh hoạt chung giúp phòng ngừa nghiện Internet?", "opts": ["Vì nó giúp bố mẹ dễ dàng quan sát, nhắc nhở và quản lý thời gian sử dụng máy tính của con.", "Bởi vì sóng wifi ở không gian chung luôn mạnh hơn trong phòng ngủ rất nhiều.", "Vì không gian chung có nhiệt độ mát mẻ hơn, giúp máy tính hoạt động bền bỉ hơn.", "Vì trong phòng riêng không thể kết nối được Internet."], "ans": 0, "exp": "Sự giám sát tự nhiên từ gia đình là cách hiệu quả để kiểm soát hành vi."}, {"n": 47, "lv": "TH", "q": "Tại sao người nghiện mạng xã hội thường bị thu hẹp các mối quan hệ đời thực?", "opts": ["Vì họ dành quá nhiều thời gian cho thế giới ảo nên không còn thời gian giao tiếp, quan tâm đến những người xung quanh.", "Bởi vì các nhà phát hành mạng xã hội luôn cài đặt một thuật toán đặc biệt nhằm mục đích xóa bỏ toàn bộ danh bạ điện thoại và thông tin liên lạc của người dùng.", "Vì những người xung quanh không thích sử dụng mạng xã hội.", "Vì người nghiện mạng luôn luôn bị mọi người ngoài đời xa lánh một cách vô cớ."], "ans": 0, "exp": "Quỹ thời gian là có hạn, dành hết cho thế giới ảo sẽ làm mất đi kết nối thực."}, {"n": 48, "lv": "TH", "q": "Mục đích của việc thiết lập giới hạn thời gian sử dụng Internet là gì?", "opts": ["Giúp cân bằng giữa việc sử dụng mạng với các hoạt động học tập, thể thao và nghỉ ngơi.", "Bởi vì việc thiết lập thời gian sẽ khiến cho các máy chủ trên toàn cầu nhận diện được.", "Để tiết kiệm tối đa tiền điện cho gia đình hàng tháng.", "Để nhà mạng không cắt kết nối Internet một cách đột ngột."], "ans": 0, "exp": "Giới hạn thời gian là cách thiết lập kỷ luật bản thân hiệu quả."}, {"n": 49, "lv": "TH", "q": "Tại sao việc chia sẻ hình ảnh cá nhân của người khác mà không xin phép lại là hành vi thiếu văn hóa?", "opts": ["Vì điều đó xâm phạm quyền riêng tư và có thể gây ảnh hưởng xấu đến cuộc sống của họ.", "Bởi vì khi bạn chia sẻ hình ảnh của người khác, mạng xã hội sẽ đánh thuế bản quyền rất nặng lên tài khoản của bạn, khiến bạn bị trừ sạch tiền trong tài khoản.", "Vì hình ảnh của người khác thường không đẹp bằng hình ảnh của mình.", "Vì việc này làm tốn dung lượng bộ nhớ của máy tính người chia sẻ."], "ans": 0, "exp": "Tôn trọng quyền riêng tư là nguyên tắc cơ bản trong ứng xử xã hội."}, {"n": 50, "lv": "TH", "q": "Sự khác biệt lớn nhất giữa giao tiếp gặp mặt và giao tiếp qua mạng về mặt kiểm soát là gì?", "opts": ["Giao tiếp qua mạng khó kiểm soát hơn vì người tham gia có thể ẩn danh và ở bất cứ đâu.", "Bởi vì giao tiếp gặp mặt đòi hỏi người ta phải sử dụng nhiều thiết bị điện tử phức tạp và đắt tiền hơn để có thể chuyển đổi ngôn ngữ thành các tín hiệu số hóa.", "Giao tiếp gặp mặt khó kiểm soát hơn vì có quá nhiều người cùng nói một lúc.", "Giao tiếp qua mạng dễ kiểm soát hơn vì mọi thứ đều được nhà nước lưu lại bằng văn bản."], "ans": 0, "exp": "Tính ẩn danh và không biên giới của Internet tạo ra sự khó kiểm soát này."}, {"n": 51, "lv": "TH", "q": "Vì sao trò chơi trực tuyến dễ gây nghiện hơn việc đọc tin tức trên mạng?", "opts": ["Vì trò chơi được thiết kế với các phần thưởng, mục tiêu liên tục kích thích não bộ người chơi.", "Bởi vì các trang web tin tức luôn tự động phát ra những tần số âm thanh gây buồn ngủ cực mạnh thông qua loa máy tính.", "Vì đọc tin tức mất tiền còn trò chơi luôn luôn miễn phí hoàn toàn.", "Vì trò chơi trực tuyến không cần kết nối Internet vẫn có thể chơi được với người khác."], "ans": 0, "exp": "Sự tương tác và cơ chế phần thưởng trong game tạo ra dopamine gây nghiện."}, {"n": 52, "lv": "TH", "q": "Vì sao người có dấu hiệu nghiện Internet lại thường cáu gắt khi không được dùng máy?", "opts": ["Vì họ bị phụ thuộc tâm lý vào Internet, khi bị ngắt kết nối họ sẽ cảm thấy bồn chồn, thiếu thốn.", "Bởi vì khi không được sử dụng máy tính, cơ thể họ sẽ phản ứng lại bằng cách tự động sản sinh ra một lượng nhiệt cực lớn làm tăng nhiệt độ phòng.", "Vì họ sợ máy tính sẽ bị người khác lấy trộm mất.", "Vì họ không có việc gì khác để làm ngoài việc đi ngủ."], "ans": 0, "exp": "Đó là hội chứng cai (withdrawal symptoms) thường thấy ở người mang bệnh nghiện."}, {"n": 54, "lv": "TH", "q": "Vì sao em nên theo đuổi sở thích như chơi thể thao để tránh nghiện mạng?", "opts": ["Thể thao giúp cải thiện sức khỏe, tạo niềm vui ngoài đời thực và lấp đầy thời gian rảnh rỗi.", "Bởi vì tham gia các môn thể thao mạnh bạo sẽ giúp cơ thể phát ra một loại từ trường đặc biệt có khả năng làm nhiễu sóng mọi thiết bị phát wifi trong bán kính 100 mét.", "Vì chơi thể thao sẽ được phát miễn phí điện thoại di động xịn hơn.", "Vì các trung tâm thể thao luôn có mạng wifi tốc độ cao hơn ở nhà."], "ans": 0, "exp": "Thay thế thói quen xấu bằng thói quen tốt là cách cai nghiện bền vững."}, {"n": 55, "lv": "TH", "q": "Tại sao việc đọc thông tin trong hộp thư điện tử của người khác là hành vi sai trái?", "opts": ["Vì đó là hành vi vi phạm pháp luật về quyền bí mật thư tín và xâm phạm đời tư.", "Bởi vì khi bạn đọc thư của người khác, toàn bộ dữ liệu trong máy tính của bạn sẽ ngay lập tức bị truyền ngược lại vào hộp thư của họ.", "Vì thư của người khác thường chứa nhiều virus làm hỏng mắt người đọc.", "Vì việc này làm dung lượng hộp thư của họ bị đầy nhanh hơn."], "ans": 0, "exp": "Thư tín, dù là điện tử hay thư giấy, đều được pháp luật bảo vệ quyền bí mật."}, {"n": 56, "lv": "TH", "q": "Vì sao lan truyền thông tin sai sự thật trên mạng lại vô cùng nguy hiểm?", "opts": ["Vì nó có thể gây hoang mang dư luận, làm tổn hại danh dự người khác và rất khó thu hồi.", "Bởi vì việc lan truyền thông tin sai sự thật sẽ khiến cho mạng lưới Internet toàn cầu bị quá tải do phải chứa quá nhiều chữ cái sai chính tả.", "Vì người đăng tin sẽ lập tức bị máy tính phát nổ vào mặt.", "Vì thông tin sai sự thật thường tốn nhiều tiền cước mạng để tải hơn thông tin thật."], "ans": 0, "exp": "Tốc độ lan truyền của Internet khiến hậu quả của tin giả trở nên khó lường."}, {"n": 57, "lv": "TH", "q": "Tại sao cần phải kiểm chứng thông tin trước khi chia sẻ một bài viết trên mạng xã hội?", "opts": ["Để đảm bảo em không vô tình trở thành người tiếp tay phát tán tin giả hoặc thông tin xấu.", "Bởi vì các nhà mạng luôn yêu cầu người dùng phải nộp một khoản phí xác minh thông tin bằng tiền mặt tại trụ sở chính.", "Để bài viết của em nhận được nhiều lượt thích (like) hơn từ bạn bè.", "Để không bị trừ dung lượng mạng 4G hàng tháng."], "ans": 0, "exp": "Mỗi người dùng mạng đều phải có trách nhiệm với những gì mình chia sẻ."}, {"n": 58, "lv": "TH", "q": "Tại sao việc nhấp vào đường link 'Trúng thưởng iPhone' từ người lạ thường là sai lầm?", "opts": ["Vì đó thường là thủ đoạn lừa đảo để đánh cắp tài khoản hoặc lừa lấy tiền của người dùng.", "Bởi vì những đường link này thực chất là một cổng dịch chuyển không gian siêu việt.", "Vì công ty Apple không bao giờ cho phép người lạ gửi link trúng thưởng.", "Vì iPhone trúng thưởng thường là hàng giả không sử dụng được."], "ans": 0, "exp": "Tội phạm mạng thường dùng chiêu trò lòng tham để lừa đảo."}, {"n": 59, "lv": "TH", "q": "Mục đích của việc tạo ra các quy tắc ứng xử trên mạng là gì?", "opts": ["Để xây dựng một môi trường mạng an toàn, văn minh và tôn trọng lẫn nhau cho mọi người.", "Bởi vì các nhà lập trình mạng muốn ép buộc người dùng phải đóng thêm các khoản thuế phí không rõ ràng mỗi khi họ lỡ tay gõ sai.", "Để ngăn chặn học sinh truy cập vào mạng Internet.", "Để bắt buộc mọi người phải dùng chung một loại ngôn ngữ duy nhất."], "ans": 0, "exp": "Giống như luật lệ ngoài đời, quy tắc mạng giúp duy trì trật tự xã hội số."}, {"n": 60, "lv": "TH", "q": "Tại sao việc đe dọa lại người bắt nạt mình trên mạng KHÔNG phải là cách tốt?", "opts": ["Vì nó biến em từ nạn nhân trở thành người có hành vi vi phạm và làm sự việc thêm căng thẳng.", "Bởi vì kẻ bắt nạt thường được trang bị những hệ thống phòng thủ không gian mạng bằng trí tuệ nhân tạo.", "Vì những lời đe dọa qua mạng không bao giờ được gửi đến đích.", "Vì làm như vậy kẻ bắt nạt sẽ cười nhạo em vì em đánh máy chậm."], "ans": 0, "exp": "Lấy oán báo oán chỉ làm vòng xoáy bạo lực leo thang."}, {"n": 61, "lv": "TH", "q": "Tại sao người nghiện mạng thường gặp tình trạng suy giảm kết quả học tập?", "opts": ["Vì thời gian, tâm trí và sự tập trung của họ đã bị cuốn hết vào thế giới ảo, không còn hứng thú học.", "Bởi vì ánh sáng xanh từ màn hình máy tính có chức năng đặc biệt là tự động xóa bỏ hoàn toàn mọi ký ức về các môn tự nhiên trong não bộ con người.", "Vì thầy cô giáo thường ghét những học sinh hay sử dụng máy tính.", "Vì sách vở bị cũ đi nhanh hơn khi để gần các thiết bị phát wifi."], "ans": 0, "exp": "Nghiện mạng làm mất đi động lực và sự tập trung cho đời thực."}, {"n": 62, "lv": "TH", "q": "Vì sao không nên tùy tiện kết bạn với người không quen biết trên mạng xã hội?", "opts": ["Vì không thể kiểm chứng được nhân thân thật của họ, họ có thể là kẻ lừa đảo hoặc bắt nạt.", "Bởi vì nếu bạn kết bạn với quá nhiều người lạ, tài khoản của bạn sẽ tự động được hệ thống thăng cấp lên thành tài khoản doanh nghiệp.", "Vì điều đó làm danh sách bạn bè quá dài, kéo mỏi tay mới hết.", "Vì người lạ thường hay xin tiền nạp thẻ điện thoại."], "ans": 0, "exp": "Ẩn danh trên mạng là cơ hội để kẻ xấu che giấu thân phận thực."}, {"n": 65, "lv": "VD", "q": "Em nhận được tin nhắn từ một bạn cùng lớp với lời lẽ chửi bới, xúc phạm. Em sẽ làm gì?", "opts": ["Chụp màn hình tin nhắn đó lại làm bằng chứng và nhờ thầy cô, bố mẹ can thiệp giải quyết.", "Lập tức tìm kiếm địa chỉ IP của bạn đó thông qua các phần mềm hacker chuyên nghiệp, sau đó công khai toàn bộ thông tin cá nhân.", "Nhắn tin chửi lại với lời lẽ nặng nề hơn để bạn đó sợ và không dám bắt nạt nữa.", "Giữ im lặng, xóa tin nhắn và âm thầm chịu đựng vì sợ bạn đó sẽ đánh mình."], "ans": 0, "exp": "Lưu bằng chứng và báo cáo người lớn là cách xử lý thông minh và an toàn nhất."}, {"n": 66, "lv": "VD", "q": "Đang tra cứu tài liệu học tập, máy tính của em hiện lên trang web có hình ảnh hở hang, phản cảm. Em sẽ làm gì?", "opts": ["Đóng ngay trang web đó lại và tiếp tục tìm kiếm tài liệu ở những trang uy tín khác.", "Bởi vì tò mò, em sẽ tiếp tục nhấp chuột vào các đường dẫn bên trong trang web đó để khám phá xem các tổ chức tội phạm mạng.", "Lưu trang web lại để gửi cho nhóm bạn thân cùng xem và bàn luận.", "Bình luận trực tiếp vào trang web đó để mắng những người đã tạo ra nó."], "ans": 0, "exp": "Thoát ngay lập tức là cách để tự bảo vệ bản thân trước nội dung xấu."}, {"n": 67, "lv": "VD", "q": "Bạn thân của em dạo này thường xuyên thức đến 2 giờ sáng để chơi game, kết quả học tập sa sút và hay cáu gắt. Em sẽ khuyên bạn thế nào?", "opts": ["Khuyên bạn giảm dần thời gian chơi, rủ bạn tham gia đá bóng, đọc sách và báo cho bố mẹ bạn biết để hỗ trợ.", "Khuyên bạn nên mua một dàn máy tính có cấu hình mạnh mẽ hơn và đăng ký gói mạng cáp quang tốc độ cao nhất hiện nay để chơi game không bị giật lag.", "Khuyên bạn nên bỏ hẳn việc học để tập trung luyện tập trở thành game thủ chuyên nghiệp.", "Mặc kệ bạn vì đó là quyền tự do cá nhân, không nên can thiệp vào đời tư của người khác."], "ans": 0, "exp": "Khuyên nhủ bằng giải pháp thay thế (thể thao) và nhờ sự trợ giúp của gia đình là cách đúng đắn."}, {"n": 68, "lv": "VD", "q": "Một người lạ tự xưng là công an nhắn tin yêu cầu em cung cấp mật khẩu email cá nhân để phục vụ điều tra. Em sẽ xử lý ra sao?", "opts": ["Tuyệt đối không cung cấp, chặn liên lạc và báo ngay cho bố mẹ biết sự việc.", "Lập tức cung cấp ngay toàn bộ tên đăng nhập, mật khẩu, và thậm chí cả số chứng minh nhân dân của bố mẹ.", "Hỏi lại xem họ là công an ở đồn nào rồi mới cung cấp mật khẩu.", "Thử cung cấp mật khẩu sai xem họ có biết không."], "ans": 0, "exp": "Cơ quan chức năng không bao giờ yêu cầu cung cấp mật khẩu cá nhân qua tin nhắn mạng."}, {"n": 70, "lv": "VD", "q": "Thấy một nhóm bạn đang lập nhóm chat để tẩy chay và nói xấu một bạn nữ trong lớp, các bạn có mời em tham gia. Em sẽ phản ứng thế nào?", "opts": ["Từ chối tham gia, khuyên các bạn dừng lại và nếu tình hình nghiêm trọng sẽ báo cáo giáo viên chủ nhiệm.", "Vui vẻ chấp nhận lời mời và lập tức đóng vai trò là một nhà phân tích tâm lý học nghiệp dư, tích cực thu thập mọi thông tin tiêu cực.", "Tham gia vào nhóm nhưng chỉ đọc chứ không nói gì để thỏa mãn sự tò mò.", "Đi kể lại toàn bộ câu chuyện với bạn nữ kia để bạn ấy tức giận lên."], "ans": 0, "exp": "Không hùa theo và can ngăn là hành động dũng cảm bảo vệ người yếu thế."}, {"n": 71, "lv": "VD", "q": "Lính cứu hỏa đang ngủ thì nghe thấy tiếng còi báo động hỏa hoạn vang lên chói tai, lập tức bật dậy mặc đồ bảo hộ và xuất phát. Yếu tố 'tiếng còi' trong tình huống này là gì?", "opts": ["Là dữ liệu âm thanh được tai tiếp nhận để não bộ xử lý thành thông tin có cháy.", "Là dạng dữ liệu cơ học được thiết kế để thay thế thông tin nhận thức của con người nhằm mục đích tạo ra các phản xạ tự động hóa.", "Là thông tin khẩn cấp được hệ thống chuyển hóa trực tiếp từ dữ liệu cháy nổ.", "Là vật mang tin truyền tải thông tin báo động nguy cấp vào hệ thần kinh vận động."], "ans": 0, "exp": "Theo khái niệm, tiếng còi là dữ liệu, não bộ tiếp nhận và xử lý nó thành thông tin có hỏa hoạn."}, {"n": 73, "lv": "VD", "q": "Máy tính em bỗng hiện bảng thông báo 'Bạn là người may mắn thứ 1 trăm! Nhấn vào đây để nhận ngay iPhone 15'. Em nên làm gì?", "opts": ["Tắt ngay bảng thông báo đó đi và dùng phần mềm diệt virus kiểm tra máy tính.", "Bởi vì đây là cơ hội ngàn năm có một, em sẽ nhanh chóng nhấn vào nút đăng ký.", "Chụp ảnh màn hình khoe lên Facebook cho mọi người cùng ghen tị.", "Nhấn vào xem nếu bắt đóng tiền thì mới thoát ra."], "ans": 0, "exp": "Những thông báo trúng thưởng kiểu này 100% là chiêu trò lừa đảo và chứa mã độc."}, {"n": 74, "lv": "VD", "q": "Muốn có một bức ảnh vui nhộn để đăng Facebook, em định lấy bức ảnh lúc bạn thân đang ngủ gật trong lớp há hốc miệng để đăng lên. Quyết định đúng đắn của em là gì?", "opts": ["Phải hỏi xin phép bạn thân trước, nếu bạn đồng ý mới được đăng.", "Tuyệt đối không cần phải xin phép vì với tư cách là bạn thân từ thuở nhỏ.", "Cứ đăng lên đi, nếu bạn ấy giận thì mình gỡ xuống sau cũng được.", "Dùng phần mềm chỉnh sửa cho mặt bạn ấy méo mó đi rồi mới đăng để không ai nhận ra."], "ans": 0, "exp": "Dù là bạn thân, đăng ảnh cá nhân của người khác vẫn phải có sự đồng ý của họ."}, {"n": 75, "lv": "VD", "q": "Em trai em có thói quen vừa ăn cơm vừa xem điện thoại liên tục. Là anh/chị, em sẽ xử lý thế nào?", "opts": ["Nhắc nhở em trai cất điện thoại khi ăn, quy định rõ thời gian được phép xem điện thoại trong ngày.", "Lập tức tịch thu điện thoại của em trai và đập vỡ nó ngay trước mặt mọi người trong gia đình.", "Mặc kệ em ấy vì có như vậy em ấy mới chịu ăn ngoan.", "Tranh thủ lúc em ấy không để ý, lấy điện thoại của em ấy để chơi game."], "ans": 0, "exp": "Thiết lập quy tắc và giới hạn sử dụng là cách tốt nhất để rèn thói quen cho trẻ."}, {"n": 76, "lv": "VD", "q": "Một bài đăng trên Facebook kêu gọi quyên góp tiền cho một trường hợp bị tai nạn rất thương tâm nhưng không có sự xác nhận của chính quyền hay báo chí. Em nên làm gì?", "opts": ["Không vội vàng quyên góp hay chia sẻ, tìm hiểu kỹ thông tin qua các kênh chính thống hoặc người lớn.", "Lập tức chuyển toàn bộ số tiền tiết kiệm cá nhân của mình cho số tài khoản được cung cấp trong bài đăng.", "Bấm chia sẻ ngay lập tức vì cứu người như cứu hỏa.", "Để lại bình luận chửi bới người đăng bài là đồ lừa đảo dù chưa có bằng chứng."], "ans": 0, "exp": "Lòng tốt cần được đặt đúng chỗ, tránh bị lợi dụng bởi những kẻ lừa đảo từ thiện trên mạng."}, {"n": 77, "lv": "VD", "q": "Khi nhận được một tệp đính kèm (file đính kèm) trong email từ một người em không quen biết, hành động đúng mực nhất là gì?", "opts": ["Tuyệt đối không tải xuống hay mở tệp đính kèm đó, xóa email ngay lập tức.", "Lập tức tải tệp tin đó xuống và mở nó ra bằng quyền quản trị viên cao nhất của hệ thống máy tính, bởi vì theo nguyên lý tò mò của con người.", "Chuyển tiếp email đó sang hộp thư của thầy giáo tin học để thầy mở thử.", "Lưu tệp đó vào ổ cứng USB và mang sang quán nét mở để nếu có virus thì chỉ hỏng máy quán nét."], "ans": 0, "exp": "Tệp tin từ người lạ là con đường ngắn nhất để lây nhiễm mã độc tống tiền (Ransomware)."}, {"n": 78, "lv": "VD", "q": "Bố mẹ yêu cầu em đặt máy tính bàn ở phòng khách thay vì phòng ngủ riêng. Phản ứng nào của em là đúng với tinh thần 'ứng xử trên mạng'?", "opts": ["Vui vẻ đồng ý vì hiểu rằng bố mẹ muốn giúp em kiểm soát thời gian sử dụng mạng và tránh bị nghiện.", "Phản đối kịch liệt và nhốt mình trong phòng ngủ tuyệt thực nhiều ngày liền, nhằm tạo ra một sức ép tâm lý đủ lớn buộc bố mẹ phải nhận ra sự sai lầm của họ.", "Lén lút mua một chiếc điện thoại khác giấu trong phòng để lên mạng ban đêm.", "Khóc lóc và cho rằng bố mẹ không tôn trọng quyền riêng tư của mình."], "ans": 0, "exp": "Đặt máy tính ở nơi sinh hoạt chung (Rời xa) là biện pháp khoa học để phòng tránh bệnh nghiện Internet."}, {"n": 79, "lv": "VD", "q": "Nếu em vô tình biết mật khẩu Facebook của một bạn trong lớp do bạn ấy đăng nhập vào máy tính nhà trường mà quên thoát. Em sẽ làm gì?", "opts": ["Bảo bạn ấy thoát tài khoản ngay, đồng thời khuyên bạn nên đổi mật khẩu để đảm bảo an toàn.", "Lập tức sử dụng tài khoản đó để đăng những dòng trạng thái bôi nhọ danh dự của chính bạn ấy lên các hội nhóm trường học..", "Ghi lại mật khẩu đó vào sổ tay để khi nào cần mượn tài khoản chơi game thì dùng.", "Tự ý vào phần tin nhắn của bạn ấy để đọc trộm xem bạn ấy có nói xấu mình không."], "ans": 0, "exp": "Hành động nhắc nhở và không xâm phạm tài khoản người khác thể hiện sự tử tế và tuân thủ đạo đức trên môi trường số."}, {"n": 80, "lv": "VD", "q": "Để giúp một bạn có dấu hiệu nghiện Internet, hành động nào sau đây của em là thiết thực nhất?", "opts": ["Rủ bạn cùng tham gia câu lạc bộ bơi lội vào mỗi buổi chiều sau giờ học.", "Lập tức hack vào hệ thống máy chủ của nhà cung cấp dịch vụ mạng quốc gia, sử dụng các mã lệnh phức tạp để chặn toàn bộ tín hiệu Internet truyền đến nhà của bạn đó vĩnh viễn.", "Mua tặng bạn thêm nhiều đĩa game offline để bạn chơi ở nhà thay vì ra quán nét.", "Xa lánh và không chơi với bạn nữa vì sợ bị lây bệnh nghiện."], "ans": 0, "exp": "Rủ bạn tham gia các hoạt động ngoại khóa (Theo đuổi sở thích) là cách kéo bạn ra khỏi thế giới ảo một cách hiệu quả và nhân văn nhất."}];
+
+/* ---------- Hình minh họa bảng tính cho các câu cần hình ---------- */
+const rng=(a,b)=>{const c1=a.charCodeAt(0),c2=b.charCodeAt(0),r1=+a.slice(1),r2=+b.slice(1),o=[];for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)o.push(String.fromCharCode(c)+r);return o};
+const CAP_COPY='🟦 Ô nguồn (có công thức) · 🟧 Ô đích cần xác định';
+const ILLUS={}; // bài này không có câu cần hình minh họa
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sheetHTML(cfg,q,revealed){
+  let h='<table class="sheet"><tr><th></th>'+cfg.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  cfg.rows.forEach(r=>{h+=`<tr><th>${r}</th>`;cfg.cols.forEach(c=>{
+    const a=c+r;let t=(cfg.cells&&cfg.cells[a])||'';const cl=[];
+    if(cfg.tbl&&cfg.tbl.includes(a))cl.push('tbl');
+    if(cfg.head&&cfg.head.includes(a))cl.push('hd');
+    if(a===cfg.src)cl.push('src');
+    if(a===cfg.tgt){cl.push(revealed?'tgtok':'tgt');t=revealed?(cfg.tgtReveal||q.opts[q.ans]):'?';}
+    h+=`<td class="${cl.join(' ')}">${esc(t)}</td>`;});h+='</tr>';});
+  return h+'</table>'+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:'');
+}
+
+/* ---------- Tiện ích ---------- */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={NB:{t:30,name:'Nhận biết'},TH:{t:45,name:'Thông hiểu'},VD:{t:60,name:'Vận dụng'}};
+const PTS=2, GIFT_V=.5;
+const GIFT_P=Math.min(1,Math.max(0,(parseFloat(new URLSearchParams(location.search).get('qua'))||20)/100)); // mặc định 20%; thử nhanh: thêm ?qua=100 sau tên file
+const fmt=n=>(Math.round(n*10)/10).toString().replace('.',',');
+
+/* ---------- Âm thanh (Web Audio, không cần file ngoài) ---------- */
+let AC=null,master,musicOn=true,musicTimer=null,step=0;
+function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);}catch(e){AC=null}if(AC&&AC.state==='suspended')AC.resume();}
+function tone(f,d=.15,type='sine',v=.2,t0=0,slide){if(!AC)return;const t=AC.currentTime+t0,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);}
+function noise(d,f0,f1,v){if(!AC)return;const n=AC.sampleRate*d|0,b=AC.createBuffer(1,n,AC.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=2;const t=AC.currentTime;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+const sfx={
+ click(){tone(660,.07,'triangle',.12)},
+ start(){[392,523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.2,i*.09))},
+ correct(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.22,i*.08))},
+ wrong(){tone(240,.4,'sawtooth',.16,0,100);tone(180,.45,'square',.09,.12,70)},
+ timeout(){[440,330,220].forEach((f,i)=>tone(f,.2,'square',.11,i*.2))},
+ tick(){tone(950,.05,'square',.06)},
+ launch(){noise(1.4,250,3000,.2);tone(90,1.4,'sawtooth',.07,0,500)},
+ boom(){noise(.35,2500,250,.07);tone(140,.3,'sine',.07,0,50)},
+ drop(){tone(1800,.7,'sine',.14,0,500);tone(900,.5,'triangle',.08,.1,300)},
+ gift(){[1200,1500,1800,2400,3000].forEach((f,i)=>tone(f,.16,'sine',.14,i*.05))},
+ arrive(){tone(300,.35,'sine',.2,0,1000);tone(600,.25,'triangle',.12,.1,1500)},
+ fanfare(){[523,659,784,659,784,1047,1319].forEach((f,i)=>tone(f,.28,'triangle',.22,i*.13))},
+ sad(){[392,370,349,330].forEach((f,i)=>tone(f,.35,'sine',.18,i*.25))}
+};
+const SCALE=[262,294,330,392,440,523,440,392,330,294];
+function musicTick(){if(!AC||!musicOn)return;const f=SCALE[step%SCALE.length];tone(f,.5,'triangle',.045);if(step%4===0)tone(f/2,.9,'sine',.06);if(step%8===4)tone(f*2,.3,'sine',.03,.12);step++;}
+function setMusic(on){musicOn=on;clearInterval(musicTimer);if(on&&AC)musicTimer=setInterval(musicTick,340);$('btnSnd').textContent=on?'🔊 Âm thanh':'🔇 Tắt tiếng';}
+
+/* ---------- Nền sao ---------- */
+const bg=$('bg'),bgc=bg.getContext('2d');let stars=[];
+function initStars(){bg.width=innerWidth;bg.height=innerHeight;stars=Array.from({length:140},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}))}
+addEventListener('resize',initStars);initStars();
+function drawStars(t){bgc.clearRect(0,0,bg.width,bg.height);stars.forEach(s=>{bgc.globalAlpha=.35+.65*Math.abs(Math.sin(t/1000*s.s+s.p));bgc.fillStyle='#fff';bgc.beginPath();bgc.arc(s.x,s.y,s.r,0,6.3);bgc.fill()});bgc.globalAlpha=1}
+
+/* ---------- Pháo hoa giấy ---------- */
+const fx=$('fx'),fxc=fx.getContext('2d');let conf=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight}addEventListener('resize',sizeFx);sizeFx();
+function confetti(n=90,ox=innerWidth/2,oy=innerHeight/3){const cols=['#ffb100','#ff4d79','#5b7cff','#12b774','#ff7a18','#a46bff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*9+3;conf.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-5,w:Math.random()*8+4,h:Math.random()*5+3,r:Math.random()*6,vr:Math.random()*.4-.2,c:cols[Math.random()*6|0],life:1})}}
+let confDirty=false;
+function drawConf(ds=1){if(!conf.length){if(confDirty){fxc.clearRect(0,0,fx.width,fx.height);confDirty=false}return}confDirty=true;fxc.clearRect(0,0,fx.width,fx.height);conf=conf.filter(p=>p.life>0);conf.forEach(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vy+=.28*ds;p.vx*=Math.pow(.99,ds);p.r+=p.vr*ds;p.life-=.008*ds;fxc.save();fxc.globalAlpha=Math.max(0,p.life);fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.w/2,-p.h/2,p.w,p.h);fxc.restore()})}
+
+/* ---------- Hệ Mặt Trời (canvas nhỏ + hoạt cảnh toàn màn hình, nền tối) ---------- */
+let sc=null,W=300,H=300,K=1;
+const CV={mini:{cv:$('sky'),W:300,H:300,kind:'mini'},big:{cv:$('bigsky'),W:800,H:600,kind:'big'},intro:{cv:$('introsky'),W:500,H:500,kind:'intro'}};
+let CUR=null;
+const STARS=(()=>{const a=Array.from({length:140},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}));return{all:a.slice(30),tw:a.slice(0,30)}})();
+CV.intro.ctx=CV.intro.cv.getContext('2d');CV.mini.ctx=CV.mini.cv.getContext('2d');CV.big.ctx=CV.big.cv.getContext('2d');
+function buildBg(o){ // vẽ sẵn nền sao + quỹ đạo một lần, mỗi khung hình chỉ cần drawImage
+ const c=o.bgCv||(o.bgCv=document.createElement('canvas'));c.width=Math.ceil(o.W*o.d);c.height=Math.ceil(o.H*o.d);
+ const x=c.getContext('2d');x.setTransform(o.d,0,0,o.d,0,0);
+ if(o.kind!=='mini'){x.fillStyle='#fff';STARS.all.forEach(s=>{x.globalAlpha=.3+.5*((s.p*7)%1);x.beginPath();x.arc(s.x*o.W,s.y*o.H,s.r*1.2,0,6.3);x.fill()});x.globalAlpha=1}
+ x.strokeStyle='rgba(150,170,255,.16)';x.lineWidth=1;const m=12*o.k;
+ PL.forEach(p=>{x.beginPath();x.ellipse(o.W/2,o.H/2,p.o*(o.W/2-m),p.o*(o.H/2-m),0,0,6.3);x.stroke()});
+}
+function sizeCv(o,w,h,dprMax){const d=Math.min(dprMax,devicePixelRatio||1);o.d=d;o.W=w;o.H=h;o.cv.width=Math.ceil(w*d);o.cv.height=Math.ceil(h*d);o.ctx.setTransform(d,0,0,d,0,0);
+ o.k=o.kind==='big'?Math.max(1.5,Math.min(w,h)/300):o.kind==='intro'?Math.max(1.2,Math.min(w,h)/300):1;buildBg(o)}
+function sizeSky(){const r=CV.mini.cv.getBoundingClientRect(),r2=CV.intro.cv.getBoundingClientRect();
+ sizeCv(CV.mini,Math.max(120,r.width),Math.max(120,r.height),1.5);sizeCv(CV.big,innerWidth,innerHeight,1);sizeCv(CV.intro,Math.max(160,r2.width),Math.max(160,r2.height),1.5)}
+function useCv(o){CUR=o;sc=o.ctx;W=o.W;H=o.H;K=o.k}
+new ResizeObserver(sizeSky).observe(CV.mini.cv.parentElement);new ResizeObserver(sizeSky).observe(CV.intro.cv.parentElement);addEventListener('resize',sizeSky);
+const PL=[
+ {n:'Thủy tinh',c1:'#d9d9d9',c2:'#6f6f6f',r:3.6,o:.17,sp:1.6,ph:.5},
+ {n:'Kim tinh',c1:'#ffe3a8',c2:'#c98b2e',r:5,o:.27,sp:1.2,ph:2.2},
+ {n:'Trái Đất',c1:'#7fd0ff',c2:'#1b5fb5',r:5.4,o:.38,sp:1.0,ph:4},
+ {n:'Hỏa tinh',c1:'#ff9f7a',c2:'#a8321a',r:4.4,o:.48,sp:.8,ph:1},
+ {n:'Mộc tinh',c1:'#f3d6a8',c2:'#a8744a',r:9,o:.62,sp:.5,ph:3.3},
+ {n:'Thổ tinh',c1:'#f1e0a6',c2:'#b79545',r:7.8,o:.75,sp:.38,ph:5.2,ring:1},
+ {n:'Thiên Vương',c1:'#bff3f0',c2:'#4ab5b5',r:6,o:.86,sp:.28,ph:.2},
+ {n:'Hải Vương',c1:'#8aa9ff',c2:'#2b3fb5',r:6,o:.96,sp:.22,ph:2.8}
+];
+const ROUTE=[0,1,3,4,2]; // câu 1..5 -> Thủy, Kim, Hỏa, Mộc, rồi về Trái Đất
+let SK={shipAt:null,visited:[],flight:null,parts:[],warp:0,asteroid:null,rings:[],floaters:[],onEnd:null};
+const sunPos=()=>({x:W/2,y:H/2});
+function plPos(i,t){const p=PL[i],a=p.ph+t/1000*(K>1?.1:.4)*p.sp,m=12*K;return{x:W/2+Math.cos(a)*p.o*(W/2-m),y:H/2+Math.sin(a)*p.o*(H/2-m),a}}
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function originPos(f,t){return f.from==null?sunPos():plPos(f.from,t)}
+function flightPos(f,p,t){const s=originPos(f,t),e=plPos(f.idx,t),k=ease(p),dx=e.x-s.x,dy=e.y-s.y,L=Math.hypot(dx,dy)||1,arc=Math.sin(Math.PI*p)*L*.14;return{x:s.x+dx*k-dy/L*arc,y:s.y+dy*k+dx/L*arc}}
+function spark(x,y,n,c,sp=2){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*sp*K;SK.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.02+Math.random()*.03,c,r:(Math.random()*2+1)*K*.8})}}
+function drawShip(x,y,ang,sz){sc.save();sc.translate(x,y);sc.rotate(ang);sc.scale(sz,sz);
+ const fl=10+Math.random()*7;sc.fillStyle='#ffb23c';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-6-fl,0);sc.lineTo(-6,3);sc.fill();sc.fillStyle='#fff3a0';sc.beginPath();sc.moveTo(-6,-1.6);sc.lineTo(-6-fl*.55,0);sc.lineTo(-6,1.6);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(-5,-4);sc.lineTo(-10,-8);sc.lineTo(-9,-1);sc.fill();sc.beginPath();sc.moveTo(-5,4);sc.lineTo(-10,8);sc.lineTo(-9,1);sc.fill();
+ sc.fillStyle='#eef3ff';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(5,-5,-6,-4);sc.lineTo(-6,4);sc.quadraticCurveTo(5,5,11,0);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(8,-3,5,-4);sc.lineTo(5,4);sc.quadraticCurveTo(8,3,11,0);sc.fill();
+ sc.fillStyle='#4fc3f7';sc.beginPath();sc.arc(0,0,2.2,0,6.3);sc.fill();sc.restore()}
+const SPR={};
+function planetSprite(i,k,d){const key=i+'|'+k.toFixed(2)+'|'+d;if(SPR[key])return SPR[key];
+ const p=PL[i],r=p.r*k,half=Math.ceil(r*(p.ring?2.1:1.1))+2,c=document.createElement('canvas');c.width=c.height=Math.ceil(half*2*d);
+ const x=c.getContext('2d');x.scale(d,d);x.translate(half,half);
+ if(p.ring){x.save();x.rotate(-.4);x.strokeStyle='rgba(240,220,160,.8)';x.lineWidth=2*k*.7;x.beginPath();x.ellipse(0,0,r*1.9,r*.6,0,0,6.3);x.stroke();x.restore()}
+ const g=x.createRadialGradient(-r*.35,-r*.35,r*.1,0,0,r);g.addColorStop(0,p.c1);g.addColorStop(1,p.c2);x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,6.3);x.fill();
+ if(p.n==='Trái Đất'){x.fillStyle='rgba(60,200,100,.75)';x.beginPath();x.arc(-r*.28,-r*.2,r*.4,0,6.3);x.fill()}
+ return SPR[key]={c,half}}
+function drawPlanet(i,x,y){const s=planetSprite(i,K,CUR.d);sc.drawImage(s.c,x-s.half,y-s.half,s.half*2,s.half*2)}
+let GIFTSPR=null;
+function giftSprite(){if(GIFTSPR)return GIFTSPR;const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.font='64px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('🎁',48,52);return GIFTSPR=c}
+let SUNSPR=null;
+function sunSprite(){if(SUNSPR)return SUNSPR;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+ const gl=x.createRadialGradient(128,128,6,128,128,128);gl.addColorStop(0,'rgba(255,220,100,.9)');gl.addColorStop(.35,'rgba(255,150,40,.35)');gl.addColorStop(1,'rgba(255,100,0,0)');x.fillStyle=gl;x.beginPath();x.arc(128,128,128,0,6.3);x.fill();
+ const sg=x.createRadialGradient(119,119,5,128,128,40);sg.addColorStop(0,'#fff6b0');sg.addColorStop(1,'#ff9f1c');x.fillStyle=sg;x.beginPath();x.arc(128,128,40,0,6.3);x.fill();return SUNSPR=c}
+function frameSky(t,big,intro){
+ sc.clearRect(0,0,W,H);
+ sc.drawImage(CUR.bgCv,0,0,W,H);
+ if(big||intro){STARS.tw.forEach(s=>{sc.globalAlpha=.25+.75*Math.abs(Math.sin(t/1000*s.s+s.p));sc.fillStyle='#fff';sc.beginPath();sc.arc(s.x*W,s.y*H,s.r*1.2,0,6.3);sc.fill()});sc.globalAlpha=1}
+ const sr=(11+Math.sin(t/400)*1.2+SK.warp*3)*K,gs=sr*3.2*2;sc.drawImage(sunSprite(),W/2-gs/2,H/2-gs/2,gs,gs);
+ const cur=S&&S.i!=null?ROUTE[S.i]:-1;
+ PL.forEach((p,i)=>{const q=plPos(i,t),r=p.r*K;
+  if(i===cur&&!SK.visited[i]&&S.active){sc.strokeStyle='rgba(255,216,107,'+(.4+.4*Math.sin(t/200))+')';sc.lineWidth=K*.8;sc.setLineDash([3*K,3*K]);sc.beginPath();sc.arc(q.x,q.y,r+(6+Math.sin(t/200)*1.5)*K,0,6.3);sc.stroke();sc.setLineDash([])}
+  drawPlanet(i,q.x,q.y);
+  if(SK.visited[i]){sc.strokeStyle='#2ee59d';sc.lineWidth=2*K*.7;sc.beginPath();sc.arc(q.x,q.y,r+4*K,0,6.3);sc.stroke();sc.fillStyle='#2ee59d';sc.font=`bold ${11*K}px sans-serif`;sc.textAlign='center';sc.fillText('✓',q.x,q.y-r-7*K)}
+  if(i<5||big||intro){sc.fillStyle='rgba(220,230,255,.8)';sc.font=`${9.5*K}px sans-serif`;sc.textAlign='center';sc.fillText(p.n,q.x,q.y+r+11*K)}
+ });
+ if(!(big&&SK.flight)){ // tàu đang đậu tại Mặt Trời hoặc hành tinh đã tới
+  const at=SK.shipAt,base=at==null?{x:W/2,y:H/2}:plPos(at,t),R=at==null?sr:PL[at].r*K,ang=-.7,d=R+(at==null?12:9)*K;
+  drawShip(base.x+Math.cos(ang)*d,base.y+Math.sin(ang)*d,ang,(big?1.1:.85)*K);
+ }
+ if(!big)return;
+ SK.rings=SK.rings.filter(r=>r.l>0);SK.rings.forEach(r=>{r.l-=.022;r.r+=1.3*K;const q=plPos(r.i,t);sc.strokeStyle=`rgba(46,229,157,${r.l})`;sc.lineWidth=3;sc.beginPath();sc.arc(q.x,q.y,r.r,0,6.3);sc.stroke()});
+ if(SK.asteroid){const a=SK.asteroid;a.x+=a.vx;a.y+=a.vy;a.l-=.008;sc.save();sc.translate(a.x,a.y);sc.rotate(t/150);sc.scale(K*1.4,K*1.4);sc.fillStyle='#8a6a55';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-2,-7);sc.lineTo(5,-4);sc.lineTo(7,2);sc.lineTo(1,7);sc.lineTo(-6,4);sc.fill();sc.restore();
+  spark(a.x,a.y,2,'#ff9f43',1);if(a.l<=0)SK.asteroid=null}
+ const f=SK.flight;
+ if(f){const p=Math.min(1,(t-f.t0)/f.dur),pos=flightPos(f,p,t),pp=flightPos(f,Math.max(0,p-.02),t),ang=Math.atan2(pos.y-pp.y,pos.x-pp.x);
+  if(f.gift&&!f.taken){
+   if(!f.ann&&p>=.04){f.ann=true;sfx.drop();$('cineTitle').textContent='🎁 Có quà bất ngờ rơi xuống! Tàu hãy nhặt nhé!'}
+   const gp=flightPos(f,.5,t),gk=Math.min(1,Math.max(0,(p-.04)/.3)),fall=(1-(1-Math.pow(1-gk,3)))*(gp.y+60*K),bob=gk>=1?Math.sin(t/160)*4*K:0,gy=gp.y-fall+bob;
+   if(gk>0){const pulse=1+.12*Math.sin(t/120);
+    const rg=sc.createRadialGradient(gp.x,gy,4,gp.x,gy,46*K*pulse);rg.addColorStop(0,'rgba(255,230,120,.75)');rg.addColorStop(1,'rgba(255,200,60,0)');sc.fillStyle=rg;sc.beginPath();sc.arc(gp.x,gy,46*K*pulse,0,6.3);sc.fill();
+    const gz=56*K*pulse;sc.save();sc.translate(gp.x,gy);sc.rotate(gk<1?Math.sin(t/90)*.3:0);sc.drawImage(giftSprite(),-gz/2,-gz/2,gz,gz);sc.restore();
+    spark(gp.x,gy,2,'#ffd86b',1.2)}
+  }
+  if(f.gift&&!f.taken&&p>=.5){f.taken=true;S.bonus+=GIFT_V;S.bonusCount++;sfx.gift();spark(pos.x,pos.y,90,'#ffd86b',5);SK.floaters.push({x:pos.x,y:pos.y,l:2,txt:'🎁 +0,5 điểm!'});$('cineTitle').textContent='🎉 Nhận quà! +0,5 điểm';updHud();$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10  🎁 +0,5';confetti(50,innerWidth/2,innerHeight/2)}
+  spark(pos.x-Math.cos(ang)*8*K,pos.y-Math.sin(ang)*8*K,2,'#ffb23c',1.2);
+  drawShip(pos.x,pos.y,ang,1.35*K);
+  if(p>=1){SK.flight=null;SK.shipAt=f.idx;SK.visited[f.idx]=true;SK.rings.push({i:f.idx,r:PL[f.idx].r*K+3,l:1});const q=plPos(f.idx,t);spark(q.x,q.y,50,'#2ee59d',3);sfx.arrive();if(SK.onEnd){const fn=SK.onEnd;SK.onEnd=null;fn()}}}
+ SK.parts=SK.parts.filter(p=>p.l>0);SK.parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l-=p.d;sc.globalAlpha=Math.max(0,p.l);sc.fillStyle=p.c;sc.beginPath();sc.arc(p.x,p.y,p.r,0,6.3);sc.fill()});sc.globalAlpha=1;
+ SK.floaters=SK.floaters.filter(f=>f.l>0);SK.floaters.forEach(f=>{f.y-=.7;f.l-=.012;sc.globalAlpha=Math.min(1,Math.max(0,f.l));sc.fillStyle='#ffe58a';sc.font=`bold ${26*K}px sans-serif`;sc.textAlign='center';sc.fillText(f.txt,f.x,f.y-14*K);sc.globalAlpha=1});
+}
+
+/* ---------- Logic trò chơi ---------- */
+let S={i:0,active:false};
+const player={name:'',cls:''};
+function pickPositions(n){ // vị trí đáp án đúng: rải đều A–D, không chữ nào quá 2 lần, ít nhất 3 chữ khác nhau
+ let p,g=0;do{p=Array.from({length:n},()=>Math.random()*4|0);g++}while(g<500&&([0,1,2,3].some(k=>p.filter(x=>x===k).length>2)||new Set(p).size<3));return p}
+function pickQuestions(){
+ const by=lv=>shuffle(QS.filter(q=>q.lv===lv));
+ const pos=pickPositions(5);
+ return [...by('NB').slice(0,3),...by('TH').slice(0,1),...by('VD').slice(0,1)].map((q,i)=>{
+  const wrong=shuffle([0,1,2,3].filter(k=>k!==q.ans)),opts=[];let w=0;
+  for(let k=0;k<4;k++)opts[k]=k===pos[i]?q.opts[q.ans]:q.opts[wrong[w++]];
+  return{...q,key:q.lv+q.n,opts,ans:pos[i]};});
+}
+function newGame(){
+ S={qs:pickQuestions(),i:0,base:0,bonus:0,bonusCount:0,res:[],active:true,answered:false,deadline:0,dur:30,lastTick:-1};
+ SK.visited=[];SK.flight=null;SK.parts=[];SK.rings=[];SK.floaters=[];SK.asteroid=null;SK.onEnd=null;SK.shipAt=null;S.busy=false;
+ $('start').classList.add('hide');$('end').classList.add('hide');$('game').classList.remove('hide');
+ $('hName').textContent=player.name;$('hClass').textContent=player.cls;
+ sizeSky();updHud();loadQ();
+}
+const total=()=>Math.min(10,S.base+S.bonus);
+function updHud(){$('hScore').textContent=fmt(total());$('hQ').textContent=(Math.min(S.i+1,5))+'/5'}
+function renderPips(){
+ $('pips').innerHTML=S.qs.map((q,i)=>{const r=S.res[i];return`<span class="pip ${i===S.i?'cur':''} ${r?(r.ok?'ok':'no'):''}">${i+1}. ${q.lv}${r?(r.ok?' ✓':' ✗'):''}</span>`}).join('');
+}
+function loadQ(){
+ const q=S.qs[S.i],L=LV[q.lv];S.answered=false;S.dur=L.t;S.deadline=performance.now()+L.t*1000;S.lastTick=-1;
+ renderPips();updHud();
+ $('lvl').className='lvl '+q.lv;S.lvlBase=`${q.lv} · ${L.name} · ⏱ `;S.lvlSec=L.t;$('lvl').textContent=S.lvlBase+L.t+' giây';
+ $('qtext').textContent=`Câu ${S.i+1}. ${q.q}`;
+ const il=$('illus'),cfg=ILLUS[q.key];
+ if(cfg){il.innerHTML=sheetHTML(cfg,q,false);il.classList.remove('hide')}else il.classList.add('hide');
+ {const mo=Math.max(...q.opts.map(o=>o.length)),ql=q.q.length,cl=$('qbox').classList;cl.toggle('long',mo>55||ql>170);cl.toggle('xlong',mo>90||ql>260)}
+ $('opts').innerHTML='';
+ q.opts.forEach((t,k)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<b>${'ABCD'[k]}</b><span></span>`;b.querySelector('span').textContent=t;b.onclick=()=>answer(k);$('opts').appendChild(b)});
+ $('fb').innerHTML='';$('btnNext').classList.add('hide');
+ const box=$('qbox');box.classList.remove('enter');void box.offsetWidth;box.classList.add('enter');$('qwrap').scrollTop=0;
+ sfx.click();
+ $('timer').classList.remove('low');$('tbar').classList.remove('low');
+}
+function answer(k){
+ if(S.answered)return;S.answered=true;
+ const q=S.qs[S.i],ok=k===q.ans,to=k<0;
+ const btns=[...$('opts').children];btns.forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('good');else if(i===k)b.classList.add('wrong');else b.classList.add('dim')});
+ S.res[S.i]={ok,to,q};
+ if(ok){S.base+=PTS;sfx.correct();confetti(70,innerWidth*.35,innerHeight*.5);}
+ else{to?sfx.timeout():sfx.wrong();
+  $('qbox').classList.remove('enter');$('qbox').style.animation='shake .45s'; setTimeout(()=>$('qbox').style.animation='',500)}
+ const cfg=ILLUS[q.key];if(cfg)$('illus').innerHTML=sheetHTML(cfg,q,true);
+ const fb=$('fb');fb.innerHTML='';const d=document.createElement('div');d.className='fb '+(ok?'ok':'no');
+ const h=document.createElement('h3');h.textContent=ok?`✅ Chính xác! +${PTS} điểm — bấm “Câu tiếp theo” để ${S.i===4?'đưa tàu về Trái Đất! 🌍':'phóng tàu tới '+PL[ROUTE[S.i]].n+'! 🚀'}`:(to?'⏰ Hết giờ! Câu này tính là sai.':'❌ Chưa đúng rồi, cố lên nhé!');
+ const a=document.createElement('p');a.className='ans';a.textContent=`Đáp án đúng: ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;
+ const e=document.createElement('p');e.textContent='💡 Giải thích: '+q.exp;
+ d.append(h,a,e);fb.appendChild(d);
+ renderPips();updHud();
+ const nb=$('btnNext');nb.textContent=S.i===4?'🏆 Xem kết quả':'Câu tiếp theo ➜';nb.classList.remove('hide');nb.disabled=false;
+ setTimeout(()=>$('qwrap').scrollTo({top:$('qwrap').scrollHeight,behavior:'smooth'}),150);
+}
+function launchShip(){
+ const f={idx:ROUTE[S.i],from:SK.shipAt,t0:performance.now(),dur:4200,gift:Math.random()<GIFT_P,taken:false};
+ SK.flight=f;sfx.launch();useCv(CV.big,true);const sp=sunPos();spark(sp.x,sp.y,50,'#ffb23c',4);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function cinematic(){
+ if(S.busy)return;S.busy=true;$('btnNext').disabled=true;
+ const r=S.res[S.i],pl=PL[ROUTE[S.i]],from=SK.shipAt==null?'Mặt Trời':PL[SK.shipAt].n,el=$('cine'),rc=CV.mini.cv.getBoundingClientRect();
+ el.style.transformOrigin=`${rc.left+rc.width/2}px ${rc.top+rc.height/2}px`;
+ $('cineTitle').textContent=r.ok?(S.i===4?`🌍 Chặng cuối: tàu vũ trụ bay từ ${from} về Trái Đất!`:`🚀 Tàu vũ trụ bay từ ${from} tới ${pl.n}!`):(r.to?`⏰ Hết giờ – tàu phải đợi tại ${from}!`:`☄️ Trả lời sai – thiên thạch chặn đường, tàu đứng yên tại ${from}!`);
+ $('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10';
+ sizeSky();SK.warp=1;el.classList.add('on');
+ await sleep(800);
+ if(r.ok){await new Promise(res=>{SK.onEnd=res;launchShip()});$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10'+(SK.lastGiftTxt||'');await sleep(S.i===4?2400:1400);if(S.i===4)confetti(120,innerWidth/2,innerHeight/2)}
+ else{SK.asteroid={x:CV.big.W+30,y:CV.big.H*(.2+Math.random()*.3),vx:-6,vy:2.6,l:1};await sleep(2600)}
+ el.classList.remove('on');await sleep(750);
+ S.busy=false;nextQ();
+}
+function nextQ(){
+ if(S.i>=4){finish();return}
+ S.i++;SK.warp=1;loadQ();
+}
+function finish(){
+ S.active=false;const sc2=total();
+ $('game').classList.add('hide');$('end').classList.remove('hide');
+ $('endName').textContent=player.name;$('endSub').textContent=`Lớp ${player.cls} · Tin học 7 – Bài 5`;
+ const right=S.res.filter(r=>r&&r.ok).length;
+ let medal,icon;
+ if(sc2>=9){medal='👨‍🚀 Thuyền trưởng Hệ Mặt Trời!';icon='🏆'}else if(sc2>=7){medal='🌟 Phi hành gia giỏi!';icon='🥇'}else if(sc2>=5){medal='🚀 Phi hành đoàn khá!';icon='🥈'}else{medal='🔭 Cần luyện tập thêm, thử lại nhé!';icon='🌠'}
+ $('endMedal').textContent=medal+` (đúng ${right}/5${S.bonusCount?`, nhận ${S.bonusCount} quà 🎁`:''})`;$('endIcon').textContent=icon;
+ const rv=$('rev');rv.innerHTML='';
+ S.qs.forEach((q,i)=>{const r=S.res[i],d=document.createElement('div');d.className=r&&r.ok?'ok':'no';d.textContent=`${r&&r.ok?'✅':'❌'} Câu ${i+1} [${q.lv}] ${q.q}  → ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;rv.appendChild(d)});
+ let n=0;const el=$('endScore'),id=setInterval(()=>{n+=.1;if(n>=sc2){n=sc2;clearInterval(id)}el.textContent=fmt(n)},45);
+ if(sc2>=5)sfx.fanfare();else sfx.sad();startFw(sc2);
+}
+
+/* ---------- Pháo hoa màn hình tổng kết ---------- */
+const fwc=$('fw'),fwx=fwc.getContext('2d');
+let FW={r:[],p:[],next:0,rate:700,power:1};
+function sizeFw(){fwc.width=Math.round(innerWidth*.6);fwc.height=Math.round(innerHeight*.6)} // vẽ ở 60% độ phân giải rồi phóng ra, nhẹ hơn nhiềuaddEventListener('resize',sizeFw);
+function fwLaunch(){const w=fwc.width,h=fwc.height;FW.r.push({x:w*(.1+Math.random()*.8),y:h+10,ty:h*(.1+Math.random()*.35),vy:-(11+Math.random()*3)*h/800,h:Math.random()*360})}
+function fwExplode(r){
+ const h=fwc.height,k=h/800,n=Math.round((45+Math.random()*40)*FW.power),type=Math.random()<.35?'ring':'sphere',h2=(r.h+120+Math.random()*120)%360;
+ sfx.boom();
+ for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.1,v=(type==='ring'?5.5:Math.random()*6.5+1)*k*(.85+FW.power*.15);
+  FW.p.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.009+Math.random()*.01,h:Math.random()<.65?r.h:h2,s:k})}
+}
+function startFw(score){
+ sizeFw();fwx.fillStyle='#03050d';fwx.fillRect(0,0,fwc.width,fwc.height);
+ FW.r=[];FW.p=[];
+ FW.power=score>=9?1.3:score>=7?1:score>=5?.8:.6;FW.rate=score>=9?450:score>=7?650:score>=5?900:1400;
+ const n=score>=5?5:2;for(let i=0;i<n;i++)setTimeout(fwLaunch,i*220);
+ FW.next=performance.now()+1200;
+}
+function frameFw(t,ds){
+ fwx.globalCompositeOperation='source-over';fwx.fillStyle=`rgba(3,5,13,${1-Math.pow(.8,ds)})`;fwx.fillRect(0,0,fwc.width,fwc.height);
+ if(t>FW.next){const c=1+(Math.random()<.4?1:0)+(FW.power>1?1:0);for(let i=0;i<c;i++)setTimeout(fwLaunch,i*140);FW.next=t+FW.rate*(.6+Math.random()*.8)}
+ fwx.globalCompositeOperation='lighter';
+ const k=fwc.height/800,f=Math.pow(.985,ds);
+ FW.r=FW.r.filter(r=>{r.y+=r.vy*ds;r.vy*=f;fwx.fillStyle=`hsl(${r.h},100%,75%)`;fwx.beginPath();fwx.arc(r.x,r.y,2.2*k,0,6.3);fwx.fill();
+  if(Math.random()<.8*ds){FW.p.push({x:r.x,y:r.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,l:.6,d:.04,h:r.h,s:k*.6})}
+  if(r.y<=r.ty||r.vy>-1.8){fwExplode(r);return false}return true});
+ FW.p=FW.p.filter(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vx*=f;p.vy=p.vy*f+.05*p.s*ds;p.l-=p.d*ds;if(p.l<=0)return false;
+  fwx.fillStyle=`hsla(${p.h},100%,${55+p.l*20}%,${Math.min(1,p.l*1.4)})`;fwx.beginPath();fwx.arc(p.x,p.y,(1.2+p.l*1.8)*p.s*1.3,0,6.3);fwx.fill();return true});
+ fwx.globalCompositeOperation='source-over';
+}
+
+/* ---------- Vòng lặp chính (đồng hồ + hoạt cảnh) ---------- */
+const ring=$('ring');
+let lastT=0,lastDom=0;
+function loop(t){
+ requestAnimationFrame(loop);
+ const dt=t-lastT,minDt=S.busy?20:32; // cảnh phóng to chạy mượt, còn lại ~30 khung/giây
+ if(dt<minDt)return;lastT=t;const ds=Math.min(3,dt/16.67);
+ drawConf(ds);
+ if(!$('end').classList.contains('hide'))frameFw(t,ds);
+ else if(!$('start').classList.contains('hide')){useCv(CV.intro);frameSky(t,false,true)}
+ else if(!$('game').classList.contains('hide')&&!S.busy){useCv(CV.mini);frameSky(t,false)}
+ if(S.busy){useCv(CV.big);frameSky(t,true)}
+ SK.warp=Math.max(0,SK.warp-.005*ds);
+ if(S.active&&!S.answered){
+  const left=Math.max(0,(S.deadline-performance.now())/1000);
+  if(left<=0){answer(-1)}
+  else if(t-lastDom>100){lastDom=t;
+   const frac=left/S.dur,sec=Math.ceil(left);
+   $('tnum').textContent=sec;if(sec!==S.lvlSec){S.lvlSec=sec;$('lvl').textContent=S.lvlBase+sec+' giây'}$('lvl').classList.toggle('low',left<=5);
+   $('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
+   const low=left<=5||frac<.25;$('timer').classList.toggle('low',low);$('tbar').classList.toggle('low',low);
+   ring.style.stroke=frac>.5?'#12b774':frac>.25?'#ffc93c':'#ff5d7a';
+   if(left<=5&&sec!==S.lastTick&&sec>0){S.lastTick=sec;sfx.tick()}
+  }
+ }
+}
+
+/* ---------- Sự kiện ---------- */
+function toggleFs(){const d=document;if(!d.fullscreenElement&&!d.webkitFullscreenElement){(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement).catch(()=>{})}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}
+document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('btnFs').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';$('btnFsStart').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';setTimeout(()=>{sizeSky();initStars();sizeFx()},200)});
+$('btnFs').onclick=$('btnFsStart').onclick=toggleFs;
+$('btnSnd').onclick=()=>{initAudio();setMusic(!musicOn)};
+$('btnStart').onclick=()=>{
+ const n=$('inName').value.trim(),c=$('inClass').value.trim();let bad=false;
+ [['inName',n],['inClass',c]].forEach(([id,v])=>{const el=$(id);el.classList.remove('err');if(!v){void el.offsetWidth;el.classList.add('err');bad=true}});
+ if(bad)return;
+ player.name=n;player.cls=c;initAudio();sfx.start();setMusic(true);newGame();
+};
+['inName','inClass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('btnStart').click()}));
+$('btnNext').onclick=()=>{sfx.click();cinematic()};
+$('btnAgain').onclick=()=>{initAudio();sfx.start();newGame()};
+$('btnChange').onclick=()=>{$('end').classList.add('hide');$('start').classList.remove('hide');$('inName').value='';$('inClass').value='';$('inName').focus()};
+addEventListener('keydown',e=>{
+ if(!S.active||$('game').classList.contains('hide'))return;
+ const k=e.key.toUpperCase(),i='ABCD'.indexOf(k),j='1234'.indexOf(k);
+ if(!S.answered&&(i>=0||j>=0)&&k.length===1)answer(i>=0?i:j);
+ else if(e.key==='Enter'&&S.answered&&!S.busy&&!$('btnNext').disabled&&!$('btnNext').classList.contains('hide'))$('btnNext').click();
+});
+sizeSky();requestAnimationFrame(loop);
+$('inName').focus();
+</script>
+</body>
+</html>
