@@ -8,7 +8,1014 @@
   <meta name="theme-color" content="#f3f6fb">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <title>Kho Học Liệu – Thầy Minh</title>
-  <link rel="stylesheet" href="./styles.css">
+  <style>
+  /* ==========================================================================
+   KHO HỌC LIỆU – THẦY MINH
+   Trang chủ: Giao diện học liệu Tin học lớp 3 – 9
+   ========================================================================== */
+
+/* ── 1. DESIGN TOKENS (Biến giao diện) ──────────────────────────────────── */
+:root {
+  /* Nền và bề mặt */
+  --bg: #f8fafc;
+  --bg-subtle: #f1f5f9;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --border-hover: #cbd5e1;
+
+  /* Văn bản */
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+
+  /* Màu chủ đạo (Xanh lá thiên nhiên theo logo chiếc lá) */
+  --primary: #16803d;
+  --primary-hover: #14532d;
+  --primary-light: #f0fdf4;
+  --primary-border: #bbf7d0;
+
+  /* Đổ bóng */
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 10px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 20px -3px rgba(15, 23, 42, 0.08);
+
+  /* Phối màu riêng từng khối lớp (Hài hòa, dịu mắt) */
+  --g3-color: #059669; --g3-tint: #f0fdf4; --g3-border: #a7f3d0;
+  --g4-color: #0d9488; --g4-tint: #f0fdfa; --g4-border: #99f6e4;
+  --g5-color: #0284c7; --g5-tint: #f0f9ff; --g5-border: #bae6fd;
+  --g6-color: #4f46e5; --g6-tint: #eef2ff; --g6-border: #c7d2fe;
+  --g7-color: #7c3aed; --g7-tint: #f5f3ff; --g7-border: #ddd6fe;
+  --g8-color: #d97706; --g8-tint: #fffbeb; --g8-border: #fde68a;
+  --g9-color: #e11d48; --g9-tint: #fff1f2; --g9-border: #fecdd3;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  /* Nền và bề mặt tối */
+  --bg: #090e17;
+  --bg-subtle: #0f172a;
+  --surface: #152033;
+  --border: #23334d;
+  --border-hover: #33486b;
+
+  /* Văn bản */
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-light: #64748b;
+
+  /* Màu chủ đạo chế độ tối */
+  --primary: #4ade80;
+  --primary-hover: #22c55e;
+  --primary-light: rgba(34, 197, 94, 0.12);
+  --primary-border: rgba(34, 197, 94, 0.3);
+
+  /* Đổ bóng */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.55);
+
+  /* Phối màu từng lớp trong nền tối */
+  --g3-color: #34d399; --g3-tint: rgba(52, 211, 153, 0.1); --g3-border: rgba(52, 211, 153, 0.3);
+  --g4-color: #2dd4bf; --g4-tint: rgba(45, 212, 191, 0.1); --g4-border: rgba(45, 212, 191, 0.3);
+  --g5-color: #38bdf8; --g5-tint: rgba(56, 189, 248, 0.1); --g5-border: rgba(56, 189, 248, 0.3);
+  --g6-color: #818cf8; --g6-tint: rgba(129, 140, 248, 0.1); --g6-border: rgba(129, 140, 248, 0.3);
+  --g7-color: #a78bfa; --g7-tint: rgba(167, 139, 250, 0.1); --g7-border: rgba(167, 139, 250, 0.3);
+  --g8-color: #fbbf24; --g8-tint: rgba(251, 191, 36, 0.1); --g8-border: rgba(251, 191, 36, 0.3);
+  --g9-color: #fb7185; --g9-tint: rgba(251, 113, 133, 0.1); --g9-border: rgba(251, 113, 133, 0.3);
+
+  color-scheme: dark;
+}
+
+/* ── 2. RESET & NỀN TẢNG ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ── 3. THANH ĐIỀU HƯỚNG (NAVBAR) ───────────────────────────────────────── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 10px clamp(16px, 3.5vw, 48px);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+}
+
+/* Thương hiệu: Logo + Tiêu đề */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.brand-leaf {
+  width: 36px;
+  height: 40px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.brand:hover .brand-leaf {
+  transform: scale(1.06);
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.brand-name {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.brand-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Ô tìm kiếm Google chính hãng */
+.search-area {
+  max-width: 440px;
+  width: 100%;
+  position: relative;
+  justify-self: center;
+}
+
+.search-area .g-logo {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.search-box {
+  width: 100%;
+  height: 38px;
+  padding: 0 16px 0 42px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-size: 0.85rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-box:hover {
+  background: var(--surface);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.search-box:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-box::placeholder {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+/* Khu vực nút tiện ích */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-hover);
+}
+
+.btn.icon-btn {
+  width: 36px;
+  padding: 0;
+}
+
+/* Nút Trò chơi trí tuệ */
+.btn.game-btn {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+  color: var(--primary);
+}
+
+.btn.game-btn:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-btn svg {
+  pointer-events: none;
+}
+
+/* ── 4. NỘI DUNG CHÍNH (MAIN & STATUSBAR) ────────────────────────────────── */
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 16px clamp(12px, 2.5vw, 36px) 24px;
+}
+
+/* ── 4.1. KHUNG GIỚI THIỆU CHƯƠNG TRÌNH (HERO BANNER) ─────────────────────── */
+.hero-banner {
+  display: grid;
+  grid-template-columns: 1.12fr 1fr;
+  align-items: center;
+  gap: 28px;
+  background-color: var(--surface);
+  background-image: radial-gradient(circle at top right, rgba(22, 163, 74, 0.08) 0%, transparent 55%),
+                    radial-gradient(circle at bottom left, rgba(13, 148, 136, 0.06) 0%, transparent 45%);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .hero-banner {
+  background-image: radial-gradient(circle at top right, rgba(74, 222, 128, 0.12) 0%, transparent 55%),
+                    radial-gradient(circle at bottom left, rgba(45, 212, 191, 0.08) 0%, transparent 45%);
+}
+
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Huy hiệu phía trên */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
+
+.hero-badge .badge-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Tiêu đề chính */
+.hero-title {
+  font-size: clamp(1.3rem, 2.1vw, 1.68rem);
+  font-weight: 850;
+  line-height: 1.3;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.hero-title .highlight-green {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+/* Đoạn mô tả */
+.hero-desc {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 95%;
+}
+
+.hero-desc strong {
+  color: var(--text);
+  font-weight: 650;
+}
+
+/* Nhãn tóm tắt / Năng lực */
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: all 0.15s ease;
+}
+
+.hero-pill:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+}
+
+.hero-pill .pill-icon {
+  font-size: 0.82rem;
+}
+
+/* Cột phải */
+.hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Ô tìm kiếm nhanh trong Banner */
+.hero-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 10px 0 14px;
+  border-radius: 9999px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.hero-search-box:hover {
+  background: var(--surface);
+  border-color: var(--border-hover);
+}
+
+.hero-search-box:focus-within {
+  background: var(--surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.hero-search-box .search-icon {
+  width: 17px;
+  height: 17px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.hero-search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.82rem;
+  color: var(--text);
+}
+
+.hero-search-box input::placeholder {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.hero-search-box .btn-clear {
+  padding: 3px 9px;
+  border-radius: 9999px;
+  background: var(--border);
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hero-search-box .btn-clear:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* Khung hướng dẫn gõ UniKey Telex cao cấp */
+.hero-telex-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #2a2a2a;
+  border: 1px solid var(--primary-border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.telex-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.telex-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: var(--primary);
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+
+.telex-icon-box svg {
+  width: 17px;
+  height: 17px;
+}
+
+.telex-head-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.telex-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #d1d1d1;
+  letter-spacing: 0.02em;
+}
+
+.telex-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.telex-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.telex-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.telex-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.telex-grid-7 {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.telex-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 4px 4px 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.14s ease;
+  white-space: nowrap;
+}
+
+.telex-chip:hover {
+  border-color: var(--primary-border);
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.telex-chip kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+  background: var(--bg-subtle);
+  color: var(--primary);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--border-hover);
+}
+
+.telex-chip strong,
+.telex-chip span {
+  font-weight: 750;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+}
+
+.telex-chip strong {
+  color: var(--primary);
+  font-size: 0.88rem;
+}
+
+[data-theme="dark"] .telex-chip {
+  background: #172338;
+  border-color: #2a3a52;
+}
+
+[data-theme="dark"] .telex-chip kbd {
+  background: #0f172a;
+  border-color: #334155;
+  border-bottom-color: #475569;
+}
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 6px 4px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+#status-label {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+/* ── 5. LƯỚI KHỐI LỚP (GRADE GRID & CARDS) ───────────────────────────────── */
+.grade-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+/* Thẻ khối lớp */
+.grade-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--card-border, var(--border));
+  border-top: 3.5px solid var(--card-accent, var(--primary));
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grade-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Gán màu nhận diện riêng cho từng lớp */
+.grade-card[data-grade="3"] { --card-accent: var(--g3-color); --card-tint: var(--g3-tint); --card-border: var(--g3-border); }
+.grade-card[data-grade="4"] { --card-accent: var(--g4-color); --card-tint: var(--g4-tint); --card-border: var(--g4-border); }
+.grade-card[data-grade="5"] { --card-accent: var(--g5-color); --card-tint: var(--g5-tint); --card-border: var(--g5-border); }
+.grade-card[data-grade="6"] { --card-accent: var(--g6-color); --card-tint: var(--g6-tint); --card-border: var(--g6-border); }
+.grade-card[data-grade="7"] { --card-accent: var(--g7-color); --card-tint: var(--g7-tint); --card-border: var(--g7-border); }
+.grade-card[data-grade="8"] { --card-accent: var(--g8-color); --card-tint: var(--g8-tint); --card-border: var(--g8-border); }
+.grade-card[data-grade="9"] { --card-accent: var(--g9-color); --card-tint: var(--g9-tint); --card-border: var(--g9-border); }
+
+/* Đầu thẻ lớp (Header) */
+.grade-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  background: var(--card-tint, var(--bg-subtle));
+  border-bottom: 1px solid var(--card-border, var(--border));
+  font-weight: 750;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  color: var(--card-accent, var(--text));
+  text-transform: uppercase;
+}
+
+.grade-num {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--card-accent, var(--primary));
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Danh sách các bài học */
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 6px 10px;
+}
+
+/* ── 6. CÁC BÀI HỌC DẠNG ACCORDION (.bai-group) ─────────────────────────── */
+.bai-group {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.bai-group:hover {
+  border-color: var(--card-border, var(--border-hover));
+}
+
+.bai-group.is-open {
+  border-color: var(--card-accent, var(--primary));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Nút bấm mở/đóng bài học */
+.bai-toggle {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.35;
+  color: var(--text);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.bai-toggle:hover {
+  background: var(--card-tint, var(--bg-subtle));
+}
+
+.bai-toggle[aria-expanded="true"] {
+  background: var(--card-tint, var(--primary-light));
+  border-bottom: 1px solid var(--card-border, var(--border));
+}
+
+/* Tiêu đề bài học */
+.bai-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.bai-group.is-open .bai-title {
+  color: var(--card-accent, var(--primary));
+  font-weight: 600;
+}
+
+/* Số lượng file trong bài */
+.bai-file-count {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--card-accent, var(--primary));
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+
+/* Khung chứa các tệp HTML con */
+.bai-files {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 6px 8px;
+  background: var(--surface);
+}
+
+.bai-files.open {
+  display: flex;
+}
+
+/* Đường link từng tệp bài học */
+.file-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--bg-subtle);
+  color: var(--text);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  transition: all 0.15s ease;
+  word-break: break-word;
+}
+
+.file-link::before {
+  content: "📄";
+  font-size: 0.78rem;
+  flex-shrink: 0;
+}
+
+.file-link:hover {
+  background: var(--card-tint, var(--primary-light));
+  border-color: var(--card-border, var(--primary-border));
+  color: var(--card-accent, var(--primary));
+  transform: translateX(2px);
+}
+
+.file-empty,
+.bai-loading {
+  padding: 6px 8px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Trạng thái ẩn */
+.bai-group[hidden],
+.grade-card[hidden] {
+  display: none !important;
+}
+
+/* ── 7. CHÂN TRANG (FOOTER) ────────────────────────────────────────────── */
+.footer {
+  text-align: center;
+  padding: 16px 20px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  margin-top: auto;
+}
+
+/* ── 8. CHẾ ĐỘ CHIA CẤP HỌC (?cap=1 hoặc ?cap=2) ───────────────────────── */
+/* Cấp 1 (Lớp 3-5) hoặc Cấp 2 (Lớp 6-9) hiển thị dạng 4 cột rộng rãi hơn */
+html[data-cap="1"] .grade-grid,
+html[data-cap="2"] .grade-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+html[data-cap="1"] .grade-header,
+html[data-cap="2"] .grade-header {
+  padding: 10px 8px;
+  font-size: 0.92rem;
+}
+
+html[data-cap="1"] .grade-num,
+html[data-cap="2"] .grade-num {
+  width: 26px;
+  height: 26px;
+  font-size: 0.78rem;
+}
+
+html[data-cap="1"] .lesson-list,
+html[data-cap="2"] .lesson-list {
+  padding: 10px 8px 12px;
+  gap: 8px;
+}
+
+html[data-cap="1"] .bai-toggle,
+html[data-cap="2"] .bai-toggle {
+  min-height: 36px;
+  padding: 8px 10px;
+}
+
+html[data-cap="1"] .bai-title,
+html[data-cap="2"] .bai-title {
+  font-size: 0.84rem;
+}
+
+html[data-cap="1"] .bai-file-count,
+html[data-cap="2"] .bai-file-count {
+  font-size: 0.75rem;
+}
+
+html[data-cap="1"] .file-link,
+html[data-cap="2"] .file-link {
+  padding: 8px 10px;
+  font-size: 0.70rem;
+}
+
+/* ── 9. THÍCH ỨNG THIẾT BỊ (RESPONSIVE) ─────────────────────────────────── */
+/* Màn hình trung bình / Tablet xoay ngang (<= 1100px) */
+@media (max-width: 1100px) {
+  .hero-banner {
+    grid-template-columns: 1.3fr 1fr;
+    gap: 20px;
+    padding: 20px 22px;
+  }
+
+  .grade-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Tablet (<= 850px) */
+@media (max-width: 850px) {
+  .navbar {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .search-area {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: 100%;
+  }
+
+  .hero-banner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .telex-grid-6 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .telex-grid-7 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .grade-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  html[data-cap="1"] .grade-grid,
+  html[data-cap="2"] .grade-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Điện thoại thông minh (<= 560px) */
+@media (max-width: 560px) {
+  .navbar {
+    padding: 10px 14px;
+  }
+
+  .brand-name {
+    font-size: 1.05rem;
+  }
+
+  .nav-actions {
+    gap: 6px;
+  }
+
+  .btn {
+    height: 34px;
+    padding: 0 10px;
+    font-size: 0.78rem;
+  }
+
+  .game-btn-label {
+    display: none;
+  }
+
+  .btn.game-btn {
+    padding: 0 10px;
+  }
+
+  .hero-banner {
+    padding: 16px 14px;
+    border-radius: 14px;
+    gap: 16px;
+  }
+
+  .hero-title {
+    font-size: 1.25rem;
+  }
+
+  .hero-pills {
+    gap: 6px;
+  }
+
+  .hero-pill {
+    padding: 5px 10px;
+    font-size: 0.74rem;
+  }
+
+  .hero-telex-card {
+    padding: 10px 12px;
+  }
+
+  .telex-grid-6,
+  .telex-grid-7 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .grade-grid,
+  html[data-cap="1"] .grade-grid,
+  html[data-cap="2"] .grade-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .bai-title {
+    font-size: 0.82rem;
+  }
+
+  .file-link {
+    font-size: 0.8rem;
+    padding: 8px 10px;
+  }
+}
+</style>
 </head>
 
 <body>
@@ -175,7 +1182,611 @@
   </footer>
 
   <!-- ════════════════ SCRIPT ════════════════ -->
-  <script src="./script.js"></script>
+  <script>
+    /* ── State ───────────────────────────────────────────────── */
+let isDark = false;
+
+/* ── Elements ────────────────────────────────────────────── */
+const html = document.documentElement;
+const gradeGrid = document.getElementById('grade-grid');
+const statusLabel = document.getElementById('status-label');
+const searchBox = document.getElementById('search-box');
+const countLabel = document.getElementById('count-label');
+const themeBtn = document.getElementById('theme-btn');
+const iconSun = document.getElementById('icon-sun');
+const iconMoon = document.getElementById('icon-moon');
+const fsBtn = document.getElementById('fs-btn');
+const iconExpand = document.getElementById('icon-fs-expand');
+const iconCollapse = document.getElementById('icon-fs-collapse');
+const cap = new URLSearchParams(window.location.search).get('cap');
+
+const heroBadgeText = document.getElementById('hero-badge-text');
+const heroGradesPill = document.getElementById('hero-grades-pill');
+const heroSearchInput = document.getElementById('hero-search-input');
+const heroSearchClear = document.getElementById('hero-search-clear');
+
+if (cap === '1' || cap === '2') {
+  html.dataset.cap = cap;
+  statusLabel.textContent = cap === '1' ? 'Tin học lớp 3 – 5' : 'Tin học lớp 6 – 9';
+  if (heroBadgeText) {
+    heroBadgeText.textContent = cap === '1'
+      ? 'Chương trình GDPT 2018 • Tin học Lớp 3 – Lớp 5 (Tiểu học)'
+      : 'Chương trình GDPT 2018 • Tin học Lớp 6 – Lớp 9 (THCS)';
+  }
+  if (heroGradesPill) {
+    heroGradesPill.textContent = cap === '1' ? '3 Khối lớp (3 – 5)' : '4 Khối lớp (6 – 9)';
+  }
+}
+
+/* ── Static lesson data (generated from local filesystem) ──
+   Cập nhật dữ liệu này mỗi khi thêm file mới vào thư mục.
+────────────────────────────────────────────────────────── */
+const GRADE_DATA = {
+  3: {
+    "bai-01": [
+      "b_i_ki_m_tra_tin_h_c_6.html",
+      "b_i_ki_m_tra_tr_c_nghi_m_chinh_ph_c_nh_cao.html",
+      "google_maps_satellite_embed (1).html",
+      "kiem_tra_tin_8_GHKI (3).html",
+      "mo phong.html",
+      "mo_phong_hinh_hoc_lop_6.html",
+      "Qwen_html_20261008_fddwh13x8.html",
+      "sssss.html",
+      "test-nop-bai.html"
+    ],
+    "bai-02": [],
+    "bai-03": [],
+    "bai-04": [],
+    "bai-05": [],
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": []
+  },
+  4: {
+    "bai-01": [],
+    "bai-02": [],
+    "bai-03": [['trắc nghiệm đúng sai', 'ds.html'], "lala.html"],
+    "bai-04": [],
+    "bai-05": [],
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": []
+  },
+  5: {
+    "bai-01": [],
+    "bai-02": [],
+    "bai-03": [['trắc nghiệm đúng sai', 'ds.html'], "lala.html"],
+    "bai-04": [],
+    "bai-05": [],
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": []
+  },
+  6: {
+    "bai-01": [],
+    "bai-02": [],
+    "bai-03": [],
+    "bai-04": [
+      ['5 Câu trắc nghiệm',
+      '5cau_trac_nghiem.html']
+      ],
+    "bai-05": [],
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": [],
+    "bai-17": []
+  },
+  7: {
+    "bai-01": [],
+    "bai-02": [],
+    "bai-03": [],
+    "bai-04": [],
+    "bai-05":  [
+      ['5 Câu trắc nghiệm',
+      '5cau_trac_nghiem.html']
+      ],
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": []
+  },
+  8: {
+    "bai-01": [],
+    "bai-02": [],
+    "bai-03": [],
+    "bai-04": [],
+    "bai-05": [
+        ['5 Câu trắc nghiệm','5cau_trac_nghiem.html']
+      ],      
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": []
+  },
+  9: {
+    "bai-01": [],
+    "bai-02": [],
+    "bai-03": [],
+    "bai-04": [],
+    "bai-05": [
+      ['5 Câu trắc nghiệm','5cau_trac_nghiem.html']
+      ],
+    "bai-06": [],
+    "bai-07": [],
+    "bai-08": [],
+    "bai-09": [],
+    "bai-10": [],
+    "bai-11": [],
+    "bai-12": [],
+    "bai-13": [],
+    "bai-14": [],
+    "bai-15": [],
+    "bai-16": [],
+    "bai-17": []
+  }
+};
+
+const GRADE_TITLES = {
+  3: [
+    "Thông tin và quyết định",
+    "Xử lí thông tin",
+    "Máy tính và em",
+    "Làm việc với máy tính",
+    "Sử dụng bàn phím",
+    "Khám phá thông tin trên Internet",
+    "Sắp xếp để dễ tìm",
+    "Sơ đồ hình cây. Tổ chức thông tin trong máy tính",
+    "Thực hành với tệp và thư mục trong máy tính",
+    "Bảo vệ thông tin khi dùng máy tính",
+    "Bài trình chiếu của em",
+    "Tìm hiểu về thế giới tự nhiên",
+    "Luyện tập sử dụng chuột",
+    "Em thực hiện công việc như thế nào",
+    "Công việc được thực hiện theo điều kiện",
+    "Công việc của em và sự trợ giúp của máy tính"
+  ],
+  4: [
+    "Phần cứng và phần mềm máy tính",
+    "Gõ bàn phím đúng cách",
+    "Thông tin trên trang web",
+    "Tìm kiếm và trao đổi thông tin",
+    "Thao tác với tệp và thư mục",
+    "Sử dụng phần mềm khi được phép",
+    "Tạo bài trình chiếu",
+    "Định dạng văn bản trên trang chiếu",
+    "Hiệu ứng chuyển trang",
+    "Phần mềm soạn thảo văn bản",
+    "Chỉnh sửa văn bản",
+    "Thực hành đa phương tiện / Phần mềm luyện gõ bàn phím",
+    "Chơi với máy tính",
+    "Khám phá môi trường lập trình trực quan",
+    "Tạo chương trình máy tính để diễn tả ý tưởng",
+    "Chương trình của em"
+  ],
+  5: [
+    "Em có thể làm gì với máy tính?",
+    "Tìm kiếm thông tin trên website",
+    "Tìm kiếm thông tin trong giải quyết vấn đề",
+    "Cây thư mục",
+    "Bản quyền nội dung thông tin",
+    "Định dạng kí tự và bố trí hình ảnh trong văn bản",
+    "Thực hành soạn thảo văn bản",
+    "Làm quen với phần mềm đồ họa / Làm sản phẩm thủ công theo video hướng dẫn",
+    "Sử dụng phần mềm đồ họa tạo sản phẩm số / Thực hành tạo đồ dùng gia đình theo video hướng dẫn",
+    "Cấu trúc tuần tự",
+    "Cấu trúc lặp",
+    "Thực hành sử dụng lệnh lặp",
+    "Cấu trúc rẽ nhánh",
+    "Sử dụng biến trong chương trình",
+    "Sử dụng biểu thức trong chương trình",
+    "Từ kịch bản đến chương trình"
+  ],
+  6: [
+    "Thông tin và dữ liệu",
+    "Xử lý thông tin",
+    "Thông tin trong máy tính",
+    "Mạng máy tính",
+    "Internet",
+    "Mạng thông tin toàn cầu",
+    "Tìm kiếm thông tin trên Internet",
+    "Thư điện tử",
+    "An toàn thông tin trên Internet",
+    "Sơ đồ tư duy",
+    "Định dạng văn bản",
+    "Trình bày thông tin ở dạng bảng",
+    "Thực hành: Tìm kiếm và thay thế",
+    "Thực hành tổng hợp: Hoàn thiện Sổ lưu niệm",
+    "Thuật toán",
+    "Cấu trúc điều khiển",
+    "Chương trình máy tính"
+  ],
+  7: [
+    "Thiết bị vào - ra",
+    "Phần mềm máy tính",
+    "Quản lí dữ liệu trong máy tính",
+    "Mạng xã hội và một số kênh trao đổi thông tin trên Internet",
+    "Ứng xử trên mạng",
+    "Làm quen với phần mềm bảng tính",
+    "Tính toán tự động trên bảng tính",
+    "Công cụ hỗ trợ tính toán",
+    "Trình bày bảng tính",
+    "Hoàn thiện bảng tính",
+    "Tạo bài trình chiếu",
+    "Định dạng đối tượng trên trang chiếu",
+    "Thực hành tổng hợp: Hoàn thiện bài trình chiếu",
+    "Thuật toán tìm kiếm tuần tự",
+    "Thuật toán tìm kiếm nhị phân",
+    "Thuật toán sắp xếp"
+  ],
+  8: [
+    "Lược sử công cụ tính toán",
+    "Thông tin trong môi trường số",
+    "Thực hành: Khai thác thông tin số",
+    "Đạo đức và văn hóa trong sử dụng công nghệ kĩ thuật số",
+    "Sử dụng bảng tính giải quyết bài toán thực tế",
+    "Sắp xếp và lọc dữ liệu",
+    "Trình bày dữ liệu bằng biểu đồ",
+    "Làm việc với danh sách dạng liệt kê và hình ảnh trong văn bản / Phần mềm chỉnh sửa ảnh",
+    "Tạo đầu trang, chân trang cho văn bản / Thay đổi khung hình, kích thước ảnh",
+    "Định dạng nâng cao cho trang chiếu / Thêm văn bản, tạo hiệu ứng cho ảnh",
+    "Sử dụng bản mẫu tạo bài trình chiếu / Thực hành tổng hợp",
+    "Từ thuật toán đến chương trình",
+    "Biểu diễn dữ liệu",
+    "Cấu trúc điều khiển",
+    "Gỡ lỗi",
+    "Tin học với nghề nghiệp"
+  ],
+  9: [
+    "Thế giới kĩ thuật số",
+    "Thông tin trong giải quyết vấn đề",
+    "Thực hành: Đánh giá chất lượng thông tin",
+    "Một số vấn đề pháp lí về sử dụng dịch vụ Internet",
+    "Tìm hiểu phần mềm mô phỏng",
+    "Thực hành: Khai thác phần mềm mô phỏng",
+    "Trình bày thông tin trong trao đổi và hợp tác",
+    "Thực hành: Sử dụng công cụ trực quan trình bày thông tin trong trao đổi và hợp tác",
+    "Sử dụng công cụ xác thực dữ liệu / Các chức năng chính của phần mềm làm video",
+    "Sử dụng hàm COUNTIF / Chuẩn bị dữ liệu và dựng video",
+    "Sử dụng hàm SUMIF / Thực hành: Dựng video theo kịch bản",
+    "Sử dụng hàm IF / Hoàn thành việc dựng video",
+    "Hoàn thiện bảng tính quản lí tài chính gia đình / Biên tập và xuất video",
+    "Giải quyết vấn đề",
+    "Bài toán tin học",
+    "Thực hành: Lập chương trình máy tính",
+    "Tin học và thế giới nghề nghiệp"
+  ]
+};
+
+/* ── Pretty file name (fallback) ────────────────────────── */
+function prettyName(filename) {
+  if (typeof filename !== 'string') return '';
+  return filename
+    .replace(/\.html?$/i, '')
+    .replace(/[-_()\[\]]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/* ── Chuẩn hóa thông tin bài học [tên hiển thị, tên file] ─── */
+function getLessonInfo(item) {
+  if (!item) return null;
+  if (Array.isArray(item)) {
+    if (item.length === 0) return null;
+    const label = item[0] !== undefined && item[0] !== null ? String(item[0]).trim() : '';
+    const file = item[1] !== undefined && item[1] !== null ? String(item[1]).trim() : label;
+    if (!file && !label) return null;
+    return {
+      displayName: label || prettyName(file) || file,
+      fileName: file || label
+    };
+  }
+  if (typeof item === 'string') {
+    const file = item.trim();
+    if (!file) return null;
+    return {
+      displayName: prettyName(file) || file,
+      fileName: file
+    };
+  }
+  return null;
+}
+
+/* ── Build a file sub-link ───────────────────────────────── */
+function makeFileLink(grade, baiName, item) {
+  const info = getLessonInfo(item);
+  if (!info) return null;
+
+  const a = document.createElement('a');
+  a.className = 'file-link';
+  a.href = `./tin-hoc-${grade}/${baiName}/${encodeURIComponent(info.fileName)}`;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.setAttribute('aria-label', info.displayName);
+
+  a.textContent = info.displayName;
+  return a;
+}
+
+/* ── Render list of files inside an open bai ─────────────── */
+function renderBaiFiles(filesEl, grade, baiName) {
+  const rawFiles = (GRADE_DATA[grade] || {})[baiName] || [];
+  const validFiles = rawFiles.map(getLessonInfo).filter(Boolean);
+  filesEl.innerHTML = '';
+
+  if (validFiles.length === 0) {
+    const empty = document.createElement('span');
+    empty.className = 'file-empty';
+    empty.textContent = 'Chưa có bài học nào.';
+    filesEl.append(empty);
+  } else {
+    validFiles.forEach(info => {
+      const link = makeFileLink(grade, baiName, [info.displayName, info.fileName]);
+      if (link) filesEl.append(link);
+    });
+  }
+  filesEl.dataset.rendered = '1';
+}
+
+/* ── Accordion toggle ───────────────────────────────────── */
+function toggleBai(toggleEl, filesEl, grade, baiName) {
+  const expanded = toggleEl.getAttribute('aria-expanded') === 'true';
+
+  toggleEl.setAttribute('aria-expanded', String(!expanded));
+  filesEl.classList.toggle('open', !expanded);
+  filesEl.parentElement.classList.toggle('is-open', !expanded);
+
+  if (!expanded) {
+    renderBaiFiles(filesEl, grade, baiName);
+  }
+}
+
+/* ── Build one bai-group ─────────────────────────────────── */
+function makeBaiGroup(baiName, grade) {
+  const num = parseInt(baiName.replace('bai-', ''), 10);
+  const rawFiles = (GRADE_DATA[grade] || {})[baiName] || [];
+  const validCount = rawFiles.filter(item => getLessonInfo(item) !== null).length;
+  const label = `${num}. ${GRADE_TITLES[grade][num - 1]}`;
+
+  const group = document.createElement('div');
+  group.className = 'bai-group';
+  group.dataset.bai = baiName;
+  group.dataset.grade = String(grade);
+  group.dataset.search = `bai ${num} lop ${grade} lesson ${num} grade ${grade}`;
+
+  const toggle = document.createElement('button');
+  toggle.className = 'bai-toggle';
+  toggle.type = 'button';
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-label', `${label}, Lớp ${grade}`);
+
+  const titleSpan = document.createElement('span');
+  titleSpan.className = 'bai-title';
+  titleSpan.textContent = label;
+  titleSpan.title = label;
+
+  const fileCount = document.createElement('span');
+  fileCount.className = 'bai-file-count';
+  fileCount.setAttribute('aria-hidden', 'true');
+  fileCount.textContent = validCount > 0 ? `(${validCount})` : '';
+
+  toggle.append(titleSpan, fileCount);
+
+  const filesEl = document.createElement('div');
+  filesEl.className = 'bai-files';
+
+  toggle.addEventListener('click', () => toggleBai(toggle, filesEl, grade, baiName));
+
+  group.append(toggle, filesEl);
+  return group;
+}
+
+/* ── Build a grade card ──────────────────────────────────── */
+function createGradeCard(grade) {
+  const card = document.createElement('section');
+  card.className = 'grade-card';
+  card.id = `card-grade-${grade}`;
+  card.dataset.grade = grade;
+  card.setAttribute('aria-label', `Lớp ${grade}`);
+
+  const header = document.createElement('div');
+  header.className = 'grade-header';
+
+  const numBadge = document.createElement('span');
+  numBadge.className = 'grade-num';
+  numBadge.textContent = grade;
+
+  const lbl = document.createElement('span');
+  lbl.textContent = `LỚP ${grade}`;
+
+  header.append(numBadge, lbl);
+
+  const list = document.createElement('div');
+  list.className = 'lesson-list';
+
+  const baiNames = Object.keys(GRADE_DATA[grade] || {}).sort((a, b) => a.localeCompare(b, 'vi'));
+  if (baiNames.length === 0) {
+    const p = document.createElement('p');
+    p.style.cssText = 'padding:10px 6px;font-size:.78rem;color:var(--text2)';
+    p.textContent = 'Chưa có bài học.';
+    list.append(p);
+  } else {
+    baiNames.forEach(bn => list.append(makeBaiGroup(bn, grade)));
+  }
+
+  card.append(header, list);
+  return card;
+}
+
+/* ── Render all grade cards ──────────────────────────────── */
+function renderAllGrades() {
+  gradeGrid.innerHTML = '';
+  for (let g = 3; g <= 9; g++) {
+    const card = createGradeCard(g);
+    card.hidden = (cap === '1' && g > 5) || (cap === '2' && g < 6);
+    gradeGrid.append(card);
+  }
+  updateCount();
+}
+
+/* ── Count ───────────────────────────────────────────────── */
+function updateCount() {
+  const cards = gradeGrid.querySelectorAll('.grade-card:not([hidden])');
+  const groups = gradeGrid.querySelectorAll('.bai-group:not([hidden])');
+  countLabel.textContent = `${groups.length} bài học · ${cards.length} lớp`;
+}
+
+/* ── Theme ───────────────────────────────────────────────── */
+function applyTheme() {
+  html.dataset.theme = isDark ? 'dark' : 'light';
+  iconSun.style.display = isDark ? 'none' : '';
+  iconMoon.style.display = isDark ? '' : 'none';
+  themeBtn.title = isDark
+    ? 'Chế độ Sáng'
+    : 'Chế độ Tối';
+}
+
+/* ── Events ──────────────────────────────────────────────── */
+searchBox.addEventListener('click', () => { window.location.href = 'https://www.google.com.vn/'; });
+searchBox.addEventListener('keydown', e => { if (e.key === 'Enter') window.location.href = 'https://www.google.com.vn/'; });
+
+themeBtn.addEventListener('click', () => {
+  isDark = !isDark; applyTheme();
+  try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (_) { }
+});
+
+fsBtn.addEventListener('click', async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch (_) { }
+});
+document.addEventListener('fullscreenchange', () => {
+  const full = Boolean(document.fullscreenElement);
+  iconExpand.style.display = full ? 'none' : '';
+  iconCollapse.style.display = full ? '' : 'none';
+  fsBtn.setAttribute('aria-label', full
+    ? 'Thoát toàn màn hình'
+    : 'Bật toàn màn hình');
+});
+
+/* ── Hero Search Filter ──────────────────────────────────── */
+function filterLessons(query) {
+  const q = (query || '').trim().toLowerCase();
+  if (heroSearchClear) {
+    heroSearchClear.style.display = q ? 'block' : 'none';
+  }
+
+  const allCards = gradeGrid.querySelectorAll('.grade-card');
+  let totalMatches = 0;
+
+  allCards.forEach(card => {
+    const g = parseInt(card.dataset.grade, 10);
+    const isCapHidden = (cap === '1' && g > 5) || (cap === '2' && g < 6);
+    if (isCapHidden) {
+      card.hidden = true;
+      return;
+    }
+
+    const groups = card.querySelectorAll('.bai-group');
+    let cardMatches = 0;
+
+    groups.forEach(group => {
+      if (!q) {
+        group.hidden = false;
+        cardMatches++;
+        return;
+      }
+
+      const title = (group.querySelector('.bai-title')?.textContent || '').toLowerCase();
+      const searchData = (group.dataset.search || '').toLowerCase();
+      const gradeStr = 'lớp ' + g + ' lop ' + g;
+
+      const isMatch = title.includes(q) || searchData.includes(q) || gradeStr.includes(q);
+      group.hidden = !isMatch;
+      if (isMatch) cardMatches++;
+    });
+
+    card.hidden = q ? (cardMatches === 0) : false;
+    totalMatches += cardMatches;
+  });
+
+  if (q) {
+    const visibleCards = gradeGrid.querySelectorAll('.grade-card:not([hidden])').length;
+    countLabel.textContent = 'Tìm thấy ' + totalMatches + ' bài học · ' + visibleCards + ' lớp';
+  } else {
+    updateCount();
+  }
+}
+
+if (heroSearchInput) {
+  heroSearchInput.addEventListener('input', e => filterLessons(e.target.value));
+}
+if (heroSearchClear) {
+  heroSearchClear.addEventListener('click', () => {
+    heroSearchInput.value = '';
+    filterLessons('');
+    heroSearchInput.focus();
+  });
+}
+
+/* ── Init ────────────────────────────────────────────────── */
+(function init() {
+  try {
+    const saved = localStorage.getItem('theme');
+    isDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  } catch (_) { }
+  applyTheme();
+  renderAllGrades();
+})();
+
+
+  </script>
 
 </body>
 
