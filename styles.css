@@ -506,7 +506,7 @@ input {
 .telex-title {
   font-size: 0.82rem;
   font-weight: 800;
-  color: var(--primary);
+  color: #d1d1d1;
   letter-spacing: 0.02em;
 }
 
