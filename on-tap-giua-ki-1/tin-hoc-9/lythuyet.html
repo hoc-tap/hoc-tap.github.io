@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lý thuyết Tin học 9 – Giữa học kì 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7fc;--surface:#fff;--ink:#17233b;--muted:#5a6b88;--line:#dde5f2;--blue:#2457c5;--blue-soft:#e8effc;--teal:#0b8f7e;--teal-soft:#e3f6f2;--nav:64px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav) + 16px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.top{position:fixed;inset:0 0 auto 0;height:var(--nav);z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 max(16px,calc((100% - 1120px)/2))}
+.brand{font-weight:700;font-size:1.05rem;color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{font-style:normal;color:var(--blue)}
+.links{display:flex;gap:6px}
+.links a{padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.92rem;color:var(--blue);background:var(--blue-soft)}
+.links a:hover{background:var(--blue);color:#fff}
+.bar{position:absolute;left:0;bottom:-1px;height:3px;width:0;background:var(--blue)}
+.hero{padding:calc(var(--nav) + 36px) max(16px,calc((100% - 1120px)/2)) 8px}
+.hero h1{margin:0 0 6px;font-size:clamp(1.6rem,3.6vw,2.3rem);line-height:1.25}
+.hero p{margin:0;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:28px;max-width:1120px;margin:0 auto;padding:20px 16px 64px}
+.toc{grid-column:2;grid-row:1;position:sticky;top:calc(var(--nav) + 16px);align-self:start;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px}
+.toc h4{margin:4px 8px 6px;font-size:.85rem;color:var(--muted);font-weight:600}
+.toc a{display:flex;flex-direction:column;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);border-left:3px solid transparent;line-height:1.35}
+.toc a b{font-size:.9rem}.toc a span{font-size:.85rem;color:var(--muted)}
+.toc a:hover{background:var(--bg)}
+.toc a.on{background:var(--blue-soft);border-left-color:var(--blue)}
+.toc a.on b{color:var(--blue)}
+main{grid-column:1;grid-row:1}
+section{margin-bottom:34px}
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.badge{background:var(--blue);color:#fff;font-weight:700;border-radius:8px;padding:2px 12px;font-size:.95rem}
+h2{margin:0;font-size:1.45rem;line-height:1.3}
+.blk{background:var(--surface);border:1px solid var(--line);border-left-width:5px;border-radius:12px;padding:16px 20px 12px;margin-bottom:14px}
+.key{border-left-color:var(--blue);padding-bottom:6px}.key li{font-size:.97rem}
+.tip{border:2px solid #f0c25a;border-left:8px solid #e59a00;background:#fff7e0;box-shadow:0 4px 14px rgba(229,154,0,.16);padding:18px 22px 10px}
+.tip h3{display:flex;align-items:center;gap:10px;font-size:1.15rem;margin-bottom:12px}
+.ex{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e59a00;color:#fff;font-weight:700;font-size:1rem}
+.tip li{font-size:1.02rem;font-weight:500;color:#2b2310}
+.tip li::marker{color:#e59a00}
+h3{margin:0 0 8px;font-size:1.02rem}
+.key h3{color:var(--blue)}.tip h3{color:#8a5a00}
+ul{margin:0;padding-left:20px}
+li{margin:0 0 9px;text-align:justify;max-width:75ch}
+li::marker{color:var(--muted)}
+strong{color:#0f3a94}.tip strong{color:#7a3b00;background:#ffe9a8;padding:0 3px;border-radius:3px}
+footer{text-align:center;color:var(--muted);font-size:.88rem;padding:0 16px 40px}
+a:focus-visible{outline:3px solid #7aa2f7;outline-offset:2px}
+@media(max-width:900px){
+ .wrap{grid-template-columns:minmax(0,1fr);gap:12px}
+ .toc,main{grid-column:auto;grid-row:auto}
+ .toc{position:sticky;top:var(--nav);z-index:40;flex-direction:row;overflow-x:auto;border-radius:0 0 12px 12px;margin:0 -16px;padding:8px 12px;gap:6px}
+ .toc h4{display:none}.toc a{flex:0 0 auto;border-left:0;border-bottom:3px solid transparent;padding:4px 10px}
+ .toc a.on{border-bottom-color:var(--blue)}.toc a span{display:none}
+ html{scroll-padding-top:calc(var(--nav) + 64px)}
+}
+@media(max-width:520px){.brand{font-size:.9rem;white-space:normal;line-height:1.2}.links a{padding:7px 10px;font-size:.82rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.blk{min-width:0}main{min-width:0}.tw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px 0 12px}table{border-collapse:collapse;font-size:.88rem;min-width:460px;width:100%}th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{background:var(--blue-soft);color:var(--blue)}td.m{font-family:ui-monospace,Consolas,monospace}
+</style></head><body>
+<nav class="top" aria-label="Điều hướng chính">
+<a class="brand" href="index.html">Lý thuyết <i>Tin học</i> 9</a>
+<div class="links"><a href="tracnghiem.html">Trắc nghiệm</a><a href="kiemtra.html">Thi thử</a></div>
+<div class="bar" id="bar"></div></nav>
+<header class="hero"><h1>Tin học 9 – Ôn tập lý thuyết giữa học kì 1</h1><p>Năm học 2026–2027 · 6 bài · chọn bài ở mục lục để chuyển nhanh</p></header>
+<div class="wrap">
+<aside class="toc" aria-label="Mục lục"><h4>Mục lục</h4><a href="#bai1" data-id="bai1"><b>Bài 1</b><span>Thiết bị có gắn bộ xử lí và khả năng của máy tính</span></a><a href="#bai2" data-id="bai2"><b>Bài 2</b><span>Đặc điểm quan trọng của thông tin trong giải quyết vấn đề</span></a><a href="#bai3" data-id="bai3"><b>Bài 3</b><span>Chất lượng thông tin và nguồn thông tin đáng tin cậy</span></a><a href="#bai4" data-id="bai4"><b>Bài 4</b><span>Đạo đức, pháp luật và văn hoá trong môi trường số</span></a><a href="#bai5" data-id="bai5"><b>Bài 5</b><span>Phần mềm mô phỏng và ứng dụng</span></a><a href="#bai6" data-id="bai6"><b>Bài 6</b><span>Thực hành sử dụng phần mềm mô phỏng</span></a></aside>
+<main><section id="bai1"><header class="sh"><span class="badge">Bài 1</span><h2>Thiết bị có gắn bộ xử lí và khả năng của máy tính</h2></header><div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Bộ xử lí thông tin có mặt ở khắp nơi</strong>: gia đình (máy giặt, nồi cơm điện, tivi thông minh), trường học (máy chiếu), cửa hàng – siêu thị (hệ thống thanh toán), bệnh viện (máy chụp X-quang), nhà máy (robot lắp ráp), giao thông (đèn tín hiệu, ô tô tự lái), nông nghiệp (hệ thống phun tưới tự động).</li><li>CPU (bộ xử lí trung tâm) được ví như “bộ não” của máy tính. Nhà thông minh: thiết bị gia dụng tích hợp bộ xử lí, kết nối và tự động hoá.</li><li><strong>Vai trò của bộ xử lí</strong>: nhận dữ liệu, xử lí và điều khiển thiết bị số hoạt động.</li><li><strong>Khả năng của máy tính</strong>: tính toán nhanh; độ chính xác cao; lưu trữ dữ liệu dung lượng lớn; kết nối toàn cầu với tốc độ cao. Máy tính không có khả năng cảm thụ văn học, cảm xúc như con người.</li><li><strong>Ứng dụng</strong>: y tế (chẩn đoán bệnh), khoa học kĩ thuật (mô phỏng dòng chảy, dự báo thời tiết), giao thông (ô tô tự lái), công nghiệp (robot), giáo dục (tài nguyên và lớp học trực tuyến).</li><li><strong>Tác động tích cực của công nghệ thông tin</strong>: tăng năng suất lao động, hỗ trợ giáo dục, thúc đẩy xã hội và nền kinh tế tri thức phát triển.</li></ul></div><div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Biết ghép đúng thiết bị với lĩnh vực sử dụng (siêu thị – hệ thống thanh toán; công nghiệp – robot lắp ráp; y tế – chẩn đoán bệnh).</li><li>Câu hỏi “máy tính không có khả năng” → chọn cảm thụ văn học.</li><li>Phát biểu “công nghệ thông tin tác động tiêu cực nhiều hơn tích cực” là SAI; cần sử dụng công nghệ thông tin đúng cách để hạn chế tác động tiêu cực.</li></ul></div></section>
+<section id="bai2"><header class="sh"><span class="badge">Bài 2</span><h2>Đặc điểm quan trọng của thông tin trong giải quyết vấn đề</h2></header><div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Thông tin là cơ sở để ra quyết định; Internet là kho thông tin khổng lồ nhưng không phải thông tin nào cũng dùng được để giải quyết vấn đề.</li><li>Bốn tiêu chí đánh giá chất lượng thông tin:</li><li style="margin-left:20px;list-style:circle"><strong>Tính mới</strong>: thông tin còn cập nhật, chưa lỗi thời (ví dụ: thời hạn nộp bài thi, lịch tuyển sinh).</li><li style="margin-left:20px;list-style:circle"><strong>Tính chính xác</strong>: thông tin đúng đắn, đáng tin.</li><li style="margin-left:20px;list-style:circle"><strong>Tính đầy đủ</strong>: bao quát nhiều khía cạnh, cho cái nhìn tổng thể về vấn đề.</li><li style="margin-left:20px;list-style:circle"><strong>Tính sử dụng được</strong>: phù hợp với vấn đề hay mục tiêu đang cần giải quyết.</li></ul></div><div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Phân biệt đúng</strong>: lỗi thời → tính mới; đúng đắn → tính chính xác; bao quát → tính đầy đủ; phù hợp mục tiêu → tính sử dụng được.</li><li><strong>Các tiêu chí KHÔNG dùng</strong>: tính hấp dẫn, số lượng bản tin, số lượng người đọc.</li><li>Bỏ lỡ hạn nộp bài dự thi là vi phạm tính mới.</li></ul></div></section>
+<section id="bai3"><header class="sh"><span class="badge">Bài 3</span><h2>Chất lượng thông tin và nguồn thông tin đáng tin cậy</h2></header><div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Cần quan tâm đến chất lượng thông tin khi tìm kiếm, tiếp nhận, trao đổi và sử dụng để đưa ra quyết định đúng đắn.</li><li><strong>Nguồn thông tin đáng tin cậy</strong>: trang web chính thức của cơ quan, tổ chức có thẩm quyền; sách giáo khoa, tài liệu do nhà xuất bản uy tín phát hành.</li><li><strong>Chọn nguồn theo mục tiêu</strong>: tuyển sinh lớp 10 → trang web Sở Giáo dục và Đào tạo; IELTS → trang web đơn vị tổ chức thi (Hội đồng Anh, IDP); du học → thông tin học bổng, điều kiện du học.</li><li>Địa chỉ web của tổ chức giáo dục Việt Nam thường có đuôi .edu.vn. Kiểm tra tính chính xác: đối chiếu thông tin từ nhiều nguồn tin cậy.</li><li><strong>Nguồn kém tin cậy</strong>: mạng xã hội, chia sẻ cá nhân trên Internet, lời đồn, ý kiến bạn bè.</li><li><strong>Cách làm</strong>: dùng công cụ tìm kiếm với từ khoá phù hợp → so sánh nhiều nguồn → đánh giá theo 4 tiêu chí → chọn thông tin dùng.</li></ul></div><div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Chất lượng thông tin được đánh giá bằng đủ 4 tiêu chí (mới, chính xác, đầy đủ, sử dụng được), không chỉ một tiêu chí.</li><li><strong>Câu hỏi nguồn tin</strong>: ưu tiên cơ quan quản lí đúng lĩnh vực và sách giáo khoa chính thống.</li><li>Thông tin không liên quan đến vấn đề thì không sử dụng được, dù đúng và mới.</li></ul></div></section>
+<section id="bai4"><header class="sh"><span class="badge">Bài 4</span><h2>Đạo đức, pháp luật và văn hoá trong môi trường số</h2></header><div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Tác động tiêu cực của công nghệ số:</li><li style="margin-left:20px;list-style:circle"><strong>Sức khoẻ thể chất</strong>: giảm thị lực, vấn đề cột sống, béo phì, tim mạch do ít vận động.</li><li style="margin-left:20px;list-style:circle"><strong>Sức khoẻ tinh thần</strong>: giảm tập trung, suy giảm sáng tạo, nghiện Internet, nguy cơ trầm cảm, lo lắng.</li><li style="margin-left:20px;list-style:circle"><strong>Quyền riêng tư</strong>: thông tin cá nhân bị rò rỉ, tài khoản bị mạo danh, lừa đảo qua mạng.</li><li style="margin-left:20px;list-style:circle"><strong>Xã hội</strong>: thông tin giả tràn lan, giảm tương tác trực tiếp, người yếu thế (người già, người khuyết tật, vùng khó khăn) bị tụt hậu, nguy cơ thất nghiệp.</li><li style="margin-left:20px;list-style:circle"><strong>Môi trường</strong>: rác thải điện tử, thiết bị nhanh lỗi thời. Lệ thuộc công nghệ: nhờ AI làm bài tập thay.</li><li><strong>Biện pháp</strong>: dùng công nghệ đúng cách, đúng thời lượng; bảo vệ thông tin cá nhân; kiểm chứng thông tin; tái chế thiết bị cũ.</li><li><strong>Hành vi vi phạm khi giao tiếp qua mạng</strong>: dùng từ ngữ phản cảm (thiếu văn hoá); tự ý đăng thông tin cá nhân của người khác như địa chỉ nhà (vi phạm quyền nhân thân, uy tín cá nhân và tổ chức); dùng phần mềm không bản quyền, dữ liệu của người khác khi chưa xin phép (vi phạm sở hữu trí tuệ).</li><li><strong>Tình huống</strong>: bị yêu cầu cung cấp mã OTP → tuyệt đối không cung cấp; bị ghép ảnh, bắt nạt mạng → chụp bằng chứng, báo cáo bài viết, báo cha mẹ/thầy cô.</li><li><strong>Văn bản liên quan</strong>: Luật Công nghệ thông tin, Luật An ninh mạng, Nghị định về quản lí, cung cấp, sử dụng dịch vụ Internet.</li></ul></div><div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Biết phân loại đúng tác động theo nhóm</strong>: sức khoẻ, quyền riêng tư, môi trường, xã hội.</li><li>Phương án “giúp ích, tiện lợi” (soạn thảo báo cáo, công cụ giáo dục, tiết kiệm thời gian) KHÔNG phải tác động tiêu cực.</li><li><strong>Câu đúng/sai</strong>: đọc kĩ từng ý, chú ý các từ “luôn”, “không bao giờ”, “mọi”.</li><li>Khi gặp tình huống, chọn cách ứng xử tuân thủ pháp luật, đạo đức, văn hoá.</li></ul></div></section>
+<section id="bai5"><header class="sh"><span class="badge">Bài 5</span><h2>Phần mềm mô phỏng và ứng dụng</h2></header><div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Phần mềm mô phỏng</strong>: tạo mô hình thế giới thực trên máy tính để quan sát, thí nghiệm ảo, khám phá tri thức và giải quyết vấn đề.</li><li><strong>Lợi ích</strong>: an toàn, tiết kiệm chi phí, làm lại nhiều lần, quan sát được hiện tượng quá nhanh, quá chậm, quá nhỏ hoặc nguy hiểm.</li><li><strong>Một số phần mềm</strong>: GeoGebra (vẽ hình học, giải toán); Cabri (hình học); Crocodile Chemistry (thí nghiệm hoá học); Crocodile Physics, PhyLab (thí nghiệm vật lí); Flowgorithm (chạy thử thuật toán dạng sơ đồ khối); Labster (phòng thí nghiệm ảo vật lí, hoá học, sinh học); trycolors.com (mô phỏng pha màu trực tuyến); physics.weber.edu/schroeder/md (chuyển động, tương tác giữa các phân tử); phần mềm mô phỏng giao thông (giảm tắc nghẽn).</li><li><strong>PhET (phet.colorado.edu)</strong>: mô phỏng Vật lí, Hoá học, Sinh học, Toán, không có Địa lí. Hệ màu RGB: Blue + Red = Magenta; hệ CMYK: Red = Magenta + Yellow.</li><li><strong>Ứng dụng trong học tập</strong>: Toán, Vật lí, Hoá học, Sinh học, Tin học.</li></ul></div><div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Nhớ cặp phần mềm – chức năng; không nhầm Crocodile Chemistry (hoá) với PhyLab/Crocodile Physics (vật lí).</li><li><strong>Câu hỏi lợi ích</strong>: chọn ý nêu an toàn, tiết kiệm, mô phỏng được điều khó thực hiện ngoài đời thật.</li></ul></div></section>
+<section id="bai6"><header class="sh"><span class="badge">Bài 6</span><h2>Thực hành sử dụng phần mềm mô phỏng</h2></header><div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Chức năng điều khiển cơ bản</strong>: chọn đối tượng, thiết lập/thay đổi thông số, chạy (Start), tạm dừng (Pause), dừng/đặt lại (Reset), quan sát và đọc kết quả.</li><li><strong>Quy trình</strong>: xác định mục tiêu → chọn phần mềm phù hợp → thiết lập thông số ban đầu → chạy mô phỏng → quan sát, ghi lại kết quả → rút ra kết luận.</li><li><strong>PhET (mạch điện)</strong>: Ampe kế đo cường độ dòng điện, mắc nối tiếp với thiết bị cần đo. PhET chuyển hoá năng lượng: đổi nguồn năng lượng để quan sát sự chuyển hoá. Geometer&#x27;s Sketchpad: lệnh Measure đo độ dài đoạn thẳng; khi kéo hình, tỉ lệ giữa các đoạn tương ứng không đổi (tỉ lệ vàng xấp xỉ 1,618).</li><li>Thay đổi từng thông số một và so sánh kết quả để hiểu mối quan hệ giữa các đại lượng.</li></ul></div><div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Đọc kĩ yêu cầu bài thực hành, xác định thao tác nào ứng với chức năng điều khiển nào.</li><li>Chỉ thay đổi một thông số mỗi lần; luôn đặt lại (Reset) trước khi chạy thử mới.</li></ul></div></section>
+</main></div>
+<footer>Ôn xong lý thuyết, hãy làm bài ở mục Trắc nghiệm và Thi thử.</footer>
+<script>
+(function(){
+var links=[].slice.call(document.querySelectorAll('.toc a'));
+var secs=links.map(function(a){return document.getElementById(a.dataset.id)});
+function set(id){links.forEach(function(a){a.classList.toggle('on',a.dataset.id===id)});
+ var on=document.querySelector('.toc a.on');
+ if(on&&window.innerWidth<=900&&on.scrollIntoView){var t=on.parentNode;t.scrollLeft=on.offsetLeft-t.clientWidth/2+on.clientWidth/2}}
+function update(){
+ var y=window.scrollY+(window.innerWidth<=900?130:100),cur=secs[0].id;
+ secs.forEach(function(s){if(s.offsetTop<=y)cur=s.id});
+ if(window.innerHeight+window.scrollY>=document.body.scrollHeight-4)cur=secs[secs.length-1].id;
+ set(cur);
+ var h=document.documentElement.scrollHeight-window.innerHeight;
+ document.getElementById('bar').style.width=(h>0?window.scrollY/h*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();
+})();
+</script></body></html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đề cương Tin học 6 – 7 – 8 – 9 | Giữa học kì 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#17233b;--muted:#5a6b88;--line:#dde5f2;--blue:#2457c5}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font:16px/1.65 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(900px 420px at 8% -10%,#dbe7ff 0,transparent 60%),radial-gradient(800px 420px at 100% 0,#d9f5ee 0,transparent 55%),radial-gradient(700px 400px at 50% 110%,#fff0d6 0,transparent 60%),#f4f7fc;overflow-x:hidden}
+.bub{position:fixed;border-radius:50%;opacity:.5;filter:blur(2px);z-index:0;animation:fl 9s ease-in-out infinite}
+.b1{width:120px;height:120px;background:#cfe0ff;top:14%;right:6%}
+.b2{width:70px;height:70px;background:#c9f0e6;bottom:12%;left:5%;animation-delay:-3s}
+.b3{width:46px;height:46px;background:#ffe3a8;top:46%;left:3%;animation-delay:-6s}
+@keyframes fl{50%{transform:translateY(-18px)}}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:clamp(28px,6vw,60px) 18px 34px}
+.tag{display:inline-block;background:#fff;border:1px solid var(--line);color:var(--blue);font-weight:800;font-size:.82rem;padding:4px 14px;border-radius:999px;letter-spacing:.05em}
+h1{margin:16px 0 10px;font-size:clamp(2rem,6vw,3.4rem);line-height:1.15;font-weight:800}
+h1 em{font-style:normal;background:linear-gradient(90deg,#2457c5,#0b8f7e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:0 0 30px;color:var(--muted);max-width:56ch}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:6px;padding:22px 18px 20px;background:#fff;border:1px solid var(--line);border-radius:20px;text-decoration:none;color:inherit;box-shadow:0 6px 20px rgba(36,87,197,.07);transition:transform .2s,box-shadow .2s,border-color .2s;animation:up .5s ease both}
+.card::before{content:"";position:absolute;inset:0 0 auto 0;height:6px;background:var(--c)}
+.card:nth-child(2){animation-delay:.07s}.card:nth-child(3){animation-delay:.14s}.card:nth-child(4){animation-delay:.21s}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.card:hover,.card:focus-visible{transform:translateY(-5px);box-shadow:0 16px 32px rgba(36,87,197,.17);border-color:var(--c)}
+.num{font-size:3.4rem;font-weight:800;line-height:1;color:var(--c)}
+.num small{display:block;font-size:.8rem;letter-spacing:.14em;color:var(--muted);font-weight:700;margin-bottom:2px}
+.card h2{margin:6px 0 0;font-size:1.05rem}
+.card p{margin:0;color:var(--muted);font-size:.9rem;flex:1}
+.ic{position:absolute;right:14px;top:22px;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:1.5rem;background:var(--s)}
+.go{margin-top:10px;font-weight:700;color:var(--c)}
+.go::after{content:" →";transition:margin .2s}.card:hover .go::after{margin-left:6px}
+.g6{--c:#e0771a;--s:#fff0dd}.g7{--c:#0b8f7e;--s:#e3f6f2}.g8{--c:#2457c5;--s:#e8effc}.g9{--c:#8a3fc4;--s:#f2e8fb}
+.feat{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.feat span{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.88rem;font-weight:600;color:var(--muted)}
+footer{margin-top:34px;text-align:center;color:var(--muted);font-size:.88rem}
+a:focus-visible{outline:3px solid #7aa2f7;outline-offset:2px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.card{flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px 16px;padding:18px 16px 16px}.num{font-size:2.6rem}.num small{font-size:.7rem}.ic{top:16px}.card p{flex-basis:100%}.go{margin:2px 0 0;flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.card,.bub{animation:none;transition:none}}
+</style></head><body>
+<i class="bub b1"></i><i class="bub b2"></i><i class="bub b3"></i>
+<div class="wrap">
+<span class="tag">NGUYỄN DU EDU · NĂM HỌC 2026–2027</span>
+<h1>Đề cương <em>Tin học</em><br>Giữa học kì 1</h1>
+<p class="sub">Chọn khối lớp của em để ôn lý thuyết trọng tâm, luyện trắc nghiệm có hướng dẫn và kiểm tra thử như thi thật.</p>
+<div class="grid">
+<a class="card g6" href="tin-hoc-6/index.html"><span class="ic">🌱</span><div class="num"><small>LỚP</small>6</div><h2>Tin học 6</h2><p>Ôn tập giữa học kì 1.</p><span class="go">Vào lớp 6</span></a>
+<a class="card g7" href="tin-hoc-7/index.html"><span class="ic">🚀</span><div class="num"><small>LỚP</small>7</div><h2>Tin học 7</h2><p>Ôn tập giữa học kì 1.</p><span class="go">Vào lớp 7</span></a>
+<a class="card g8" href="tin-hoc-8/index.html"><span class="ic">💡</span><div class="num"><small>LỚP</small>8</div><h2>Tin học 8</h2><p>Ôn tập giữa học kì 1.</p><span class="go">Vào lớp 8</span></a>
+<a class="card g9" href="tin-hoc-9/index.html"><span class="ic">🎯</span><div class="num"><small>LỚP</small>9</div><h2>Tin học 9</h2><p>Ôn tập giữa học kì 1.</p><span class="go">Vào lớp 9</span></a>
+</div>
+<div class="feat"><span>📘 Lý thuyết gọn</span><span>✅ Trắc nghiệm có hướng dẫn</span><span>⏱️ Thi thử 45 phút</span></div>
+<footer>Chúc các em ôn tập hiệu quả!</footer>
+</div></body></html>
