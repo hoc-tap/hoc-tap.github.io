@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lý thuyết Tin học 8 – Giữa học kì 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7fc;--surface:#fff;--ink:#17233b;--muted:#5a6b88;--line:#dde5f2;--blue:#2457c5;--blue-soft:#e8effc;--teal:#0b8f7e;--teal-soft:#e3f6f2;--nav:64px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav) + 16px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.top{position:fixed;inset:0 0 auto 0;height:var(--nav);z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 max(16px,calc((100% - 1120px)/2))}
+.brand{font-weight:700;font-size:1.05rem;color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{font-style:normal;color:var(--blue)}
+.links{display:flex;gap:6px}
+.links a{padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.92rem;color:var(--blue);background:var(--blue-soft)}
+.links a:hover{background:var(--blue);color:#fff}
+.bar{position:absolute;left:0;bottom:-1px;height:3px;width:0;background:var(--blue)}
+.hero{padding:calc(var(--nav) + 36px) max(16px,calc((100% - 1120px)/2)) 8px}
+.hero h1{margin:0 0 6px;font-size:clamp(1.6rem,3.6vw,2.3rem);line-height:1.25}
+.hero p{margin:0;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:28px;max-width:1120px;margin:0 auto;padding:20px 16px 64px}
+.toc{grid-column:2;grid-row:1;position:sticky;top:calc(var(--nav) + 16px);align-self:start;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px}
+.toc h4{margin:4px 8px 6px;font-size:.85rem;color:var(--muted);font-weight:600}
+.toc a{display:flex;flex-direction:column;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);border-left:3px solid transparent;line-height:1.35}
+.toc a b{font-size:.9rem}.toc a span{font-size:.85rem;color:var(--muted)}
+.toc a:hover{background:var(--bg)}
+.toc a.on{background:var(--blue-soft);border-left-color:var(--blue)}
+.toc a.on b{color:var(--blue)}
+main{grid-column:1;grid-row:1}
+section{margin-bottom:34px}
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.badge{background:var(--blue);color:#fff;font-weight:700;border-radius:8px;padding:2px 12px;font-size:.95rem}
+h2{margin:0;font-size:1.45rem;line-height:1.3}
+.blk{background:var(--surface);border:1px solid var(--line);border-left-width:5px;border-radius:12px;padding:16px 20px 12px;margin-bottom:14px}
+.key{border-left-color:var(--blue);padding-bottom:6px}.key li{font-size:.97rem}
+.tip{border:2px solid #f0c25a;border-left:8px solid #e59a00;background:#fff7e0;box-shadow:0 4px 14px rgba(229,154,0,.16);padding:18px 22px 10px}
+.tip h3{display:flex;align-items:center;gap:10px;font-size:1.15rem;margin-bottom:12px}
+.ex{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e59a00;color:#fff;font-weight:700;font-size:1rem}
+.tip li{font-size:1.02rem;font-weight:500;color:#2b2310}
+.tip li::marker{color:#e59a00}
+h3{margin:0 0 8px;font-size:1.02rem}
+.key h3{color:var(--blue)}.tip h3{color:#8a5a00}
+ul{margin:0;padding-left:20px}
+li{margin:0 0 9px;text-align:justify;max-width:75ch}
+li::marker{color:var(--muted)}
+strong{color:#0f3a94}.tip strong{color:#7a3b00;background:#ffe9a8;padding:0 3px;border-radius:3px}
+footer{text-align:center;color:var(--muted);font-size:.88rem;padding:0 16px 40px}
+a:focus-visible{outline:3px solid #7aa2f7;outline-offset:2px}
+@media(max-width:900px){
+ .wrap{grid-template-columns:1fr;gap:12px}
+ .toc,main{grid-column:auto;grid-row:auto}
+ .toc{position:sticky;top:var(--nav);z-index:40;flex-direction:row;overflow-x:auto;border-radius:0 0 12px 12px;margin:0 -16px;padding:8px 12px;gap:6px}
+ .toc h4{display:none}.toc a{flex:0 0 auto;border-left:0;border-bottom:3px solid transparent;padding:4px 10px}
+ .toc a.on{border-bottom-color:var(--blue)}.toc a span{display:none}
+ html{scroll-padding-top:calc(var(--nav) + 64px)}
+}
+@media(max-width:520px){.brand{font-size:.9rem;white-space:normal;line-height:1.2}.links a{padding:7px 10px;font-size:.82rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.tw{overflow-x:auto;margin:6px 0 12px}table{border-collapse:collapse;font-size:.9rem;min-width:520px;width:100%}th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{background:var(--blue-soft);color:var(--blue)}td.m{font-family:ui-monospace,Consolas,monospace}
+</style></head><body>
+<nav class="top" aria-label="Điều hướng chính">
+<a class="brand" href="index.html">Lý thuyết <i>Tin học</i> 8</a>
+<div class="links"><a href="tracnghiem.html">Trắc nghiệm</a><a href="kiemtra.html">Thi thử</a></div>
+<div class="bar" id="bar"></div></nav>
+<header class="hero"><h1>Tin học 8 – Ôn tập lý thuyết giữa học kì 1</h1><p>Năm học 2026–2027 · 5 bài · chọn bài ở mục lục để chuyển nhanh</p></header>
+<div class="wrap">
+<aside class="toc" aria-label="Mục lục"><h4>Mục lục</h4><a href="#bai1" data-id="bai1"><b>Bài 1</b><span>Lược sử công cụ tính toán</span></a><a href="#bai2" data-id="bai2"><b>Bài 2</b><span>Thông tin trong môi trường số</span></a><a href="#bai3" data-id="bai3"><b>Bài 3</b><span>Khai thác thông tin số</span></a><a href="#bai4" data-id="bai4"><b>Bài 4</b><span>Đạo đức và văn hoá số</span></a><a href="#bai5" data-id="bai5"><b>Bài 5</b><span>Bảng tính – bài toán thực tế</span></a></aside>
+<main><section id="bai1"><header class="sh"><span class="badge">Bài 1</span><h2>Lược sử công cụ tính toán</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><div class="tw"><table><tr><th>Công cụ</th><th>Thời gian / Người chế tạo</th><th>Cần nhớ</th></tr><tr><td><strong>Bàn tính</strong></td><td>Hơn 2000 năm TCN</td><td>Công cụ tính toán sớm nhất của loài người.</td></tr><tr><td><strong>Pascaline</strong></td><td>1642 – Blaise Pascal</td><td>Máy tính cơ khí đầu tiên, giúp cha Pascal tính thuế.</td></tr><tr><td><strong>Máy của Babbage</strong></td><td>Dự án từ 1833</td><td>Máy đa năng, tính toán tự động; nguyên lí giống máy tính ngày nay.</td></tr><tr><td><strong>Von Neumann</strong></td><td>—</td><td>CPU, bộ nhớ, thiết bị vào – ra, đường truyền; chương trình và dữ liệu lưu trong bộ nhớ.</td></tr></table></div><div class="tw"><table><tr><th>Thế hệ</th><th>Thời gian</th><th>Linh kiện chính</th><th>Đặc điểm</th></tr><tr><td>1</td><td>1945–1955</td><td>Đèn điện tử chân không</td><td>Cồng kềnh, tốn điện; vào – ra bằng thẻ, băng đục lỗ.</td></tr><tr><td>2</td><td>1955–1965</td><td>Bóng bán dẫn (transistor)</td><td>Nhỏ gọn, ít tốn điện hơn.</td></tr><tr><td>3</td><td>1965–1974</td><td>Mạch tích hợp (IC)</td><td>Giảm kích thước và giá thành.</td></tr><tr><td>4</td><td>1974–1990</td><td>VLSI → vi xử lí</td><td>Có máy tính cá nhân (PC), mạng LAN.</td></tr><tr><td>5</td><td>Từ 1990</td><td>ULSI</td><td>Cảm nhận, suy luận như con người (AI).</td></tr></table></div><ul><li>Hệ thập phân dùng <strong>10 chữ số</strong> (0 đến 9). Xu hướng: <strong>nhỏ hơn, nhanh hơn, lưu trữ nhiều hơn, rẻ hơn</strong>.</li><li>Máy tính thay đổi xã hội: <strong>y tế</strong> (theo dõi sức khoẻ, AI chẩn đoán), <strong>giáo dục</strong> (học mọi lúc mọi nơi), <strong>kinh tế</strong> (thanh toán mã QR).</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Học theo bộ ba <strong>thế hệ – năm – linh kiện</strong>; dễ nhầm <strong>VLSI</strong> (thế hệ 4) với <strong>ULSI</strong> (thế hệ 5).</li><li>Phân biệt người – năm: <strong>Pascal – 1642</strong> (Pascaline); <strong>Babbage – 1833</strong> (máy đa năng tự động).</li><li>Giải thích đổi thế hệ: bóng bán dẫn nhỏ, ít toả nhiệt nên thay đèn chân không; IC không phải hàn từng bóng rời nên giảm kích thước và giá.</li></ul></div></section>
+<section id="bai2"><header class="sh"><span class="badge">Bài 2</span><h2>Thông tin trong môi trường số</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Thông tin số</strong>: thông tin đã mã hoá thành dãy bit (0 và 1) để máy tính xử lí (ví dụ: ảnh chụp bằng điện thoại).</li><li>Đặc điểm: <strong>đa dạng</strong>; <strong>lưu trữ khổng lồ</strong>; <strong>dễ nhân bản, chia sẻ, lan truyền</strong> nên khó xoá hết; <strong>truy cập từ xa</strong> nếu được phép; có <strong>bản quyền</strong>; <strong>độ tin cậy khác nhau</strong>, dễ bị bóp méo thành tin giả.</li><li><strong>Bốn cách kiểm tra độ tin cậy</strong>: kiểm tra <strong>nguồn</strong>; phân biệt <strong>ý kiến và sự kiện</strong>; kiểm tra <strong>chứng cứ</strong> của kết luận; đánh giá <strong>tính thời sự</strong>.</li><li>Dùng thông tin thiếu kiểm chứng dẫn đến quyết định sai, lan truyền tin giả, ảnh hưởng danh dự và an ninh xã hội.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Sự kiện</strong> có số liệu, thời gian, địa điểm, kiểm chứng được; <strong>ý kiến</strong> là quan điểm cá nhân (“hay nhất”, “đẹp nhất”).</li><li>Kết luận không có chứng cứ (từ vài trường hợp suy ra “tất cả”) = như ý kiến cá nhân, <strong>độ tin cậy thấp</strong>.</li><li>Số lượt thích, chia sẻ <strong>không chứng minh</strong> thông tin đúng; thông tin cũ, trang lâu không cập nhật dễ lỗi thời.</li><li>Chia sẻ <strong>không làm mất bản gốc</strong>; “đã đăng lên mạng” không có nghĩa ai cũng được sao chép (bản quyền được pháp luật bảo vệ).</li></ul></div></section>
+<section id="bai3"><header class="sh"><span class="badge">Bài 3</span><h2>Thực hành: khai thác thông tin số</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Tìm thông tin bằng <strong>máy tìm kiếm</strong>; đặt cụm từ trong <strong>dấu ngoặc kép</strong> để tìm đúng cụm từ.</li><li>Tên miền <strong>.gov.vn</strong> = cơ quan chính phủ, độ tin cậy cao; diễn đàn ít kiểm duyệt; trang doanh nghiệp (.com bán hàng) có thể thiên vị.</li><li><strong>3 bước</strong>: (1) tìm bằng từ khoá phù hợp → (2) <strong>ghi chép kết quả kèm nguồn</strong> → (3) <strong>đánh giá lợi ích</strong> rồi mới dùng.</li><li>Hai câu hỏi đánh giá: thông tin có <strong>phù hợp</strong> không? <strong>Nguồn</strong> có đáng tin cậy không?</li><li>Thứ tự trang: <strong>tiêu đề → dàn ý → giới thiệu vấn đề → nội dung → kết luận → tài liệu tham khảo</strong>.</li><li>Trang nội dung: <strong>không quá 6 mục, mỗi mục không quá 2 dòng</strong>; dùng hình minh hoạ, xử lí ảnh để cắt, chỉnh màu, đổi kích thước.</li><li>Chia sẻ bài: thư điện tử, mạng xã hội, không gian lưu trữ chung; chọn theo <strong>dễ dùng và an toàn dữ liệu</strong>; tệp lớn → lưu trữ đám mây rồi gửi liên kết.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>So sánh nguồn: ưu tiên nguồn <strong>có thẩm quyền, rõ nguồn gốc</strong> (.gov.vn); quảng cáo hoặc nguồn lạ cần đối chiếu thêm.</li><li><strong>Bài đếm trang</strong>: số trang nội dung = tổng số trang − số trang cố định (tiêu đề, dàn ý, giới thiệu, kết luận, tài liệu tham khảo… đúng theo đề liệt kê).</li><li>Phải <strong>ghi nguồn, tên tác giả</strong>; không ghép sản phẩm của người khác rồi nhận là của mình.</li></ul></div></section>
+<section id="bai4"><header class="sh"><span class="badge">Bài 4</span><h2>Đạo đức và văn hoá trong sử dụng công nghệ số</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><div class="tw"><table><tr><th>Nhóm</th><th>Biểu hiện</th></tr><tr><td><strong>Xâm phạm quyền riêng tư</strong></td><td>Ghi âm, quay, chụp lén; đưa thông tin cá nhân của người khác lên mạng khi chưa được phép.</td></tr><tr><td><strong>Vi phạm bản quyền</strong></td><td>Quay phim trong rạp rồi đăng; tải, chia sẻ nhạc, phim có bản quyền khi chưa cho phép; dùng phần mềm bẻ khoá (crack).</td></tr><tr><td><strong>Thiếu trung thực</strong></td><td>Sao chép rồi nhận là của mình; dùng ảnh của người khác không xin phép; đăng tin giả.</td></tr><tr><td><strong>Vi phạm pháp luật, đạo đức</strong></td><td>Phát tán video bạo lực; cờ bạc, cá cược trên mạng; mua bán động vật hoang dã quý hiếm.</td></tr><tr><td><strong>Thiếu văn hoá</strong></td><td>Ngôn từ phản cảm, lăng mạ, giễu cợt; hình ảnh phản cảm.</td></tr></table></div><ul><li><strong>Hành vi đúng</strong>: xin phép trước khi chụp, quay, đăng; ghi rõ nguồn và tác giả; chỉ dùng sản phẩm khi được phép; không tiết lộ thông tin người khác; gặp vi phạm thì <strong>báo thầy cô hoặc cơ quan có trách nhiệm</strong>.</li><li>Đăng, lan truyền thông tin sai sự thật vi phạm <strong>Luật An ninh mạng</strong>.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Tự hỏi 3 điều: <strong>Có được phép không? Có xâm phạm riêng tư hoặc bản quyền không? Có trung thực, văn minh không?</strong></li><li><strong>Không phải hành vi nào cũng vi phạm</strong>: tự sáng tạo, xin phép và ghi nguồn, chia sẻ liên kết gốc, tặng đĩa nhạc đã mua… là hợp lệ.</li><li>Xoá ghi chú bản quyền rồi chia sẻ vẫn là <strong>vi phạm</strong>; hầu hết sản phẩm trên Internet đều <strong>có bản quyền</strong>.</li></ul></div></section>
+<section id="bai5"><header class="sh"><span class="badge">Bài 5</span><h2>Sử dụng bảng tính giải quyết bài toán thực tế</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Địa chỉ ô: <strong>tên cột (chữ) rồi tên hàng (số)</strong>; B2 là giao của cột B và hàng 2.</li><li>Nhập công thức: chọn ô, gõ <strong>=</strong> trước, rồi địa chỉ ô và phép toán (+ − * /), ví dụ <strong>=C4*D4</strong>. Kết quả <strong>tự tính lại</strong> khi dữ liệu thay đổi.</li></ul><div class="tw"><table><tr><th>Loại địa chỉ</th><th>Cách viết</th><th>Khi sao chép công thức</th></tr><tr><td><strong>Tương đối</strong> (mặc định)</td><td>Không có $: C4, E5</td><td><strong>Thay đổi</strong> theo vị trí ô mới.</td></tr><tr><td><strong>Tuyệt đối</strong></td><td>$ trước cả cột và hàng: $F$2</td><td><strong>Không đổi</strong> ở mọi vị trí.</td></tr></table></div><ul><li>Tạo địa chỉ tuyệt đối: gõ $ hoặc nhấn <strong>F4</strong> sau khi chọn địa chỉ.</li><li>Sao chép sang phải/trái <strong>k cột</strong>: chữ cột đổi k; xuống/lên <strong>k hàng</strong>: số hàng đổi k.</li><li>Dùng <strong>tương đối</strong> cho dữ liệu đổi theo từng hàng (đơn giá, số lượng); dùng <strong>tuyệt đối</strong> cho giá trị chung cố định (tỉ lệ giảm, thuế).</li><li>Dán bảng từ Word/PowerPoint: <strong>Ctrl + C → chọn ô đích → Ctrl + V</strong>; ô đích là góc <strong>trên bên trái</strong>.</li></ul><div class="tw"><table><tr><th>Bài toán</th><th>Công thức (viết ở hàng đầu, sao chép xuống)</th></tr><tr><td>Thành tiền = Đơn giá × Số lượng</td><td><span class="m">=C4*D4</span></td></tr><tr><td>Tiền giảm = Đơn giá × Tỉ lệ giảm (D2 cố định)</td><td><span class="m">=C4*$D$2</span></td></tr><tr><td>Đơn giá sau giảm</td><td><span class="m">=C4-C4*$D$2</span></td></tr><tr><td>Doanh thu công ti (F2 cố định)</td><td><span class="m">=E4*$F$2</span></td></tr></table></div></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li>Công thức <strong>luôn bắt đầu bằng dấu =</strong>; chỉ là tuyệt đối khi có $ trước <strong>cả</strong> tên cột <strong>và</strong> tên hàng.</li><li>Câu “công thức sau khi sao chép”: đếm <strong>dịch bao nhiêu cột, bao nhiêu hàng</strong> rồi áp dụng cho từng địa chỉ tương đối; địa chỉ có $ giữ nguyên. Ví dụ <span class="m">=B5*C5</span> từ D5 đến F7 (+2 cột, +2 hàng) → <span class="m">=D7*E7</span>.</li><li>Bảng 5 hàng × 3 cột dán vào <strong>B2</strong> → ô góc dưới bên phải là <strong>D6</strong> (cột B+2, hàng 2+4).</li></ul></div></section>
+</main></div>
+<footer>Ôn xong lý thuyết, hãy làm bài ở mục Trắc nghiệm và Thi thử.</footer>
+<script>
+(function(){
+var links=[].slice.call(document.querySelectorAll('.toc a'));
+var secs=links.map(function(a){return document.getElementById(a.dataset.id)});
+function set(id){links.forEach(function(a){a.classList.toggle('on',a.dataset.id===id)});
+ var on=document.querySelector('.toc a.on');
+ if(on&&window.innerWidth<=900&&on.scrollIntoView){var t=on.parentNode;t.scrollLeft=on.offsetLeft-t.clientWidth/2+on.clientWidth/2}}
+function update(){
+ var y=window.scrollY+(window.innerWidth<=900?130:100),cur=secs[0].id;
+ secs.forEach(function(s){if(s.offsetTop<=y)cur=s.id});
+ if(window.innerHeight+window.scrollY>=document.body.scrollHeight-4)cur=secs[secs.length-1].id;
+ set(cur);
+ var h=document.documentElement.scrollHeight-window.innerHeight;
+ document.getElementById('bar').style.width=(h>0?window.scrollY/h*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();
+})();
+</script></body></html>

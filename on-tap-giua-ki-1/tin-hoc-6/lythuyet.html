@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lý thuyết Tin học 6 – Giữa học kì 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f7fc;--surface:#fff;--ink:#17233b;--muted:#5a6b88;--line:#dde5f2;--blue:#2457c5;--blue-soft:#e8effc;--teal:#0b8f7e;--teal-soft:#e3f6f2;--nav:64px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav) + 16px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.top{position:fixed;inset:0 0 auto 0;height:var(--nav);z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 max(16px,calc((100% - 1120px)/2))}
+.brand{font-weight:700;font-size:1.05rem;color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand i{font-style:normal;color:var(--blue)}
+.links{display:flex;gap:6px}
+.links a{padding:8px 14px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.92rem;color:var(--blue);background:var(--blue-soft)}
+.links a:hover{background:var(--blue);color:#fff}
+.bar{position:absolute;left:0;bottom:-1px;height:3px;width:0;background:var(--blue)}
+.hero{padding:calc(var(--nav) + 36px) max(16px,calc((100% - 1120px)/2)) 8px}
+.hero h1{margin:0 0 6px;font-size:clamp(1.6rem,3.6vw,2.3rem);line-height:1.25}
+.hero p{margin:0;color:var(--muted)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:28px;max-width:1120px;margin:0 auto;padding:20px 16px 64px}
+.toc{grid-column:2;grid-row:1;position:sticky;top:calc(var(--nav) + 16px);align-self:start;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px}
+.toc h4{margin:4px 8px 6px;font-size:.85rem;color:var(--muted);font-weight:600}
+.toc a{display:flex;flex-direction:column;padding:8px 10px;border-radius:8px;text-decoration:none;color:var(--ink);border-left:3px solid transparent;line-height:1.35}
+.toc a b{font-size:.9rem}.toc a span{font-size:.85rem;color:var(--muted)}
+.toc a:hover{background:var(--bg)}
+.toc a.on{background:var(--blue-soft);border-left-color:var(--blue)}
+.toc a.on b{color:var(--blue)}
+main{grid-column:1;grid-row:1}
+section{margin-bottom:34px}
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.badge{background:var(--blue);color:#fff;font-weight:700;border-radius:8px;padding:2px 12px;font-size:.95rem}
+h2{margin:0;font-size:1.45rem;line-height:1.3}
+.blk{background:var(--surface);border:1px solid var(--line);border-left-width:5px;border-radius:12px;padding:16px 20px 12px;margin-bottom:14px}
+.key{border-left-color:var(--blue);padding-bottom:6px}.key li{font-size:.97rem}
+.tip{border:2px solid #f0c25a;border-left:8px solid #e59a00;background:#fff7e0;box-shadow:0 4px 14px rgba(229,154,0,.16);padding:18px 22px 10px}
+.tip h3{display:flex;align-items:center;gap:10px;font-size:1.15rem;margin-bottom:12px}
+.ex{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e59a00;color:#fff;font-weight:700;font-size:1rem}
+.tip li{font-size:1.02rem;font-weight:500;color:#2b2310}
+.tip li::marker{color:#e59a00}
+h3{margin:0 0 8px;font-size:1.02rem}
+.key h3{color:var(--blue)}.tip h3{color:#8a5a00}
+ul{margin:0;padding-left:20px}
+li{margin:0 0 9px;text-align:justify;max-width:75ch}
+li::marker{color:var(--muted)}
+strong{color:#0f3a94}.tip strong{color:#7a3b00;background:#ffe9a8;padding:0 3px;border-radius:3px}
+footer{text-align:center;color:var(--muted);font-size:.88rem;padding:0 16px 40px}
+a:focus-visible{outline:3px solid #7aa2f7;outline-offset:2px}
+@media(max-width:900px){
+ .wrap{grid-template-columns:1fr;gap:12px}
+ .toc,main{grid-column:auto;grid-row:auto}
+ .toc{position:sticky;top:var(--nav);z-index:40;flex-direction:row;overflow-x:auto;border-radius:0 0 12px 12px;margin:0 -16px;padding:8px 12px;gap:6px}
+ .toc h4{display:none}.toc a{flex:0 0 auto;border-left:0;border-bottom:3px solid transparent;padding:4px 10px}
+ .toc a.on{border-bottom-color:var(--blue)}.toc a span{display:none}
+ html{scroll-padding-top:calc(var(--nav) + 64px)}
+}
+@media(max-width:520px){.brand{font-size:.9rem;white-space:normal;line-height:1.2}.links a{padding:7px 10px;font-size:.82rem}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style></head><body>
+<nav class="top" aria-label="Điều hướng chính">
+<a class="brand" href="#">Lý thuyết <i>Tin học</i> 6</a>
+<div class="links"><a href="tracnghiem.html">Trắc nghiệm</a><a href="kiemtra.html">Thi thử</a></div>
+<div class="bar" id="bar"></div></nav>
+<header class="hero"><h1>Tin học 6 – Ôn tập lý thuyết giữa học kì 1</h1><p>Năm học 2026–2027 · 5 bài · chọn bài ở mục lục để chuyển nhanh</p></header>
+<div class="wrap">
+<aside class="toc" aria-label="Mục lục"><h4>Mục lục</h4><a href="#bai1" data-id="bai1"><b>Bài 1</b><span>Thông tin và dữ liệu</span></a><a href="#bai2" data-id="bai2"><b>Bài 2</b><span>Xử lí thông tin</span></a><a href="#bai3" data-id="bai3"><b>Bài 3</b><span>Thông tin trong máy tính</span></a><a href="#bai4" data-id="bai4"><b>Bài 4</b><span>Mạng máy tính</span></a><a href="#bai5" data-id="bai5"><b>Bài 5</b><span>Internet</span></a></aside>
+<main><section id="bai1"><header class="sh"><span class="badge">Bài 1</span><h2>Thông tin và dữ liệu</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Thông tin</strong>: những gì đem lại hiểu biết cho con người.</li><li><strong>Dữ liệu</strong>: thông tin ghi lại dưới dạng số, chữ, hình ảnh, âm thanh; máy tính chỉ xử lí dữ liệu.</li><li><strong>Vật mang tin</strong>: phương tiện lưu trữ, truyền tải thông tin (giấy, đĩa CD, thẻ nhớ…).</li><li>Dữ liệu đem lại thông tin; mỗi người có thể hiểu khác nhau. Thông tin giúp con người lựa chọn và hành động hiệu quả.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Phân biệt rõ ba khái niệm:</strong> <strong>thông tin</strong> (sự hiểu biết), <strong>dữ liệu</strong> (con số, chữ, ảnh, âm thanh) và <strong>vật mang tin</strong> (nơi lưu trữ, truyền tải). Ví dụ: tờ thông báo, đĩa CD là vật mang tin; nội dung “ngày mai cúp điện” là thông tin.</li><li><strong>Xác định dạng dữ liệu theo ví dụ:</strong> tiếng còi, tiếng trống → âm thanh; biển báo, ảnh chụp → hình ảnh; giá tiền, nhiệt độ, số điện thoại → con số; đoạn văn, tên đường → văn bản.</li><li>Nhìn thấy dữ liệu nhưng không hiểu thì chưa có thông tin; vật mang tin hỏng thì dữ liệu có thể bị mất.</li></ul></div></section>
+<section id="bai2"><header class="sh"><span class="badge">Bài 2</span><h2>Xử lí thông tin</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Con người có <strong>4 hoạt động</strong>: <strong>thu nhận</strong> (giác quan) → <strong>lưu trữ</strong> (ghi nhớ, ghi chép) → <strong>xử lí</strong> (biến đổi thành thông tin mới) → <strong>truyền thông tin</strong> (chia sẻ).</li><li>Máy tính tương ứng: <strong>thiết bị vào</strong> (bàn phím, chuột, máy quét) – <strong>bộ xử lí</strong> (CPU) – <strong>bộ nhớ</strong> (RAM, ổ cứng, USB) – <strong>thiết bị ra</strong> (màn hình, máy in, loa).</li><li>Máy tính nhanh, chính xác, bền bỉ, lưu trữ lớn nhưng chạy theo chương trình con người viết.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Nhận diện hoạt động theo ví dụ:</strong> nghe, nhìn, nếm → thu nhận; ghi nhớ, chép bài vào vở → lưu trữ; tính nhẩm, so sánh, ra quyết định → xử lí; thuyết trình, gửi thư điện tử, nói ra ý kiến → truyền thông tin.</li><li><strong>Phân biệt thiết bị vào / thiết bị ra / bộ nhớ:</strong> bàn phím, chuột, máy quét là thiết bị vào; màn hình, máy in, loa là thiết bị ra; thẻ nhớ, USB, ổ đĩa cứng thuộc bộ nhớ.</li><li><strong>Nhớ tương ứng giữa con người và máy tính:</strong> giác quan ↔ thiết bị vào, bộ não (xử lí) ↔ CPU, sổ tay ghi chép ↔ bộ nhớ, lời nói ↔ thiết bị ra.</li></ul></div></section>
+<section id="bai3"><header class="sh"><span class="badge">Bài 3</span><h2>Thông tin trong máy tính</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li>Máy tính chỉ dùng hai kí hiệu <strong>0 và 1</strong>; mỗi kí hiệu là một <strong>bit</strong>, nhiều bit tạo thành <strong>dãy bit</strong>. <strong>Mã hoá</strong> là đổi thông tin thành dãy bit (văn bản: từng kí tự theo bảng mã; ảnh: các điểm ảnh).</li><li><strong>1 B = 8 bit</strong>; 1 KB = 1024 B; 1 MB = 1024 KB; 1 GB = 1024 MB; 1 TB = 1024 GB (xấp xỉ gấp 1 nghìn lần). Thứ tự: <strong>Bit &lt; B &lt; KB &lt; MB &lt; GB &lt; TB</strong>.</li><li>Thông tin được lưu thành <strong>tệp</strong> trên ổ đĩa cứng, thẻ nhớ, USB, đĩa CD (khoảng 700 MB)…</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Bài tập quy đổi:</strong> đổi về cùng đơn vị trước khi so sánh hoặc tính (GB → MB → KB → B); số bit = số byte × 8.</li><li><strong>Số lượng tệp lưu được = dung lượng thiết bị :</strong> dung lượng một tệp (cùng đơn vị). Kiểm tra thiết bị còn đủ chỗ bằng cách so sánh dung lượng tệp với dung lượng trống.</li><li><strong>Biểu diễn một từ:</strong> ghép dãy bit của từng kí tự theo đúng thứ tự trong từ. Chú ý đề bài cho quy ước “xấp xỉ” (1000) hay chính xác (1024) để tính cho đúng.</li></ul></div></section>
+<section id="bai4"><header class="sh"><span class="badge">Bài 4</span><h2>Mạng máy tính</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Mạng máy tính</strong>: các máy tính và thiết bị kết nối để trao đổi dữ liệu, dùng chung tài nguyên (tối thiểu 2 máy).</li><li>Gồm <strong>thiết bị đầu cuối</strong> (máy tính, điện thoại, máy in…), <strong>thiết bị kết nối</strong> (Switch, Router, Access Point, cáp) và <strong>phần mềm mạng</strong>.</li><li>Mạng <strong>có dây</strong> (cáp) ổn định; mạng <strong>không dây</strong> (Wi-Fi, Bluetooth) linh hoạt, dễ lắp đặt.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Phân biệt thiết bị đầu cuối với thiết bị kết nối:</strong> Switch, Router, Access Point, cáp mạng <strong>không</strong> phải thiết bị đầu cuối.</li><li><strong>Nhớ tên Việt – Anh:</strong> Switch (bộ chuyển mạch), Router (bộ định tuyến), Access Point (điểm truy cập không dây).</li><li>Access Point phát tín hiệu Wi-Fi cho thiết bị di động; nếu Access Point hỏng thì thiết bị nối qua Wi-Fi mất kết nối; nếu một đoạn cáp bị đứt thì việc truyền dữ liệu qua đoạn đó bị ngưng trệ.</li></ul></div></section>
+<section id="bai5"><header class="sh"><span class="badge">Bài 5</span><h2>Internet</h2></header>
+<div class="blk key"><h3>Lý thuyết cần nắm</h3><ul><li><strong>Internet</strong>: mạng liên kết các mạng máy tính toàn thế giới, không thuộc sở hữu của ai; cần đăng kí <strong>ISP</strong> để truy cập.</li><li><strong>Đặc điểm</strong>: toàn cầu, tương tác, dễ tiếp cận, đa dạng, lưu trữ, cập nhật, ẩn danh, không chủ sở hữu.</li><li><strong>Dịch vụ</strong>: WWW, tìm kiếm, thư điện tử, mạng xã hội, học và họp trực tuyến.</li></ul></div>
+<div class="blk tip"><h3><span class="ex">!</span>Lưu ý khi làm bài</h3><ul><li><strong>Gắn ví dụ với đúng đặc điểm:</strong> đọc báo điện tử mỗi ngày → cập nhật; xem tin ở nửa vòng trái đất ngay lập tức → toàn cầu + cập nhật; dùng bí danh trên diễn đàn → ẩn danh; tải lại tài liệu cũ nhanh chóng → lưu trữ; bình luận, nhắn tin → tương tác.</li><li>WWW chỉ là <strong>một dịch vụ</strong> trên Internet, không đồng nhất với Internet.</li><li>Thông tin trên Internet có độ tin cậy khác nhau, cần kiểm tra nguồn; tính ẩn danh vừa bảo vệ quyền riêng tư vừa có thể bị lợi dụng; không nên truy cập Internet liên tục nhiều giờ.</li></ul></div></section>
+</main></div>
+<footer>Ôn xong lý thuyết, hãy làm bài ở mục Trắc nghiệm và Thi thử.</footer>
+<script>
+(function(){
+var links=[].slice.call(document.querySelectorAll('.toc a'));
+var secs=links.map(function(a){return document.getElementById(a.dataset.id)});
+function set(id){links.forEach(function(a){a.classList.toggle('on',a.dataset.id===id)});
+ var on=document.querySelector('.toc a.on');
+ if(on&&window.innerWidth<=900&&on.scrollIntoView){var t=on.parentNode;t.scrollLeft=on.offsetLeft-t.clientWidth/2+on.clientWidth/2}}
+function update(){
+ var y=window.scrollY+(window.innerWidth<=900?130:100),cur=secs[0].id;
+ secs.forEach(function(s){if(s.offsetTop<=y)cur=s.id});
+ if(window.innerHeight+window.scrollY>=document.body.scrollHeight-4)cur=secs[secs.length-1].id;
+ set(cur);
+ var h=document.documentElement.scrollHeight-window.innerHeight;
+ document.getElementById('bar').style.width=(h>0?window.scrollY/h*100:0)+'%';}
+window.addEventListener('scroll',update,{passive:true});window.addEventListener('resize',update);update();
+})();
+</script></body></html>
