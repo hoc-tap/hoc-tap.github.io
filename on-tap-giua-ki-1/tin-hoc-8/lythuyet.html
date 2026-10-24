@@ -48,7 +48,7 @@ strong{color:#0f3a94}.tip strong{color:#7a3b00;background:#ffe9a8;padding:0 3px;
 footer{text-align:center;color:var(--muted);font-size:.88rem;padding:0 16px 40px}
 a:focus-visible{outline:3px solid #7aa2f7;outline-offset:2px}
 @media(max-width:900px){
- .wrap{grid-template-columns:1fr;gap:12px}
+ .wrap{grid-template-columns:minmax(0,1fr);gap:12px}
  .toc,main{grid-column:auto;grid-row:auto}
  .toc{position:sticky;top:var(--nav);z-index:40;flex-direction:row;overflow-x:auto;border-radius:0 0 12px 12px;margin:0 -16px;padding:8px 12px;gap:6px}
  .toc h4{display:none}.toc a{flex:0 0 auto;border-left:0;border-bottom:3px solid transparent;padding:4px 10px}
@@ -57,7 +57,7 @@ a:focus-visible{outline:3px solid #7aa2f7;outline-offset:2px}
 }
 @media(max-width:520px){.brand{font-size:.9rem;white-space:normal;line-height:1.2}.links a{padding:7px 10px;font-size:.82rem}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-.tw{overflow-x:auto;margin:6px 0 12px}table{border-collapse:collapse;font-size:.9rem;min-width:520px;width:100%}th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{background:var(--blue-soft);color:var(--blue)}td.m{font-family:ui-monospace,Consolas,monospace}
+.blk{min-width:0}main{min-width:0}.tw{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:6px 0 12px}table{border-collapse:collapse;font-size:.88rem;min-width:460px;width:100%}th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}th{background:var(--blue-soft);color:var(--blue)}td.m{font-family:ui-monospace,Consolas,monospace}
 </style></head><body>
 <nav class="top" aria-label="Điều hướng chính">
 <a class="brand" href="index.html">Lý thuyết <i>Tin học</i> 8</a>
