@@ -410,6 +410,209 @@ input {
   gap: 12px;
 }
 
+/* ── 4.2. ÔN TẬP GIỮA HỌC KÌ 1 ─────────────────────────────────────────── */
+.midterm-review {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 1px solid #fca5a5;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.14), transparent 48%),
+    #fff1f2;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.09);
+  animation: midterm-heartbeat 1.8s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+@keyframes midterm-heartbeat {
+  0%, 100% {
+    transform: scale(1);
+    border-color: #fca5a5;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
+  }
+  12% {
+    transform: scale(1.012);
+    border-color: #ef4444;
+    box-shadow: 0 8px 28px rgba(220, 38, 38, 0.3);
+  }
+  24% {
+    transform: scale(1);
+    border-color: #fca5a5;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
+  }
+  36% {
+    transform: scale(1.008);
+    border-color: #f87171;
+    box-shadow: 0 7px 24px rgba(220, 38, 38, 0.24);
+  }
+  48% {
+    transform: scale(1);
+    border-color: #fca5a5;
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.1);
+  }
+}
+
+[data-theme="dark"] .midterm-review {
+  border-color: #7f1d1d;
+  background:
+    radial-gradient(circle at top right, rgba(248, 113, 113, 0.14), transparent 48%),
+    #27151a;
+}
+
+.midterm-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.midterm-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.midterm-title-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #fee2e2;
+  font-size: 1.1rem;
+}
+
+.midterm-hot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid #fca5a5;
+  border-radius: 999px;
+  background: #fff;
+  color: #b91c1c;
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+}
+
+.midterm-hot-icon {
+  display: inline-block;
+  transform-origin: center bottom;
+  animation: hot-flicker 1.1s ease-in-out infinite;
+}
+
+@keyframes hot-flicker {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50% { transform: rotate(8deg) scale(1.16); }
+}
+
+[data-theme="dark"] .midterm-title-icon {
+  background: rgba(248, 113, 113, 0.18);
+}
+
+[data-theme="dark"] .midterm-hot-badge {
+  border-color: #7f1d1d;
+  background: #3b1b22;
+  color: #fca5a5;
+}
+
+.midterm-year {
+  color: #991b1b;
+  font-size: 0.76rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+[data-theme="dark"] .midterm-year {
+  color: #fca5a5;
+}
+
+.midterm-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.midterm-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  background: var(--surface);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+[data-theme="dark"] .midterm-card {
+  border-color: #54252c;
+}
+
+.midterm-card[data-grade="6"] { --review-accent: var(--g6-color); --review-tint: var(--g6-tint); --review-border: var(--g6-border); }
+.midterm-card[data-grade="7"] { --review-accent: var(--g7-color); --review-tint: var(--g7-tint); --review-border: var(--g7-border); }
+.midterm-card[data-grade="8"] { --review-accent: var(--g8-color); --review-tint: var(--g8-tint); --review-border: var(--g8-border); }
+.midterm-card[data-grade="9"] { --review-accent: var(--g9-color); --review-tint: var(--g9-tint); --review-border: var(--g9-border); }
+
+.midterm-card:hover,
+.midterm-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--review-border);
+  box-shadow: var(--shadow-md);
+}
+
+.midterm-grade {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 12px;
+  background: var(--review-tint);
+  color: var(--review-accent);
+  font-size: 1.15rem;
+  font-weight: 850;
+}
+
+.midterm-card-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.midterm-card-copy strong,
+.midterm-card-copy span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.midterm-card-copy strong {
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.midterm-card-copy span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.midterm-arrow {
+  color: var(--review-accent);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
 /* Ô tìm kiếm nhanh trong Banner */
 .hero-search-box {
   position: relative;
@@ -923,6 +1126,10 @@ html[data-cap="2"] .file-link {
     padding: 20px;
   }
 
+  .midterm-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .telex-grid-6 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -976,6 +1183,57 @@ html[data-cap="2"] .file-link {
     gap: 16px;
   }
 
+  .midterm-review {
+    padding: 14px 12px;
+    border-radius: 14px;
+  }
+
+  .midterm-heading {
+    margin-bottom: 10px;
+  }
+
+  .midterm-title {
+    font-size: 0.92rem;
+  }
+
+  .midterm-hot-badge {
+    padding: 3px 6px;
+    font-size: 0.62rem;
+  }
+
+  .midterm-year {
+    font-size: 0.68rem;
+  }
+
+  .midterm-grid {
+    gap: 8px;
+  }
+
+  .midterm-card {
+    gap: 8px;
+    padding: 10px 8px;
+  }
+
+  .midterm-grade {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  .midterm-card-copy strong {
+    font-size: 0.76rem;
+  }
+
+  .midterm-card-copy span {
+    font-size: 0.66rem;
+  }
+
+  .midterm-arrow {
+    font-size: 0.95rem;
+  }
+
   .hero-title {
     font-size: 1.25rem;
   }
@@ -1013,6 +1271,13 @@ html[data-cap="2"] .file-link {
   .file-link {
     font-size: 0.8rem;
     padding: 8px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .midterm-review,
+  .midterm-hot-icon {
+    animation: none;
   }
 }
 </style>
@@ -1160,6 +1425,39 @@ html[data-cap="2"] .file-link {
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="midterm-review" aria-labelledby="midterm-title">
+      <div class="midterm-heading">
+        <h2 id="midterm-title" class="midterm-title">
+          <span class="midterm-title-icon" aria-hidden="true">📚</span>
+          Ôn tập giữa học kì 1
+          <span class="midterm-hot-badge"><span class="midterm-hot-icon" aria-hidden="true">🔥</span> HOT</span>
+        </h2>
+        <span class="midterm-year">Năm học 2026–2027</span>
+      </div>
+      <div class="midterm-grid" aria-label="Chọn khối lớp ôn tập">
+        <a class="midterm-card" data-grade="6" href="./on-tap-giua-ki-1/tin-hoc-6/index.html" aria-label="Ôn tập giữa học kì 1, Tin học lớp 6">
+          <span class="midterm-grade" aria-hidden="true">6</span>
+          <span class="midterm-card-copy"><strong>Tin học 6</strong><span>Lý thuyết · Trắc nghiệm</span></span>
+          <span class="midterm-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="midterm-card" data-grade="7" href="./on-tap-giua-ki-1/tin-hoc-7/index.html" aria-label="Ôn tập giữa học kì 1, Tin học lớp 7">
+          <span class="midterm-grade" aria-hidden="true">7</span>
+          <span class="midterm-card-copy"><strong>Tin học 7</strong><span>Lý thuyết · Trắc nghiệm</span></span>
+          <span class="midterm-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="midterm-card" data-grade="8" href="./on-tap-giua-ki-1/tin-hoc-8/index.html" aria-label="Ôn tập giữa học kì 1, Tin học lớp 8">
+          <span class="midterm-grade" aria-hidden="true">8</span>
+          <span class="midterm-card-copy"><strong>Tin học 8</strong><span>Lý thuyết · Trắc nghiệm</span></span>
+          <span class="midterm-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="midterm-card" data-grade="9" href="./on-tap-giua-ki-1/tin-hoc-9/index.html" aria-label="Ôn tập giữa học kì 1, Tin học lớp 9">
+          <span class="midterm-grade" aria-hidden="true">9</span>
+          <span class="midterm-card-copy"><strong>Tin học 9</strong><span>Lý thuyết · Trắc nghiệm</span></span>
+          <span class="midterm-arrow" aria-hidden="true">→</span>
+        </a>
       </div>
     </section>
 
