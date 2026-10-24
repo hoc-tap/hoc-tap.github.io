@@ -55,7 +55,7 @@ a:focus-visible,button:focus-visible{outline:3px solid #7aa2f7;outline-offset:2p
  .wrap{grid-template-columns:minmax(0,1fr);gap:12px}
  .toc,main{grid-column:auto;grid-row:auto}
  .toc{position:sticky;top:var(--nav);z-index:40;flex-direction:row;align-items:center;overflow-x:auto;border-radius:0 0 12px 12px;margin:0 -16px;padding:8px 12px;gap:6px}
- .toc h4,.score button{display:none}.toc a{flex:0 0 auto;border-left:0;border-bottom:3px solid transparent;padding:4px 10px}.toc a small{display:none}.toc a.on{border-bottom-color:var(--blue)}
+ .toc h4,.score button,.toc a>span{display:none!important}.toc a{flex:0 0 auto;border-left:0;border-bottom:3px solid transparent;padding:4px 10px}.toc a small{display:none}.toc a.on{border-bottom-color:var(--blue)}
  .score{margin:0 0 0 auto;padding:4px 10px;white-space:nowrap;flex:0 0 auto}
  html{scroll-padding-top:calc(var(--nav) + 64px)}}
 @media(max-width:520px){.brand{font-size:.9rem;line-height:1.2}.links a{padding:7px 10px;font-size:.82rem}}
@@ -105,6 +105,7 @@ var links=[].slice.call(toc.querySelectorAll('a')),secs=links.map(function(a){re
 function spy(){var y=window.scrollY+(innerWidth<=900?130:100),cur=secs[0].id;secs.forEach(function(s){if(s.offsetTop<=y)cur=s.id});
  if(innerHeight+scrollY>=document.body.scrollHeight-4)cur=secs[secs.length-1].id;
  links.forEach(function(a){a.classList.toggle('on',a.dataset.id===cur)});
+ var on=toc.querySelector('a.on');if(on&&innerWidth<=900&&spy.last!==cur){spy.last=cur;toc.scrollTo({left:on.offsetLeft-toc.clientWidth/2+on.clientWidth/2,behavior:'smooth'})}
  var h=document.documentElement.scrollHeight-innerHeight;document.getElementById('bar').style.width=(h>0?scrollY/h*100:0)+'%'}
 addEventListener('scroll',spy,{passive:true});addEventListener('resize',spy);spy();
 </script></body></html>
