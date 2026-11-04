@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đại chiến Bản quyền – Tin học 5 Bài 5</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light;
+--bg1:#e0f2fe;--bg2:#fdf2f8;--card:rgba(255,255,255,.88);--line:rgba(99,102,241,.28);--tx:#1e1b4b;--mut:#5b5b8a;
+--p1:#0284c7;--p2:#db2777;--ok:#16a34a;--bad:#dc2626;--gold:#d97706}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;color:var(--tx);background:linear-gradient(135deg,var(--bg1),var(--bg2),#fef9c3);background-attachment:fixed;overflow-x:hidden}
+body::before,body::after{content:"";position:fixed;width:46vmax;height:46vmax;border-radius:50%;filter:blur(90px);opacity:.22;z-index:-1;animation:drift 14s ease-in-out infinite alternate}
+body::before{background:var(--p1);top:-18vmax;left:-12vmax}
+body::after{background:var(--p2);bottom:-18vmax;right:-12vmax;animation-delay:-6s}
+@keyframes drift{to{transform:translate(8vmax,6vmax) scale(1.2)}}
+.hide{display:none!important}
+button{font:inherit;cursor:pointer;color:inherit}
+.wrap{max-width:1280px;margin:0 auto;padding:18px}
+h1{margin:0;font-size:clamp(26px,4.4vw,48px);text-align:center;background:linear-gradient(90deg,var(--p1),var(--gold),var(--p2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.sub{text-align:center;color:var(--mut);margin:6px 0 22px;font-size:clamp(14px,2vw,19px)}
+/* setup */
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:stretch}
+.pc{background:var(--card);border:2px solid var(--line);border-radius:24px;padding:24px;backdrop-filter:blur(8px)}
+.pc.a{border-color:var(--p1);box-shadow:0 0 34px rgba(2,132,199,.22)}
+.pc.b{border-color:var(--p2);box-shadow:0 0 34px rgba(219,39,119,.22)}
+.pc h2{margin:0 0 4px;font-size:26px}.pc.a h2{color:var(--p1)}.pc.b h2{color:var(--p2)}
+.pc p{margin:0 0 16px;color:var(--mut)}
+.pc label{display:block;font-size:13px;letter-spacing:.06em;color:var(--mut);margin-bottom:6px}
+.pc input{width:100%;padding:14px 16px;font-size:20px;border-radius:14px;border:2px solid var(--line);background:#fff;color:var(--tx);outline:none}
+.pc input:focus{border-color:var(--gold)}
+.vsb{align-self:center;font-size:44px;font-weight:900;color:var(--gold);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{transform:scale(1.2) rotate(-6deg)}}
+.rules{margin:20px auto 0;max-width:820px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 22px;color:var(--mut);line-height:1.6}
+.rules b{color:var(--tx)}
+.big{color:#fff;display:block;margin:22px auto 0;padding:16px 46px;font-size:22px;font-weight:800;border:0;border-radius:999px;background:linear-gradient(90deg,var(--p1),var(--p2));box-shadow:0 8px 30px rgba(219,39,119,.35);transition:.2s}
+.big:hover{transform:translateY(-3px) scale(1.04)}
+.err{color:#b91c1c;text-align:center;margin-top:10px;min-height:22px}
+/* game */
+.game{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:18px;align-items:start}
+.main{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:22px;backdrop-filter:blur(8px);min-height:560px;position:relative}
+.bar{display:none;height:12px;border-radius:9px;background:rgba(99,102,241,.15);overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#34d399,var(--gold),#fb7185);transition:width .5s}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.badge{padding:8px 16px;border-radius:999px;font-weight:800;background:rgba(34,197,94,.18);color:#15803d}
+.badge.TH{background:rgba(245,158,11,.2);color:#b45309}.badge.VD{background:rgba(239,68,68,.16);color:#b91c1c}
+.badge.gift{background:linear-gradient(90deg,#fde68a,#fbcfe8);color:#9a3412;animation:pulse 1s infinite}
+.tm{display:flex;align-items:center;gap:10px;font-size:32px;font-weight:900}
+.tm svg{width:56px;height:56px;transform:rotate(-90deg)}
+.tm circle{fill:none;stroke-width:7}
+#ring{stroke:var(--ok);stroke-linecap:round;transition:stroke .3s}
+.tm.low{color:#dc2626;animation:shake .5s infinite}.tm.low #ring{stroke:var(--bad)}
+@keyframes shake{25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+#qt{font-size:clamp(18px,2.2vw,27px);font-weight:800;line-height:1.4;margin:16px 0}
+#qimg{display:block;max-width:100%;max-height:260px;border-radius:14px;margin:0 auto 14px;border:2px solid var(--line)}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.op{display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;border-radius:18px;border:2px solid var(--line);background:#fff;box-shadow:0 3px 10px rgba(99,102,241,.1);font-size:clamp(18px,2.3vw,26px);font-weight:600;line-height:1.35;transition:.18s;animation:pop .4s backwards}
+.op:nth-child(2){animation-delay:.06s}.op:nth-child(3){animation-delay:.12s}.op:nth-child(4){animation-delay:.18s}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}}
+.op:not(:disabled):hover{transform:translateY(-3px);border-color:var(--p2);background:#fdf2f8}
+.op .n{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:900;background:rgba(99,102,241,.14)}
+.op.no .n,.op.ok .n{color:#fff}
+.op.ok{border-color:var(--ok);background:#dcfce7;animation:glow .7s 2}
+.op.ok .n{background:var(--ok)}
+.op.no{border-color:var(--bad);background:#fee2e2;opacity:.9}
+.op.no .n{background:var(--bad)}
+.op:disabled{cursor:default;color:inherit}
+.op .who{margin-left:auto;font-size:16px;font-weight:800;padding:3px 10px;border-radius:99px;background:rgba(99,102,241,.12);white-space:nowrap}
+@keyframes glow{50%{box-shadow:0 0 30px var(--ok)}}
+#msg{min-height:58px;margin-top:16px;border-radius:16px;padding:12px 16px;font-size:clamp(16px,1.9vw,21px);font-weight:700;display:flex;align-items:center;gap:10px}
+#msg.ok{background:#dcfce7;color:#166534}#msg.no{background:#fee2e2;color:#991b1b}#msg.info{background:rgba(99,102,241,.08);color:var(--mut)}
+#exp{color:var(--mut);margin-top:10px;line-height:1.5}
+#next{color:#fff;margin-top:12px;float:right;padding:12px 26px;border:0;border-radius:99px;font-weight:800;font-size:18px;background:linear-gradient(90deg,var(--p1),var(--p2))}
+.side{display:flex;flex-direction:column;gap:10px;position:sticky;top:14px}
+.tools{display:grid;grid-template-columns:1fr;gap:8px}
+.tools button{padding:8px;font-size:12px;border-radius:12px;border:1px solid var(--line);background:var(--card)}
+.sc{border-radius:18px;padding:12px;border:2px solid var(--line);background:var(--card);transition:.25s;position:relative}
+.sc.a{border-color:var(--p1)}.sc.b{border-color:var(--p2)}
+.sc.lead{box-shadow:0 0 26px rgba(245,158,11,.55)}
+.sc.flash{animation:flash .8s}
+@keyframes flash{30%{transform:scale(1.05);box-shadow:0 0 40px var(--ok)}}
+.sc.flash.bad{animation-name:flashb}
+@keyframes flashb{30%{transform:scale(.97);box-shadow:0 0 40px var(--bad)}}
+.sc small{color:var(--mut);letter-spacing:.04em;font-size:12px;font-weight:900;line-height:1.3;display:block}
+.sc .nm{font-size:16px;font-weight:800;margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc.a .nm{color:var(--p1)}.sc.b .nm{color:var(--p2)}
+.sc .pt{font-size:38px;font-weight:900;line-height:1}
+.sc .st{margin-top:6px;color:var(--mut);font-size:12px}
+.crown{position:absolute;top:6px;right:8px;font-size:20px}
+.dots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.dots span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;background:rgba(99,102,241,.15);color:var(--mut)}
+.dots .cur{outline:2px solid var(--gold)}.dots .w1{background:var(--p1);color:#fff}.dots .w2{background:var(--p2);color:#fff}.dots .w0{background:#64748b;color:#fff}
+.key{color:var(--mut);font-size:13px;text-align:center}
+.mas{display:flex;flex-wrap:wrap;gap:8px}
+.mas button{font-size:30px;width:54px;height:54px;border-radius:16px;border:2px solid var(--line);background:#fff;transition:.15s}
+.mas button:hover{transform:scale(1.12)}
+.mas button.sel{border-color:var(--gold);background:#fef3c7;box-shadow:0 0 14px rgba(245,158,11,.6);transform:scale(1.14)}
+#cd{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:radial-gradient(circle,#4338ca,#1e1b4b);color:#fff;text-align:center;padding:20px}
+#cd .num{font-size:min(38vmin,300px);font-weight:900;line-height:1.1;animation:zoom 1s infinite}
+@keyframes zoom{from{transform:scale(1.6);opacity:0}to{transform:scale(.9);opacity:1}}
+#gift{position:fixed;inset:0;z-index:35;display:grid;place-items:center;pointer-events:none;background:rgba(30,27,75,.4)}
+.gbox{position:relative;width:160px;height:150px;margin:0 auto;animation:gin .5s both,gshake .6s .5s 1}
+.gbox .body{position:absolute;bottom:0;left:10px;width:140px;height:100px;border-radius:10px;background:linear-gradient(135deg,#f43f5e,#be123c);box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.gbox .rb{position:absolute;bottom:0;left:68px;width:24px;height:100px;background:#fde047}
+.gbox .lid{position:absolute;top:4px;left:0;width:160px;height:48px;border-radius:10px;background:linear-gradient(135deg,#fb7185,#e11d48);z-index:2;transition:transform .6s cubic-bezier(.3,1.6,.5,1),opacity .6s}
+.gbox .lid::after{content:"";position:absolute;left:68px;top:0;width:24px;height:100%;background:#fde047}
+.gbox .lid::before{content:"🎀";position:absolute;top:-34px;left:56px;font-size:42px;z-index:3}
+#gift.open .lid{transform:translate(70px,-130px) rotate(35deg);opacity:0}
+#gift.open .gbox::after{content:"";position:absolute;left:10px;top:-10px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,#fff,rgba(253,224,71,0) 70%);animation:gl 1s forwards}
+.gtx{margin-top:26px;font-size:clamp(22px,5vw,46px);font-weight:900;color:#fde047;text-shadow:0 3px 0 #9a3412,0 0 24px rgba(0,0,0,.5);opacity:0;transform:translateY(30px) scale(.5);text-align:center;padding:0 12px}
+#gift.open .gtx{animation:gtx .8s forwards}
+@keyframes gin{from{transform:scale(0) rotate(-40deg)}to{transform:scale(1)}}
+@keyframes gshake{20%{rotate:-10deg}40%{rotate:10deg}60%{rotate:-8deg}80%{rotate:8deg}}
+@keyframes gl{from{opacity:1;transform:scale(.5)}to{opacity:0;transform:scale(3)}}
+@keyframes gtx{to{opacity:1;transform:translateY(0) scale(1.05)}}
+/* setup gọn, căn giữa */
+#setup{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding-top:10px;padding-bottom:10px}
+#setup .vs{width:100%;max-width:1000px;margin:0 auto}
+#setup h1{font-size:clamp(24px,3.6vw,40px)}
+#setup .sub{margin:4px 0 14px;font-size:clamp(13px,1.6vw,17px)}
+#setup .pc{padding:16px 20px}
+#setup .pc h2{font-size:22px}
+#setup .pc p{margin-bottom:10px;font-size:14px}
+#setup .pc label{margin-bottom:4px}
+#setup .pc input{padding:10px 14px;font-size:18px}
+#setup .mas{gap:6px}
+#setup .mas button{width:46px;height:46px;font-size:26px;border-radius:13px}
+#setup .vsb{font-size:34px}
+#setup .rules{margin-top:14px;padding:10px 18px;font-size:14px;line-height:1.5}
+#setup .big{margin-top:12px;padding:12px 40px;font-size:20px}
+#setup .err{margin-top:6px;min-height:20px}
+/* hiệu ứng cộng điểm */
+.fly{position:fixed;z-index:34;pointer-events:none;font-weight:900;font-size:clamp(60px,12vw,130px);transform:translate(-50%,-50%);animation:fly 1.4s ease-out forwards;text-shadow:0 4px 0 #fff,0 8px 24px rgba(0,0,0,.25)}
+.fly.a{color:var(--p1)}.fly.b{color:var(--p2)}
+.fly.sm{font-size:34px;animation-duration:1.2s}
+@keyframes fly{0%{opacity:0;transform:translate(-50%,-30%) scale(.3)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}70%{opacity:1;transform:translate(-50%,-90%) scale(1)}100%{opacity:0;transform:translate(-50%,-140%) scale(.9)}}
+.sc .pt.bump{animation:bump .7s;color:var(--ok)}
+@keyframes bump{30%{transform:scale(1.6)}60%{transform:scale(.95)}}
+#qbox{display:flex;gap:20px;align-items:center}
+#qbox #qt{flex:1;min-width:0}
+#qbox #qimg{flex:none;width:auto;max-width:44%;max-height:230px;margin:12px 0;object-fit:contain;background:#fff}
+@media(max-width:900px){#qbox{flex-direction:column;align-items:stretch}#qbox #qimg{max-width:100%;align-self:center}}
+.sc.a,.sc.b{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center}
+.sc.a small,.sc.b small,.sc.a .st,.sc.b .st{grid-column:1/-1}
+.sc.a .nm,.sc.b .nm{white-space:normal;word-break:break-word;font-size:19px;font-weight:900;line-height:1.2;margin:6px 0}
+.sc.a .pt,.sc.b .pt{font-size:42px;text-align:right}
+.sc.a .st,.sc.b .st{border-top:1px dashed var(--line);padding-top:6px}
+/* mỗi đấu thủ một tông màu */
+.sc.a{background:linear-gradient(160deg,#e0f2fe,#7dd3fc)}
+.sc.b{background:linear-gradient(160deg,#fce7f3,#f9a8d4)}
+.pc.a{background:linear-gradient(160deg,#f0f9ff,#bae6fd)}
+.pc.b{background:linear-gradient(160deg,#fdf2f8,#fbcfe8)}
+.sc.a .pt{color:#0369a1}.sc.b .pt{color:#be185d}
+.sc.a .pt.bump,.sc.b .pt.bump{color:var(--ok)}
+.sc.a small,.sc.a .st{color:#075985}.sc.b small,.sc.b .st{color:#9d174d}
+.sc.a .nm{color:#0c4a6e}.sc.b .nm{color:#831843}
+.sc.a .st{border-top-color:rgba(2,132,199,.35)}.sc.b .st{border-top-color:rgba(219,39,119,.35)}
+.fin div:first-child{background:#e0f2fe;border-color:#7dd3fc}.fin div:last-child{background:#fce7f3;border-color:#f9a8d4}
+.fin div.w{border-color:var(--gold)}
+/* end */
+#end{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:rgba(30,27,75,.78);padding:18px;overflow:auto}
+.box{max-width:640px;width:100%;text-align:center;background:#fff;border:2px solid var(--gold);border-radius:30px;padding:30px;box-shadow:0 0 60px rgba(251,191,36,.35);animation:pop .6s}
+.box .tro{font-size:70px;animation:pulse 1.2s infinite}
+.box h2{font-size:clamp(26px,5vw,42px);margin:6px 0;color:var(--gold)}
+.fin{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.fin div{border-radius:20px;padding:14px;border:2px solid var(--line)}
+.fin .w{border-color:var(--gold);box-shadow:0 0 26px rgba(251,191,36,.5)}
+.fin b{display:block;font-size:20px}.fin em{font-style:normal;font-size:46px;font-weight:900}
+#fw{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
+@media(max-width:900px){.game{grid-template-columns:1fr}.side{position:static;display:grid;grid-template-columns:1fr 1fr}.tools{grid-column:1/-1;grid-template-columns:1fr 1fr}.vs{grid-template-columns:1fr}.vsb{text-align:center}.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="fw"></canvas>
+
+<section id="setup" class="wrap">
+  <h1>⚔️ ĐẠI CHIẾN BẢN QUYỀN ⚔️</h1>
+  <p class="sub">Tin học 5 – Bài 5. Bản quyền nội dung thông tin · Đối kháng 2 người</p>
+  <div class="vs">
+    <div class="pc a"><h2><span id="mm1">🐯</span> Đấu thủ thứ nhất</h2><p>Bấm phím <b>1 2 3 4</b> trên bàn phím</p><label for="n1">HỌ VÀ TÊN</label><input id="n1" autofocus maxlength="24" placeholder="Nhập họ tên em thứ nhất" autocomplete="off"><label style="margin-top:14px">CHỌN LINH VẬT</label><div class="mas" id="mp1"></div></div>
+    <div class="vsb">VS</div>
+    <div class="pc b"><h2><span id="mm2">🐼</span> Đấu thủ thứ hai</h2><p>Dùng <b>chuột</b> bấm vào đáp án</p><label for="n2">HỌ VÀ TÊN</label><input id="n2" maxlength="24" placeholder="Nhập họ tên em thứ hai" autocomplete="off"><label style="margin-top:14px">CHỌN LINH VẬT</label><div class="mas" id="mp2"></div></div>
+  </div>
+  <div class="rules">🎯 Mỗi trận <b>10 câu</b> ngẫu nhiên (50% NB · 30% TH · 20% VD), đáp án được xáo trộn · ⏱ Thời gian: <b>NB 30s · TH 45s · VD 60s</b> · Ai bấm <b>đúng trước</b> được điểm (+2 điểm mỗi câu, ngẫu nhiên 20% câu có <b>🎁 quà +1 điểm</b>) · Bấm sai bị loại khỏi câu đó, bạn còn lại vẫn có thể trả lời.</div>
+  <div class="err" id="err"></div>
+  <button class="big" id="go">🚀 BẮT ĐẦU THI ĐẤU</button>
+</section>
+
+<section id="gm" class="wrap hide">
+  <div class="game">
+    <div class="main">
+      <div class="bar"><i id="pb"></i></div>
+      <div class="top">
+        <span class="badge" id="bd"></span>
+        <div class="tm" id="tm"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="25" stroke="rgba(99,102,241,.18)"/><circle id="ring" cx="30" cy="30" r="25" stroke-dasharray="157.1" stroke-dashoffset="0"/></svg><span id="tt">30</span>s</div>
+      </div>
+      <div id="qbox"><div id="qt"></div><img id="qimg" class="hide" alt="Hình minh hoạ câu hỏi"></div>
+      <div class="opts" id="opts"></div>
+      <div id="msg" class="info">⌨️ <span id="p1k"></span> bấm 1–4 · 🖱️ <span id="p2k"></span> bấm chuột. Ai nhanh và đúng được điểm!</div>
+      <div id="exp"></div>
+      <button id="next" class="hide">Câu tiếp theo ▶</button>
+    </div>
+    <div class="side">
+      <div class="sc a" id="s1"><small>ĐẤU THỦ THỨ NHẤT · PHÍM 1–4</small><div class="nm" id="nm1"></div><div class="pt" id="pt1">0</div><div class="st" id="st1"></div><span class="crown hide" id="cr1">👑</span></div>
+      <div class="sc b" id="s2"><small>ĐẤU THỦ THỨ HAI · CHUỘT</small><div class="nm" id="nm2"></div><div class="pt" id="pt2">0</div><div class="st" id="st2"></div><span class="crown hide" id="cr2">👑</span></div>
+      <div class="sc"><small>CÂU <b id="cq">1</b>/10</small><div class="dots" id="dots" style="margin-top:8px"></div></div>
+      <div class="tools"><button id="fs">⛶ Toàn màn hình</button><button id="snd">🔊 Âm thanh</button></div>
+      <div class="key" style="font-size:12px;margin-top:-2px">Tác giả: Thầy Minh</div>
+    </div>
+  </div>
+</section>
+
+<div id="end" class="hide"><div class="box">
+  <div class="tro">🏆</div><h2 id="ewin"></h2><div id="esub" style="color:var(--mut)"></div>
+  <div class="fin"><div id="f1"></div><div id="f2"></div></div>
+  <button class="big" id="again" style="margin-top:6px">🔁 Chơi lại từ đầu</button>
+</div></div>
+
+<div id="gift" class="hide"><div><div class="gbox"><div class="lid"></div><div class="body"></div><div class="rb"></div></div><div class="gtx" id="gtx"></div></div></div>
+<div id="cd" class="hide"><div><div id="cdv" style="font-size:clamp(20px,4vw,40px);font-weight:800"></div><div class="num" id="cdn">5</div><div style="font-size:clamp(16px,2.4vw,26px);opacity:.85">Chuẩn bị thi đấu...</div></div></div>
+<script>
+const BANK=[{"n": 1, "lv": "NB", "q": "Bản quyền nội dung thông tin là quyền của ai?", "o": ["Người xem nội dung thông tin.", "Tác giả của nội dung thông tin.", "Người tải nội dung thông tin về máy.", "Người chia sẻ nội dung thông tin."], "a": 1, "e": "Bản quyền nội dung thông tin là quyền của tác giả đối với nội dung thông tin do mình tạo ra."}, {"n": 2, "lv": "NB", "q": "Bài thơ, bài viết, hình ảnh minh hoạ trong tờ báo tường của lớp là ví dụ về điều gì?", "o": ["Thiết bị số.", "Phần mềm máy tính.", "Nội dung thông tin.", "Mật khẩu tài khoản."], "a": 2, "e": "Bài thơ, bài viết, hình ảnh minh hoạ là những ví dụ cụ thể về nội dung thông tin."}, {"n": 3, "lv": "NB", "q": "Tác giả của nội dung thông tin có thể là ai?", "o": ["Cá nhân hoặc tổ chức sở hữu nội dung thông tin.", "Chỉ là những người nổi tiếng.", "Chỉ là các nhà văn, nhà thơ.", "Chỉ là các cơ quan nhà nước."], "a": 0, "e": "Tác giả là cá nhân hoặc tổ chức sở hữu nội dung thông tin."}, {"n": 4, "lv": "NB", "q": "Hãy chọn phát biểu sai:", "o": ["Tác giả có quyền cho phép người khác sử dụng nội dung thông tin của mình.", "Tác giả có quyền không cho phép người khác sử dụng nội dung thông tin của mình.", "Nội dung thông tin được thể hiện dưới dạng văn bản, hình ảnh, âm thanh hay đa phương tiện.", "Nội dung thông tin phải gồm đầy đủ các dạng văn bản, hình ảnh, âm thanh."], "a": 3, "e": "Nội dung thông tin có thể ở một dạng riêng lẻ hoặc kết hợp, không bắt buộc phải gồm đầy đủ cả văn bản, hình ảnh và âm thanh."}, {"n": 5, "lv": "NB", "q": "Em chỉ được sử dụng nội dung thông tin của người khác khi nào?", "o": ["Khi nội dung đó đẹp và hay.", "Khi nội dung đó có trên mạng.", "Khi em thấy cần thiết.", "Khi được phép."], "a": 3, "e": "Chỉ được sử dụng nội dung thông tin khi được tác giả cho phép."}, {"n": 6, "lv": "NB", "q": "Khi sử dụng nội dung thông tin của người khác, ngoài việc được cho phép em còn cần làm gì?", "o": ["Ghi rõ nguồn thông tin.", "Đổi tên nội dung thông tin.", "Xoá tên tác giả đi.", "Giấu nguồn thông tin."], "a": 0, "e": "Khi sử dụng nội dung thông tin của người khác cần được cho phép và ghi rõ nguồn."}, {"n": 7, "lv": "NB", "q": "Bài thơ \"Cô giáo của em\" trong tờ báo tường của lớp 5A là của tác giả nào?", "o": ["Bạn Ngô Hà Trang.", "Cô giáo chủ nhiệm.", "Nhà thơ Xuân Quỳnh.", "Bạn lớp trưởng lớp 5A."], "a": 2, "e": "Theo bài học, bài thơ \"Cô giáo của em\" là của nhà thơ Xuân Quỳnh."}, {"n": 8, "lv": "NB", "q": "Bài viết \"Cô giáo lớp em\" trong tờ báo tường của lớp 5A là của ai?", "o": ["Nhà thơ Xuân Quỳnh.", "Bạn Ngô Hà Trang.", "Bạn An.", "Bạn Minh."], "a": 1, "e": "Bài viết về cô giáo trong báo tường là của bạn Ngô Hà Trang."}, {"n": 9, "lv": "NB", "q": "Khi sử dụng một bài thơ không rõ tên tác giả, em ghi nguồn như thế nào?", "o": ["Sưu tầm.", "Tác giả: Em.", "Phỏng theo.", "Không ghi gì."], "a": 0, "e": "Trường hợp không rõ tên tác giả thì ghi nguồn là \"sưu tầm\"."}, {"n": 10, "lv": "NB", "q": "Khi không trích dẫn nguyên văn mà diễn đạt lại nội dung thông tin bằng ngôn ngữ của mình, em cần ghi nguồn bằng cụm từ nào?", "o": ["Sưu tầm.", "Tác giả.", "Của em.", "Phỏng theo."], "a": 3, "e": "Khi diễn đạt lại nội dung của người khác bằng lời của mình vẫn phải ghi nguồn, ví dụ \"phỏng theo\"."}, {"n": 11, "lv": "NB", "q": "Sao chép bài của bạn trong giờ kiểm tra là hành vi gì?", "o": ["Hành vi học tập chăm chỉ.", "Hành vi vi phạm đạo đức.", "Hành vi giúp đỡ bạn bè.", "Hành vi tôn trọng bản quyền."], "a": 1, "e": "Sao chép bài của bạn trong giờ kiểm tra là hành vi sai trái, gian dối, vi phạm đạo đức."}, {"n": 12, "lv": "NB", "q": "Thông tin trong cuốn nhật kí của mỗi người mang tính chất gì?", "o": ["Thông tin công cộng.", "Thông tin của cả lớp.", "Thông tin cá nhân, mang tính riêng tư.", "Thông tin ai cũng được đọc."], "a": 2, "e": "Thông tin trong nhật kí là thông tin cá nhân, mang tính riêng tư của mỗi người."}, {"n": 13, "lv": "NB", "q": "Ai có quyền quyết định cho người khác biết hay không biết thông tin cá nhân của một người?", "o": ["Chính người đó.", "Bạn bè của người đó.", "Thầy cô giáo.", "Bất kì ai trong lớp."], "a": 0, "e": "Thông tin cá nhân mang tính riêng tư, chỉ người đó mới có quyền quyết định cho người khác biết hay không."}, {"n": 14, "lv": "NB", "q": "Thông tin nào dưới đây là thông tin cá nhân?", "o": ["Tên của một bài thơ nổi tiếng.", "Tên của một ngày lễ lớn.", "Họ tên, ngày sinh, địa chỉ nhà.", "Tên của một con sông."], "a": 2, "e": "Họ tên, ngày sinh, địa chỉ là những thông tin cá nhân, mang tính riêng tư của mỗi người."}, {"n": 15, "lv": "NB", "q": "Thông tin bản quyền cần được công khai ở đâu?", "o": ["Trong ngăn bàn của tác giả.", "Trong tệp được đặt mật khẩu.", "Trong nhật kí của tác giả.", "Trên sản phẩm đã hoàn thành."], "a": 3, "e": "Thông tin bản quyền cần được công khai trên sản phẩm đã hoàn thành."}, {"n": 16, "lv": "NB", "q": "Dòng chữ \"Bản quyền © (2022) thuộc Nhà xuất bản Giáo dục Việt Nam\" ghi trên sách giáo khoa là gì?", "o": ["Thông tin giá bán của sách.", "Thông tin bản quyền của sản phẩm.", "Thông tin về số trang của sách.", "Thông tin về tác giả của bài học."], "a": 1, "e": "Đây là thông tin bản quyền được ghi trên sản phẩm để bảo vệ quyền tác giả."}, {"n": 17, "lv": "NB", "q": "Kí hiệu © thường được dùng trong thông tin nào?", "o": ["Thông tin bản quyền.", "Thông tin thời tiết.", "Thông tin giá cả.", "Thông tin địa chỉ."], "a": 0, "e": "Kí hiệu © thường xuất hiện trong thông tin bản quyền trên sản phẩm."}, {"n": 18, "lv": "NB", "q": "Trong quá trình tạo ra sản phẩm, tác giả cần có ý thức gì?", "o": ["Chia sẻ ngay cho mọi người.", "Cho mọi người sao chép.", "Công khai khi chưa hoàn thành.", "Giữ gìn, bảo mật thông tin."], "a": 3, "e": "Tác giả cần có ý thức giữ gìn, bảo mật thông tin để tránh bị đánh cắp."}, {"n": 19, "lv": "NB", "q": "Tác giả có thể làm gì để bảo vệ quyền tác giả đối với nội dung thông tin?", "o": ["Xoá tên khỏi sản phẩm.", "Cho mượn không cần hỏi.", "Ghi tên hoặc đăng kí bản quyền.", "Để sản phẩm trên mạng công cộng."], "a": 2, "e": "Tác giả có thể ghi tên hoặc đăng kí bản quyền để bảo vệ quyền tác giả."}, {"n": 20, "lv": "NB", "q": "Hành động nào dưới đây thể hiện sự tôn trọng bản quyền nội dung thông tin?", "o": ["Tự ý sao chép sản phẩm của bạn.", "Xin phép tác giả và ghi rõ nguồn khi sử dụng.", "Xoá tên tác giả khỏi sản phẩm.", "Nhận sản phẩm của bạn là của mình."], "a": 1, "e": "Chỉ sử dụng khi được phép và ghi rõ nguồn là cách tôn trọng bản quyền nội dung thông tin."}, {"n": 21, "lv": "NB", "q": "Hành động nào dưới đây thể hiện sự tôn trọng tính riêng tư của người khác?", "o": ["Đọc lén tin nhắn của bạn.", "Không đọc nhật kí của bạn khi chưa được phép.", "Kể nội dung thư riêng của bạn.", "Chia sẻ ảnh riêng của bạn."], "a": 1, "e": "Nhật kí là thông tin riêng tư nên không được đọc khi chưa được phép."}, {"n": 22, "lv": "NB", "q": "Bình đọc nhật kí của An rồi kể lại cho các bạn khác. Hành vi của Bình là gì?", "o": ["Tôn trọng tính riêng tư.", "Tôn trọng bản quyền.", "Chia sẻ thông tin hữu ích.", "Vi phạm tính riêng tư."], "a": 3, "e": "Bình đã đọc nhật kí của An và kể lại cho bạn khác, đây là hành vi vi phạm tính riêng tư."}, {"n": 23, "lv": "NB", "q": "Hoa lấy bức tranh do Minh vẽ để sử dụng mà không hỏi ý kiến Minh. Việc làm của Hoa là gì?", "o": ["Việc làm sai.", "Việc làm đúng.", "Việc làm đáng khen.", "Việc làm bình thường."], "a": 0, "e": "Hoa cần được Minh cho phép trước khi sử dụng bức tranh, vì vậy việc làm của Hoa là sai."}, {"n": 24, "lv": "NB", "q": "Khi đã được Minh cho phép sử dụng bức tranh, Hoa cần làm gì để tôn trọng bản quyền?", "o": ["Ghi Hoa là tác giả bức tranh.", "Xoá tên Minh khỏi bức tranh.", "Ghi rõ Minh là tác giả của bức tranh.", "Không cần ghi gì thêm."], "a": 2, "e": "Khi được cho phép, Hoa cần ghi rõ Minh là tác giả của bức tranh."}, {"n": 25, "lv": "NB", "q": "Khi thấy bạn xem thư riêng hay sao chép tệp của người khác mà chưa được đồng ý, em cần thể hiện thái độ nào?", "o": ["Đồng tình với bạn.", "Im lặng và làm theo bạn.", "Cổ vũ bạn tiếp tục.", "Không đồng tình, góp ý, nhắc nhở bạn."], "a": 3, "e": "Cần thể hiện rõ thái độ không đồng tình, góp ý, nhắc nhở để hiện tượng đó không tiếp diễn."}, {"n": 26, "lv": "NB", "q": "Trong sách giáo khoa Mĩ thuật 4 (Hình 27), nguồn thông tin của hai bức ảnh \"Luỹ tre\" và \"Cánh đồng\" là của ai?", "o": ["Huỳnh Lãnh.", "Hương Đoàn.", "Xuân Quỳnh.", "Ngô Hà Trang."], "a": 0, "e": "Theo Hình 27, hai bức ảnh \"Luỹ tre\" và \"Cánh đồng\" có nguồn: Huỳnh Lãnh."}, {"n": 27, "lv": "NB", "q": "Trong sách giáo khoa Mĩ thuật 4 (Hình 27), nguồn thông tin của bức ảnh \"Hoàng hôn trên biển\" là của ai?", "o": ["Huỳnh Lãnh.", "Hương Đoàn.", "Xuân Quỳnh.", "Nguyễn A."], "a": 1, "e": "Theo Hình 27, bức ảnh \"Hoàng hôn trên biển\" có nguồn: Hương Đoàn."}, {"n": 28, "lv": "NB", "q": "Vì sao khi sử dụng nội dung thông tin của người khác phải ghi rõ nguồn?", "o": ["Để làm cho sản phẩm dài hơn.", "Để người khác không biết tác giả.", "Để thể hiện sự tôn trọng bản quyền của tác giả.", "Để sản phẩm trông đẹp hơn."], "a": 2, "e": "Ghi rõ nguồn là cách thể hiện sự tôn trọng bản quyền nội dung thông tin của tác giả."}, {"n": 29, "lv": "NB", "q": "Việc làm nào dưới đây KHÔNG phải là cách tôn trọng bản quyền nội dung thông tin?", "o": ["Tự ý lấy sản phẩm của bạn dùng mà không xin phép.", "Chỉ sử dụng khi được phép.", "Ghi rõ nguồn thông tin.", "Diễn đạt lại và ghi \"phỏng theo\"."], "a": 0, "e": "Ba cách tôn trọng bản quyền là: chỉ sử dụng khi được phép, ghi rõ nguồn thông tin, diễn đạt lại và ghi \"phỏng theo\"."}, {"n": 30, "lv": "NB", "q": "Tác giả có quyền gì đối với nội dung thông tin của mình?", "o": ["Bắt mọi người phải mua.", "Bắt người khác phải khen.", "Chỉ được cất giữ, không được công bố.", "Cho phép hoặc không cho phép người khác sử dụng."], "a": 3, "e": "Bản quyền nội dung thông tin là quyền của tác giả cho phép hoặc không cho phép người khác sử dụng nội dung thông tin."}, {"n": 31, "lv": "TH", "q": "Khái niệm bản quyền nội dung thông tin được hiểu như thế nào?", "o": ["Là quyền của tác giả cho phép hoặc không cho phép người khác sử dụng nội dung thông tin.", "Là quyền được phép sử dụng miễn phí mọi tài liệu văn bản, hình ảnh có trên mạng.", "Là quyền tự do sao chép và chia sẻ mọi thông tin cá nhân của người khác cho bạn bè.", "Là quyền yêu cầu người khác phải cung cấp toàn bộ thông tin cá nhân của họ cho mình."], "a": 0, "e": "Bản quyền nội dung thông tin là quyền sở hữu của tác giả, cho phép họ quyết định việc người khác có được sử dụng tác phẩm của mình hay không."}, {"n": 32, "lv": "TH", "q": "Khi sưu tầm một bài thơ hay trên mạng để làm báo tường nhưng không biết ai là người sáng tác, cách ghi nguồn nào là phù hợp nhất?", "o": ["Sưu tầm", "Tác giả ẩn danh", "Phỏng theo bài thơ", "Không cần ghi nguồn"], "a": 0, "e": "Khi sử dụng một nội dung mà không xác định được rõ tên tác giả, ta cần ghi chú nguồn là \"sưu tầm\" để thể hiện sự tôn trọng bản quyền."}, {"n": 33, "lv": "TH", "q": "Vì sao tác giả cần ghi tên của mình hoặc đăng kí bản quyền lên sản phẩm đã hoàn thành?", "o": ["Để bảo vệ quyền tác giả đối với nội dung thông tin mà mình đã tạo ra.", "Để nền tảng mạng xã hội tự động chia sẻ sản phẩm đến nhiều người xem hơn và thu được bộn tiền quảng cáo từ hàng triệu người dùng internet mỗi ngày.", "Để chứng minh với mọi người rằng mình có kĩ năng sử dụng máy tính thành thạo.", "Để nhà trường cộng điểm rèn luyện và khen thưởng trong các buổi sinh hoạt lớp."], "a": 0, "e": "Việc ghi tên hoặc đăng kí bản quyền giúp tác giả công khai quyền sở hữu và bảo vệ tác phẩm của mình khỏi việc bị đánh cắp."}, {"n": 34, "lv": "TH", "q": "Hành động nào dưới đây là ví dụ về việc vi phạm tính riêng tư của người khác?", "o": ["Đọc lén nhật kí của bạn bè để quên trong ngăn bàn.", "Mượn bút của bạn bè khi đã được bạn ấy đồng ý.", "Đọc một bài thơ được đăng công khai trên bảng tin của trường.", "Kể cho bạn nghe về một bộ phim mà mình vừa xem tối qua."], "a": 0, "e": "Nhật kí là thông tin cá nhân mang tính riêng tư. Việc đọc lén khi chưa được phép là hành vi vi phạm đạo đức và tính riêng tư."}, {"n": 35, "lv": "TH", "q": "Nội dung thông tin có thể được thể hiện dưới những dạng cơ bản nào?", "o": ["Văn bản, hình ảnh, âm thanh hay đa phương tiện.", "Chỉ giới hạn ở các dạng văn bản chữ viết trên giấy.", "Chỉ bao gồm các hình ảnh được vẽ tay trên mặt giấy.", "Chỉ là các đoạn video clip được đăng tải trên mạng."], "a": 0, "e": "Nội dung thông tin rất đa dạng, bao gồm văn bản, hình ảnh, âm thanh hoặc kết hợp lại thành dạng đa phương tiện."}, {"n": 36, "lv": "VD", "q": "Bạn Lan tự vẽ một bức tranh phong cảnh rất đẹp trên máy tính. Bạn Hoa thấy đẹp nên đã tự ý sao chép bức tranh đó vào máy tính của mình để mang về nhà dùng. Hành động của bạn Hoa là gì?", "o": ["Vi phạm bản quyền nội dung thông tin.", "Tôn trọng quyền tác giả của người khác.", "Chia sẻ thông tin hữu ích cho cộng đồng.", "Bảo vệ tài sản kĩ thuật số cho bạn bè."], "a": 0, "e": "Hoa đã sử dụng sản phẩm do Lan tạo ra mà chưa xin phép, đây là hành vi vi phạm bản quyền."}, {"n": 37, "lv": "VD", "q": "Trong giờ ra chơi, em vô tình nhìn thấy điện thoại của bạn Minh trên bàn đang mở sẵn tin nhắn cá nhân. Em nên làm gì để thể hiện sự tôn trọng tính riêng tư?", "o": ["Không nhìn vào màn hình và nhắc bạn cất điện thoại đi.", "Lén đọc xem ai đang nhắn tin cho Minh rồi kể cho bạn khác.", "Dùng điện thoại của Minh chụp ảnh lại nội dung tin nhắn đó.", "Đọc to tin nhắn lên cho cả lớp cùng nghe để trêu đùa Minh."], "a": 0, "e": "Tin nhắn là thông tin riêng tư, việc không đọc trộm và nhắc nhở bạn bảo vệ tài sản thể hiện sự tôn trọng người khác."}, {"n": 38, "lv": "TH", "q": "Khi kể lại một câu chuyện cổ tích quen thuộc nhưng diễn đạt bằng lời văn của chính mình, em cần ghi chú nguồn thông tin như thế nào?", "o": ["Phỏng theo truyện", "Sưu tầm trên mạng", "Tác giả là chính em", "Không rõ nguồn gốc"], "a": 0, "e": "Khi diễn đạt lại nội dung của người khác bằng ngôn ngữ của mình, cách ghi nguồn chuẩn xác là dùng cụm từ \"phỏng theo\"."}, {"n": 39, "lv": "TH", "q": "Việc truy cập nội dung thông tin của người khác mà không được phép, dù vô tình hay cố ý, đều được coi là gì?", "o": ["Hành vi vi phạm đạo đức.", "Kĩ năng tìm kiếm thông tin xuất sắc.", "Quyền tự do tiếp cận thông tin.", "Khả năng sử dụng máy tính giỏi."], "a": 0, "e": "Xâm phạm thông tin của người khác khi chưa được phép là hành vi sai trái, vi phạm chuẩn mực đạo đức trong môi trường số."}, {"n": 40, "lv": "VD", "q": "Nhóm của em đang làm một bài thuyết trình và muốn dùng một số bức ảnh chụp phong cảnh của nhiếp ảnh gia Nguyễn A. Các em cần làm gì trước khi sử dụng?", "o": ["Xin phép tác giả và ghi rõ nguồn thông tin khi trình bày.", "Tự động tải về dùng vì ảnh đã được đăng trên internet.", "Ghi nguồn là sưu tầm để không phải tốn công xin phép.", "Đổi tên bức ảnh đi để không ai nhận ra ảnh của Nguyễn A."], "a": 0, "e": "Để tôn trọng bản quyền, người dùng bắt buộc phải xin phép và ghi rõ tên tác giả khi sử dụng tác phẩm của họ."}, {"n": 41, "lv": "TH", "q": "Những thông tin nào dưới đây được xếp vào nhóm thông tin cá nhân mang tính riêng tư?", "o": ["Nhật kí, họ tên, ngày sinh, địa chỉ.", "Bài thơ được in trong sách giáo khoa.", "Video ca nhạc phát sóng trên truyền hình.", "Bản tin dự báo thời tiết của buổi tối."], "a": 0, "e": "Thông tin cá nhân như họ tên, địa chỉ, nhật kí chỉ thuộc về một cá nhân cụ thể và họ có quyền quyết định cho người khác biết hay không."}, {"n": 42, "lv": "VD", "q": "Bạn Nam kể cho em nghe một bí mật mà bạn vô tình đọc lén được từ cuốn sổ tay của anh trai. Em nên có thái độ như thế nào trước hành động của Nam?", "o": ["Không đồng tình vì Nam đã vi phạm tính riêng tư của người khác.", "Đồng tình và khuyến khích Nam tiếp tục tìm hiểu thêm những câu chuyện khác vì việc đọc sổ của người thân trong nhà là điều rất bình thường và giúp mọi người hiểu nhau hơn.", "Tỏ ra thích thú và yêu cầu Nam kể thêm nhiều bí mật nữa.", "Chia sẻ ngay bí mật đó cho các bạn khác trong lớp cùng biết."], "a": 0, "e": "Cuốn sổ tay chứa thông tin riêng tư, hành động đọc lén của Nam là sai và em cần tỏ rõ thái độ không đồng tình để bạn sửa đổi."}, {"n": 43, "lv": "TH", "q": "Khi nào thì em mới được quyền sử dụng nội dung thông tin do người khác tạo ra?", "o": ["Chỉ sử dụng khi được tác giả cho phép.", "Khi em đã đóng tiền cước internet đầy đủ.", "Khi bài viết đó có rất nhiều lượt chia sẻ.", "Khi tác phẩm đó không có mật khẩu bảo vệ."], "a": 0, "e": "Nội dung thông tin được pháp luật và đạo đức bảo vệ, người khác chỉ được dùng khi chủ sở hữu (tác giả) đồng ý."}, {"n": 44, "lv": "VD", "q": "Để chào mừng ngày Nhà giáo Việt Nam, lớp em làm báo tường. Em chép lại bài thơ \"Cô giáo của em\" của nhà thơ Xuân Quỳnh. Em sẽ ghi tên tác giả như thế nào trên bài báo tường?", "o": ["Tác giả: Xuân Quỳnh", "Tác giả: Lớp 5A", "Nguồn: Sưu tầm internet", "Bài thơ không cần tên"], "a": 0, "e": "Bài thơ đã xác định rõ người sáng tác là nhà thơ Xuân Quỳnh, do đó bắt buộc phải ghi đúng tên tác giả."}, {"n": 45, "lv": "TH", "q": "Trong quá trình tạo ra nội dung thông tin, vì sao tác giả cần có ý thức giữ gìn, bảo mật thông tin?", "o": ["Để tránh việc bị người khác đánh cắp ý tưởng hoặc tác phẩm.", "Để các hệ thống máy chủ mạng dễ dàng theo dõi, thu thập dữ liệu và đánh giá chất lượng sản phẩm trước khi nó được phân phối rộng rãi tới những người dùng thiết bị thông minh khác.", "Để tiết kiệm không gian lưu trữ trên ổ cứng của máy tính.", "Để máy tính chạy nhanh hơn và không bị nhiễm virus độc hại."], "a": 0, "e": "Tác phẩm trong quá trình sáng tạo cần được bảo mật cẩn thận để không bị đánh cắp trước khi được công bố chính thức."}, {"n": 46, "lv": "VD", "q": "Thấy một bài nhạc không lời rất hay trên mạng, Khang đã tải về, ghép vào video do mình quay rồi đăng lên trang cá nhân và tự nhận mình là người sáng tác đoạn nhạc đó. Khang đã vi phạm điều gì?", "o": ["Vi phạm bản quyền nội dung thông tin.", "Vi phạm quy định về an toàn điện học đường.", "Vi phạm quyền được tự do vui chơi giải trí.", "Vi phạm nguyên tắc bảo vệ mật khẩu máy tính."], "a": 0, "e": "Nhận tác phẩm của người khác là của mình là hành vi đánh cắp chất xám và vi phạm nghiêm trọng bản quyền nội dung thông tin."}, {"n": 47, "lv": "TH", "q": "Khi chứng kiến một bạn tự ý sao chép tệp tin trên máy tính của người khác khi chưa được đồng ý, em cần làm gì?", "o": ["Thể hiện thái độ không đồng tình, góp ý và nhắc nhở bạn.", "Im lặng bỏ qua vì chuyện đó không liên quan trực tiếp đến mình.", "Xin bạn đó chép cho mình một bản giống hệt như vậy.", "Đứng canh chừng giúp bạn ấy để không ai phát hiện ra."], "a": 0, "e": "Khi thấy cái sai, chúng ta cần mạnh dạn lên tiếng, nhắc nhở để ngăn chặn hành vi vi phạm tiếp diễn."}, {"n": 48, "lv": "VD", "q": "Mẹ nhờ em tìm hướng dẫn làm một món ăn. Em tìm được một bài viết rất chi tiết trên mạng và gửi cho mẹ. Mẹ hỏi bài viết này của ai. Nếu trong bài không hề ghi tên người viết, em trả lời mẹ như thế nào cho đúng với việc tôn trọng thông tin?", "o": ["Con sưu tầm bài này trên mạng internet mẹ ạ.", "Đây là bài do con tự nghĩ ra toàn bộ cách nấu.", "Mẹ không cần quan tâm ai là người viết đâu.", "Bài này do chính mẹ viết từ ngày xưa đấy ạ."], "a": 0, "e": "Nếu thông tin trên mạng không có tên tác giả, ta cần trung thực nhận là đi sưu tầm để thể hiện sự tôn trọng với công sức người viết."}, {"n": 49, "lv": "TH", "q": "Quyền quyết định cho người khác biết thông tin cá nhân thuộc về ai?", "o": ["Thuộc về chính cá nhân có thông tin đó.", "Thuộc về người quản trị viên của mạng internet.", "Thuộc về bất kì ai tò mò và muốn biết thông tin.", "Thuộc về những người cung cấp máy tính."], "a": 0, "e": "Thông tin cá nhân là quyền riêng tư tối cao, chỉ có chính chủ nhân của nó mới có quyền quyết định tiết lộ hay không."}, {"n": 50, "lv": "VD", "q": "Trong giờ thực hành máy tính, bạn kế bên đi ra ngoài và để quên tài khoản email chưa thoát. Màn hình đang hiển thị thư từ gia đình của bạn ấy. Hành động nào sau đây là đúng mực nhất?", "o": ["Không xem thư, thu nhỏ cửa sổ lại hoặc gọi bạn vào để tắt đi.", "Đọc thật nhanh xem trong thư gia đình bạn viết những chuyện gì.", "Chuyển tiếp bức thư đó sang địa chỉ email của mình để đọc sau.", "Xóa bức thư đó đi để giúp bạn giải phóng bộ nhớ cho hộp thư."], "a": 0, "e": "Thư điện tử là tài sản cá nhân riêng tư. Không đọc thư và giúp bạn bảo vệ nó là biểu hiện của người có đạo đức trong môi trường số."}];
+const TIME={NB:30,TH:45,VD:60},PTS={NB:2,TH:2,VD:2},LVN={NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+const $=id=>document.getElementById(id);
+let P,Q,idx,locked,wrong,left,tick,nextT,sound=true,lastSec;
+/* âm thanh */
+let AC;function beep(f,d,t="sine",v=.15,at=0){if(!sound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(AC.destination);const s=AC.currentTime+at;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.start(s);o.stop(s+d)}catch(e){}}
+const sOk=()=>[523,659,784,1047].forEach((f,i)=>beep(f,.18,"triangle",.2,i*.08));
+const sNo=()=>{beep(200,.3,"sawtooth",.14);beep(150,.35,"sawtooth",.14,.12)};
+/* chọn câu & xáo đáp án */
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function build(){
+  const take=(lv,n)=>shuf(BANK.filter(q=>q.lv===lv)).slice(0,n);const pick=[...take("NB",5),...take("TH",3),...take("VD",2)];
+  const pos=shuf([0,1,2,3,0,1,2,3,0,1,2,3]).slice(0,10); // đáp án đúng rải đều A–D
+  Q=pick.map((q,i)=>{const right=q.o[q.a],others=shuf(q.o.filter((_,k)=>k!==q.a));others.splice(pos[i],0,right);return{...q,opts:others,ans:pos[i]}});
+}
+/* bắt đầu */
+const MAS=["🐯","🐼","🦊","🐲","🦄","🐸","🐧","🦁"];let pick=[0,1];
+function mascots(){[1,2].forEach(k=>{const box=$("mp"+k);box.innerHTML="";MAS.forEach((m,i)=>{const b=document.createElement("button");b.textContent=m;b.tabIndex=-1;b.className=i===pick[k-1]?"sel":"";b.onclick=()=>{pick[k-1]=i;mascots()};box.appendChild(b)});$("mm"+k).textContent=MAS[pick[k-1]]})}
+mascots();$("n1").focus();
+$("go").onclick=()=>{
+  const a=$("n1").value.trim(),b=$("n2").value.trim();
+  if(!a||!b){$("err").textContent="⚠️ Vui lòng nhập họ tên của cả hai em!";return}
+  if(pick[0]===pick[1]){$("err").textContent="⚠️ Hai đấu thủ hãy chọn linh vật khác nhau nhé!";return}
+  $("err").textContent="";
+  P=[{n:a,m:MAS[pick[0]],s:0,r:0,w:0},{n:b,m:MAS[pick[1]],s:0,r:0,w:0}];
+  try{const r=document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
+  countdown();
+};
+function countdown(){
+  let c=5;$("cdv").textContent=`${P[0].m} ${P[0].n}  ⚔️  ${P[1].m} ${P[1].n}`;$("cd").classList.remove("hide");
+  const t=()=>{
+    if(c===0){$("cd").classList.add("hide");start();return}
+    const n=$("cdn");n.textContent=c;n.style.animation="none";void n.offsetWidth;n.style.animation="";
+    beep(c>1?600:900,.2,"square",.12);c--;setTimeout(t,1000);
+  };t();
+}
+function resetAll(){clearInterval(tick);clearTimeout(nextT);stopFw();parts=[];if(raf){cancelAnimationFrame(raf);raf=0}cx.clearRect(0,0,cv.width,cv.height);$("end").classList.add("hide");$("gift").classList.add("hide");document.querySelectorAll(".fly").forEach(e=>e.remove())}
+$("again").onclick=()=>{
+  resetAll();
+  P=[{n:"",m:"",s:0,r:0,w:0},{n:"",m:"",s:0,r:0,w:0}];upd();
+  $("n1").value="";$("n2").value="";pick=[0,1];mascots();$("err").textContent="";
+  $("gm").classList.add("hide");$("setup").classList.remove("hide");$("n1").focus();
+  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
+};
+function start(){
+  build();idx=0;
+  $("setup").classList.add("hide");$("gm").classList.remove("hide");
+  $("nm1").textContent=P[0].m+" "+P[0].n;$("nm2").textContent=P[1].m+" "+P[1].n;
+  $("dots").innerHTML=Q.map((_,i)=>`<span id="d${i}">${i+1}</span>`).join("");
+  upd();show();
+}
+function upd(){
+  [0,1].forEach(i=>{$("pt"+(i+1)).textContent=P[i].s;$("st"+(i+1)).textContent=`✅ ${P[i].r} đúng · ❌ ${P[i].w} sai`});
+  const l=P[0].s===P[1].s?-1:(P[0].s>P[1].s?0:1);
+  [0,1].forEach(i=>{$("s"+(i+1)).classList.toggle("lead",l===i);$("cr"+(i+1)).classList.toggle("hide",l!==i)});
+}
+function show(){
+  clearTimeout(nextT);const q=Q[idx];locked=false;wrong=[false,false];
+  $("pb").style.width=(idx/10*100)+"%";$("cq").textContent=idx+1;
+  document.querySelectorAll(".dots span").forEach((d,i)=>d.classList.toggle("cur",i===idx));
+  q.gift=Math.random()<.2;$("bd").className="badge "+q.lv+(q.gift?" gift":"");$("bd").textContent=`${q.lv} · ${LVN[q.lv]} · ⏱ ${TIME[q.lv]} giây · +${PTS[q.lv]} điểm`+(q.gift?" · 🎁 CÂU QUÀ: thêm +1 điểm!":"");
+  $("qt").textContent=`Câu ${idx+1}. ${q.q}`;
+  const im=$("qimg");if(q.img){im.src=q.img;im.classList.remove("hide")}else im.classList.add("hide");
+  $("opts").innerHTML="";
+  q.opts.forEach((t,i)=>{const b=document.createElement("button");b.className="op";b.innerHTML=`<span class="n">${i+1}</span><span></span>`;b.lastChild.textContent=t;b.onclick=()=>answer(1,i);$("opts").appendChild(b)});
+  $("msg").className="info";$("msg").innerHTML=`⌨️ <b>${esc(P[0].n)}</b> bấm 1–4 · 🖱️ <b>${esc(P[1].n)}</b> bấm chuột. Ai nhanh và đúng được điểm!`;
+  $("exp").textContent="";$("next").classList.add("hide");
+  left=TIME[q.lv]*1000;const total=left,t0=performance.now();lastSec=99;
+  clearInterval(tick);
+  tick=setInterval(()=>{
+    left=total-(performance.now()-t0);const s=Math.max(0,Math.ceil(left/1000));
+    $("tt").textContent=s;$("ring").style.strokeDashoffset=157.1*(1-Math.max(0,left)/total);
+    $("tm").classList.toggle("low",s<=10);
+    if(s<=10&&s!==lastSec&&!locked){beep(s<=3?880:660,.08,"square",.06)}lastSec=s;
+    if(left<=0)timeout();
+  },100);
+}
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+function answer(p,i){
+  if(locked||wrong[p]||!$("gm")||$("gm").classList.contains("hide"))return;
+  const q=Q[idx],btn=$("opts").children[i];if(btn.disabled)return;
+  const name=P[p].n,card=$("s"+(p+1));
+  if(i===q.ans){
+    locked=true;clearInterval(tick);btn.classList.add("ok");btn.disabled=true;
+    const pts=PTS[q.lv]+(q.gift?1:0);P[p].s+=pts;P[p].r++;
+    $("msg").className="ok";$("msg").innerHTML=`🎉 <b>${esc(name)}</b> trả lời ĐÚNG! +${pts} điểm`+(q.gift?" (có 🎁 quà +1)":"");
+    tag(btn,name,p);mark(p+1);finish();sOk();flash(card,false);burst(p);if(q.gift)giftOpen(p);setTimeout(()=>scoreFx(p,pts),0);
+  }else{
+    wrong[p]=true;P[p].w++;btn.classList.add("no");btn.disabled=true;tag(btn,name,p);
+    $("msg").className="no";$("msg").innerHTML=`❌ <b>${esc(name)}</b> đã trả lời SAI!`+(wrong[1-p]?"":" Bạn kia vẫn còn cơ hội!");
+    sNo();flash(card,true);
+    if(wrong[0]&&wrong[1]){locked=true;clearInterval(tick);$("msg").innerHTML=`😢 Cả hai đều sai rồi! Đáp án đúng là <b>${q.ans+1}</b>.`;reveal();mark(0);finish()}
+  }
+  upd();
+}
+function tag(b,n,p){const s=document.createElement("span");s.className="who";s.style.color=p?"var(--p2)":"var(--p1)";s.textContent=n;b.appendChild(s)}
+function reveal(){const q=Q[idx];[...$("opts").children].forEach((b,i)=>{b.disabled=true;if(i===q.ans&&!b.classList.contains("ok"))b.classList.add("ok")})}
+function mark(w){const d=$("d"+idx);d.classList.remove("cur");d.classList.add("w"+w)}
+function flash(el,bad){el.classList.remove("flash","bad");void el.offsetWidth;el.classList.add("flash");if(bad)el.classList.add("bad")}
+function timeout(){
+  if(locked)return;locked=true;clearInterval(tick);beep(220,.5,"sawtooth",.15);
+  $("msg").className="no";$("msg").innerHTML=`⏰ Hết giờ! Đáp án đúng là <b>${Q[idx].ans+1}</b>.`;reveal();mark(0);finish();
+}
+function finish(){
+  [...$("opts").children].forEach(b=>b.disabled=true);
+  $("exp").textContent="💡 "+Q[idx].e;upd();
+  const last=idx===9;$("next").textContent=last?"🏁 Xem kết quả":"Câu tiếp theo ▶";$("next").classList.remove("hide");
+  let c=4;const lab=last?"🏁 Xem kết quả":"Câu tiếp theo ▶";
+  const run=()=>{$("next").textContent=`${lab} (${c})`;if(c--<=0)go();else nextT=setTimeout(run,1000)};run();
+}
+function scoreFx(p,pts){
+  const c=$("s"+(p+1)).getBoundingClientRect(),m=$("opts").getBoundingClientRect();
+  const mk=(cls,x,y)=>{const f=document.createElement("div");f.className="fly "+cls+" "+(p?"b":"a");f.textContent="+"+pts;f.style.left=x+"px";f.style.top=y+"px";document.body.appendChild(f);setTimeout(()=>f.remove(),1500)};
+  mk("",m.left+m.width/2,m.top+m.height/2);
+  mk("sm",c.left+c.width/2,c.top+c.height*.45);
+  const el=$("pt"+(p+1)),to=P[p].s;let n=to-pts;el.textContent=n;el.classList.remove("bump");void el.offsetWidth;el.classList.add("bump");
+  const it=setInterval(()=>{n++;el.textContent=n;if(n>=to)clearInterval(it)},180);
+}
+function giftOpen(p){
+  const g=$("gift");$("gtx").textContent=`🎁 ${P[p].m} ${P[p].n} nhận +1 điểm!`;
+  g.classList.remove("open","hide");void g.offsetWidth;[400,500,600].forEach((f,i)=>beep(f,.1,"square",.07,i*.15+.1));
+  setTimeout(()=>{g.classList.add("open");sOk();burst(0,innerWidth/2,innerHeight*.4,120);burst(0,innerWidth*.3,innerHeight*.5,70);burst(0,innerWidth*.7,innerHeight*.5,70);if(!raf)loop()},1100);
+  setTimeout(()=>g.classList.add("hide"),3200);
+}
+function go(){clearTimeout(nextT);if(idx>=9)return endGame();idx++;show()}
+$("next").onclick=go;
+document.addEventListener("keydown",e=>{
+  if($("gm").classList.contains("hide"))return;
+  if(e.key>="1"&&e.key<="4"){answer(0,+e.key-1)}
+  else if((e.key==="Enter"||e.key===" ")&&locked){e.preventDefault();go()}
+});
+$("fs").onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+$("snd").onclick=()=>{sound=!sound;$("snd").textContent=sound?"🔊 Âm thanh":"🔇 Đã tắt"};
+/* kết thúc */
+function endGame(){
+  $("pb").style.width="100%";const [a,b]=P;
+  const win=a.s===b.s?-1:(a.s>b.s?0:1);
+  $("ewin").textContent=win<0?"🤝 HÒA NHAU!":`🎊 ${P[win].m} ${P[win].n} CHIẾN THẮNG! 🎊`;
+  $("esub").textContent=win<0?"Hai bạn ngang tài ngang sức!":"Xin chúc mừng nhà vô địch!";
+  [0,1].forEach(i=>{const d=$("f"+(i+1));d.className=win===i?"w":"";d.innerHTML=`<b style="color:var(--${i?"p2":"p1"})"></b><em>${P[i].s}</em><div style="border:0;padding:0;color:var(--mut)">✅ ${P[i].r} đúng · ❌ ${P[i].w} sai</div>`;d.firstChild.textContent=(win===i?"👑 ":"")+P[i].m+" "+P[i].n});
+  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
+  $("end").classList.remove("hide");sOk();startFw();
+}
+/* pháo hoa */
+const cv=$("fw"),cx=cv.getContext("2d");let parts=[],fwOn=false,fwT=0,raf;
+function size(){cv.width=innerWidth;cv.height=innerHeight}size();addEventListener("resize",size);
+function burst(p,x,y,n=70){
+  if(x===undefined){const r=$("s"+(p+1)).getBoundingClientRect();x=r.left+r.width/2;y=r.top+r.height/2;n=36;if(!raf)loop()}
+  const h=Math.random()*360;
+  for(let i=0;i<n;i++){const a=Math.random()*6.283,s=Math.random()*6+2;parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,l:1,c:`hsl(${h+Math.random()*50},100%,50%)`})}
+}
+function loop(){
+  cx.globalCompositeOperation="destination-out";cx.fillStyle="rgba(0,0,0,.22)";cx.fillRect(0,0,cv.width,cv.height);cx.globalCompositeOperation="source-over";
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.06;p.vx*=.985;p.l-=.011;cx.globalAlpha=Math.max(p.l,0);cx.fillStyle=p.c;cx.beginPath();cx.arc(p.x,p.y,2.6,0,6.283);cx.fill()});
+  cx.globalAlpha=1;parts=parts.filter(p=>p.l>0);
+  if(fwOn&&Math.random()<.07)burst(0,Math.random()*cv.width,Math.random()*cv.height*.6,90);
+  if(parts.length||fwOn)raf=requestAnimationFrame(loop);else{raf=0;cx.clearRect(0,0,cv.width,cv.height)}
+}
+function startFw(){fwOn=true;for(let i=0;i<4;i++)setTimeout(()=>burst(0,innerWidth*(.2+.2*i),innerHeight*.35,100),i*250);if(!raf)loop();
+  for(let i=0;i<8;i++)beep(300+Math.random()*500,.15,"triangle",.08,i*.3)}
+function stopFw(){fwOn=false}
+</script>
+</body>
+</html>

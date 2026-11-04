@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Du hành Hệ Mặt Trời – Tin học 6 Bài 5</title>
+<style>
+:root{--bg:#eef3ff;--panel:rgba(255,255,255,.92);--line:rgba(90,110,200,.28);--tx:#1c2545;--mute:#5a678f;--ok:#12b774;--bad:#e5385a;--warn:#e08a00;--pri:#5b7cff;--acc:#ff9f43}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(ellipse at 20% 10%,#ffffff 0%,#e7eeff 45%,#d8e3ff 100%);color:var(--tx);overflow:hidden}
+#bg{display:none}
+#fx{position:fixed;inset:0;z-index:60;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+.hide{display:none!important}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 30px;width:min(560px,100%);box-shadow:0 20px 50px rgba(60,80,160,.22);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.logo{font-size:56px;text-align:center;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
+.card h1{text-align:center;font-size:26px;margin:6px 0 4px;background:linear-gradient(90deg,#ff7a18,#ff3d77,#7a4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .sub{text-align:center;color:var(--mute);font-size:14px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 5px;font-weight:600}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--tx);font-size:16px;outline:none;transition:.2s}
+input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(91,124,255,.22)}
+input.err{border-color:var(--bad);animation:shake .4s}
+.rules{margin:16px 0;padding:12px 14px;border-radius:12px;background:#eef2ff;font-size:13.5px;line-height:1.7;color:#34406b}
+.btn{border:none;border-radius:14px;padding:13px 22px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#5b7cff,#8b5bff);box-shadow:0 6px 18px rgba(91,124,255,.35);transition:.2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.go{width:100%;margin-top:6px;background:linear-gradient(135deg,#ff9f43,#ff4d79);box-shadow:0 6px 18px rgba(255,100,90,.35)}
+.btn.ghost{background:#eef2ff;color:var(--tx);box-shadow:none;border:1px solid var(--line);font-weight:600;font-size:14px;padding:10px 16px}
+.row{display:flex;gap:10px;margin-top:10px}
+.row .btn{flex:1}
+#game{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,26vw,440px);gap:14px;padding:14px}
+.left,.right{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:0;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(60,80,160,.15)}
+.left{padding:16px 24px;overflow:hidden;position:relative}
+.qwrap{flex:1;overflow-y:auto;padding-right:4px}
+.pips{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.pip{padding:6px 2px;text-align:center;white-space:nowrap;border-radius:99px;font-size:clamp(11px,1vw,16px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
+.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.06)}
+.pip.ok{background:#d6f7e8;color:#0b7a53}
+.pip.no{background:#ffdfe6;color:#c42b4b}
+.tbar{height:8px;border-radius:99px;background:#e2e8f8;overflow:hidden;margin-bottom:14px}
+.tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#ffc93c);transform-origin:left}
+.tbar.low i{background:linear-gradient(90deg,#ff5d7a,#ff9f43)}
+.lvl{display:inline-block;padding:6px 18px;border-radius:99px;font-size:clamp(16px,1.6vw,26px);font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl.low{background:#ffdfe6!important;color:#c42b4b!important;animation:beat .5s infinite}
+.lvl.NB{background:#d4f7e8;color:#0b7a53}.lvl.TH{background:#fff1c2;color:#8a6100}.lvl.VD{background:#ffd9ec;color:#a3195f}
+.qtext{font-size:clamp(22px,2.5vw,42px);line-height:1.4;font-weight:700;margin-bottom:20px}
+.enter{animation:slideIn .55s cubic-bezier(.2,1,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:18px 20px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--tx);font-weight:600;font-size:clamp(21px,2.4vw,40px);line-height:1.3;transition:.18s;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:var(--pri);transform:translateY(-3px);background:#f1f4ff}
+.opt b{flex:none;width:clamp(40px,3.6vw,64px);height:clamp(40px,3.6vw,64px);border-radius:50%;display:grid;place-items:center;background:#e3e9ff;color:#3a4a9a;font-size:clamp(20px,2.2vw,36px)}
+.opt span{word-break:break-word}
+.opt:disabled{cursor:default}
+.opt.good{border-color:var(--ok);background:#dcf8ec;animation:glow 1s ease 2}
+.opt.good b{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:#ffe3e9;animation:shake .45s}
+.opt.wrong b{background:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+@keyframes glow{50%{box-shadow:0 0 24px rgba(18,183,116,.55)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.fb{margin-top:16px;border-radius:14px;padding:14px 16px;animation:slideIn .5s}
+.fb.ok{background:#e4faf0;border:1px solid var(--ok)}
+.fb.no{background:#ffecef;border:1px solid var(--bad)}
+.fb h3{font-size:clamp(20px,2.2vw,34px);margin-bottom:8px}
+.fb p{line-height:1.5;font-size:clamp(17px,1.8vw,30px);color:#2a3560}
+.fb .ans{margin-bottom:6px;font-weight:600}
+.nextrow{display:flex;justify-content:flex-end;padding-top:12px}
+.nextrow .btn{font-size:clamp(17px,1.7vw,28px);padding:14px 28px}
+.illus{margin:0 0 16px;padding:10px 12px;border-radius:14px;background:#f3f6ff;border:1px dashed var(--line);overflow-x:auto}
+.sheet{border-collapse:collapse;font-size:clamp(15px,1.6vw,26px);margin:auto;background:#fff;color:#1b2540;box-shadow:0 4px 14px rgba(60,80,160,.25)}
+.sheet th{background:#e8ecf5;font-weight:700;color:#4a5578;padding:4px 10px;border:1px solid #c5cce0;min-width:36px}
+.sheet td{padding:7px 14px;border:1px solid #d0d6e6;min-width:clamp(90px,9vw,150px);text-align:center;font-family:Consolas,monospace;height:clamp(32px,3vw,52px)}
+.sheet td.hd{background:#dfe7ff;font-weight:700;font-family:inherit}
+.sheet td.tbl{background:#fff4c9}
+.sheet td.src{background:#cfe3ff;outline:3px solid #3b82f6;outline-offset:-3px;font-weight:700}
+.sheet td.tgt{background:#ffe2c2;outline:3px solid #ff8a1f;outline-offset:-3px;font-weight:800;animation:pulse 1.2s infinite}
+.sheet td.tgtok{background:#c9f7de;outline:3px solid #19c37d;outline-offset:-3px;font-weight:800;animation:pop .5s}
+@keyframes pulse{50%{background:#fff0dc}}
+.cap{text-align:center;font-size:clamp(13px,1.3vw,20px);color:var(--mute);margin-top:7px}
+.right{padding:14px;gap:10px;overflow:hidden}
+.right h2{font-size:clamp(20px,1.9vw,32px);line-height:1.35;text-align:center;color:#4b34d8}
+.right h2 small{display:block;color:var(--mute);font-weight:600;font-size:clamp(14px,1.3vw,22px);line-height:1.3;margin-top:4px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#eef2ff;border-radius:12px;padding:7px 10px;min-width:0}
+.chip small{display:block;font-size:clamp(10px,.9vw,14px);color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
+.chip b{font-size:clamp(16px,1.5vw,26px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.big b{font-size:clamp(20px,2vw,34px);color:#d97706}
+.timer{display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:8px 12px}
+.timer svg{width:clamp(62px,5vw,86px);height:clamp(62px,5vw,86px);flex:none}
+.timer .ring{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.timer .t{font-size:clamp(34px,3.2vw,54px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.timer small{color:var(--mute);font-size:12px}
+.timer.low .t{color:var(--bad);animation:beat .5s infinite}
+@keyframes beat{50%{transform:scale(1.18)}}
+.info.three{grid-template-columns:.9fr .9fr 1.5fr}
+.chip.tm{display:flex;align-items:center;gap:8px}
+.chip.tm small{white-space:nowrap}
+#hName{white-space:normal;line-height:1.2}
+.chip.tm svg{width:clamp(26px,2.2vw,40px);height:clamp(26px,2.2vw,40px);flex:none}
+.chip.tm b{font-size:clamp(20px,2vw,34px);font-variant-numeric:tabular-nums}
+.chip.tm.low b{color:var(--bad);animation:beat .5s infinite}
+.ring{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.tools{display:flex;gap:8px}
+.tools .btn{flex:1;padding:8px 6px;font-size:13px}
+.skywrap{flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid #1d2a5c;background:radial-gradient(circle at center,#0d1a45,#04060f);position:relative}
+#sky{width:100%;height:100%;display:block}
+.hint{position:absolute;left:8px;bottom:6px;font-size:11px;color:#9aa8d8;pointer-events:none}
+/* hoạt cảnh toàn màn hình (giao diện tối) */
+#cine{position:fixed;inset:0;z-index:40;background:radial-gradient(circle at center,#0d1a45 0%,#04060f 75%);transform:scale(.12);opacity:0;border-radius:40px;pointer-events:none;transition:transform .7s cubic-bezier(.2,.9,.3,1),opacity .45s,border-radius .7s;overflow:hidden}
+#cine.on{transform:none;opacity:1;border-radius:0;pointer-events:auto}
+#bigsky{position:absolute;inset:0;width:100%;height:100%}
+#cineTitle{position:absolute;top:3.5vh;left:0;right:0;text-align:center;color:#fff;font-size:clamp(20px,3vw,38px);font-weight:800;text-shadow:0 0 24px rgba(255,200,80,.8);padding:0 16px}
+#cineSub{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:#ffe58a;font-size:clamp(16px,2vw,26px);font-weight:700}
+.score{font-size:76px;font-weight:900;text-align:center;line-height:1;background:linear-gradient(180deg,#ff9f1c,#ff4d79);-webkit-background-clip:text;background-clip:text;color:transparent}
+.score small{font-size:28px}
+.medal{text-align:center;font-size:19px;font-weight:700;margin:6px 0 12px}
+.rev{margin:10px 0;display:grid;gap:6px;max-height:240px;overflow:auto}
+.rev div{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#f1f4ff;border-radius:10px;padding:8px 10px}
+.rev .ok{border-left:4px solid var(--ok)}.rev .no{border-left:4px solid var(--bad)}
+.introsky{position:relative;flex:1 1 0;min-width:0;max-width:640px;height:min(660px,88vh);border-radius:22px;overflow:hidden;background:radial-gradient(circle at center,#0d1a45,#04060f);border:1px solid #1d2a5c;box-shadow:0 20px 50px rgba(20,30,90,.4);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+#introsky{width:100%;height:100%;display:block}
+.introcap{position:absolute;top:14px;left:0;right:0;text-align:center;color:#ffe58a;font-weight:800;font-size:clamp(16px,1.7vw,28px);text-shadow:0 0 16px rgba(255,200,80,.7);pointer-events:none}
+#end{background:radial-gradient(ellipse at center,#0a0f26 0%,#03050d 70%,#000 100%);overflow:auto}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#end .card{position:relative;z-index:2;background:#fff;box-shadow:0 0 70px rgba(255,255,255,.28)}
+#start{gap:28px}
+#start .introsky{order:2}
+#start .card{flex:0 1 540px}
+.long .qtext{font-size:clamp(20px,2.1vw,36px)}
+.long .opt{font-size:clamp(17px,1.8vw,30px);padding:14px 16px}
+.xlong .qtext{font-size:clamp(18px,1.8vw,31px)}
+.xlong .opts{grid-template-columns:1fr}
+.xlong .opt{font-size:clamp(16px,1.6vw,27px);padding:11px 16px}
+@media(max-width:900px){
+ #start{flex-direction:column;justify-content:flex-start}
+ #start .introsky{order:-1}
+ .introsky{flex:none;width:100%;max-width:560px;height:240px}
+ .opts{grid-template-columns:1fr}
+ body{overflow:auto}#game{grid-template-columns:1fr;height:auto;min-height:100%}
+ .right{order:-1}.skywrap{min-height:230px}.left{min-height:70vh}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div id="cine"><canvas id="bigsky"></canvas><div id="cineTitle"></div><div id="cineSub"></div></div>
+
+<!-- MÀN HÌNH BẮT ĐẦU -->
+<div class="overlay" id="start">
+  <div class="introsky"><canvas id="introsky"></canvas><div class="introcap">🌌 Hệ Mặt Trời</div></div>
+  <div class="card">
+    <div class="logo">🚀</div>
+    <h1>DU HÀNH HỆ MẶT TRỜI</h1>
+    <div class="sub">Tin học 6 – Bài 5: Internet</div>
+    <label for="inName">Họ và tên</label>
+    <input id="inName" maxlength="40" placeholder="Nhập họ và tên của em" autocomplete="off">
+    <label for="inClass">Lớp</label>
+    <input id="inClass" maxlength="12" placeholder="Ví dụ: 6A1" autocomplete="off">
+    <div class="rules">
+      🎯 <b>5 câu ngẫu nhiên</b>: 3 Nhận biết (⏱ 30 giây) · 1 Thông hiểu (⏱ 45 giây) · 1 Vận dụng (⏱ 60 giây)<br>
+      ✅ Trả lời đúng: <b>+2 điểm</b>. Mỗi lần chuyển câu, Hệ Mặt Trời phóng to toàn màn hình: tàu bay lần lượt Mặt Trời → Thủy tinh → Kim tinh → Hỏa tinh → Mộc tinh → về Trái Đất<br>
+      🎁 Trên đường bay có <b>20%</b> cơ hội có hộp quà 🎁 rơi xuống, tàu nhặt được sẽ nhận <b>+0,5 điểm</b><br>
+      ⏰ Hết giờ sẽ tính là trả lời sai · Điểm tối đa <b>10</b>
+    </div>
+    <button class="btn go" id="btnStart">🚀 BẮT ĐẦU CHƠI</button>
+    <div class="row"><button class="btn ghost" id="btnFsStart">⛶ Toàn màn hình</button></div>
+  </div>
+</div>
+
+<!-- GIAO DIỆN CHƠI -->
+<div id="game" class="hide">
+  <section class="left">
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="qwrap" id="qwrap">
+      <div id="qbox">
+        <span class="lvl" id="lvl"></span>
+        <div class="qtext" id="qtext"></div>
+        <div class="illus hide" id="illus"></div>
+        <div class="opts" id="opts"></div>
+        <div id="fb"></div>
+      </div>
+    </div>
+    <div class="nextrow"><button class="btn hide" id="btnNext">Câu tiếp theo ➜</button></div>
+  </section>
+
+  <aside class="right">
+    <h2>📘 Tin học 6 – Bài 5<small>Internet</small></h2>
+    <div class="info">
+      <div class="chip"><small>Họ tên</small><b id="hName">-</b></div>
+      <div class="chip"><small>Lớp</small><b id="hClass">-</b></div>
+    </div>
+    <div class="info three">
+      <div class="chip"><small>Câu hỏi</small><b id="hQ">1/5</b></div>
+      <div class="chip big"><small>Điểm</small><b id="hScore">0</b></div>
+      <div class="chip tm" id="timer">
+        <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="9"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#12b774" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
+        <div><small>Thời gian</small><b><span id="tnum">30</span>s</b></div>
+      </div>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div class="tools">
+      <button class="btn ghost" id="btnFs">⛶ Toàn màn hình</button>
+      <button class="btn ghost" id="btnSnd">🔊 Âm thanh</button>
+    </div>
+    <div class="skywrap"><canvas id="sky"></canvas><div class="hint">Bấm “Câu tiếp theo” để phóng tàu 🚀</div></div>
+  </aside>
+</div>
+
+<!-- MÀN HÌNH KẾT QUẢ -->
+<div class="overlay hide" id="end">
+  <canvas id="fw"></canvas>
+  <div class="card">
+    <div class="logo" id="endIcon">🏆</div>
+    <h1 id="endName"></h1>
+    <div class="sub" id="endSub"></div>
+    <div class="score"><span id="endScore">0</span><small> / 10</small></div>
+    <div class="medal" id="endMedal"></div>
+    <div class="rev" id="rev"></div>
+    <div class="row"><button class="btn" id="btnAgain">🔄 Chơi lại</button><button class="btn ghost" id="btnChange">👤 Đổi người chơi</button></div>
+  </div>
+</div>
+
+<script>
+const QS = [{"n": 1001, "lv": "NB", "q": "Internet là gì?", "opts": ["Mạng liên kết các máy tính trong một quốc gia", "Mạng liên kết các mạng máy tính trên toàn thế giới", "Hệ thống cáp quang dưới biển", "Phần mềm tìm kiếm thông tin trên máy tính"], "ans": 1, "exp": "Internet có bản chất là mạng toàn cầu liên kết các mạng máy tính với nhau. Các ý khác chỉ là thành phần hoặc sai quy mô."}, {"n": 1002, "lv": "NB", "q": "Mạng Internet thuộc sở hữu của ai?", "opts": ["Của các công ty viễn thông", "Của Liên Hợp Quốc", "Không thuộc sở hữu của riêng ai", "Của chính phủ các nước"], "ans": 2, "exp": "Internet là mạng công cộng toàn cầu, không do một tổ chức hay cá nhân nào độc quyền sở hữu."}, {"n": 1003, "lv": "NB", "q": "Để truy cập Internet, máy tính cần đăng ký với ai?", "opts": ["Nhà cung cấp dịch vụ Internet", "Cửa hàng bán máy tính", "Cảnh sát mạng", "Trường học"], "ans": 0, "exp": "Người dùng cần đăng ký với nhà cung cấp dịch vụ Internet (ISP) để được cấp quyền truy cập."}, {"n": 1004, "lv": "NB", "q": "WWW là viết tắt của dịch vụ nào trên Internet?", "opts": ["Dịch vụ thư điện tử", "Mạng thông tin toàn cầu", "Dịch vụ phát thanh", "Mạng xã hội"], "ans": 1, "exp": "WWW (World Wide Web) là mạng thông tin toàn cầu phổ biến nhất trên Internet."}, {"n": 1005, "lv": "NB", "q": "Năm 2020, có khoảng bao nhiêu dân số thế giới sử dụng Internet?", "opts": ["Hơn một phần tư", "Hơn một phần hai", "Gần như toàn bộ", "Hơn một phần ba"], "ans": 3, "exp": "Theo thống kê năm 2020, có khoảng hơn một phần ba dân số thế giới đang sử dụng Internet."}, {"n": 1006, "lv": "NB", "q": "Internet không cung cấp dịch vụ nào sau đây?", "opts": ["Tìm kiếm thông tin", "Thư điện tử", "Giao hàng vật lý tận nhà", "Mạng xã hội"], "ans": 2, "exp": "Internet chỉ truyền tải dữ liệu số, không thể tự thực hiện dịch vụ giao hàng vật lý ngoài đời thực."}, {"n": 1007, "lv": "NB", "q": "Đặc điểm \"Tính toàn cầu\" của Internet nghĩa là gì?", "opts": ["Chỉ giới hạn ở các nước phát triển", "Liên kết các máy tính ở hầu hết các quốc gia", "Mọi người đều dùng chung một máy tính", "Chỉ phủ sóng ở các thành phố lớn"], "ans": 1, "exp": "Internet kết nối người dùng trên toàn thế giới, không giới hạn biên giới."}, {"n": 1008, "lv": "NB", "q": "Đặc điểm \"Tính tương tác\" của Internet cho phép người dùng làm gì?", "opts": ["Chỉ có thể đọc báo mà không thể gửi thông tin", "Có thể tức thời nhận và gửi thông tin", "Chỉ có thể xem phim", "Chỉ có thể tải dữ liệu xuống máy tính"], "ans": 1, "exp": "Người dùng có thể vừa nhận vừa gửi thông tin tức thời, khác với truyền hình một chiều."}, {"n": 1009, "lv": "NB", "q": "Đặc điểm \"Tính dễ tiếp cận\" của Internet thể hiện ở việc gì?", "opts": ["Chỉ người lớn mới được dùng", "Có thể tìm kiếm, chia sẻ thông tin ở mọi lúc mọi nơi", "Chỉ dùng được vào ban ngày", "Cần phải có máy tính siêu cấp mới vào được"], "ans": 1, "exp": "Người dùng có thể tiếp cận Internet mọi lúc, mọi nơi một cách thuận lợi."}, {"n": 1010, "lv": "NB", "q": "Người dùng có thể sử dụng Internet bằng danh tính khác không phải tên thật. Đây là đặc điểm gì?", "opts": ["Tính ẩn danh", "Tính cập nhật", "Tính lưu trữ", "Tính đa dạng"], "ans": 0, "exp": "Internet cho phép dùng bí danh, đó là tính ẩn danh."}, {"n": 1011, "lv": "NB", "q": "Thông tin trên Internet được tổ chức dưới dạng nào?", "opts": ["Chỉ có văn bản chữ viết", "Chỉ có âm thanh", "Văn bản, âm thanh, hình ảnh, video", "Chỉ có hình ảnh và video"], "ans": 2, "exp": "Thông tin trên Internet rất đa dạng, bao gồm văn bản, hình ảnh, âm thanh, video."}, {"n": 1012, "lv": "NB", "q": "Thông tin trên Internet thường trực và có thể sao chép nhanh chóng, dễ dàng. Đây là tính chất gì?", "opts": ["Tính toàn cầu", "Tính ẩn danh", "Tính lưu trữ", "Tính tương tác"], "ans": 2, "exp": "Tính lưu trữ cho phép thông tin luôn sẵn sàng để sao chép, tải xuống bất kỳ lúc nào."}, {"n": 1013, "lv": "NB", "q": "Hoạt động nào sau đây không thể thực hiện được bằng Internet?", "opts": ["Học tập trực tuyến", "Ăn uống trực tuyến", "Chơi trò chơi điện tử", "Gửi thư điện tử"], "ans": 1, "exp": "Ăn uống là hoạt động sinh học vật lý, không thể thực hiện qua mạng."}, {"n": 1014, "lv": "NB", "q": "Nhờ Internet, người dùng có thể làm gì đối với các văn bản, bản tính, video?", "opts": ["Lưu trữ và chia sẻ", "Chỉ có thể xóa đi", "Chỉ có thể xem một lần rồi mất", "Chuyển thành vật chất thật"], "ans": 0, "exp": "Internet cung cấp khả năng lưu trữ và chia sẻ trao đổi dữ liệu dễ dàng."}, {"n": 1015, "lv": "NB", "q": "Dịch vụ thư điện tử dùng để làm gì?", "opts": ["Xem phim trực tuyến", "Trao đổi thư tín qua môi trường mạng", "Chơi game trực tuyến", "Lập trình máy tính"], "ans": 1, "exp": "Thư điện tử giúp nhận và gửi thư qua môi trường mạng nhanh chóng."}, {"n": 1016, "lv": "NB", "q": "ISP là tên viết tắt của cụm từ có ý nghĩa gì?", "opts": ["Nhà cung cấp máy tính cá nhân", "Nhà cung cấp dịch vụ Internet", "Nhà mạng viễn thông quốc gia", "Hiệp hội phần mềm thế giới"], "ans": 1, "exp": "ISP là viết tắt của nhà cung cấp dịch vụ Internet."}, {"n": 1017, "lv": "NB", "q": "Đặc điểm \"Tính cập nhật\" của Internet có nghĩa là gì?", "opts": ["Thông tin không bao giờ thay đổi", "Thông tin được cập nhật thường xuyên, liên tục", "Thông tin chỉ được cập nhật mỗi năm một lần", "Chỉ có hình ảnh mới được cập nhật"], "ans": 1, "exp": "Thông tin trên Internet luôn được làm mới từng giây từng phút."}, {"n": 1018, "lv": "NB", "q": "Internet có giúp thúc đẩy xã hội phát triển không?", "opts": ["Không, chỉ làm lãng phí thời gian", "Có, nhờ cung cấp môi trường làm việc, học tập, giao tiếp hiệu quả", "Chỉ phát triển lĩnh vực giải trí", "Không liên quan đến sự phát triển xã hội"], "ans": 1, "exp": "Internet góp phần lớn vào sự phát triển văn hóa, giáo dục, kinh tế của xã hội."}, {"n": 1019, "lv": "NB", "q": "Đâu là một ví dụ về lợi ích học tập trên Internet?", "opts": ["Tìm kiếm tài liệu, tham gia lớp học trực tuyến", "Chơi game bắn súng", "Mua sắm quần áo", "Xem phim hành động"], "ans": 0, "exp": "Tìm kiếm tài liệu và học trực tuyến là lợi ích giáo dục rõ ràng nhất."}, {"n": 1020, "lv": "NB", "q": "Dịch vụ phát thanh, truyền hình có thể thực hiện trên Internet không?", "opts": ["Không thể", "Hoàn toàn có thể", "Chỉ phát thanh được, không truyền hình được", "Chỉ thực hiện được ở mạng nội bộ"], "ans": 1, "exp": "Các dịch vụ phát thanh và truyền hình ngày nay rất phổ biến trên Internet."}, {"n": 1021, "lv": "NB", "q": "Khi kết nối Internet, điện thoại thông minh của bạn trở thành gì?", "opts": ["Một thiết bị tách biệt không liên quan đến ai", "Một nút mạng trong mạng lưới toàn cầu", "Một máy chủ điều khiển mạng internet", "Một ăng ten thu sóng vô tuyến"], "ans": 1, "exp": "Bất kỳ thiết bị nào kết nối Internet đều trở thành một thành phần của mạng lưới."}, {"n": 1022, "lv": "NB", "q": "Để máy tính kết nối được Internet, ta cần cài đặt và cấp quyền bởi ai?", "opts": ["Nhà cung cấp dịch vụ Internet", "Trưởng thôn", "Hiệu trưởng nhà trường", "Công an"], "ans": 0, "exp": "Nhà cung cấp dịch vụ (ISP) là nơi cấp quyền truy cập mạng cho thiết bị."}, {"n": 1023, "lv": "NB", "q": "Mạng xã hội là một dịch vụ trên Internet dùng để làm gì?", "opts": ["Kết nối, giao lưu, chia sẻ với cộng đồng", "Sửa chữa phần cứng máy tính", "Tạo ra điện năng cho máy tính", "In ấn tài liệu ra giấy"], "ans": 0, "exp": "Mạng xã hội giúp con người tương tác, giao tiếp và chia sẻ."}, {"n": 1024, "lv": "NB", "q": "Internet có vai trò như thế nào trong y tế?", "opts": ["Không có vai trò gì", "Hỗ trợ hội chẩn từ xa, tìm kiếm thông tin bệnh lý", "Thay thế hoàn toàn bác sĩ thật", "Chỉ dùng để bán thuốc"], "ans": 1, "exp": "Internet giúp y bác sĩ kết nối, hội chẩn và người dân tìm kiếm thông tin sức khỏe."}, {"n": 1025, "lv": "NB", "q": "Đặc điểm \"Tính đa dạng\" của Internet có nghĩa là gì?", "opts": ["Chỉ có một loại dữ liệu duy nhất", "Chỉ có người Việt Nam sử dụng", "Có nhiều phương thức truyền tải và dạng thông tin khác nhau", "Chỉ có người lớn dùng"], "ans": 2, "exp": "Tính đa dạng thể hiện ở sự phong phú của cả dạng dữ liệu và phương thức kết nối."}, {"n": 1026, "lv": "NB", "q": "Trong các thiết bị sau, thiết bị nào thường dùng để truy cập Internet?", "opts": ["Lò vi sóng", "Máy hút bụi", "Điện thoại thông minh", "Máy giặt"], "ans": 2, "exp": "Điện thoại thông minh có khả năng kết nối mạng để truy cập Internet."}, {"n": 1027, "lv": "NB", "q": "Muốn tìm kiếm thông tin trên Internet, người ta thường dùng gì?", "opts": ["Trình duyệt web và máy tìm kiếm", "Phần mềm soạn thảo văn bản", "Phần mềm vẽ tranh", "Máy tính bỏ túi"], "ans": 0, "exp": "Trình duyệt và máy tìm kiếm là công cụ chuyên dụng để tìm thông tin mạng."}, {"n": 1028, "lv": "NB", "q": "Khái niệm WWW thường được sử dụng đồng nghĩa với gì trong ngôn ngữ thường ngày?", "opts": ["Toàn bộ mạng Internet", "Dịch vụ Web", "Phần mềm diệt virus", "Mạng truyền hình cáp"], "ans": 1, "exp": "WWW là dịch vụ Web (các trang web liên kết nhau), không phải là bản thân mạng Internet."}, {"n": 1029, "lv": "NB", "q": "Một người có thể truy cập Internet từ một quán cà phê thông qua kết nối nào?", "opts": ["Mạng không dây wifi", "Dây cáp truyền hình", "Đường ống nước", "Đường dây điện cao thế"], "ans": 0, "exp": "Wifi là phương thức phổ biến để truy cập Internet không dây ở nơi công cộng."}, {"n": 1030, "lv": "NB", "q": "Internet mang lại lợi ích gì cho việc kinh doanh?", "opts": ["Mở rộng thị trường toàn cầu, bán hàng trực tuyến", "Giảm chất lượng sản phẩm", "Làm chậm tốc độ giao dịch", "Ngăn cản khách hàng mua hàng"], "ans": 0, "exp": "Internet giúp thương mại điện tử phát triển, kết nối người mua và người bán mọi nơi."}, {"n": 1031, "lv": "NB", "q": "Điều gì là bắt buộc để một máy tính cá nhân tham gia vào Internet?", "opts": ["Phải có máy in", "Phải có kết nối vật lý hoặc không dây với mạng của ISP", "Phải có chuột máy tính", "Phải cài đặt trò chơi điện tử"], "ans": 1, "exp": "Kết nối với ISP (qua dây hoặc không dây) là điều kiện kiên quyết."}, {"n": 1032, "lv": "NB", "q": "Sự kiện trực tuyến trên Internet có đặc điểm gì nổi bật so với sự kiện thực tế?", "opts": ["Chỉ có 10 người được tham gia", "Có thể diễn ra ở bất kỳ đâu và cho phép vô số người tham gia cùng lúc", "Người tham gia bắt buộc phải mặc vest", "Chi phí tổ chức đắt hơn hàng nghìn lần"], "ans": 1, "exp": "Sự kiện trực tuyến vượt qua giới hạn không gian và sức chứa vật lý."}, {"n": 1033, "lv": "NB", "q": "Internet hỗ trợ gửi loại dữ liệu nào sau đây nhanh nhất?", "opts": ["Một cuốn sách giấy 1000 trang", "Một gói bưu phẩm chứa đĩa CD", "Một tập tin văn bản qua email", "Một bức thư viết tay gửi qua bưu điện"], "ans": 2, "exp": "Tập tin số hóa truyền qua mạng nhanh hơn nhiều so với vật lý."}, {"n": 1034, "lv": "NB", "q": "Lợi ích của Internet trong khoa học kỹ thuật là gì?", "opts": ["Giúp các nhà khoa học toàn cầu trao đổi dữ liệu nghiên cứu nhanh chóng", "Che giấu hoàn toàn các phát minh mới", "Ngăn cản sự tiến bộ của máy móc", "Thay thế con người trong các thí nghiệm nguy hiểm"], "ans": 0, "exp": "Internet đẩy nhanh tiến độ nghiên cứu nhờ khả năng chia sẻ thông tin toàn cầu."}, {"n": 1035, "lv": "NB", "q": "Việc có thể xem một bộ phim phát sóng trên mạng vào bất kỳ giờ nào bạn muốn thể hiện tính chất gì?", "opts": ["Tính toàn cầu", "Tính lưu trữ và dễ tiếp cận", "Tính ẩn danh", "Tính không chủ sở hữu"], "ans": 1, "exp": "Dữ liệu được lưu trữ trên máy chủ nên có thể tiếp cận mọi lúc."}, {"n": 1036, "lv": "NB", "q": "Hạn chế của tính ẩn danh trên Internet là gì?", "opts": ["Làm máy tính chạy chậm", "Dễ bị người xấu lợi dụng để lừa đảo hoặc xúc phạm người khác", "Làm tốn nhiều tiền điện hơn", "Không thể gửi email được nữa"], "ans": 1, "exp": "Ẩn danh giúp bảo vệ quyền riêng tư nhưng cũng tạo khe hở cho tội phạm mạng."}, {"n": 1037, "lv": "NB", "q": "Thiết bị nào sau đây kết nối các máy tính trong nhà với cáp Internet ngoài đường?", "opts": ["Bàn phím máy tính", "Màn hình tinh thể lỏng", "Bộ định tuyến (Router)", "Chuột không dây"], "ans": 2, "exp": "Bộ định tuyến (Router/Modem) làm nhiệm vụ giao tiếp mạng nhà với ISP."}, {"n": 1038, "lv": "NB", "q": "Có thể thực hiện cuộc gọi video trên Internet không?", "opts": ["Chỉ gọi được âm thanh", "Không thể", "Hoàn toàn có thể thông qua các ứng dụng gọi video", "Chỉ gọi được vào ban đêm"], "ans": 2, "exp": "Internet cho phép truyền tải video và âm thanh theo thời gian thực."}, {"n": 1039, "lv": "NB", "q": "Băng thông Internet lớn giúp người dùng làm gì?", "opts": ["Làm cho máy tính nặng hơn", "Tải xuống các tệp tin lớn nhanh chóng hơn", "Không có tác dụng gì", "Làm màn hình sáng hơn"], "ans": 1, "exp": "Băng thông càng lớn, tốc độ truyền tải dữ liệu càng nhanh."}, {"n": 1040, "lv": "NB", "q": "Tính \"cập nhật\" của Internet có thể dẫn đến rủi ro gì?", "opts": ["Máy tính tự động hỏng", "Lan truyền thông tin giả mạo (fake news) rất nhanh", "Không thể tắt máy tính", "Tất cả mọi người đều trở thành nhà khoa học"], "ans": 1, "exp": "Tốc độ cập nhật nhanh khiến tin giả cũng dễ dàng lan truyền chóng mặt."}, {"n": 1041, "lv": "TH", "q": "Sự khác biệt cơ bản về \"tính tương tác\" giữa Internet và Mạng truyền hình cáp truyền thống là gì?", "opts": ["Truyền hình cáp cung cấp nội dung một chiều từ đài phát, người xem không thể phản hồi; còn Internet cho phép truyền dữ liệu hai chiều tức thời.", "Mạng truyền hình cáp chỉ phát sóng thông tin giải trí, còn Internet là hệ thống mạng toàn cầu được Liên Hợp Quốc độc quyền quản lý và chỉ truyền thông tin khoa học tuyệt mật của các quốc gia.", "Internet yêu cầu người dùng phải trả tiền theo từng phút sử dụng, còn truyền hình cáp hoàn toàn miễn phí trọn đời.", "Internet sử dụng vệ tinh nhân tạo, còn truyền hình cáp không dùng đến công nghệ không dây."], "ans": 0, "exp": "Internet là mạng tương tác hai chiều, truyền hình truyền thống là mạng một chiều. Đáp án B là một nhận định sai kiến thức cơ bản và dài một cách vô lý."}, {"n": 1042, "lv": "TH", "q": "Vì sao nói Internet \"không có chủ sở hữu\"?", "opts": ["Vì không một ai đủ tiền mua toàn bộ hệ thống cáp quang dưới đáy đại dương nên các nước tự phân chia sử dụng.", "Vì nó là mạng công cộng toàn cầu, liên kết hàng triệu mạng nhỏ do nhiều tổ chức cá nhân quản lý, không ai điều hành toàn bộ.", "Vì pháp luật quốc tế cấm tuyệt đối việc tư nhân hóa bất kỳ thiết bị mạng nào trên thế giới.", "Vì đây là một dự án không gian do hệ thống trí tuệ nhân tạo độc lập tự động vận hành mà không cần sự can thiệp của con người."], "ans": 1, "exp": "Internet liên kết từ vô số mạng nhỏ độc lập, không có cơ quan trung ương nào sở hữu toàn bộ."}, {"n": 1043, "lv": "TH", "q": "Chức năng của máy tìm kiếm (như Google) khác với trình duyệt Web như thế nào?", "opts": ["Trình duyệt web là phần mềm bảo vệ phần cứng máy tính khỏi vi khuẩn, còn máy tìm kiếm là thiết bị vật lý kết nối mạng.", "Máy tìm kiếm giúp phân tích từ khóa để trả về các liên kết web, còn trình duyệt là phần mềm để hiển thị nội dung các trang web đó.", "Máy tìm kiếm dùng để tìm đồ vật bị mất trong nhà, trình duyệt dùng để đọc sách báo giấy.", "Máy tìm kiếm là một siêu máy tính đặt tại Mỹ, trình duyệt là hệ thống vệ tinh bay quanh trái đất để định vị GPS cho điện thoại di động."], "ans": 1, "exp": "Trình duyệt hiển thị web, máy tìm kiếm tìm thông tin trong web."}, {"n": 1044, "lv": "TH", "q": "Tại sao việc bảo mật thông tin trên Internet lại rất quan trọng?", "opts": ["Vì môi trường mạng ẩn danh và toàn cầu dễ bị tin tặc đánh cắp thông tin cá nhân nhằm mục đích xấu.", "Vì máy tính kết nối mạng sẽ tự động phát nổ nếu bị rò rỉ dữ liệu quan trọng ra ngoài môi trường không khí.", "Vì nếu mất thông tin, nhà cung cấp dịch vụ Internet sẽ thu hồi thiết bị vĩnh viễn.", "Vì thông tin cá nhân bị đánh cắp sẽ lập tức làm mất toàn bộ tiền trong mọi ngân hàng trên thế giới trong vòng 1 giây."], "ans": 0, "exp": "Internet có nhiều rủi ro an ninh mạng do tính ẩn danh và quy mô toàn cầu."}, {"n": 1045, "lv": "TH", "q": "Khi bạn đăng một bức ảnh lên mạng xã hội, bạn đang tận dụng đặc điểm nào của Internet?", "opts": ["Tính lưu trữ và tính tương tác", "Tính không chủ sở hữu và tính toán học", "Tính ẩn danh hoàn toàn và tính bắt buộc", "Tính độc quyền và tính địa phương"], "ans": 0, "exp": "Đăng ảnh là thao tác lưu trữ dữ liệu lên mạng và tương tác chia sẻ với mọi người."}, {"n": 1046, "lv": "TH", "q": "Vai trò của ISP trong việc kết nối Internet giống như gì trong đời sống?", "opts": ["Giống như một bác sĩ chữa bệnh cho con người.", "Giống như đơn vị làm đường và cấp phép cho bạn lái xe hòa vào hệ thống giao thông quốc gia.", "Giống như một giáo viên dạy bạn cách sử dụng máy vi tính cơ bản.", "Giống như một siêu thị bán các phần mềm tin học văn phòng."], "ans": 1, "exp": "ISP cung cấp hạ tầng kết nối giống như hệ thống đường giao thông."}, {"n": 1047, "lv": "TH", "q": "Để máy tính ở Việt Nam xem được trang web đặt tại máy chủ ở Mỹ, điều kiện cần thiết nhất là gì?", "opts": ["Phải có máy bay chở dữ liệu", "Hai máy tính phải dùng chung một màn hình", "Cả hai mạng đều phải được kết nối liên thông qua hệ thống Internet toàn cầu", "Người Việt Nam phải nói được tiếng Anh"], "ans": 2, "exp": "Tính toàn cầu của Internet cho phép truyền dữ liệu xuyên quốc gia."}, {"n": 1048, "lv": "TH", "q": "Thông tin trên Internet có đáng tin cậy 100% không?", "opts": ["Có, mọi thông tin trên mạng đều được chính phủ kiểm duyệt chặt chẽ.", "Không, vì bất kỳ ai cũng có thể đưa thông tin lên mạng dễ dàng nên có nhiều thông tin sai lệch.", "Có, vì các cỗ máy tính khổng lồ tự động xóa ngay lập tức những thông tin nói dối.", "Không, vì mạng Internet thường xuyên bị hỏng hóc làm biến đổi toàn bộ chữ cái thành các ký hiệu vô nghĩa."], "ans": 1, "exp": "Internet thiếu kiểm duyệt tập trung nên chứa cả thông tin đúng lẫn sai."}, {"n": 1049, "lv": "TH", "q": "Lợi thế lớn nhất của thư điện tử so với thư bưu điện truyền thống là gì?", "opts": ["Tốc độ gửi nhận gần như tức thời và có thể gửi kèm nhiều loại tệp tin số liệu.", "Thư điện tử tự động chuyển đổi thành bức thư giấy có mùi thơm khi đến tay người nhận qua màn hình đa chiều.", "Người dùng thư điện tử không cần biết đọc chữ vì hệ thống sẽ tự đọc bằng ý nghĩ của con người.", "Thư điện tử được bọc trong các lớp bảo vệ vật lý chống cháy nổ và chống thấm nước tốt hơn thư giấy."], "ans": 0, "exp": "Email vượt trội về tốc độ và khả năng đính kèm tệp tin."}, {"n": 1050, "lv": "TH", "q": "Tình huống nào sau đây thể hiện \"Tính cập nhật\" của Internet?", "opts": ["Bạn xem tỷ số một trận bóng đá đang diễn ra trực tiếp và số liệu thay đổi liên tục.", "Bạn tìm lại được một bài thơ cổ xuất bản cách đây 1000 năm.", "Bạn sử dụng tên giả để bình luận trên một diễn đàn điện tử.", "Bạn nối dây cáp từ điện thoại vào tivi để xem màn hình lớn."], "ans": 0, "exp": "Tính cập nhật thể hiện ở khả năng hiển thị thông tin thay đổi theo thời gian thực."}, {"n": 1051, "lv": "TH", "q": "Theo sách giáo khoa Tin học 6, các dịch vụ thông tin phổ biến trên Internet không bao gồm điều gì?", "opts": ["Thư điện tử, mạng xã hội", "Giao hàng siêu tốc bằng hệ thống ống chân không vật lý toàn cầu", "World Wide Web (WWW), tìm kiếm", "Lưu trữ, trao đổi dữ liệu, kinh doanh"], "ans": 1, "exp": "Internet là mạng thông tin số, không phải hạ tầng vận chuyển vật lý."}, {"n": 1052, "lv": "TH", "q": "Khái niệm \"Đám mây\" (Cloud) trên Internet ám chỉ điều gì?", "opts": ["Các đám mây tích điện trên bầu trời ảnh hưởng đến sóng wifi.", "Các máy chủ lưu trữ dữ liệu khổng lồ đặt trên mạng Internet giúp lưu và xử lý dữ liệu từ xa.", "Một phần mềm chuyên dự báo thời tiết của các đài truyền hình.", "Công nghệ sử dụng khói nhân tạo để mã hóa thông tin truyền tải trong không gian."], "ans": 1, "exp": "Cloud computing là việc sử dụng tài nguyên điện toán trên Internet."}, {"n": 1053, "lv": "TH", "q": "Sự khác biệt giữa mạng cục bộ (LAN) ở trường học và mạng Internet là gì?", "opts": ["LAN dùng dây cáp, Internet chỉ dùng vệ tinh", "LAN có phạm vi hẹp trong tòa nhà, Internet có phạm vi toàn cầu", "LAN phải đóng tiền, Internet hoàn toàn miễn phí", "LAN cho tốc độ chậm hơn Internet hàng triệu lần"], "ans": 1, "exp": "Khác biệt lớn nhất là quy mô: LAN hẹp, Internet toàn cầu."}, {"n": 1054, "lv": "TH", "q": "Việc học trực tuyến qua Internet giải quyết khó khăn gì lớn nhất của học sinh so với học trực tiếp?", "opts": ["Khó khăn về việc không có giấy bút", "Vượt qua rào cản về khoảng cách địa lý và thời gian di chuyển", "Khó khăn về việc giáo viên giảng bài quá nhanh", "Giải quyết triệt để việc học sinh buồn ngủ trong lớp"], "ans": 1, "exp": "E-learning phá bỏ rào cản địa lý và thời gian."}, {"n": 1055, "lv": "TH", "q": "Vì sao người ta gọi Internet là \"thế giới phẳng\"?", "opts": ["Vì trái đất hình phẳng, Internet chạy trên mặt đất", "Vì nó xóa bỏ mọi khoảng cách về địa lý, cho phép thông tin truyền đi ngang hàng và công bằng trên toàn cầu", "Vì tất cả màn hình máy tính và điện thoại thông minh đều được thiết kế với bề mặt phẳng", "Vì dữ liệu truyền tải trên mạng bị nén lại thành định dạng phẳng 2D để tiết kiệm dung lượng."], "ans": 1, "exp": "Thuật ngữ này ám chỉ sự bình đẳng về cơ hội tiếp cận thông tin."}, {"n": 1056, "lv": "TH", "q": "Một đoạn văn bản gồm 10 kí tự. Hỏi máy tính cần ít nhất bao nhiêu bit để biểu diễn đoạn văn bản này, biết mỗi kí tự tương ứng với 1 Byte?", "opts": ["80 bit", "10 bit", "100 bit", "18 bit"], "ans": 0, "exp": "Mỗi kí tự là 1 byte = 8 bit. 10 kí tự = 80 bit."}, {"n": 1057, "lv": "TH", "q": "Internet làm thay đổi thói quen mua sắm của con người như thế nào?", "opts": ["Người dùng chỉ được phép mua hàng bằng hiện vật không dùng tiền tệ.", "Chuyển từ mua sắm tại cửa hàng truyền thống sang mua sắm trực tuyến (thương mại điện tử) tiện lợi và nhanh chóng.", "Hệ thống tự động sử dụng máy in 3D tại nhà để in ra quần áo và đồ ăn thực phẩm mà không cần mua bán.", "Khách hàng bắt buộc phải gọi điện thoại bằng máy bàn cho các nhà máy sản xuất để đặt hàng."], "ans": 1, "exp": "Sự bùng nổ của thương mại điện tử là minh chứng rõ nhất."}, {"n": 1058, "lv": "TH", "q": "Khẳng định nào sau đây là sai khi nói về Internet?", "opts": ["Mọi thông tin trên mạng đều được bảo vệ bản quyền chặt chẽ, người dùng vi phạm sẽ bị xóa tài khoản mạng vĩnh viễn trên toàn cầu bởi tổ chức quản lý Internet Liên Hợp Quốc.", "Internet mang lại không gian giải trí vô tận với phim ảnh, âm nhạc, trò chơi.", "Bên cạnh thông tin bổ ích, Internet còn chứa nhiều thông tin độc hại, sai sự thật.", "Việc chia sẻ dữ liệu qua Internet diễn ra với tốc độ cực nhanh."], "ans": 0, "exp": "Đoạn A là một khẳng định sai lệch, dài dòng và sai kiến thức thực tế do Internet không bị kiểm soát bản quyền toàn cầu bởi Liên Hợp Quốc."}, {"n": 1059, "lv": "TH", "q": "Tính lưu trữ của Internet mang lại thuận lợi gì cho học sinh?", "opts": ["Giúp học sinh có thể tải lại tài liệu bài giảng cũ bất cứ lúc nào cần ôn tập.", "Giúp học sinh tự động giải các bài toán khó mà không cần tư duy.", "Hệ thống tự động lưu giữ và sao chép toàn bộ trí nhớ của học sinh vào máy chủ.", "Giúp học sinh có thể bỏ học mà vẫn có bằng cấp đầy đủ."], "ans": 0, "exp": "Dữ liệu được lưu trữ thường trực hỗ trợ việc tra cứu lại rất dễ dàng."}, {"n": 1060, "lv": "TH", "q": "Thiết bị nào sau đây không thể kết nối trực tiếp với Internet trong cấu trúc mạng hiện đại?", "opts": ["Tivi thông minh (Smart TV)", "Máy tính xách tay (Laptop)", "Chiếc bàn gỗ học sinh thông thường", "Đồng hồ thông minh (Smart watch)"], "ans": 2, "exp": "Bàn gỗ không chứa linh kiện điện tử để kết nối mạng."}, {"n": 1061, "lv": "TH", "q": "Chức năng chính của mạng xã hội là gì?", "opts": ["Tạo một môi trường mã hóa bằng công nghệ cơ học hạt nhân để kết nối các máy tính không cần điện.", "Kết nối mọi người, tạo cộng đồng trực tuyến để chia sẻ trạng thái, hình ảnh, tin tức và giao tiếp.", "Chỉ dùng để mua bán các thiết bị linh kiện máy tính cũ.", "Là phần mềm thay thế hoàn toàn hệ điều hành Windows trên máy tính cá nhân."], "ans": 1, "exp": "Mạng xã hội giúp con người gắn kết qua không gian ảo."}, {"n": 1062, "lv": "TH", "q": "Tại sao không nên truy cập Internet liên tục trong nhiều giờ liền?", "opts": ["Vì sẽ làm cháy nổ các cột phát sóng wifi của nhà mạng cung cấp dịch vụ.", "Vì sẽ ảnh hưởng xấu đến sức khỏe thể chất (mắt, cột sống) và dễ gây nghiện mạng, suy giảm các kỹ năng xã hội thực tế.", "Vì dung lượng dữ liệu của Internet trên thế giới là có hạn, nếu dùng nhiều sẽ cạn kiệt thông tin.", "Vì máy tính sẽ tự động mã hóa mọi thông tin trong ổ cứng và yêu cầu tiền chuộc nếu dùng quá mức."], "ans": 1, "exp": "Truy cập mạng quá lâu gây hệ lụy về sức khỏe và tâm lý."}, {"n": 1063, "lv": "TH", "q": "Việc sử dụng Internet để kiểm tra tài khoản ngân hàng thay vì ra cây ATM thể hiện lợi ích gì?", "opts": ["Tính toàn cầu và giáo dục trực tuyến", "Sự tiện dụng, tiết kiệm thời gian và cung cấp dịch vụ đời sống thiết yếu mọi lúc mọi nơi", "Khả năng ẩn danh để trốn tránh thuế nhà nước", "Khả năng phân tích dữ liệu siêu lớn của hệ thống y tế điện tử"], "ans": 1, "exp": "Các dịch vụ Internet banking cung cấp sự tiện ích vượt trội trong quản lý cá nhân."}, {"n": 1064, "lv": "TH", "q": "Yếu tố nào đóng vai trò như \"ngôn ngữ chung\" giúp các máy tính trên Internet hiểu nhau?", "opts": ["Giao thức mạng (Protocol)", "Ngôn ngữ tiếng Anh quốc tế", "Ngôn ngữ cơ thể người", "Phần mềm gõ tiếng Việt"], "ans": 0, "exp": "Các giao thức mạng (như TCP/IP) là quy chuẩn giúp các hệ thống khác biệt kết nối và trao đổi."}, {"n": 1065, "lv": "VD", "q": "Một giáo viên vùng biên giới muốn chia sẻ kinh nghiệm và tài liệu giảng dạy môn Tin học với các đồng nghiệp trên khắp cả nước nhưng không có điều kiện đi lại. Đặc điểm nào của Internet giúp thầy/cô thực hiện điều này tốt nhất?", "opts": ["Tính độc quyền và bảo mật cơ học vô hình", "Tính ẩn danh và tính tự động xóa dấu vết", "Tính toàn cầu và khả năng chia sẻ thông tin dễ dàng", "Tính cá nhân hóa toàn diện cho người dùng địa phương"], "ans": 2, "exp": "Khả năng kết nối toàn cầu và chia sẻ thông tin giúp giáo viên vượt qua giới hạn địa lý."}, {"n": 1066, "lv": "VD", "q": "Bạn muốn biết cách chế biến món \"hàu sữa nấu với mồng tơi\" sao cho ngon. Bạn nên sử dụng dịch vụ nào trên Internet để tìm kiếm công thức một cách nhanh chóng và đa dạng nhất?", "opts": ["Sử dụng máy tìm kiếm (như Google) để tra cứu từ khóa hoặc xem video hướng dẫn trên YouTube.", "Gửi thư điện tử cho nhà cung cấp dịch vụ mạng (ISP) yêu cầu họ gửi công thức nấu ăn.", "Dùng phần mềm vẽ Paint để vẽ lại món ăn và chờ mạng tự động tạo ra công thức nấu.", "Cài đặt một phần mềm diệt virus cao cấp phiên bản trả phí để chặn các trang web không liên quan đến hải sản."], "ans": 0, "exp": "Máy tìm kiếm và nền tảng video là dịch vụ tốt nhất để tra cứu thông tin thực tế."}, {"n": 1067, "lv": "VD", "q": "An dùng iPhone 16 Pro Max và muốn cài đặt chức năng đọc văn bản tự động thông báo bằng giọng nói khi pin giảm xuống dưới 30%. An đã lên mạng tìm video hướng dẫn và tự làm theo thành công. Lợi ích An nhận được từ Internet thuộc lĩnh vực nào?", "opts": ["Lĩnh vực giáo dục từ xa, nơi các chuyên gia công nghệ của Apple trực tiếp cung cấp hệ thống học tập tự động được lập trình sẵn cho từng cá nhân, tự động điều chỉnh thiết bị của học sinh theo thời gian thực mà không cần chạm vào máy.", "Học tập, tự bồi dưỡng kiến thức và chia sẻ kinh nghiệm công nghệ từ cộng đồng mạng.", "Lĩnh vực quản lý tài chính và thương mại điện tử.", "Lĩnh vực khám chữa bệnh và chăm sóc sức khỏe điện tử."], "ans": 1, "exp": "An đã sử dụng Internet để tra cứu kiến thức công nghệ và học hỏi từ cộng đồng. Đáp án A miêu tả sai lệch một cách phóng đại."}, {"n": 1068, "lv": "VD", "q": "Để so sánh sự khác nhau giữa thanh long ruột đỏ và thanh long ruột tím, bạn Minh tìm kiếm trên mạng và thấy rất nhiều bài viết, video phân tích hình thái, hình ảnh thực tế từ các nhà vườn khác nhau. Điều này minh họa rõ nét nhất cho đặc điểm nào của thông tin trên Internet?", "opts": ["Tính đa dạng", "Tính không có chủ sở hữu", "Tính tương tác", "Tính mã hóa bảo mật cấp cao"], "ans": 0, "exp": "Sự phong phú về cả hình thức (video, ảnh, bài viết) và nguồn gốc phản ánh tính đa dạng."}, {"n": 1069, "lv": "VD", "q": "Chú Hùng muốn gỡ dịch vụ SMS banking của ngân hàng BIDV. Chú lên một diễn đàn về ngân hàng để hỏi và ngay lập tức 2 phút sau có một tài khoản khác vào hướng dẫn chú cách hủy qua ứng dụng SmartBanking. Đây là biểu hiện của đặc điểm nào trên Internet?", "opts": ["Tính toàn cầu", "Tính cập nhật và lưu trữ đám mây", "Tính tương tác (tức thời nhận và gửi thông tin)", "Tính bảo mật và ẩn danh của hệ thống ngân hàng nhà nước"], "ans": 2, "exp": "Khả năng hỏi và nhận đáp án ngay lập tức từ người khác thể hiện tính tương tác thời gian thực."}, {"n": 1070, "lv": "VD", "q": "Một học sinh lớp 6 tò mò \"Tại sao mặt trời có thể giữ được các hành tinh quay quanh nó\" và tự tìm các bài giải thích về lực hấp dẫn trên bách khoa toàn thư mở Wikipedia. Bạn ấy đang tận dụng Internet cho mục đích gì?", "opts": ["Chơi game giải trí đa người chơi để giảm căng thẳng sau giờ học.", "Tự học, tra cứu kiến thức khoa học, nâng cao hiểu biết ngoài sách vở.", "Sử dụng mạng xã hội để kết bạn với các phi hành gia trên trạm vũ trụ quốc tế.", "Thương mại điện tử để đặt mua các mô hình hệ mặt trời từ nước ngoài."], "ans": 1, "exp": "Việc tra cứu Wikipedia để hiểu hiện tượng vật lý là hoạt động tự học tập và mở rộng kiến thức."}, {"n": 1071, "lv": "VD", "q": "Bác trưởng thôn muốn tìm một bài phát biểu ngắn gọn, súc tích để đọc trong lễ ra mắt \"Câu lạc bộ Văn hóa Văn nghệ\" của Hội Người cao tuổi xã. Thao tác nào trên Internet giúp bác giải quyết vấn đề nhanh nhất?", "opts": ["Gõ từ khóa \"mẫu bài phát biểu ra mắt câu lạc bộ văn nghệ người cao tuổi\" trên máy tìm kiếm.", "Gửi email cho Bộ Văn hóa, Thể thao và Du lịch để xin bài mẫu.", "Lên mạng xã hội đăng tin tìm người viết thuê bài phát biểu với giá ưu đãi.", "Mua một chiếc máy tính xách tay thế hệ mới nhất có kết nối mạng cáp quang siêu tốc."], "ans": 0, "exp": "Sử dụng máy tìm kiếm với từ khóa chính xác là phương pháp nhanh nhất để tìm văn bản mẫu."}, {"n": 1072, "lv": "VD", "q": "Một người phụ nữ cần tìm hiểu chính sách hỗ trợ xã hội mới nhất của nhà nước đối với trẻ em ở với bà ngoại để làm hồ sơ xin trợ cấp. Đặc điểm nào của Internet đặc biệt hữu ích trong trường hợp này?", "opts": ["Tính cập nhật, giúp tiếp cận các văn bản pháp luật, chính sách ban hành mới nhất một cách chính xác.", "Tính ẩn danh, giúp người truy cập không bị nhà nước phát hiện thông tin.", "Hệ thống trí tuệ nhân tạo sẽ tự động điền hồ sơ bằng công nghệ in 3D và gửi đi mà người phụ nữ không cần biết chữ.", "Tính toàn cầu, giúp liên hệ trực tiếp với tổng thống các nước lân cận để xin tài trợ quốc tế."], "ans": 0, "exp": "Tính cập nhật của Internet giúp người dân tra cứu các văn bản chính sách mới nhất, tránh dùng thông tin lỗi thời."}, {"n": 1073, "lv": "VD", "q": "Bạn cần lắp ráp chiếc ghế văn phòng \"Dona\" của thương hiệu Quy Phúc nhưng vô tình làm mất tờ giấy hướng dẫn trong hộp. Việc lên mạng xem video hướng dẫn lắp ráp sản phẩm này thể hiện lợi ích gì của Internet?", "opts": ["Chỉ làm tốn thêm thời gian vì video trên mạng luôn luôn là giả mạo.", "Cung cấp kho lưu trữ dữ liệu số vô tận giúp tra cứu các kỹ năng thực hành phục vụ cuộc sống.", "Internet có khả năng tự điều khiển cánh tay robot từ xa để lắp ráp ghế thay cho con người.", "Giúp người mua hàng kiện nhà sản xuất vì thiết kế sản phẩm quá phức tạp."], "ans": 1, "exp": "Internet chứa vô số video hướng dẫn thực hành (how-to), thể hiện lợi ích tra cứu phục vụ cuộc sống."}, {"n": 1074, "lv": "VD", "q": "Bạn muốn tìm cách chế biến \"trứng bắc thảo\" sao cho bớt mùi hăng. Khi tìm trên mạng, bạn đọc được mẹo luộc sơ trứng và thấy hàng trăm lượt bình luận xác nhận mẹo này rất hiệu quả. Đặc điểm nào của mạng thông tin đã giúp bạn tin tưởng cách làm này?", "opts": ["Tính đa dạng của một tổ chức chính phủ quản lý.", "Tính lưu trữ và khả năng tương tác, đánh giá chéo từ cộng đồng người dùng thực tế.", "Hệ thống mã hóa chuẩn quốc tế tự động lọc các thông tin sai lệch về ẩm thực.", "Tính ẩn danh tuyệt đối giúp mọi người không phải chịu trách nhiệm về lời nói của mình."], "ans": 1, "exp": "Sự tương tác của cộng đồng (bình luận, đánh giá) giúp tăng độ tin cậy của mẹo vặt."}, {"n": 1075, "lv": "VD", "q": "Gia đình An dự định đi du lịch. Mẹ An sử dụng mạng Internet để so sánh giá vé của các hãng hàng không, đặt vé máy bay và thanh toán trực tuyến. Hoạt động này gọi là gì?", "opts": ["Hội chẩn y tế từ xa qua mạng trực tuyến.", "Sử dụng dịch vụ thương mại điện tử và thanh toán điện tử.", "Giao tiếp đa phương tiện qua vệ tinh.", "Học tập và nghiên cứu khoa học không gian."], "ans": 1, "exp": "Việc đặt vé và thanh toán qua mạng là điển hình của thương mại điện tử (e-commerce)."}, {"n": 1076, "lv": "VD", "q": "Nam đang làm bài tập nhóm môn Tin học. Mặc dù mỗi bạn ở một nhà, các bạn vẫn cùng nhau soạn thảo chung một tài liệu trực tuyến (ví dụ: Google Docs). Lợi ích lớn nhất mạng Internet mang lại ở đây là gì?", "opts": ["Cung cấp khả năng làm việc cộng tác từ xa theo thời gian thực mà không cần gặp mặt.", "Giúp các bạn có thể nhờ một siêu máy tính tự động làm hộ bài tập mà không bị giáo viên phát hiện.", "Máy chủ sẽ tự động in tài liệu ra giấy và gửi bưu điện đến tận nhà từng học sinh trong vòng 1 giây.", "Tránh việc bị lây nhiễm các loại virus máy tính lây lan qua đường không khí."], "ans": 0, "exp": "Làm việc nhóm trên tài liệu trực tuyến là ứng dụng tuyệt vời của làm việc từ xa cộng tác."}, {"n": 1077, "lv": "VD", "q": "Một bức ảnh dung lượng 2 Byte sẽ tương đương với bao nhiêu bit?", "opts": ["8 bit", "10 bit", "16 bit", "32 bit"], "ans": 2, "exp": "1 Byte = 8 bit. 2 Byte = 16 bit. (Đáp án kết quả thuần túy)."}, {"n": 1078, "lv": "VD", "q": "Giả sử một thiết bị phần cứng chỉ có thể lưu trữ tối đa 40 bit dữ liệu. Lượng dữ liệu này tương đương với bao nhiêu Byte?", "opts": ["5 Byte", "10 Byte", "8 Byte", "20 Byte"], "ans": 0, "exp": "40 bit / 8 = 5 Byte. (Đáp án kết quả thuần túy)."}, {"n": 1079, "lv": "VD", "q": "Khi đọc tin tức trên Internet, bạn thấy một bài báo ghi \"Sắp có bão tuyết giữa mùa hè ở Việt Nam\". Để tránh bị lừa bởi \"tin giả\", bạn nên làm gì đầu tiên?", "opts": ["Kiểm tra xem thông tin đó có được đăng trên các trang báo điện tử chính thống của nhà nước hoặc đài khí tượng thủy văn không.", "Lập tức chia sẻ ngay cho tất cả bạn bè trên mạng xã hội để cảnh báo mọi người mua đồ chống rét.", "Đập vỡ máy tính vì cho rằng máy tính đã bị nhiễm virus gây ra ảo giác đồ họa.", "Gửi tin nhắn chửi mắng người đăng bài mà không cần suy nghĩ."], "ans": 0, "exp": "Kỹ năng số quan trọng khi dùng Internet là kiểm chứng nguồn tin từ các trang chính thống."}, {"n": 1080, "lv": "VD", "q": "[Hình ảnh minh họa 2D phong cách phẳng, thể hiện các thiết bị máy tính, điện thoại kết nối với nhau toàn cầu]. Hình ảnh này mô tả khái niệm gì?", "opts": ["Mạng nội bộ trong một căn nhà", "Khái niệm mạng Internet toàn cầu", "Cấu tạo bên trong của một chiếc điện thoại di động", "Hệ thống đường ống dẫn nước quốc gia"], "ans": 1, "exp": "Hình ảnh mô tả trực quan các thiết bị trên toàn cầu kết nối với nhau, chính là Internet."}, {"n": 1123, "lv": "TH", "q": "Chức năng của máy tìm kiếm khác với trình duyệt Web như thế nào?", "opts": ["Trình duyệt web là phần mềm bảo vệ phần cứng máy tính khỏi vi khuẩn, còn máy tìm kiếm là thiết bị vật lý kết nối mạng.", "Máy tìm kiếm giúp phân tích từ khóa để trả về các liên kết web, còn trình duyệt là phần mềm để hiển thị nội dung các trang web đó.", "Máy tìm kiếm dùng để tìm đồ vật bị mất trong nhà, trình duyệt dùng để đọc sách báo giấy.", "Máy tìm kiếm là một siêu máy tính đặt tại Mỹ, trình duyệt là hệ thống vệ tinh bay quanh trái đất để định vị GPS cho điện thoại di động."], "ans": 1, "exp": "Trình duyệt hiển thị web, máy tìm kiếm tìm thông tin trong web."}, {"n": 1145, "lv": "VD", "q": "Một giáo viên vùng biên giới muốn chia sẻ kinh nghiệm giảng dạy môn Tin học với các đồng nghiệp trên khắp cả nước nhưng không có điều kiện đi lại. Đặc điểm nào của Internet giúp thầy/cô thực hiện điều này tốt nhất?", "opts": ["Tính độc quyền và bảo mật cơ học vô hình", "Tính ẩn danh và tính tự động xóa dấu vết", "Tính toàn cầu và khả năng chia sẻ thông tin dễ dàng", "Tính cá nhân hóa toàn diện cho người dùng địa phương"], "ans": 2, "exp": "Khả năng kết nối toàn cầu và chia sẻ thông tin giúp giáo viên vượt qua giới hạn địa lý."}, {"n": 1147, "lv": "VD", "q": "An dùng iPhone 16 Pro Max và muốn cài đặt phím tắt đọc văn bản tự động thông báo bằng giọng nói khi pin giảm xuống dưới 30%. An đã lên mạng tìm video hướng dẫn và tự làm theo thành công. Lợi ích An nhận được từ Internet thuộc lĩnh vực nào?", "opts": ["Lĩnh vực giáo dục từ xa, nơi các chuyên gia công nghệ trực tiếp cung cấp hệ thống học tập tự động được lập trình sẵn cho từng cá nhân, tự động điều chỉnh thiết bị của học sinh theo thời gian thực mà không cần chạm vào máy.", "Học tập, tự bồi dưỡng kiến thức và chia sẻ kinh nghiệm công nghệ từ cộng đồng mạng.", "Lĩnh vực quản lý tài chính và thương mại điện tử.", "Lĩnh vực khám chữa bệnh và chăm sóc sức khỏe điện tử."], "ans": 1, "exp": "An đã sử dụng Internet để tra cứu kiến thức công nghệ và học hỏi từ cộng đồng. Đáp án A miêu tả sai lệch một cách phóng đại."}, {"n": 1150, "lv": "VD", "q": "Một học sinh lớp 6 tò mò \"Tại sao mặt trời có thể giữ được các hành tinh quay quanh nó\" và tự tìm các bài giải thích về lực hấp dẫn trên bách khoa toàn thư mở. Bạn ấy đang tận dụng Internet cho mục đích gì?", "opts": ["Chơi game giải trí đa người chơi để giảm căng thẳng sau giờ học.", "Tự học, tra cứu kiến thức khoa học, nâng cao hiểu biết ngoài sách vở.", "Sử dụng mạng xã hội để kết bạn với các phi hành gia trên trạm vũ trụ quốc tế.", "Thương mại điện tử để đặt mua các mô hình hệ mặt trời từ nước ngoài."], "ans": 1, "exp": "Việc tra cứu Wikipedia để hiểu hiện tượng vật lý là hoạt động tự học tập và mở rộng kiến thức."}, {"n": 1153, "lv": "VD", "q": "Bạn cần lắp ráp chiếc ghế văn phòng thương hiệu Quy Phúc nhưng vô tình làm mất tờ giấy hướng dẫn. Việc lên mạng xem video hướng dẫn lắp ráp sản phẩm này thể hiện lợi ích gì của Internet?", "opts": ["Chỉ làm tốn thêm thời gian vì video trên mạng luôn luôn là giả mạo.", "Cung cấp kho lưu trữ dữ liệu số vô tận giúp tra cứu các kỹ năng thực hành phục vụ cuộc sống.", "Internet có khả năng tự điều khiển cánh tay robot từ xa để lắp ráp ghế thay cho con người.", "Giúp người mua hàng kiện nhà sản xuất vì thiết kế sản phẩm quá phức tạp."], "ans": 1, "exp": "Internet chứa vô số video hướng dẫn thực hành (how-to), thể hiện lợi ích tra cứu phục vụ cuộc sống."}, {"n": 1156, "lv": "VD", "q": "Nam đang làm bài tập nhóm môn Tin học. Mặc dù mỗi bạn ở một nhà, các bạn vẫn cùng nhau soạn thảo chung một tài liệu trực tuyến. Lợi ích lớn nhất mạng Internet mang lại ở đây là gì?", "opts": ["Cung cấp khả năng làm việc cộng tác từ xa theo thời gian thực mà không cần gặp mặt.", "Giúp các bạn có thể nhờ một siêu máy tính tự động làm hộ bài tập mà không bị giáo viên phát hiện.", "Máy chủ sẽ tự động in tài liệu ra giấy và gửi bưu điện đến tận nhà từng học sinh trong vòng 1 giây.", "Tránh việc bị lây nhiễm các loại virus máy tính lây lan qua đường không khí."], "ans": 0, "exp": "Làm việc nhóm trên tài liệu trực tuyến là ứng dụng tuyệt vời của làm việc từ xa cộng tác."}, {"n": 1158, "lv": "VD", "q": "Giả sử một thiết bị phần cứng lưu trữ tối đa 40 bit dữ liệu. Lượng dữ liệu này tương đương với bao nhiêu Byte?", "opts": ["5 Byte", "10 Byte", "8 Byte", "20 Byte"], "ans": 0, "exp": "40 bit / 8 = 5 Byte."}, {"n": 1160, "lv": "VD", "q": "[Hình ảnh minh họa] Trong một bức tranh 2D có hình ảnh các thiết bị máy tính, điện thoại kết nối với nhau toàn cầu bằng các đường lưới, hình ảnh này mô tả khái niệm gì?", "opts": ["Mạng nội bộ trong một căn nhà", "Khái niệm mạng Internet toàn cầu", "Cấu tạo bên trong của một chiếc điện thoại di động", "Hệ thống đường ống dẫn nước quốc gia"], "ans": 1, "exp": "Hình ảnh mô tả trực quan các thiết bị trên toàn cầu kết nối với nhau, chính là Internet."}, {"n": 2, "lv": "NB", "q": "Mục đích chính của người sử dụng khi truy cập Internet là gì?", "opts": ["Để tìm kiếm, chia sẻ và trao đổi thông tin.", "Chỉ để xem phim và nghe nhạc trực tuyến.", "Để thiết lập các kết nối phần cứng của máy tính.", "Để thay thế hoàn toàn việc học tập tại trường."], "ans": 0, "exp": "Người sử dụng truy cập Internet để tìm kiếm, chia sẻ và trao đổi thông tin."}, {"n": 3, "lv": "NB", "q": "Để máy tính có thể truy cập Internet, người sử dụng cần đăng ký dịch vụ với đơn vị nào?", "opts": ["Cửa hàng bán lẻ thiết bị điện tử.", "Nhà sản xuất máy tính.", "Nhà cung cấp dịch vụ Internet.", "Tổ chức quản lý thông tin toàn cầu."], "ans": 2, "exp": "Cần đăng ký với nhà cung cấp dịch vụ Internet (ISP) để được hỗ trợ cài đặt và cấp quyền truy cập."}, {"n": 4, "lv": "NB", "q": "Dịch vụ nào sau đây KHÔNG được liệt kê là dịch vụ thông tin phổ biến trên Internet?", "opts": ["World Wide Web.", "Thư điện tử.", "Sửa chữa phần cứng từ xa.", "Mạng xã hội."], "ans": 2, "exp": "Các dịch vụ phổ biến gồm World Wide Web, tìm kiếm, thư điện tử, điện thoại, phát thanh, truyền hình, mạng xã hội, lưu trữ, trao đổi dữ liệu, kinh doanh. Sửa chữa phần cứng không phải là dịch vụ thông tin Internet."}, {"n": 7, "lv": "NB", "q": "Tính dễ tiếp cận của Internet có nghĩa là gì?", "opts": ["Thông tin được cung cấp hoàn toàn miễn phí cho mọi người.", "Người dùng có thể tìm kiếm, chia sẻ thông tin ở mọi lúc, mọi nơi trên thế giới.", "Bất kỳ ai cũng có thể tự do thay đổi cấu trúc của Internet.", "Mọi thiết bị điện tử đều tự động kết nối Internet mà không cần cài đặt."], "ans": 1, "exp": "Tính dễ tiếp cận là người sử dụng có thể tìm kiếm, lưu trữ, trao đổi và chia sẻ thông tin mọi lúc mọi nơi."}, {"n": 9, "lv": "NB", "q": "Tính cập nhật của Internet thể hiện ở việc:", "opts": ["Thiết bị luôn được nâng cấp tự động.", "Thông tin được cập nhật thường xuyên.", "Người dùng phải thay đổi mật khẩu liên tục.", "Tốc độ đường truyền ngày càng tăng cao."], "ans": 1, "exp": "Tính cập nhật nghĩa là thông tin được cập nhật thường xuyên."}, {"n": 10, "lv": "NB", "q": "Internet cho phép truyền tải thông tin dưới các dạng nào?", "opts": ["Chỉ văn bản và âm thanh.", "Chỉ hình ảnh và video.", "Văn bản, âm thanh, hình ảnh, video.", "Chỉ các dạng văn bản được mã hóa."], "ans": 2, "exp": "Tính đa dạng của Internet cho phép truyền tải thông tin dạng văn bản, âm thanh, hình ảnh, video."}, {"n": 11, "lv": "NB", "q": "Đặc điểm \"Tính ẩn danh\" trên Internet có ý nghĩa là gì?", "opts": ["Thông tin cá nhân của người dùng luôn bị rò rỉ.", "Người truy cập có thể dùng bí danh thay cho tên thật.", "Máy tính tự động che giấu địa chỉ IP của người dùng.", "Người dùng không thể biết mình đang truy cập trang web nào."], "ans": 1, "exp": "Tính ẩn danh cho phép người sử dụng truy cập Internet có thể dùng bí danh thay cho tên thật."}, {"n": 13, "lv": "NB", "q": "Lĩnh vực nào sau đây KHÔNG được đề cập là có vai trò quan trọng của Internet?", "opts": ["Y tế.", "Giáo dục.", "Khai thác khoáng sản thủ công.", "Khoa học kĩ thuật."], "ans": 2, "exp": "Internet có vai trò trong khoa học kĩ thuật, y tế, giáo dục, văn hóa, giải trí."}, {"n": 14, "lv": "NB", "q": "Một lời khuyên quan trọng khi sử dụng Internet là gì?", "opts": ["Luôn truy cập Internet liên tục để không lỡ thông tin.", "Không nên truy cập Internet liên tục trong nhiều giờ.", "Chỉ sử dụng Internet vào ban đêm.", "Phải chia sẻ mọi thông tin cá nhân lên mạng."], "ans": 1, "exp": "Lời khuyên là không nên truy cập Internet liên tục trong nhiều giờ."}, {"n": 15, "lv": "NB", "q": "Internet tạo ra điều gì để liên kết những mạng máy tính lại với nhau?", "opts": ["Một mạng lưới giao thông vật lý.", "Một mạng thông tin toàn cầu.", "Một trung tâm dữ liệu duy nhất.", "Một hệ thống cáp quang độc quyền."], "ans": 1, "exp": "Internet được tạo ra để liên kết những mạng máy tính thành một mạng thông tin toàn cầu."}, {"n": 16, "lv": "NB", "q": "Thành phần nào là bắt buộc để máy tính cá nhân kết nối được với Internet?", "opts": ["Máy in đời mới.", "Nhà cung cấp dịch vụ Internet.", "Phần mềm diệt virus.", "Tai nghe có micro."], "ans": 1, "exp": "Máy tính cần đăng kí với nhà cung cấp dịch vụ Internet (ISP) để được hỗ trợ kết nối."}, {"n": 20, "lv": "NB", "q": "Người dùng có thể thực hiện thao tác gì với thông tin trên Internet?", "opts": ["Chỉ có thể xem thông tin.", "Tìm kiếm, chia sẻ và trao đổi thông tin.", "Xóa vĩnh viễn mọi thông tin của người khác.", "Ngăn chặn người khác sử dụng thông tin."], "ans": 1, "exp": "Người sử dụng truy cập Internet để tìm kiếm, chia sẻ và trao đổi thông tin."}, {"n": 21, "lv": "NB", "q": "\"Trao đổi dữ liệu\" là một phần của hệ thống nào trên Internet?", "opts": ["Phần cứng máy tính.", "Dịch vụ thông tin.", "Đường truyền cáp quang.", "Tổ chức điều hành toàn cầu."], "ans": 1, "exp": "Trao đổi dữ liệu được liệt kê trong danh sách các dịch vụ thông tin phổ biến trên Internet."}, {"n": 22, "lv": "NB", "q": "Thuật ngữ \"ISP\" liên quan đến đối tượng nào?", "opts": ["Người sử dụng cá nhân.", "Máy tính trong mạng.", "Nhà cung cấp dịch vụ Internet.", "Dịch vụ mạng xã hội."], "ans": 2, "exp": "ISP là viết tắt của Internet Service Provider, tức Nhà cung cấp dịch vụ Internet."}, {"n": 24, "lv": "NB", "q": "Tính chất nào cho thấy Internet có ở hầu hết các quốc gia?", "opts": ["Tính đa dạng.", "Tính lưu trữ.", "Tính toàn cầu.", "Tính tương tác."], "ans": 2, "exp": "Tính toàn cầu thể hiện qua việc người dùng ở hầu hết các quốc gia đang sử dụng Internet."}, {"n": 26, "lv": "NB", "q": "Hoạt động nào sau đây thuộc lĩnh vực giáo dục trên Internet?", "opts": ["Nghe nhạc trực tuyến.", "Tìm kiếm tài liệu học tập.", "Kinh doanh mỹ phẩm.", "Khám bệnh từ xa."], "ans": 1, "exp": "Tìm kiếm tài liệu học tập, dạy học là các hoạt động ứng dụng trong giáo dục, học tập."}, {"n": 27, "lv": "NB", "q": "Gửi thư điện tử là một ví dụ cụ thể của việc sử dụng Internet để làm gì?", "opts": ["Cập nhật phần mềm.", "Lưu trữ phần cứng.", "Trao đổi thông tin.", "Bảo mật dữ liệu."], "ans": 2, "exp": "Thư điện tử là dịch vụ giúp trao đổi thông tin, dữ liệu giữa những người sử dụng."}, {"n": 28, "lv": "NB", "q": "Đặc điểm nào mô tả việc thông tin trên mạng luôn hiện diện thường trực?", "opts": ["Tính cập nhật.", "Tính lưu trữ.", "Tính dễ tiếp cận.", "Tính ẩn danh."], "ans": 1, "exp": "Tính lưu trữ cho phép thông tin được lưu trữ thường trực."}, {"n": 29, "lv": "NB", "q": "Phương tiện nào sau đây là hình thức truyền thông một chiều?", "opts": ["Mạng xã hội.", "Thư điện tử.", "Truyền hình truyền thống.", "Ứng dụng họp trực tuyến."], "ans": 2, "exp": "Sách báo, phát thanh, truyền hình truyền thống là cách truyền thông một chiều."}, {"n": 30, "lv": "NB", "q": "Internet có thuộc sở hữu của chính phủ một quốc gia phát triển nào không?", "opts": ["Có, thuộc về quốc gia nơi phát minh ra Internet.", "Có, thuộc về liên minh các quốc gia lớn.", "Không, nó là mạng máy tính công cộng toàn cầu.", "Có, thuộc về nhà cung cấp dịch vụ Internet quốc tế."], "ans": 2, "exp": "Internet không thuộc sở hữu hay do bất kì một tổ chức hoặc cá nhân nào điều hành."}, {"n": 31, "lv": "NB", "q": "Việc học ngoại ngữ trực tuyến với người nước ngoài thể hiện lợi ích nào của Internet?", "opts": ["Giải trí trực tuyến.", "Giao dịch thương mại.", "Môi trường học tập từ xa.", "Lưu trữ thông tin vĩnh viễn."], "ans": 2, "exp": "Học ngoại ngữ trực tuyến là hình thức học tập, dạy học từ x"}, {"n": 32, "lv": "NB", "q": "Việc sử dụng Internet để đọc báo điện tử mỗi ngày thể hiện tính chất nào là rõ nét nhất?", "opts": ["Tính ẩn danh.", "Tính cập nhật.", "Tính tương tác.", "Tính không chủ sở hữu."], "ans": 1, "exp": "Đọc báo điện tử mỗi ngày tận dụng tính cập nhật thông tin thường xuyên của Internet."}, {"n": 33, "lv": "NB", "q": "Hoạt động nào KHÔNG phải là lợi ích trực tiếp do Internet mang lại?", "opts": ["Xem phim giải trí.", "Nâng cao sức khỏe cơ bắp thông qua vận động thể chất trực tiếp.", "Gửi thư điện tử.", "Tìm kiếm tài liệu làm bài tập."], "ans": 1, "exp": "Chơi đá bóng nâng cao sức khỏe thực tế ngoài đời không phải là việc làm qua Internet."}, {"n": 34, "lv": "NB", "q": "Nếu muốn đăng ký sử dụng Internet cho máy tính ở nhà, gia đình em cần liên hệ với ai?", "opts": ["Đài truyền hình địa phương.", "Nhà cung cấp dịch vụ Internet.", "Bộ phận bảo hành máy tính.", "Quản trị viên mạng xã hội."], "ans": 1, "exp": "Máy tính cần đăng kí với nhà cung cấp dịch vụ Internet để được hỗ trợ cài đặt."}, {"n": 35, "lv": "NB", "q": "Mạng Internet kết nối các máy tính ở phạm vi nào?", "opts": ["Trong một quốc gia.", "Trong một châu lục.", "Trên khắp thế giới.", "Trong một thành phố."], "ans": 2, "exp": "Internet là mạng kết nối hàng triệu máy tính trên khắp thế giới."}, {"n": 36, "lv": "NB", "q": "Dịch vụ nào trên Internet hỗ trợ tìm kiếm đường đi và vị trí địa lý?", "opts": ["Tìm kiếm thông tin trên Web.", "Thư điện tử.", "Phần mềm soạn thảo.", "Trò chơi ngoại tuyến."], "ans": 0, "exp": "Tìm kiếm là một dịch vụ thông tin phổ biến để tìm các dữ liệu đa dạng."}, {"n": 37, "lv": "NB", "q": "\"Internet là một kho dữ liệu khổng lồ\" điều này phản ánh đặc điểm nào?", "opts": ["Tính ẩn danh.", "Tính tương tác.", "Tính lưu trữ.", "Tính cập nhật."], "ans": 2, "exp": "Tính lưu trữ giúp lưu trữ thường trực lượng lớn thông tin có thể sao chép nhanh."}, {"n": 38, "lv": "NB", "q": "Một học sinh dùng tên \"Mèo Con\" trên diễn đàn mạng thay vì tên thật. Đây là biểu hiện của:", "opts": ["Tính đa dạng.", "Tính ẩn danh.", "Tính toàn cầu.", "Tính dễ tiếp cận."], "ans": 1, "exp": "Tính ẩn danh cho phép người truy cập có thể dùng bí danh thay cho tên thật."}, {"n": 41, "lv": "TH", "q": "Tại sao báo điện tử trên Internet lại có ưu thế hơn so với báo giấy truyền thống về mặt thời gian?", "opts": ["Vì báo điện tử sử dụng màu sắc đẹp hơn so với báo giấy.", "Vì thông tin trên Internet luôn được tự động tạo ra bởi trí tuệ nhân tạo độc lập với con người, đảm bảo hệ thống xuất bản diễn ra mỗi giây.", "Vì Internet có tính cập nhật, thông tin được đưa lên và làm mới thường xuyên, liên tục.", "Vì báo điện tử luôn được miễn phí cho mọi đối tượng."], "ans": 2, "exp": "Tính cập nhật của Internet giúp thông tin được làm mới thường xuyên, nhanh hơn chu trình in ấn của báo giấy."}, {"n": 42, "lv": "TH", "q": "Việc không ai sở hữu mạng Internet mang lại hệ quả gì cho hệ thống toàn cầu này?", "opts": ["Khiến mạng lưới trở nên hỗn loạn, không có bất kỳ quy tắc hay giao thức bảo mật nào có thể được áp dụng.", "Đảm bảo Internet là một mạng công cộng toàn cầu, không bị độc quyền hay phụ thuộc vào lợi ích của một tổ chức duy nhất.", "Làm cho tốc độ mạng luôn chậm ở các quốc gia nhỏ.", "Khiến cho việc kết nối mạng trở nên hoàn toàn miễn phí mà không cần trả tiền cho bất cứ ai."], "ans": 1, "exp": "Tính không chủ sở hữu giúp Internet duy trì trạng thái mạng công cộng toàn cầu, hoạt động dựa trên sự liên kết phi tập trung."}, {"n": 44, "lv": "TH", "q": "Sự khác biệt chính giữa \"truyền thông một chiều\" (như tivi) và Internet là gì?", "opts": ["Internet cho phép tương tác hai chiều, người dùng vừa tiếp nhận vừa có thể gửi lại thông tin tức thời.", "Internet yêu cầu người sử dụng phải trải qua các khóa học kỹ năng mạng phức tạp và đạt chứng chỉ để vận hành hệ thống máy tính cá nhân ở nhà.", "Tivi có hình ảnh sắc nét hơn rất nhiều so với mọi nội dung trên Internet.", "Truyền thông một chiều không thể lưu trữ thông tin lâu dài."], "ans": 0, "exp": "Internet có tính tương tác, cho phép tức thời nhận và gửi thông tin, khác với tính một chiều của tivi."}, {"n": 46, "lv": "TH", "q": "Internet ảnh hưởng đến môi trường làm việc như thế nào?", "opts": ["Bắt buộc mọi người phải đến văn phòng để sử dụng mạng lưới tập trung.", "Cung cấp môi trường làm việc từ xa, giúp con người có thể học tập, hội họp mà không cần gặp mặt trực tiếp.", "Hệ thống tự động hóa hoàn toàn quy trình kinh doanh toàn cầu, do đó loại bỏ hoàn toàn các ngành nghề liên quan đến quản trị nhân sự truyền thống ở mọi cấp độ.", "Làm giảm sự đa dạng của các ngành nghề hiện có."], "ans": 1, "exp": "Internet cung cấp môi trường làm việc từ xa như dạy học, hội họp trực tuyến."}, {"n": 48, "lv": "TH", "q": "Lợi ích của tính lưu trữ trên Internet đối với học sinh là gì?", "opts": ["Học sinh có thể tự ý thay đổi điểm số của mình trên hệ thống của nhà trường.", "Cho phép học sinh tìm lại và sao chép các tài liệu học tập, sách điện tử một cách nhanh chóng ngay cả sau một thời gian dài.", "Toàn bộ thiết bị phần cứng của nhà trường sẽ tự động được gia tăng dung lượng bộ nhớ định kì mà không cần mua thiết bị vật lý mới, giúp tiết kiệm ngân sách giáo dục.", "Hệ thống tự động giải mọi bài tập về nhà."], "ans": 1, "exp": "Tính lưu trữ giúp thông tin tồn tại thường trực, dễ sao chép, phục vụ tốt cho việc giữ lại tài liệu học tập."}, {"n": 49, "lv": "TH", "q": "Câu nào sau đây giải thích đúng nhất vai trò của Internet trong lĩnh vực y tế?", "opts": ["Nó tự động tạo ra thuốc và gửi đến nhà bệnh nhân.", "Nó cung cấp nền tảng thông tin cho phép các bác sĩ tra cứu bệnh án, hội chẩn từ xa và chia sẻ kiến thức chuyên môn.", "Yêu cầu toàn bộ bệnh nhân từ nay về sau chỉ được phép khám bệnh qua video call nhằm giảm tải áp lực cho các bệnh viện tuyến trung ương ở mọi khu vực đô thị.", "Nó thay thế hoàn toàn vai trò của máy móc phẫu thuật."], "ans": 1, "exp": "Trong y tế, Internet cung cấp dịch vụ thông tin, trao đổi dữ liệu, hỗ trợ làm việc từ xa."}, {"n": 50, "lv": "TH", "q": "Việc Internet truyền tải cả video, âm thanh, hình ảnh và văn bản thể hiện đặc điểm gì?", "opts": ["Tính toàn cầu.", "Tính lưu trữ.", "Tính đa dạng.", "Tính cập nhật."], "ans": 2, "exp": "Đáp án đúng là C. Tính đa dạng."}, {"n": 51, "lv": "TH", "q": "Hoạt động nào dưới đây là dịch vụ thông tin mạng xã hội?", "opts": ["Xem tivi qua ăng-ten.", "Gọi điện thoại cố định.", "Chia sẻ bài viết, hình ảnh để giao lưu với bạn bè qua nền tảng trực tuyến.", "In văn bản ra giấy trắng."], "ans": 2, "exp": "Đáp án đúng là C. Chia sẻ bài viết, hình ảnh để giao lưu với bạn bè qua nền tảng trực tuyến."}, {"n": 53, "lv": "TH", "q": "Tại sao chúng ta không nên truy cập Internet liên tục trong nhiều giờ?", "opts": ["Vì làm vậy sẽ làm cạn kiệt toàn bộ dữ liệu lưu trữ trên các máy chủ toàn cầu.", "Vì có thể gây ảnh hưởng xấu đến sức khỏe thể chất và tinh thần do thiếu các hoạt động vận động thực tế.", "Bởi vì các tổ chức cung cấp dịch vụ sẽ tự động tiến hành khóa vĩnh viễn địa chỉ mạng của gia đình bạn nhằm bảo vệ hệ thống khỏi sự quá tải của các trạm thu phát sóng nội địa.", "Vì màn hình máy tính sẽ tự động phát nổ."], "ans": 1, "exp": "Sách khuyên không nên truy cập liên tục trong nhiều giờ để bảo vệ sức khỏe."}, {"n": 55, "lv": "TH", "q": "Phân tích phát biểu \"Người sử dụng truy cập Internet có thể dùng bí danh thay cho tên thật\". Điều này mang lại lợi ích gì nhưng cũng ẩn chứa rủi ro gì?", "opts": ["Lợi ích: Tăng tốc độ duyệt web; Rủi ro: Làm hỏng máy tính.", "Lợi ích: Bảo vệ quyền riêng tư; Rủi ro: Có thể bị lợi dụng để phát tán thông tin độc hại, lừa đảo mà khó bị phát hiện ngay lập tức.", "Lợi ích: Giảm toàn bộ cước phí viễn thông hàng tháng một cách hợp pháp do nhà mạng không thể xác định được địa chỉ cư trú của thiết bị kết nối vào hệ thống băng thông rộng quốc gia; Rủi ro: Bị thu hồi thiết bị.", "Lợi ích: Nhận được nhiều quảng cáo hơn; Rủi ro: Mất tài khoản."], "ans": 1, "exp": "Bí danh (tính ẩn danh) giúp bảo vệ thông tin cá nhân nhưng cũng tạo điều kiện cho hành vi che giấu danh tính để làm việc xấu."}, {"n": 56, "lv": "TH", "q": "Dịch vụ World Wide Web (WWW) có mối quan hệ như thế nào với Internet?", "opts": ["WWW chính là Internet.", "WWW là một trong các dịch vụ thông tin phổ biến chạy trên nền tảng mạng Internet.", "WWW là hoàn toàn bị thay thế bởi các thiết bị di động thông minh kể từ khi công nghệ viễn thông vô tuyến hiện đại ra đời.", "WWW là phần cứng của máy tính."], "ans": 1, "exp": "WWW là một dịch vụ thông tin phổ biến trên Internet, chứ không phải là toàn bộ Internet."}, {"n": 57, "lv": "TH", "q": "Đặc điểm nào khiến Internet trở thành một công cụ lý tưởng cho việc học tập từ xa trong thời kỳ dịch bệnh?", "opts": ["Tính cập nhật.", "Tính lưu trữ.", "Tính tương tác và tính dễ tiếp cận.", "Tính không chủ sở hữu."], "ans": 2, "exp": "Đáp án đúng là C. Tính tương tác và tính dễ tiếp cận."}, {"n": 58, "lv": "TH", "q": "Việc một bản tin vừa xảy ra ở nửa vòng trái đất có thể được xem ngay tại Việt Nam minh chứng cho hai đặc điểm nào của Internet?", "opts": ["Tính toàn cầu và tính cập nhật.", "Tính lưu trữ và tính ẩn danh.", "Tính đa dạng và tính không chủ sở hữu.", "Tính ẩn danh và tính toàn cầu."], "ans": 0, "exp": "Đáp án đúng là A. Tính toàn cầu và tính cập nhật."}, {"n": 59, "lv": "TH", "q": "Tại sao \"Tìm kiếm\" lại được coi là một dịch vụ thông tin quan trọng trên Internet?", "opts": ["Vì nếu không có dịch vụ tìm kiếm, người dùng sẽ bắt buộc phải di chuyển đến các thư viện vật lý ở quốc gia khác để nộp phí truy cập mạng lưới cáp quang toàn cầu thông qua các điểm tiếp nhận dữ liệu được chính phủ cấp phép.", "Vì lượng thông tin lưu trữ trên Internet là khổng lồ và đa dạng, dịch vụ tìm kiếm giúp người dùng định vị chính xác dữ liệu cần thiết một cách nhanh chóng.", "Vì nó xóa bỏ các trang web cũ.", "Vì nó tự động viết bài tập cho học sinh."], "ans": 1, "exp": "Dịch vụ tìm kiếm giúp truy xuất dữ liệu từ mạng thông tin toàn cầu với lượng lớn dữ liệu lưu trữ."}, {"n": 60, "lv": "TH", "q": "Câu nào diễn tả đúng sự thay đổi trong cách trao đổi thông tin nhờ Internet?", "opts": ["Từ trao đổi thông tin chậm, phụ thuộc vào vận chuyển vật lý sang trao đổi thông tin số hóa ngay lập tức.", "Từ việc truyền tải dữ liệu miễn phí hoàn toàn sang việc buộc người dân phải sử dụng đồng tiền kỹ thuật số chung cho mọi giao dịch viễn thông nhằm mục tiêu quản lý tập trung toàn cầu một cách đồng nhất.", "Chuyển từ việc không có thông tin sang có quá ít thông tin.", "Chỉ thay đổi ở cách in ấn sách báo."], "ans": 0, "exp": "Nhờ tính tương tác, dễ tiếp cận và cập nhật, trao đổi thông tin trở nên tức thời, không phụ thuộc khoảng cách."}, {"n": 61, "lv": "TH", "q": "Việc Internet cho phép người sử dụng tự do tạo ra và đăng tải nội dung (như viết blog, tải video) thể hiện rõ nhất đặc điểm nào so với báo chí truyền thống?", "opts": ["Tính lưu trữ.", "Tính toàn cầu.", "Tính tương tác.", "Tính đa dạng."], "ans": 2, "exp": "Đáp án đúng là C. Tính tương tác."}, {"n": 63, "lv": "TH", "q": "Nếu không có Internet, hoạt động nào sau đây vẫn có thể thực hiện được bằng các thiết bị công nghệ truyền thống?", "opts": ["Gửi thư điện tử (email).", "Tìm kiếm thông tin trên WWW.", "Gọi điện thoại qua mạng xã hội.", "Xem truyền hình qua ăng-ten vô tuyến."], "ans": 3, "exp": "Đáp án đúng là D. Xem truyền hình qua ăng-ten vô tuyến."}, {"n": 65, "lv": "VD", "q": "Mẹ bạn An cần đặt vé máy bay đi công tác gấp nhưng không có thời gian đến phòng vé. An đã giúp mẹ đặt vé trực tuyến. Hoạt động này thể hiện khả năng nào của Internet trong thực tế?", "opts": ["Tự động hóa các phương tiện giao thông vận tải.", "Cung cấp dịch vụ tìm kiếm thông tin, đặt dịch vụ và thanh toán điện tử từ xa mà không cần di chuyển vật lý.", "Bởi vì hệ thống mạng diện rộng được liên kết trực tiếp với các phi công nhằm đảo bảo lịch trình bay luôn được sắp xếp theo đúng quy chuẩn.", "Tăng tốc độ bay của máy bay thương mại."], "ans": 1, "exp": "Người dùng truy cập Internet để tìm thông tin, đặt vé và thanh toán."}, {"n": 66, "lv": "VD", "q": "Trong bối cảnh giãn cách xã hội, trường học tổ chức các lớp học qua phần mềm video call. Đây là ví dụ về việc Internet hỗ trợ lĩnh vực nào?", "opts": ["Giao thông vận tải.", "Nông nghiệp.", "Giáo dục.", "Y tế."], "ans": 2, "exp": "Đáp án đúng là C. Giáo dục."}, {"n": 68, "lv": "VD", "q": "Nam tải một bộ phim cũ sản xuất từ năm 1990 về máy tính chỉ trong vòng vài phút. Tình huống này chứng minh đặc điểm nào của Internet?", "opts": ["Tính lưu trữ và khả năng sao chép nhanh chóng, dễ dàng.", "Tính cập nhật.", "Tính ẩn danh do các tập tin không chứa chữ ký số định danh quốc gia.", "Tính toàn cầu."], "ans": 0, "exp": "Tính lưu trữ cho phép thông tin tồn tại thường trực và dễ sao chép nhanh chóng."}, {"n": 69, "lv": "VD", "q": "Một nhóm học sinh đang làm dự án nghiên cứu về biến đổi khí hậu. Các bạn quyết định tìm kiếm số liệu nhiệt độ toàn cầu từ các trang web khoa học. Việc này ứng dụng dịch vụ nào và thuộc lĩnh vực nào?", "opts": ["Dịch vụ thư điện tử - Lĩnh vực Y tế.", "Dịch vụ mạng xã hội - Lĩnh vực Kinh doanh.", "Dịch vụ tìm kiếm - Lĩnh vực Khoa học kỹ thuật và Giáo dục.", "Dịch vụ điện thoại - Lĩnh vực Giải trí."], "ans": 2, "exp": "Đáp án đúng là C. Dịch vụ tìm kiếm - Lĩnh vực Khoa học kỹ thuật và Giáo dục."}, {"n": 70, "lv": "VD", "q": "Bạn Lan tham gia một nhóm trên mạng xã hội chuyên chia sẻ mẹo vặt gia đình. Tuy nhiên, Lan sử dụng tài khoản tên \"Hoa Đồng Tiền\". Điều này minh họa cho tính chất nào của Internet?", "opts": ["Tính toàn cầu.", "Tính cập nhật.", "Tính ẩn danh.", "Tính lưu trữ."], "ans": 2, "exp": "Đáp án đúng là C. Tính ẩn danh."}, {"n": 71, "lv": "VD", "q": "Buổi sáng, một tờ báo điện tử đăng tin dự báo thời tiết là nắng. Đến trưa, thời tiết thay đổi đột ngột có bão, tờ báo ngay lập tức sửa lại bản tin thành \"Cảnh báo bão\". Đây là minh chứng tuyệt vời cho:", "opts": ["Tính tương tác.", "Tính cập nhật.", "Tính ẩn danh.", "Tính toàn cầu."], "ans": 1, "exp": "Đáp án đúng là B. Tính cập nhật."}, {"n": 72, "lv": "VD", "q": "Bạn Tuấn có một bức ảnh chụp cảnh đẹp quê hương và muốn chia sẻ cho một người bạn ở Mỹ cùng xem ngay lập tức. Tuấn đã sử dụng ứng dụng nhắn tin trên Internet. Việc bức ảnh truyền đến tay người bạn ở Mỹ chỉ sau vài giây thể hiện đặc điểm nào?", "opts": ["Tính ẩn danh và Tính lưu trữ.", "Tính đa dạng, Tính toàn cầu và Tính tương tác.", "Tính mạnh mẽ, hạ tầng viễn thông cáp đồng trục truyền thống vẫn vượt trội hơn hẳn so vô tuyến tầm xa.", "Tính cập nhật."], "ans": 1, "exp": "Bức ảnh là \"tính đa dạng\", Mỹ - Việt Nam là \"tính toàn cầu\", nhắn tin ngay lập tức là \"tính tương tác\"."}, {"n": 73, "lv": "VD", "q": "Do công ty có chi nhánh ở cả ba miền Bắc, Trung, Nam, giám đốc quyết định tổ chức họp mặt hàng tuần qua phần mềm họp trực tuyến thay vì bay đến từng nơi. Sự thay đổi này thể hiện lợi ích gì của Internet?", "opts": ["Cung cấp môi trường làm việc từ xa, tiết kiệm thời gian và chi phí di chuyển.", "Nâng cao sức khỏe thể chất cho toàn bộ hệ thống nhân sự đang làm việc tại các văn phòng địa", "Tăng cường tính ẩn danh trong kinh doanh.", "Loại bỏ hoàn toàn dịch vụ điện thoại truyền thống."], "ans": 0, "exp": "Internet hỗ trợ hội họp, tạo môi trường làm việc từ xa."}, {"n": 74, "lv": "VD", "q": "Khi thực hành tìm kiếm tài liệu học tiếng Anh trên mạng lưới World Wide Web, em đang đóng vai trò gì?", "opts": ["Nhà cung cấp dịch vụ Internet (ISP).", "Người sử dụng (User) truy cập Internet.", "Máy chủ lưu trữ toàn bộ dữ liệu của hệ thống giáo dục quốc gia.", "Quản trị viên mạng xã hội."], "ans": 1, "exp": "Em đang là người sử dụng truy cập Internet để tìm kiếm thông tin."}, {"n": 75, "lv": "VD", "q": "Ông nội của bạn Bình hay đọc tin tức từ các tờ báo giấy được bưu tá giao vào mỗi sáng. Bình giới thiệu cho ông đọc báo mạng trên máy tính bảng để đọc nhanh hơn. Việc đổi từ báo giấy sang báo mạng tận dụng ưu điểm nào của Internet?", "opts": ["Tính tin tức chính trị, nhanh chóng và đầy đủ cho mọi người.", "Tính lưu trữ.", "Tính cập nhật thường xuyên và tính dễ tiếp cận mọi lúc.", "Tính ẩn danh."], "ans": 2, "exp": "Báo mạng (Internet) có thông tin được cập nhật thường xuyên và dễ dàng đọc mọi lúc trên máy tính bảng."}, {"n": 76, "lv": "VD", "q": "Để chuẩn bị cho bài thuyết trình về bảo vệ môi trường, Mai vừa tải hình ảnh từ một trang web, vừa xem một đoạn video trên Youtube và tham khảo các bài báo văn bản. Việc có đầy đủ các định dạng này là nhờ vào đâu?", "opts": ["Tính đa dạng của thông tin trên Internet.", "Tính không chủ sở hữu.", "Tính ẩn danh.", "Tính toàn cầu."], "ans": 0, "exp": "Đáp án đúng là A. Tính đa dạng của thông tin trên Internet."}, {"n": 77, "lv": "VD", "q": "Nhà bạn Cường mới mua một chiếc Smart TV. Khi bật tivi lên, màn hình báo \"Vui lòng kết nối mạng\". Ba của Cường cần kết nối tivi vào Wifi của nhà mạng cung cấp. Nhà mạng cung cấp này gọi chung là gì trong thuật ngữ máy tính?", "opts": ["Tổ chức điều hành Internet toàn cầu.", "Nhà cung cấp dịch vụ Internet (ISP).", "Mạng thông tin nội bộ của các nhà sản xuất vô tuyến truyền hình.", "Dịch vụ lưu trữ trực tuyến đám mây."], "ans": 1, "exp": "ISP (Nhà cung cấp dịch vụ Internet) hỗ trợ cài đặt và cấp quyền truy cập mạng."}, {"n": 78, "lv": "VD", "q": "Một người chơi game online do mải mê chơi liên tục 10 tiếng đồng hồ dẫn đến mệt mỏi, suy nhược. Tình huống này vi phạm lời khuyên nào?", "opts": ["Nên tạo nhiều bí danh để không ai nhận ra.", "Cần đăng kí tài khoản với tổ chức sở hữu Internet.", "Tránh tình trạng thiết bị cá nhân bị quá tải do sử dụng các kết nối cáp quang không đạt chuẩn an toàn của liên minh viễn thông quốc tế.", "Không nên truy cập Internet liên tục trong nhiều giờ."], "ans": 3, "exp": "Lời khuyên là không nên truy cập Internet liên tục trong nhiều giờ để bảo vệ sức khỏe."}, {"n": 79, "lv": "VD", "q": "Gia đình bạn Hương ở nông thôn muốn liên lạc với chú ruột đang làm việc tại Nhật Bản. Thay vì gọi điện thoại quốc tế tốn kém, hai gia đình sử dụng Zalo để gọi video call miễn phí. Đây là ví dụ thực tiễn nhất của việc:", "opts": ["Sử dụng Internet để chia sẻ tài liệu học tập văn bản.", "Sử dụng tính năng ẩn danh để tránh sự giám sát.", "Ứng dụng dịch vụ thông tin mạng Internet cho việc liên lạc nhờ tính toàn cầu.", "Kinh doanh thương mại điện tử xuyên quốc gia."], "ans": 2, "exp": "Đáp án đúng là C. Ứng dụng dịch vụ thông tin mạng Internet cho việc liên lạc nhờ tính toàn cầu."}, {"n": 80, "lv": "VD", "q": "Bố mẹ bạn Huy mở một cửa hàng bán đặc sản địa phương nhưng ít người biết đến. Huy đã tạo một trang Fanpage trên nền tảng mạng xã hội, đăng tải hình ảnh và thông tin về sản phẩm. Nhờ đó, khách hàng trên toàn quốc đã đặt mua. Tình huống này mô tả ứng dụng Internet vào lĩnh vực nào?", "opts": ["Vui chơi giải trí.", "Y tế và chăm sóc sức khỏe.", "Khoa học kỹ thuật và nghiên cứu thiên văn học.", "Dịch vụ thông tin, mạng xã hội và kinh doanh."], "ans": 3, "exp": "Đáp án đúng là D. Dịch vụ thông tin, mạng xã hội và kinh doanh."}];
+
+/* ---------- Hình minh họa bảng tính cho các câu cần hình ---------- */
+const rng=(a,b)=>{const c1=a.charCodeAt(0),c2=b.charCodeAt(0),r1=+a.slice(1),r2=+b.slice(1),o=[];for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)o.push(String.fromCharCode(c)+r);return o};
+const CAP_COPY='🟦 Ô nguồn (có công thức) · 🟧 Ô đích cần xác định';
+const ILLUS={}; // bài này không có câu cần hình minh họa
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sheetHTML(cfg,q,revealed){
+  let h='<table class="sheet"><tr><th></th>'+cfg.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  cfg.rows.forEach(r=>{h+=`<tr><th>${r}</th>`;cfg.cols.forEach(c=>{
+    const a=c+r;let t=(cfg.cells&&cfg.cells[a])||'';const cl=[];
+    if(cfg.tbl&&cfg.tbl.includes(a))cl.push('tbl');
+    if(cfg.head&&cfg.head.includes(a))cl.push('hd');
+    if(a===cfg.src)cl.push('src');
+    if(a===cfg.tgt){cl.push(revealed?'tgtok':'tgt');t=revealed?(cfg.tgtReveal||q.opts[q.ans]):'?';}
+    h+=`<td class="${cl.join(' ')}">${esc(t)}</td>`;});h+='</tr>';});
+  return h+'</table>'+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:'');
+}
+
+/* ---------- Tiện ích ---------- */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={NB:{t:30,name:'Nhận biết'},TH:{t:45,name:'Thông hiểu'},VD:{t:60,name:'Vận dụng'}};
+const PTS=2, GIFT_V=.5;
+const GIFT_P=Math.min(1,Math.max(0,(parseFloat(new URLSearchParams(location.search).get('qua'))||20)/100)); // mặc định 20%; thử nhanh: thêm ?qua=100 sau tên file
+const fmt=n=>(Math.round(n*10)/10).toString().replace('.',',');
+
+/* ---------- Âm thanh (Web Audio, không cần file ngoài) ---------- */
+let AC=null,master,musicOn=true,musicTimer=null,step=0;
+function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);}catch(e){AC=null}if(AC&&AC.state==='suspended')AC.resume();}
+function tone(f,d=.15,type='sine',v=.2,t0=0,slide){if(!AC)return;const t=AC.currentTime+t0,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);}
+function noise(d,f0,f1,v){if(!AC)return;const n=AC.sampleRate*d|0,b=AC.createBuffer(1,n,AC.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=2;const t=AC.currentTime;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+const sfx={
+ click(){tone(660,.07,'triangle',.12)},
+ start(){[392,523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.2,i*.09))},
+ correct(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.22,i*.08))},
+ wrong(){tone(240,.4,'sawtooth',.16,0,100);tone(180,.45,'square',.09,.12,70)},
+ timeout(){[440,330,220].forEach((f,i)=>tone(f,.2,'square',.11,i*.2))},
+ tick(){tone(950,.05,'square',.06)},
+ launch(){noise(1.4,250,3000,.2);tone(90,1.4,'sawtooth',.07,0,500)},
+ boom(){noise(.35,2500,250,.07);tone(140,.3,'sine',.07,0,50)},
+ drop(){tone(1800,.7,'sine',.14,0,500);tone(900,.5,'triangle',.08,.1,300)},
+ gift(){[1200,1500,1800,2400,3000].forEach((f,i)=>tone(f,.16,'sine',.14,i*.05))},
+ arrive(){tone(300,.35,'sine',.2,0,1000);tone(600,.25,'triangle',.12,.1,1500)},
+ fanfare(){[523,659,784,659,784,1047,1319].forEach((f,i)=>tone(f,.28,'triangle',.22,i*.13))},
+ sad(){[392,370,349,330].forEach((f,i)=>tone(f,.35,'sine',.18,i*.25))}
+};
+const SCALE=[262,294,330,392,440,523,440,392,330,294];
+function musicTick(){if(!AC||!musicOn)return;const f=SCALE[step%SCALE.length];tone(f,.5,'triangle',.045);if(step%4===0)tone(f/2,.9,'sine',.06);if(step%8===4)tone(f*2,.3,'sine',.03,.12);step++;}
+function setMusic(on){musicOn=on;clearInterval(musicTimer);if(on&&AC)musicTimer=setInterval(musicTick,340);$('btnSnd').textContent=on?'🔊 Âm thanh':'🔇 Tắt tiếng';}
+
+/* ---------- Nền sao ---------- */
+const bg=$('bg'),bgc=bg.getContext('2d');let stars=[];
+function initStars(){bg.width=innerWidth;bg.height=innerHeight;stars=Array.from({length:140},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}))}
+addEventListener('resize',initStars);initStars();
+function drawStars(t){bgc.clearRect(0,0,bg.width,bg.height);stars.forEach(s=>{bgc.globalAlpha=.35+.65*Math.abs(Math.sin(t/1000*s.s+s.p));bgc.fillStyle='#fff';bgc.beginPath();bgc.arc(s.x,s.y,s.r,0,6.3);bgc.fill()});bgc.globalAlpha=1}
+
+/* ---------- Pháo hoa giấy ---------- */
+const fx=$('fx'),fxc=fx.getContext('2d');let conf=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight}addEventListener('resize',sizeFx);sizeFx();
+function confetti(n=90,ox=innerWidth/2,oy=innerHeight/3){const cols=['#ffb100','#ff4d79','#5b7cff','#12b774','#ff7a18','#a46bff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*9+3;conf.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-5,w:Math.random()*8+4,h:Math.random()*5+3,r:Math.random()*6,vr:Math.random()*.4-.2,c:cols[Math.random()*6|0],life:1})}}
+let confDirty=false;
+function drawConf(ds=1){if(!conf.length){if(confDirty){fxc.clearRect(0,0,fx.width,fx.height);confDirty=false}return}confDirty=true;fxc.clearRect(0,0,fx.width,fx.height);conf=conf.filter(p=>p.life>0);conf.forEach(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vy+=.28*ds;p.vx*=Math.pow(.99,ds);p.r+=p.vr*ds;p.life-=.008*ds;fxc.save();fxc.globalAlpha=Math.max(0,p.life);fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.w/2,-p.h/2,p.w,p.h);fxc.restore()})}
+
+/* ---------- Hệ Mặt Trời (canvas nhỏ + hoạt cảnh toàn màn hình, nền tối) ---------- */
+let sc=null,W=300,H=300,K=1;
+const CV={mini:{cv:$('sky'),W:300,H:300,kind:'mini'},big:{cv:$('bigsky'),W:800,H:600,kind:'big'},intro:{cv:$('introsky'),W:500,H:500,kind:'intro'}};
+let CUR=null;
+const STARS=(()=>{const a=Array.from({length:140},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}));return{all:a.slice(30),tw:a.slice(0,30)}})();
+CV.intro.ctx=CV.intro.cv.getContext('2d');CV.mini.ctx=CV.mini.cv.getContext('2d');CV.big.ctx=CV.big.cv.getContext('2d');
+function buildBg(o){ // vẽ sẵn nền sao + quỹ đạo một lần, mỗi khung hình chỉ cần drawImage
+ const c=o.bgCv||(o.bgCv=document.createElement('canvas'));c.width=Math.ceil(o.W*o.d);c.height=Math.ceil(o.H*o.d);
+ const x=c.getContext('2d');x.setTransform(o.d,0,0,o.d,0,0);
+ if(o.kind!=='mini'){x.fillStyle='#fff';STARS.all.forEach(s=>{x.globalAlpha=.3+.5*((s.p*7)%1);x.beginPath();x.arc(s.x*o.W,s.y*o.H,s.r*1.2,0,6.3);x.fill()});x.globalAlpha=1}
+ x.strokeStyle='rgba(150,170,255,.16)';x.lineWidth=1;const m=12*o.k;
+ PL.forEach(p=>{x.beginPath();x.ellipse(o.W/2,o.H/2,p.o*(o.W/2-m),p.o*(o.H/2-m),0,0,6.3);x.stroke()});
+}
+function sizeCv(o,w,h,dprMax){const d=Math.min(dprMax,devicePixelRatio||1);o.d=d;o.W=w;o.H=h;o.cv.width=Math.ceil(w*d);o.cv.height=Math.ceil(h*d);o.ctx.setTransform(d,0,0,d,0,0);
+ o.k=o.kind==='big'?Math.max(1.5,Math.min(w,h)/300):o.kind==='intro'?Math.max(1.2,Math.min(w,h)/300):1;buildBg(o)}
+function sizeSky(){const r=CV.mini.cv.getBoundingClientRect(),r2=CV.intro.cv.getBoundingClientRect();
+ sizeCv(CV.mini,Math.max(120,r.width),Math.max(120,r.height),1.5);sizeCv(CV.big,innerWidth,innerHeight,1);sizeCv(CV.intro,Math.max(160,r2.width),Math.max(160,r2.height),1.5)}
+function useCv(o){CUR=o;sc=o.ctx;W=o.W;H=o.H;K=o.k}
+new ResizeObserver(sizeSky).observe(CV.mini.cv.parentElement);new ResizeObserver(sizeSky).observe(CV.intro.cv.parentElement);addEventListener('resize',sizeSky);
+const PL=[
+ {n:'Thủy tinh',c1:'#d9d9d9',c2:'#6f6f6f',r:3.6,o:.17,sp:1.6,ph:.5},
+ {n:'Kim tinh',c1:'#ffe3a8',c2:'#c98b2e',r:5,o:.27,sp:1.2,ph:2.2},
+ {n:'Trái Đất',c1:'#7fd0ff',c2:'#1b5fb5',r:5.4,o:.38,sp:1.0,ph:4},
+ {n:'Hỏa tinh',c1:'#ff9f7a',c2:'#a8321a',r:4.4,o:.48,sp:.8,ph:1},
+ {n:'Mộc tinh',c1:'#f3d6a8',c2:'#a8744a',r:9,o:.62,sp:.5,ph:3.3},
+ {n:'Thổ tinh',c1:'#f1e0a6',c2:'#b79545',r:7.8,o:.75,sp:.38,ph:5.2,ring:1},
+ {n:'Thiên Vương',c1:'#bff3f0',c2:'#4ab5b5',r:6,o:.86,sp:.28,ph:.2},
+ {n:'Hải Vương',c1:'#8aa9ff',c2:'#2b3fb5',r:6,o:.96,sp:.22,ph:2.8}
+];
+const ROUTE=[0,1,3,4,2]; // câu 1..5 -> Thủy, Kim, Hỏa, Mộc, rồi về Trái Đất
+let SK={shipAt:null,visited:[],flight:null,parts:[],warp:0,asteroid:null,rings:[],floaters:[],onEnd:null};
+const sunPos=()=>({x:W/2,y:H/2});
+function plPos(i,t){const p=PL[i],a=p.ph+t/1000*(K>1?.1:.4)*p.sp,m=12*K;return{x:W/2+Math.cos(a)*p.o*(W/2-m),y:H/2+Math.sin(a)*p.o*(H/2-m),a}}
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function originPos(f,t){return f.from==null?sunPos():plPos(f.from,t)}
+function flightPos(f,p,t){const s=originPos(f,t),e=plPos(f.idx,t),k=ease(p),dx=e.x-s.x,dy=e.y-s.y,L=Math.hypot(dx,dy)||1,arc=Math.sin(Math.PI*p)*L*.14;return{x:s.x+dx*k-dy/L*arc,y:s.y+dy*k+dx/L*arc}}
+function spark(x,y,n,c,sp=2){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*sp*K;SK.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.02+Math.random()*.03,c,r:(Math.random()*2+1)*K*.8})}}
+function drawShip(x,y,ang,sz){sc.save();sc.translate(x,y);sc.rotate(ang);sc.scale(sz,sz);
+ const fl=10+Math.random()*7;sc.fillStyle='#ffb23c';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-6-fl,0);sc.lineTo(-6,3);sc.fill();sc.fillStyle='#fff3a0';sc.beginPath();sc.moveTo(-6,-1.6);sc.lineTo(-6-fl*.55,0);sc.lineTo(-6,1.6);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(-5,-4);sc.lineTo(-10,-8);sc.lineTo(-9,-1);sc.fill();sc.beginPath();sc.moveTo(-5,4);sc.lineTo(-10,8);sc.lineTo(-9,1);sc.fill();
+ sc.fillStyle='#eef3ff';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(5,-5,-6,-4);sc.lineTo(-6,4);sc.quadraticCurveTo(5,5,11,0);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(8,-3,5,-4);sc.lineTo(5,4);sc.quadraticCurveTo(8,3,11,0);sc.fill();
+ sc.fillStyle='#4fc3f7';sc.beginPath();sc.arc(0,0,2.2,0,6.3);sc.fill();sc.restore()}
+const SPR={};
+function planetSprite(i,k,d){const key=i+'|'+k.toFixed(2)+'|'+d;if(SPR[key])return SPR[key];
+ const p=PL[i],r=p.r*k,half=Math.ceil(r*(p.ring?2.1:1.1))+2,c=document.createElement('canvas');c.width=c.height=Math.ceil(half*2*d);
+ const x=c.getContext('2d');x.scale(d,d);x.translate(half,half);
+ if(p.ring){x.save();x.rotate(-.4);x.strokeStyle='rgba(240,220,160,.8)';x.lineWidth=2*k*.7;x.beginPath();x.ellipse(0,0,r*1.9,r*.6,0,0,6.3);x.stroke();x.restore()}
+ const g=x.createRadialGradient(-r*.35,-r*.35,r*.1,0,0,r);g.addColorStop(0,p.c1);g.addColorStop(1,p.c2);x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,6.3);x.fill();
+ if(p.n==='Trái Đất'){x.fillStyle='rgba(60,200,100,.75)';x.beginPath();x.arc(-r*.28,-r*.2,r*.4,0,6.3);x.fill()}
+ return SPR[key]={c,half}}
+function drawPlanet(i,x,y){const s=planetSprite(i,K,CUR.d);sc.drawImage(s.c,x-s.half,y-s.half,s.half*2,s.half*2)}
+let GIFTSPR=null;
+function giftSprite(){if(GIFTSPR)return GIFTSPR;const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.font='64px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('🎁',48,52);return GIFTSPR=c}
+let SUNSPR=null;
+function sunSprite(){if(SUNSPR)return SUNSPR;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+ const gl=x.createRadialGradient(128,128,6,128,128,128);gl.addColorStop(0,'rgba(255,220,100,.9)');gl.addColorStop(.35,'rgba(255,150,40,.35)');gl.addColorStop(1,'rgba(255,100,0,0)');x.fillStyle=gl;x.beginPath();x.arc(128,128,128,0,6.3);x.fill();
+ const sg=x.createRadialGradient(119,119,5,128,128,40);sg.addColorStop(0,'#fff6b0');sg.addColorStop(1,'#ff9f1c');x.fillStyle=sg;x.beginPath();x.arc(128,128,40,0,6.3);x.fill();return SUNSPR=c}
+function frameSky(t,big,intro){
+ sc.clearRect(0,0,W,H);
+ sc.drawImage(CUR.bgCv,0,0,W,H);
+ if(big||intro){STARS.tw.forEach(s=>{sc.globalAlpha=.25+.75*Math.abs(Math.sin(t/1000*s.s+s.p));sc.fillStyle='#fff';sc.beginPath();sc.arc(s.x*W,s.y*H,s.r*1.2,0,6.3);sc.fill()});sc.globalAlpha=1}
+ const sr=(11+Math.sin(t/400)*1.2+SK.warp*3)*K,gs=sr*3.2*2;sc.drawImage(sunSprite(),W/2-gs/2,H/2-gs/2,gs,gs);
+ const cur=S&&S.i!=null?ROUTE[S.i]:-1;
+ PL.forEach((p,i)=>{const q=plPos(i,t),r=p.r*K;
+  if(i===cur&&!SK.visited[i]&&S.active){sc.strokeStyle='rgba(255,216,107,'+(.4+.4*Math.sin(t/200))+')';sc.lineWidth=K*.8;sc.setLineDash([3*K,3*K]);sc.beginPath();sc.arc(q.x,q.y,r+(6+Math.sin(t/200)*1.5)*K,0,6.3);sc.stroke();sc.setLineDash([])}
+  drawPlanet(i,q.x,q.y);
+  if(SK.visited[i]){sc.strokeStyle='#2ee59d';sc.lineWidth=2*K*.7;sc.beginPath();sc.arc(q.x,q.y,r+4*K,0,6.3);sc.stroke();sc.fillStyle='#2ee59d';sc.font=`bold ${11*K}px sans-serif`;sc.textAlign='center';sc.fillText('✓',q.x,q.y-r-7*K)}
+  if(i<5||big||intro){sc.fillStyle='rgba(220,230,255,.8)';sc.font=`${9.5*K}px sans-serif`;sc.textAlign='center';sc.fillText(p.n,q.x,q.y+r+11*K)}
+ });
+ if(!(big&&SK.flight)){ // tàu đang đậu tại Mặt Trời hoặc hành tinh đã tới
+  const at=SK.shipAt,base=at==null?{x:W/2,y:H/2}:plPos(at,t),R=at==null?sr:PL[at].r*K,ang=-.7,d=R+(at==null?12:9)*K;
+  drawShip(base.x+Math.cos(ang)*d,base.y+Math.sin(ang)*d,ang,(big?1.1:.85)*K);
+ }
+ if(!big)return;
+ SK.rings=SK.rings.filter(r=>r.l>0);SK.rings.forEach(r=>{r.l-=.022;r.r+=1.3*K;const q=plPos(r.i,t);sc.strokeStyle=`rgba(46,229,157,${r.l})`;sc.lineWidth=3;sc.beginPath();sc.arc(q.x,q.y,r.r,0,6.3);sc.stroke()});
+ if(SK.asteroid){const a=SK.asteroid;a.x+=a.vx;a.y+=a.vy;a.l-=.008;sc.save();sc.translate(a.x,a.y);sc.rotate(t/150);sc.scale(K*1.4,K*1.4);sc.fillStyle='#8a6a55';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-2,-7);sc.lineTo(5,-4);sc.lineTo(7,2);sc.lineTo(1,7);sc.lineTo(-6,4);sc.fill();sc.restore();
+  spark(a.x,a.y,2,'#ff9f43',1);if(a.l<=0)SK.asteroid=null}
+ const f=SK.flight;
+ if(f){const p=Math.min(1,(t-f.t0)/f.dur),pos=flightPos(f,p,t),pp=flightPos(f,Math.max(0,p-.02),t),ang=Math.atan2(pos.y-pp.y,pos.x-pp.x);
+  if(f.gift&&!f.taken){
+   if(!f.ann&&p>=.04){f.ann=true;sfx.drop();$('cineTitle').textContent='🎁 Có quà bất ngờ rơi xuống! Tàu hãy nhặt nhé!'}
+   const gp=flightPos(f,.5,t),gk=Math.min(1,Math.max(0,(p-.04)/.3)),fall=(1-(1-Math.pow(1-gk,3)))*(gp.y+60*K),bob=gk>=1?Math.sin(t/160)*4*K:0,gy=gp.y-fall+bob;
+   if(gk>0){const pulse=1+.12*Math.sin(t/120);
+    const rg=sc.createRadialGradient(gp.x,gy,4,gp.x,gy,46*K*pulse);rg.addColorStop(0,'rgba(255,230,120,.75)');rg.addColorStop(1,'rgba(255,200,60,0)');sc.fillStyle=rg;sc.beginPath();sc.arc(gp.x,gy,46*K*pulse,0,6.3);sc.fill();
+    const gz=56*K*pulse;sc.save();sc.translate(gp.x,gy);sc.rotate(gk<1?Math.sin(t/90)*.3:0);sc.drawImage(giftSprite(),-gz/2,-gz/2,gz,gz);sc.restore();
+    spark(gp.x,gy,2,'#ffd86b',1.2)}
+  }
+  if(f.gift&&!f.taken&&p>=.5){f.taken=true;S.bonus+=GIFT_V;S.bonusCount++;sfx.gift();spark(pos.x,pos.y,90,'#ffd86b',5);SK.floaters.push({x:pos.x,y:pos.y,l:2,txt:'🎁 +0,5 điểm!'});$('cineTitle').textContent='🎉 Nhận quà! +0,5 điểm';updHud();$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10  🎁 +0,5';confetti(50,innerWidth/2,innerHeight/2)}
+  spark(pos.x-Math.cos(ang)*8*K,pos.y-Math.sin(ang)*8*K,2,'#ffb23c',1.2);
+  drawShip(pos.x,pos.y,ang,1.35*K);
+  if(p>=1){SK.flight=null;SK.shipAt=f.idx;SK.visited[f.idx]=true;SK.rings.push({i:f.idx,r:PL[f.idx].r*K+3,l:1});const q=plPos(f.idx,t);spark(q.x,q.y,50,'#2ee59d',3);sfx.arrive();if(SK.onEnd){const fn=SK.onEnd;SK.onEnd=null;fn()}}}
+ SK.parts=SK.parts.filter(p=>p.l>0);SK.parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l-=p.d;sc.globalAlpha=Math.max(0,p.l);sc.fillStyle=p.c;sc.beginPath();sc.arc(p.x,p.y,p.r,0,6.3);sc.fill()});sc.globalAlpha=1;
+ SK.floaters=SK.floaters.filter(f=>f.l>0);SK.floaters.forEach(f=>{f.y-=.7;f.l-=.012;sc.globalAlpha=Math.min(1,Math.max(0,f.l));sc.fillStyle='#ffe58a';sc.font=`bold ${26*K}px sans-serif`;sc.textAlign='center';sc.fillText(f.txt,f.x,f.y-14*K);sc.globalAlpha=1});
+}
+
+/* ---------- Logic trò chơi ---------- */
+let S={i:0,active:false};
+const player={name:'',cls:''};
+function pickPositions(n){ // vị trí đáp án đúng: rải đều A–D, không chữ nào quá 2 lần, ít nhất 3 chữ khác nhau
+ let p,g=0;do{p=Array.from({length:n},()=>Math.random()*4|0);g++}while(g<500&&([0,1,2,3].some(k=>p.filter(x=>x===k).length>2)||new Set(p).size<3));return p}
+function pickQuestions(){
+ const by=lv=>shuffle(QS.filter(q=>q.lv===lv));
+ const pos=pickPositions(5);
+ return [...by('NB').slice(0,3),...by('TH').slice(0,1),...by('VD').slice(0,1)].map((q,i)=>{
+  const wrong=shuffle([0,1,2,3].filter(k=>k!==q.ans)),opts=[];let w=0;
+  for(let k=0;k<4;k++)opts[k]=k===pos[i]?q.opts[q.ans]:q.opts[wrong[w++]];
+  return{...q,key:q.lv+q.n,opts,ans:pos[i]};});
+}
+function newGame(){
+ S={qs:pickQuestions(),i:0,base:0,bonus:0,bonusCount:0,res:[],active:true,answered:false,deadline:0,dur:30,lastTick:-1};
+ SK.visited=[];SK.flight=null;SK.parts=[];SK.rings=[];SK.floaters=[];SK.asteroid=null;SK.onEnd=null;SK.shipAt=null;S.busy=false;
+ $('start').classList.add('hide');$('end').classList.add('hide');$('game').classList.remove('hide');
+ $('hName').textContent=player.name;$('hClass').textContent=player.cls;
+ sizeSky();updHud();loadQ();
+}
+const total=()=>Math.min(10,S.base+S.bonus);
+function updHud(){$('hScore').textContent=fmt(total());$('hQ').textContent=(Math.min(S.i+1,5))+'/5'}
+function renderPips(){
+ $('pips').innerHTML=S.qs.map((q,i)=>{const r=S.res[i];return`<span class="pip ${i===S.i?'cur':''} ${r?(r.ok?'ok':'no'):''}">${i+1}. ${q.lv}${r?(r.ok?' ✓':' ✗'):''}</span>`}).join('');
+}
+function loadQ(){
+ const q=S.qs[S.i],L=LV[q.lv];S.answered=false;S.dur=L.t;S.deadline=performance.now()+L.t*1000;S.lastTick=-1;
+ renderPips();updHud();
+ $('lvl').className='lvl '+q.lv;S.lvlBase=`${q.lv} · ${L.name} · ⏱ `;S.lvlSec=L.t;$('lvl').textContent=S.lvlBase+L.t+' giây';
+ $('qtext').textContent=`Câu ${S.i+1}. ${q.q}`;
+ const il=$('illus'),cfg=ILLUS[q.key];
+ if(cfg){il.innerHTML=sheetHTML(cfg,q,false);il.classList.remove('hide')}else il.classList.add('hide');
+ {const mo=Math.max(...q.opts.map(o=>o.length)),ql=q.q.length,cl=$('qbox').classList;cl.toggle('long',mo>55||ql>170);cl.toggle('xlong',mo>90||ql>260)}
+ $('opts').innerHTML='';
+ q.opts.forEach((t,k)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<b>${'ABCD'[k]}</b><span></span>`;b.querySelector('span').textContent=t;b.onclick=()=>answer(k);$('opts').appendChild(b)});
+ $('fb').innerHTML='';$('btnNext').classList.add('hide');
+ const box=$('qbox');box.classList.remove('enter');void box.offsetWidth;box.classList.add('enter');$('qwrap').scrollTop=0;
+ sfx.click();
+ $('timer').classList.remove('low');$('tbar').classList.remove('low');
+}
+function answer(k){
+ if(S.answered)return;S.answered=true;
+ const q=S.qs[S.i],ok=k===q.ans,to=k<0;
+ const btns=[...$('opts').children];btns.forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('good');else if(i===k)b.classList.add('wrong');else b.classList.add('dim')});
+ S.res[S.i]={ok,to,q};
+ if(ok){S.base+=PTS;sfx.correct();confetti(70,innerWidth*.35,innerHeight*.5);}
+ else{to?sfx.timeout():sfx.wrong();
+  $('qbox').classList.remove('enter');$('qbox').style.animation='shake .45s'; setTimeout(()=>$('qbox').style.animation='',500)}
+ const cfg=ILLUS[q.key];if(cfg)$('illus').innerHTML=sheetHTML(cfg,q,true);
+ const fb=$('fb');fb.innerHTML='';const d=document.createElement('div');d.className='fb '+(ok?'ok':'no');
+ const h=document.createElement('h3');h.textContent=ok?`✅ Chính xác! +${PTS} điểm — bấm “Câu tiếp theo” để ${S.i===4?'đưa tàu về Trái Đất! 🌍':'phóng tàu tới '+PL[ROUTE[S.i]].n+'! 🚀'}`:(to?'⏰ Hết giờ! Câu này tính là sai.':'❌ Chưa đúng rồi, cố lên nhé!');
+ const a=document.createElement('p');a.className='ans';a.textContent=`Đáp án đúng: ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;
+ const e=document.createElement('p');e.textContent='💡 Giải thích: '+q.exp;
+ d.append(h,a,e);fb.appendChild(d);
+ renderPips();updHud();
+ const nb=$('btnNext');nb.textContent=S.i===4?'🏆 Xem kết quả':'Câu tiếp theo ➜';nb.classList.remove('hide');nb.disabled=false;
+ setTimeout(()=>$('qwrap').scrollTo({top:$('qwrap').scrollHeight,behavior:'smooth'}),150);
+}
+function launchShip(){
+ const f={idx:ROUTE[S.i],from:SK.shipAt,t0:performance.now(),dur:4200,gift:Math.random()<GIFT_P,taken:false};
+ SK.flight=f;sfx.launch();useCv(CV.big,true);const sp=sunPos();spark(sp.x,sp.y,50,'#ffb23c',4);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function cinematic(){
+ if(S.busy)return;S.busy=true;$('btnNext').disabled=true;
+ const r=S.res[S.i],pl=PL[ROUTE[S.i]],from=SK.shipAt==null?'Mặt Trời':PL[SK.shipAt].n,el=$('cine'),rc=CV.mini.cv.getBoundingClientRect();
+ el.style.transformOrigin=`${rc.left+rc.width/2}px ${rc.top+rc.height/2}px`;
+ $('cineTitle').textContent=r.ok?(S.i===4?`🌍 Chặng cuối: tàu vũ trụ bay từ ${from} về Trái Đất!`:`🚀 Tàu vũ trụ bay từ ${from} tới ${pl.n}!`):(r.to?`⏰ Hết giờ – tàu phải đợi tại ${from}!`:`☄️ Trả lời sai – thiên thạch chặn đường, tàu đứng yên tại ${from}!`);
+ $('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10';
+ sizeSky();SK.warp=1;el.classList.add('on');
+ await sleep(800);
+ if(r.ok){await new Promise(res=>{SK.onEnd=res;launchShip()});$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10'+(SK.lastGiftTxt||'');await sleep(S.i===4?2400:1400);if(S.i===4)confetti(120,innerWidth/2,innerHeight/2)}
+ else{SK.asteroid={x:CV.big.W+30,y:CV.big.H*(.2+Math.random()*.3),vx:-6,vy:2.6,l:1};await sleep(2600)}
+ el.classList.remove('on');await sleep(750);
+ S.busy=false;nextQ();
+}
+function nextQ(){
+ if(S.i>=4){finish();return}
+ S.i++;SK.warp=1;loadQ();
+}
+function finish(){
+ S.active=false;const sc2=total();
+ $('game').classList.add('hide');$('end').classList.remove('hide');
+ $('endName').textContent=player.name;$('endSub').textContent=`Lớp ${player.cls} · Tin học 6 – Bài 5`;
+ const right=S.res.filter(r=>r&&r.ok).length;
+ let medal,icon;
+ if(sc2>=9){medal='👨‍🚀 Thuyền trưởng Hệ Mặt Trời!';icon='🏆'}else if(sc2>=7){medal='🌟 Phi hành gia giỏi!';icon='🥇'}else if(sc2>=5){medal='🚀 Phi hành đoàn khá!';icon='🥈'}else{medal='🔭 Cần luyện tập thêm, thử lại nhé!';icon='🌠'}
+ $('endMedal').textContent=medal+` (đúng ${right}/5${S.bonusCount?`, nhận ${S.bonusCount} quà 🎁`:''})`;$('endIcon').textContent=icon;
+ const rv=$('rev');rv.innerHTML='';
+ S.qs.forEach((q,i)=>{const r=S.res[i],d=document.createElement('div');d.className=r&&r.ok?'ok':'no';d.textContent=`${r&&r.ok?'✅':'❌'} Câu ${i+1} [${q.lv}] ${q.q}  → ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;rv.appendChild(d)});
+ let n=0;const el=$('endScore'),id=setInterval(()=>{n+=.1;if(n>=sc2){n=sc2;clearInterval(id)}el.textContent=fmt(n)},45);
+ if(sc2>=5)sfx.fanfare();else sfx.sad();startFw(sc2);
+}
+
+/* ---------- Pháo hoa màn hình tổng kết ---------- */
+const fwc=$('fw'),fwx=fwc.getContext('2d');
+let FW={r:[],p:[],next:0,rate:700,power:1};
+function sizeFw(){fwc.width=Math.round(innerWidth*.6);fwc.height=Math.round(innerHeight*.6)} // vẽ ở 60% độ phân giải rồi phóng ra, nhẹ hơn nhiềuaddEventListener('resize',sizeFw);
+function fwLaunch(){const w=fwc.width,h=fwc.height;FW.r.push({x:w*(.1+Math.random()*.8),y:h+10,ty:h*(.1+Math.random()*.35),vy:-(11+Math.random()*3)*h/800,h:Math.random()*360})}
+function fwExplode(r){
+ const h=fwc.height,k=h/800,n=Math.round((45+Math.random()*40)*FW.power),type=Math.random()<.35?'ring':'sphere',h2=(r.h+120+Math.random()*120)%360;
+ sfx.boom();
+ for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.1,v=(type==='ring'?5.5:Math.random()*6.5+1)*k*(.85+FW.power*.15);
+  FW.p.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.009+Math.random()*.01,h:Math.random()<.65?r.h:h2,s:k})}
+}
+function startFw(score){
+ sizeFw();fwx.fillStyle='#03050d';fwx.fillRect(0,0,fwc.width,fwc.height);
+ FW.r=[];FW.p=[];
+ FW.power=score>=9?1.3:score>=7?1:score>=5?.8:.6;FW.rate=score>=9?450:score>=7?650:score>=5?900:1400;
+ const n=score>=5?5:2;for(let i=0;i<n;i++)setTimeout(fwLaunch,i*220);
+ FW.next=performance.now()+1200;
+}
+function frameFw(t,ds){
+ fwx.globalCompositeOperation='source-over';fwx.fillStyle=`rgba(3,5,13,${1-Math.pow(.8,ds)})`;fwx.fillRect(0,0,fwc.width,fwc.height);
+ if(t>FW.next){const c=1+(Math.random()<.4?1:0)+(FW.power>1?1:0);for(let i=0;i<c;i++)setTimeout(fwLaunch,i*140);FW.next=t+FW.rate*(.6+Math.random()*.8)}
+ fwx.globalCompositeOperation='lighter';
+ const k=fwc.height/800,f=Math.pow(.985,ds);
+ FW.r=FW.r.filter(r=>{r.y+=r.vy*ds;r.vy*=f;fwx.fillStyle=`hsl(${r.h},100%,75%)`;fwx.beginPath();fwx.arc(r.x,r.y,2.2*k,0,6.3);fwx.fill();
+  if(Math.random()<.8*ds){FW.p.push({x:r.x,y:r.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,l:.6,d:.04,h:r.h,s:k*.6})}
+  if(r.y<=r.ty||r.vy>-1.8){fwExplode(r);return false}return true});
+ FW.p=FW.p.filter(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vx*=f;p.vy=p.vy*f+.05*p.s*ds;p.l-=p.d*ds;if(p.l<=0)return false;
+  fwx.fillStyle=`hsla(${p.h},100%,${55+p.l*20}%,${Math.min(1,p.l*1.4)})`;fwx.beginPath();fwx.arc(p.x,p.y,(1.2+p.l*1.8)*p.s*1.3,0,6.3);fwx.fill();return true});
+ fwx.globalCompositeOperation='source-over';
+}
+
+/* ---------- Vòng lặp chính (đồng hồ + hoạt cảnh) ---------- */
+const ring=$('ring');
+let lastT=0,lastDom=0;
+function loop(t){
+ requestAnimationFrame(loop);
+ const dt=t-lastT,minDt=S.busy?20:32; // cảnh phóng to chạy mượt, còn lại ~30 khung/giây
+ if(dt<minDt)return;lastT=t;const ds=Math.min(3,dt/16.67);
+ drawConf(ds);
+ if(!$('end').classList.contains('hide'))frameFw(t,ds);
+ else if(!$('start').classList.contains('hide')){useCv(CV.intro);frameSky(t,false,true)}
+ else if(!$('game').classList.contains('hide')&&!S.busy){useCv(CV.mini);frameSky(t,false)}
+ if(S.busy){useCv(CV.big);frameSky(t,true)}
+ SK.warp=Math.max(0,SK.warp-.005*ds);
+ if(S.active&&!S.answered){
+  const left=Math.max(0,(S.deadline-performance.now())/1000);
+  if(left<=0){answer(-1)}
+  else if(t-lastDom>100){lastDom=t;
+   const frac=left/S.dur,sec=Math.ceil(left);
+   $('tnum').textContent=sec;if(sec!==S.lvlSec){S.lvlSec=sec;$('lvl').textContent=S.lvlBase+sec+' giây'}$('lvl').classList.toggle('low',left<=5);
+   $('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
+   const low=left<=5||frac<.25;$('timer').classList.toggle('low',low);$('tbar').classList.toggle('low',low);
+   ring.style.stroke=frac>.5?'#12b774':frac>.25?'#ffc93c':'#ff5d7a';
+   if(left<=5&&sec!==S.lastTick&&sec>0){S.lastTick=sec;sfx.tick()}
+  }
+ }
+}
+
+/* ---------- Sự kiện ---------- */
+function toggleFs(){const d=document;if(!d.fullscreenElement&&!d.webkitFullscreenElement){(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement).catch(()=>{})}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}
+document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('btnFs').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';$('btnFsStart').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';setTimeout(()=>{sizeSky();initStars();sizeFx()},200)});
+$('btnFs').onclick=$('btnFsStart').onclick=toggleFs;
+$('btnSnd').onclick=()=>{initAudio();setMusic(!musicOn)};
+$('btnStart').onclick=()=>{
+ const n=$('inName').value.trim(),c=$('inClass').value.trim();let bad=false;
+ [['inName',n],['inClass',c]].forEach(([id,v])=>{const el=$(id);el.classList.remove('err');if(!v){void el.offsetWidth;el.classList.add('err');bad=true}});
+ if(bad)return;
+ player.name=n;player.cls=c;initAudio();sfx.start();setMusic(true);newGame();
+};
+['inName','inClass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('btnStart').click()}));
+$('btnNext').onclick=()=>{sfx.click();cinematic()};
+$('btnAgain').onclick=()=>{initAudio();sfx.start();newGame()};
+$('btnChange').onclick=()=>{$('end').classList.add('hide');$('start').classList.remove('hide');$('inName').value='';$('inClass').value='';$('inName').focus()};
+addEventListener('keydown',e=>{
+ if(!S.active||$('game').classList.contains('hide'))return;
+ const k=e.key.toUpperCase(),i='ABCD'.indexOf(k),j='1234'.indexOf(k);
+ if(!S.answered&&(i>=0||j>=0)&&k.length===1)answer(i>=0?i:j);
+ else if(e.key==='Enter'&&S.answered&&!S.busy&&!$('btnNext').disabled&&!$('btnNext').classList.contains('hide'))$('btnNext').click();
+});
+sizeSky();requestAnimationFrame(loop);
+$('inName').focus();
+</script>
+</body>
+</html>
