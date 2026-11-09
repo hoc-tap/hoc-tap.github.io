@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Du hành Hệ Mặt Trời – Tin học 9 Bài 7</title>
+<style>
+:root{--bg:#eef3ff;--panel:rgba(255,255,255,.92);--line:rgba(90,110,200,.28);--tx:#1c2545;--mute:#5a678f;--ok:#12b774;--bad:#e5385a;--warn:#e08a00;--pri:#5b7cff;--acc:#ff9f43}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(ellipse at 20% 10%,#ffffff 0%,#e7eeff 45%,#d8e3ff 100%);color:var(--tx);overflow:hidden}
+#bg{display:none}
+#fx{position:fixed;inset:0;z-index:60;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+.hide{display:none!important}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 30px;width:min(560px,100%);box-shadow:0 20px 50px rgba(60,80,160,.22);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.logo{font-size:56px;text-align:center;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
+.card h1{text-align:center;font-size:26px;margin:6px 0 4px;background:linear-gradient(90deg,#ff7a18,#ff3d77,#7a4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .sub{text-align:center;color:var(--mute);font-size:14px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 5px;font-weight:600}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--tx);font-size:16px;outline:none;transition:.2s}
+input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(91,124,255,.22)}
+input.err{border-color:var(--bad);animation:shake .4s}
+.rules{margin:16px 0;padding:12px 14px;border-radius:12px;background:#eef2ff;font-size:13.5px;line-height:1.7;color:#34406b}
+.btn{border:none;border-radius:14px;padding:13px 22px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#5b7cff,#8b5bff);box-shadow:0 6px 18px rgba(91,124,255,.35);transition:.2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.go{width:100%;margin-top:6px;background:linear-gradient(135deg,#ff9f43,#ff4d79);box-shadow:0 6px 18px rgba(255,100,90,.35)}
+.btn.ghost{background:#eef2ff;color:var(--tx);box-shadow:none;border:1px solid var(--line);font-weight:600;font-size:14px;padding:10px 16px}
+.row{display:flex;gap:10px;margin-top:10px}
+.row .btn{flex:1}
+#game{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,26vw,440px);gap:14px;padding:14px}
+.left,.right{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:0;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(60,80,160,.15)}
+.left{padding:16px 24px;overflow:hidden;position:relative}
+.qwrap{flex:1;overflow-y:auto;padding-right:4px}
+.pips{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.pip{padding:6px 2px;text-align:center;white-space:nowrap;border-radius:99px;font-size:clamp(11px,1vw,16px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
+.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.06)}
+.pip.ok{background:#d6f7e8;color:#0b7a53}
+.pip.no{background:#ffdfe6;color:#c42b4b}
+.tbar{height:8px;border-radius:99px;background:#e2e8f8;overflow:hidden;margin-bottom:14px}
+.tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#ffc93c);transform-origin:left}
+.tbar.low i{background:linear-gradient(90deg,#ff5d7a,#ff9f43)}
+.lvl{display:inline-block;padding:6px 18px;border-radius:99px;font-size:clamp(16px,1.6vw,26px);font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl.low{background:#ffdfe6!important;color:#c42b4b!important;animation:beat .5s infinite}
+.lvl.NB{background:#d4f7e8;color:#0b7a53}.lvl.TH{background:#fff1c2;color:#8a6100}.lvl.VD{background:#ffd9ec;color:#a3195f}
+.qtext{font-size:clamp(22px,2.5vw,42px);line-height:1.4;font-weight:700;margin-bottom:20px}
+.enter{animation:slideIn .55s cubic-bezier(.2,1,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:18px 20px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--tx);font-weight:600;font-size:clamp(21px,2.4vw,40px);line-height:1.3;transition:.18s;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:var(--pri);transform:translateY(-3px);background:#f1f4ff}
+.opt b{flex:none;width:clamp(40px,3.6vw,64px);height:clamp(40px,3.6vw,64px);border-radius:50%;display:grid;place-items:center;background:#e3e9ff;color:#3a4a9a;font-size:clamp(20px,2.2vw,36px)}
+.opt span{word-break:break-word}
+.opt:disabled{cursor:default}
+.opt.good{border-color:var(--ok);background:#dcf8ec;animation:glow 1s ease 2}
+.opt.good b{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:#ffe3e9;animation:shake .45s}
+.opt.wrong b{background:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+@keyframes glow{50%{box-shadow:0 0 24px rgba(18,183,116,.55)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.fb{margin-top:16px;border-radius:14px;padding:14px 16px;animation:slideIn .5s}
+.fb.ok{background:#e4faf0;border:1px solid var(--ok)}
+.fb.no{background:#ffecef;border:1px solid var(--bad)}
+.fb h3{font-size:clamp(20px,2.2vw,34px);margin-bottom:8px}
+.fb p{line-height:1.5;font-size:clamp(17px,1.8vw,30px);color:#2a3560}
+.fb .ans{margin-bottom:6px;font-weight:600}
+.nextrow{display:flex;justify-content:flex-end;padding-top:12px}
+.nextrow .btn{font-size:clamp(17px,1.7vw,28px);padding:14px 28px}
+.illus{margin:0 0 16px;padding:10px 12px;border-radius:14px;background:#f3f6ff;border:1px dashed var(--line);overflow-x:auto}
+.sheet{border-collapse:collapse;font-size:clamp(15px,1.6vw,26px);margin:auto;background:#fff;color:#1b2540;box-shadow:0 4px 14px rgba(60,80,160,.25)}
+.sheet th{background:#e8ecf5;font-weight:700;color:#4a5578;padding:4px 10px;border:1px solid #c5cce0;min-width:36px}
+.sheet td{padding:7px 14px;border:1px solid #d0d6e6;min-width:clamp(90px,9vw,150px);text-align:center;font-family:Consolas,monospace;height:clamp(32px,3vw,52px)}
+.sheet td.hd{background:#dfe7ff;font-weight:700;font-family:inherit}
+.sheet td.tbl{background:#fff4c9}
+.sheet td.src{background:#cfe3ff;outline:3px solid #3b82f6;outline-offset:-3px;font-weight:700}
+.sheet td.tgt{background:#ffe2c2;outline:3px solid #ff8a1f;outline-offset:-3px;font-weight:800;animation:pulse 1.2s infinite}
+.sheet td.tgtok{background:#c9f7de;outline:3px solid #19c37d;outline-offset:-3px;font-weight:800;animation:pop .5s}
+@keyframes pulse{50%{background:#fff0dc}}
+.cap{text-align:center;font-size:clamp(13px,1.3vw,20px);color:var(--mute);margin-top:7px}
+.right{padding:14px;gap:10px;overflow:hidden}
+.right h2{font-size:clamp(20px,1.9vw,32px);line-height:1.35;text-align:center;color:#4b34d8}
+.right h2 small{display:block;color:var(--mute);font-weight:600;font-size:clamp(14px,1.3vw,22px);line-height:1.3;margin-top:4px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#eef2ff;border-radius:12px;padding:7px 10px;min-width:0}
+.chip small{display:block;font-size:clamp(10px,.9vw,14px);color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
+.chip b{font-size:clamp(16px,1.5vw,26px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.big b{font-size:clamp(20px,2vw,34px);color:#d97706}
+.timer{display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:8px 12px}
+.timer svg{width:clamp(62px,5vw,86px);height:clamp(62px,5vw,86px);flex:none}
+.timer .ring{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.timer .t{font-size:clamp(34px,3.2vw,54px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.timer small{color:var(--mute);font-size:12px}
+.timer.low .t{color:var(--bad);animation:beat .5s infinite}
+@keyframes beat{50%{transform:scale(1.18)}}
+.info.three{grid-template-columns:.9fr .9fr 1.5fr}
+.chip.tm{display:flex;align-items:center;gap:8px}
+.chip.tm small{white-space:nowrap}
+#hName{white-space:normal;line-height:1.2}
+.chip.tm svg{width:clamp(26px,2.2vw,40px);height:clamp(26px,2.2vw,40px);flex:none}
+.chip.tm b{font-size:clamp(20px,2vw,34px);font-variant-numeric:tabular-nums}
+.chip.tm.low b{color:var(--bad);animation:beat .5s infinite}
+.ring{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.tools{display:flex;gap:8px}
+.tools .btn{flex:1;padding:8px 6px;font-size:13px}
+.skywrap{flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid #1d2a5c;background:radial-gradient(circle at center,#0d1a45,#04060f);position:relative}
+#sky{width:100%;height:100%;display:block}
+.hint{position:absolute;left:8px;bottom:6px;font-size:11px;color:#9aa8d8;pointer-events:none}
+/* hoạt cảnh toàn màn hình (giao diện tối) */
+#cine{position:fixed;inset:0;z-index:40;background:radial-gradient(circle at center,#0d1a45 0%,#04060f 75%);transform:scale(.12);opacity:0;border-radius:40px;pointer-events:none;transition:transform .7s cubic-bezier(.2,.9,.3,1),opacity .45s,border-radius .7s;overflow:hidden}
+#cine.on{transform:none;opacity:1;border-radius:0;pointer-events:auto}
+#bigsky{position:absolute;inset:0;width:100%;height:100%}
+#cineTitle{position:absolute;top:3.5vh;left:0;right:0;text-align:center;color:#fff;font-size:clamp(20px,3vw,38px);font-weight:800;text-shadow:0 0 24px rgba(255,200,80,.8);padding:0 16px}
+#cineSub{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:#ffe58a;font-size:clamp(16px,2vw,26px);font-weight:700}
+.score{font-size:76px;font-weight:900;text-align:center;line-height:1;background:linear-gradient(180deg,#ff9f1c,#ff4d79);-webkit-background-clip:text;background-clip:text;color:transparent}
+.score small{font-size:28px}
+.medal{text-align:center;font-size:19px;font-weight:700;margin:6px 0 12px}
+.rev{margin:10px 0;display:grid;gap:6px;max-height:240px;overflow:auto}
+.rev div{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#f1f4ff;border-radius:10px;padding:8px 10px}
+.rev .ok{border-left:4px solid var(--ok)}.rev .no{border-left:4px solid var(--bad)}
+.introsky{position:relative;flex:1 1 0;min-width:0;max-width:640px;height:min(660px,88vh);border-radius:22px;overflow:hidden;background:radial-gradient(circle at center,#0d1a45,#04060f);border:1px solid #1d2a5c;box-shadow:0 20px 50px rgba(20,30,90,.4);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+#introsky{width:100%;height:100%;display:block}
+.introcap{position:absolute;top:14px;left:0;right:0;text-align:center;color:#ffe58a;font-weight:800;font-size:clamp(16px,1.7vw,28px);text-shadow:0 0 16px rgba(255,200,80,.7);pointer-events:none}
+#end{background:radial-gradient(ellipse at center,#0a0f26 0%,#03050d 70%,#000 100%);overflow:auto}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#end .card{position:relative;z-index:2;background:#fff;box-shadow:0 0 70px rgba(255,255,255,.28)}
+#start{gap:28px}
+#start .introsky{order:2}
+#start .card{flex:0 1 540px}
+.long .qtext{font-size:clamp(20px,2.1vw,36px)}
+.long .opt{font-size:clamp(17px,1.8vw,30px);padding:14px 16px}
+.xlong .qtext{font-size:clamp(18px,1.8vw,31px)}
+.xlong .opts{grid-template-columns:1fr}
+.xlong .opt{font-size:clamp(16px,1.6vw,27px);padding:11px 16px}
+@media(max-width:900px){
+ #start{flex-direction:column;justify-content:flex-start}
+ #start .introsky{order:-1}
+ .introsky{flex:none;width:100%;max-width:560px;height:240px}
+ .opts{grid-template-columns:1fr}
+ body{overflow:auto}#game{grid-template-columns:1fr;height:auto;min-height:100%}
+ .right{order:-1}.skywrap{min-height:230px}.left{min-height:70vh}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div id="cine"><canvas id="bigsky"></canvas><div id="cineTitle"></div><div id="cineSub"></div></div>
+
+<!-- MÀN HÌNH BẮT ĐẦU -->
+<div class="overlay" id="start">
+  <div class="introsky"><canvas id="introsky"></canvas><div class="introcap">🌌 Hệ Mặt Trời</div></div>
+  <div class="card">
+    <div class="logo">🚀</div>
+    <h1>DU HÀNH HỆ MẶT TRỜI</h1>
+    <div class="sub">Tin học 9 – Bài 7: Trình bày thông tin trong trao đổi và hợp tác</div>
+    <label for="inName">Họ và tên</label>
+    <input id="inName" maxlength="40" placeholder="Nhập họ và tên của em" autocomplete="off">
+    <label for="inClass">Lớp</label>
+    <input id="inClass" maxlength="12" placeholder="Ví dụ: 9A1" autocomplete="off">
+    <div class="rules">
+      🎯 <b>5 câu ngẫu nhiên</b>: 3 Nhận biết (⏱ 30 giây) · 1 Thông hiểu (⏱ 45 giây) · 1 Vận dụng (⏱ 60 giây)<br>
+      ✅ Trả lời đúng: <b>+2 điểm</b>. Mỗi lần chuyển câu, Hệ Mặt Trời phóng to toàn màn hình: tàu bay lần lượt Mặt Trời → Thủy tinh → Kim tinh → Hỏa tinh → Mộc tinh → về Trái Đất<br>
+      🎁 Trên đường bay có <b>20%</b> cơ hội có hộp quà 🎁 rơi xuống, tàu nhặt được sẽ nhận <b>+0,5 điểm</b><br>
+      ⏰ Hết giờ sẽ tính là trả lời sai · Điểm tối đa <b>10</b>
+    </div>
+    <button class="btn go" id="btnStart">🚀 BẮT ĐẦU CHƠI</button>
+    <div class="row"><button class="btn ghost" id="btnFsStart">⛶ Toàn màn hình</button></div>
+  </div>
+</div>
+
+<!-- GIAO DIỆN CHƠI -->
+<div id="game" class="hide">
+  <section class="left">
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="qwrap" id="qwrap">
+      <div id="qbox">
+        <span class="lvl" id="lvl"></span>
+        <div class="qtext" id="qtext"></div>
+        <div class="illus hide" id="illus"></div>
+        <div class="opts" id="opts"></div>
+        <div id="fb"></div>
+      </div>
+    </div>
+    <div class="nextrow"><button class="btn hide" id="btnNext">Câu tiếp theo ➜</button></div>
+  </section>
+
+  <aside class="right">
+    <h2>📘 Tin học 9 – Bài 7<small>Trình bày thông tin trong trao đổi và hợp tác</small></h2>
+    <div class="info">
+      <div class="chip"><small>Họ tên</small><b id="hName">-</b></div>
+      <div class="chip"><small>Lớp</small><b id="hClass">-</b></div>
+    </div>
+    <div class="info three">
+      <div class="chip"><small>Câu hỏi</small><b id="hQ">1/5</b></div>
+      <div class="chip big"><small>Điểm</small><b id="hScore">0</b></div>
+      <div class="chip tm" id="timer">
+        <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="9"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#12b774" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
+        <div><small>Thời gian</small><b><span id="tnum">30</span>s</b></div>
+      </div>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div class="tools">
+      <button class="btn ghost" id="btnFs">⛶ Toàn màn hình</button>
+      <button class="btn ghost" id="btnSnd">🔊 Âm thanh</button>
+    </div>
+    <div class="skywrap"><canvas id="sky"></canvas><div class="hint">Bấm “Câu tiếp theo” để phóng tàu 🚀</div></div>
+  </aside>
+</div>
+
+<!-- MÀN HÌNH KẾT QUẢ -->
+<div class="overlay hide" id="end">
+  <canvas id="fw"></canvas>
+  <div class="card">
+    <div class="logo" id="endIcon">🏆</div>
+    <h1 id="endName"></h1>
+    <div class="sub" id="endSub"></div>
+    <div class="score"><span id="endScore">0</span><small> / 10</small></div>
+    <div class="medal" id="endMedal"></div>
+    <div class="rev" id="rev"></div>
+    <div class="row"><button class="btn" id="btnAgain">🔄 Chơi lại</button><button class="btn ghost" id="btnChange">👤 Đổi người chơi</button></div>
+  </div>
+</div>
+
+<script>
+const QS = [{"n": 101, "lv": "NB", "q": "Phần mềm nào dưới đây dùng để tạo bài trình chiếu?", "opts": ["Microsoft PowerPoint", "Microsoft Excel", "Paint", "Notepad"], "ans": 0, "exp": "Microsoft PowerPoint (hoặc Google Slides) là phần mềm tạo bài trình chiếu."}, {"n": 102, "lv": "NB", "q": "Sơ đồ tư duy là công cụ dùng để làm gì?", "opts": ["Thể hiện ý tưởng bằng từ khoá, hình ảnh và các nhánh xuất phát từ ý trung tâm", "Tính toán số liệu bằng công thức", "Soạn thảo văn bản dài nhiều trang", "Chỉnh sửa ảnh chụp"], "ans": 0, "exp": "Sơ đồ tư duy trình bày ý tưởng dưới dạng từ khoá, hình ảnh và các nhánh toả ra từ ý trung tâm."}, {"n": 103, "lv": "NB", "q": "Trong sơ đồ tư duy, ý chính (chủ đề) thường được đặt ở đâu?", "opts": ["Ở chính giữa sơ đồ", "Ở góc dưới bên phải", "Ở cuối cùng của sơ đồ", "Ở ngoài sơ đồ"], "ans": 0, "exp": "Chủ đề chính được đặt ở trung tâm, các nhánh phát triển ra xung quanh."}, {"n": 104, "lv": "NB", "q": "Các ý nhỏ phát triển từ ý trung tâm của sơ đồ tư duy được thể hiện bằng gì?", "opts": ["Các nhánh", "Các ô tính", "Các thư mục", "Các trang chiếu"], "ans": 0, "exp": "Các ý nhỏ được thể hiện bằng các nhánh nối từ ý trung tâm."}, {"n": 105, "lv": "NB", "q": "Trình bày trực tiếp là hình thức như thế nào?", "opts": ["Người trình bày giới thiệu sản phẩm trực tiếp cho người nghe", "Chỉ gửi tệp cho người khác tự đọc", "Chỉ đăng tệp lên mạng mà không nói gì", "Chỉ in sản phẩm ra giấy"], "ans": 0, "exp": "Trình bày trực tiếp là người trình bày giới thiệu sản phẩm cho người nghe và có thể giải đáp ngay."}, {"n": 106, "lv": "NB", "q": "Ưu điểm nổi bật của trình bày trực tiếp là gì?", "opts": ["Người nghe có thể đặt câu hỏi và được giải đáp ngay", "Không cần chuẩn bị nội dung", "Người nghe không thể ngắt lời", "Không cần bài trình chiếu hay sơ đồ"], "ans": 0, "exp": "Trình bày trực tiếp cho phép tương tác hai chiều, giải đáp thắc mắc kịp thời."}, {"n": 107, "lv": "NB", "q": "Khi không thể trình bày trực tiếp, em có thể làm gì để người khác xem được sản phẩm?", "opts": ["Chia sẻ sản phẩm cho mọi người xem", "Xoá sản phẩm đi", "Giữ sản phẩm chỉ trong máy của mình", "Chỉ nói miệng về nội dung"], "ans": 0, "exp": "Chia sẻ sản phẩm để người khác xem là cách thay thế khi không thể trình bày trực tiếp."}, {"n": 108, "lv": "NB", "q": "“Chia sẻ để chủ động cập nhật” có nghĩa là gì?", "opts": ["Mỗi thành viên tự chỉnh sửa, bổ sung vào thời gian phù hợp với mình", "Tất cả cùng sửa tệp vào đúng một thời điểm", "Chỉ được xem, không được sửa", "Chỉ một người được sửa, người khác không được vào"], "ans": 0, "exp": "Mỗi người vào cập nhật sản phẩm vào lúc thuận tiện cho riêng mình."}, {"n": 109, "lv": "NB", "q": "“Cộng tác theo thời gian thực” có nghĩa là gì?", "opts": ["Nhiều người cùng làm việc, chỉnh sửa một sản phẩm trực tuyến vào cùng một thời điểm", "Mỗi người sửa vào một ngày khác nhau", "Chỉ gửi tệp qua email rồi chờ phản hồi", "Chỉ in sản phẩm ra để góp ý"], "ans": 0, "exp": "Cộng tác thời gian thực là cùng lúc làm việc trên cùng một sản phẩm trực tuyến."}, {"n": 110, "lv": "NB", "q": "Khi cộng tác theo thời gian thực, nên mở thêm điều gì để trao đổi với nhau?", "opts": ["Một kênh hội thoại", "Một trò chơi trực tuyến", "Một trang quảng cáo", "Một tệp nhạc"], "ans": 0, "exp": "Kênh hội thoại giúp các thành viên thống nhất ý kiến ngay khi đang cùng chỉnh sửa."}, {"n": 111, "lv": "NB", "q": "Nguyên tắc quan trọng khi chọn công cụ trực quan để truyền tải thông điệp là gì?", "opts": ["Đơn giản và rõ ràng", "Càng nhiều hiệu ứng càng tốt", "Càng nhiều chữ càng tốt", "Càng nhiều màu sắc rực rỡ càng tốt"], "ans": 0, "exp": "Công cụ trực quan cần đơn giản, rõ ràng để người xem dễ hiểu thông điệp."}, {"n": 112, "lv": "NB", "q": "Sơ đồ dòng thời gian thích hợp để thể hiện điều gì?", "opts": ["Các sự kiện theo trình tự thời gian", "Cấu trúc thư mục trong máy tính", "Số liệu của một bảng tính", "Địa chỉ ô tính"], "ans": 0, "exp": "Sơ đồ dòng thời gian sắp xếp các sự kiện theo thứ tự thời gian."}, {"n": 113, "lv": "NB", "q": "Biểu đồ (cột, tròn, đường) thường dùng để làm gì trong trình bày thông tin?", "opts": ["Biểu diễn và so sánh số liệu một cách trực quan", "Soạn thảo văn bản", "Chỉnh sửa video", "Gửi thư điện tử"], "ans": 0, "exp": "Biểu đồ giúp người xem so sánh số liệu một cách trực quan."}, {"n": 114, "lv": "NB", "q": "Khi trình bày trước đông người, hình ảnh minh họa cần đáp ứng yêu cầu nào?", "opts": ["Rõ nét, xem được từ xa", "Càng nhỏ càng tốt", "Càng mờ càng tốt", "Không cần liên quan đến nội dung"], "ans": 0, "exp": "Hình ảnh rõ nét, đủ lớn giúp người ở xa vẫn quan sát được."}, {"n": 115, "lv": "NB", "q": "Màu sắc được sử dụng hợp lí trong bài trình chiếu hoặc sơ đồ tư duy có tác dụng gì?", "opts": ["Làm nổi bật thông tin và thu hút sự chú ý", "Làm tệp nặng hơn", "Làm người xem khó đọc", "Thay thế hoàn toàn nội dung"], "ans": 0, "exp": "Màu sắc hợp lí giúp làm nổi bật ý chính và tăng khả năng hiển thị."}, {"n": 116, "lv": "NB", "q": "Để chữ dễ đọc trên trang chiếu, màu chữ và màu nền nên như thế nào?", "opts": ["Tương phản với nhau", "Giống hệt nhau", "Cùng là màu rất nhạt", "Thay đổi liên tục từng dòng"], "ans": 0, "exp": "Màu chữ tương phản với màu nền giúp người xem đọc dễ dàng."}, {"n": 117, "lv": "NB", "q": "Sơ đồ tư duy nên được trình bày gói gọn trong phạm vi nào để dễ bao quát?", "opts": ["Một trang", "Năm trang trở lên", "Mười trang", "Không cần giới hạn"], "ans": 0, "exp": "Trình bày trong một trang giúp người xem nắm được bức tranh tổng quan."}, {"n": 118, "lv": "NB", "q": "Để bổ sung thông tin chi tiết cho một nhánh mà không làm rối sơ đồ, em có thể làm gì?", "opts": ["Đính kèm văn bản, hình ảnh, video hoặc trang tính vào nhánh", "Viết thật nhiều chữ nhỏ lên nhánh", "Xoá các nhánh còn lại", "Phóng to toàn bộ sơ đồ"], "ans": 0, "exp": "Tính năng đính kèm giúp cung cấp chi tiết mà vẫn giữ sơ đồ gọn gàng."}, {"n": 119, "lv": "NB", "q": "Nên đính kèm tệp trang tính vào nhánh sơ đồ tư duy khi cần trình bày nội dung nào?", "opts": ["Dữ liệu dạng bảng biểu, số liệu", "Một đoạn phim ngắn", "Một bài hát", "Một bức ảnh phong cảnh"], "ans": 0, "exp": "Trang tính phù hợp để lưu trữ và trình bày số liệu, bảng biểu, tính toán."}, {"n": 120, "lv": "NB", "q": "Đính kèm tệp video vào sơ đồ tư duy phù hợp nhất cho mục đích nào?", "opts": ["Minh họa sinh động bằng hình ảnh chuyển động", "Lưu trữ bảng số liệu", "Ghi các công thức tính toán", "Thay cho toàn bộ chữ trên sơ đồ"], "ans": 0, "exp": "Video cho hình ảnh chuyển động, minh họa trực quan và sinh động."}, {"n": 121, "lv": "NB", "q": "Ngoài tệp đính kèm, nhánh của sơ đồ tư duy còn có thể gắn thêm gì để dẫn tới nội dung khác?", "opts": ["Liên kết (đường dẫn)", "Mật khẩu máy tính", "Địa chỉ ô tính", "Tên người dùng khác"], "ans": 0, "exp": "Có thể gắn liên kết tới trang web, tệp hoặc tài liệu khác."}, {"n": 122, "lv": "NB", "q": "Bài trình chiếu được tạo thành từ các thành phần chính nào?", "opts": ["Các trang chiếu (slide)", "Các ô tính", "Các thư mục", "Các nhánh sơ đồ"], "ans": 0, "exp": "Bài trình chiếu gồm nhiều trang chiếu nối tiếp nhau."}, {"n": 123, "lv": "NB", "q": "Nội dung trên mỗi trang chiếu nên được trình bày như thế nào?", "opts": ["Ngắn gọn, nêu ý chính", "Chép nguyên cả đoạn văn dài", "Chỉ có chữ rất nhỏ", "Không có nội dung"], "ans": 0, "exp": "Trang chiếu nên ngắn gọn, nêu ý chính để người xem dễ theo dõi."}, {"n": 124, "lv": "NB", "q": "Bố cục của trang chiếu hoặc sơ đồ cần như thế nào để người xem dễ tiếp nhận?", "opts": ["Hợp lí và rõ ràng", "Rối rắm, nhiều chi tiết thừa", "Các nội dung chồng lên nhau", "Chữ và hình ảnh đặt ngẫu nhiên"], "ans": 0, "exp": "Bố cục hợp lí, rõ ràng giúp luồng thông tin dễ theo dõi."}, {"n": 125, "lv": "NB", "q": "Trước khi chuẩn bị một bài trình bày, em cần xác định rõ điều gì?", "opts": ["Mục đích và đối tượng người nghe", "Màu của chiếc áo mặc ngày thuyết trình", "Số lượng ổ đĩa của máy tính", "Tên của phần mềm diệt vi rút"], "ans": 0, "exp": "Biết rõ mục đích và đối tượng giúp chọn nội dung, công cụ phù hợp."}, {"n": 126, "lv": "NB", "q": "Công cụ nào sau đây cho phép nhiều người cùng chỉnh sửa một bài trình chiếu trực tuyến?", "opts": ["Google Slides", "Paint", "Máy tính cầm tay", "Trình duyệt ở chế độ ẩn danh"], "ans": 0, "exp": "Google Slides là bài trình chiếu trực tuyến cho phép nhiều người cùng chỉnh sửa."}, {"n": 127, "lv": "NB", "q": "Để người khác cùng truy cập và làm việc trên tệp trực tuyến, em cần làm gì?", "opts": ["Chia sẻ tệp (cấp quyền) cho họ", "Đổi tên tệp liên tục", "Xoá tệp rồi tạo lại", "Gửi mật khẩu máy tính của mình"], "ans": 0, "exp": "Chia sẻ tệp và cấp quyền cho người khác để họ xem hoặc chỉnh sửa."}, {"n": 128, "lv": "NB", "q": "Quyền “chỉ xem” khi chia sẻ tệp có nghĩa là gì?", "opts": ["Người được chia sẻ chỉ xem, không sửa được nội dung", "Người được chia sẻ được sửa mọi nội dung", "Người được chia sẻ được xoá tệp", "Người được chia sẻ trở thành chủ sở hữu"], "ans": 0, "exp": "Quyền chỉ xem cho phép đọc nội dung nhưng không chỉnh sửa."}, {"n": 129, "lv": "NB", "q": "Sơ đồ tư duy và bài trình chiếu cùng thuộc loại công cụ nào trong làm việc nhóm?", "opts": ["Công cụ hỗ trợ trao đổi thông tin và hợp tác", "Công cụ diệt vi rút", "Công cụ nén tệp", "Công cụ sao lưu dữ liệu"], "ans": 0, "exp": "Đây là các công cụ giúp trình bày ý tưởng và cộng tác trong nhóm."}, {"n": 130, "lv": "NB", "q": "Hình ảnh minh họa đưa vào sản phẩm cần đáp ứng yêu cầu nào về nội dung?", "opts": ["Phù hợp, liên quan đến nội dung cần trình bày", "Chỉ cần đẹp, không cần liên quan", "Càng nhiều hình càng tốt", "Chỉ dùng hình lấy từ nguồn không rõ"], "ans": 0, "exp": "Hình ảnh phải liên quan và hỗ trợ cho nội dung cần truyền tải."}, {"n": 1, "lv": "TH", "q": "Để có thể giải diễn bức tranh toàn cảnh, làm rõ các nội dung chi tiết và trả lời câu hỏi trực tiếp từ người nghe, người trình bày nên sử dụng phương pháp nào?", "opts": ["Sử dụng sơ đồ tư duy hoặc bài trình chiếu để trình bày trực tiếp.", "Chia sẻ sơ đồ tư duy thông qua email để mọi người xem và tự do đưa ra các bình luận đóng góp ý kiến cá nhân của riêng mình trong thời gian rảnh rỗi.", "Đăng tải bài trình chiếu lên mạng xã hội để thu hút lượt xem.", "Chia sẻ bài trình chiếu để cộng tác theo thời gian thực."], "ans": 0, "exp": "Trình bày trực tiếp là cách dễ dàng nhất để diễn giải toàn cảnh và trực tiếp trả lời câu hỏi."}, {"n": 2, "lv": "TH", "q": "Khi không có điều kiện trình bày trực tiếp, giải pháp nào phù hợp nhất để các thành viên khác chỉ xem thông tin một cách độc lập?", "opts": ["Chia sẻ sơ đồ tư duy hoặc bài trình chiếu để các thành viên khác xem.", "Gọi điện thoại và đọc toàn bộ nội dung của bài trình chiếu cho từng thành viên nghe để đảm bảo không ai bị sót bất kì thông tin quan trọng nào của dự án.", "Chia sẻ bài trình chiếu để cộng tác theo thời gian thực.", "Chia sẻ sơ đồ tư duy để các thành viên chủ động cập nhật."], "ans": 0, "exp": "Việc chia sẻ để xem là giải pháp thay thế phù hợp khi không thể trình bày trực tiếp."}, {"n": 3, "lv": "TH", "q": "Việc chia sẻ sơ đồ tư duy trực tuyến để các thành viên trong nhóm có thể tự do thay đổi nội dung theo thời gian phù hợp với từng người thuộc phương pháp nào?", "opts": ["Trình bày trực tiếp.", "Cộng tác theo thời gian thực.", "Chia sẻ để chủ động cập nhật.", "Trình bày thông qua video quay sẵn được lưu trữ trên một máy chủ trung gian cho phép mọi người tải về máy tính và chỉnh sửa offline một cách hoàn toàn thủ công."], "ans": 2, "exp": "Chủ động cập nhật nghĩa là mỗi người tự chỉnh sửa theo thời gian phù hợp với cá nhân."}, {"n": 4, "lv": "TH", "q": "Để tất cả các thành viên cùng làm việc và chỉnh sửa sản phẩm trực tuyến ngay cùng một lúc, nhóm cần áp dụng phương pháp nào?", "opts": ["Chia sẻ để các thành viên khác xem.", "Trình bày trực tiếp tại lớp học.", "Chia sẻ để chủ động cập nhật.", "Chia sẻ để cộng tác theo thời gian thực."], "ans": 3, "exp": "Làm việc cùng lúc trên cùng một sản phẩm là bản chất của cộng tác thời gian thực."}, {"n": 5, "lv": "TH", "q": "Trong quá trình cộng tác theo thời gian thực để hoàn thiện sản phẩm, yếu tố nào sau đây là rất cần thiết được mở kèm theo?", "opts": ["Một kênh hội thoại.", "Một phần mềm quản lý thời gian cá nhân độc lập giúp theo dõi tiến độ công việc hàng ngày của từng người mà không cần sự tương tác trực tiếp với nhau.", "Một trang tính trống.", "Một tệp văn bản in sẵn."], "ans": 0, "exp": "Kênh hội thoại giúp các thành viên trao đổi thông tin ngay lập tức khi đang cùng làm việc trực tuyến."}, {"n": 6, "lv": "TH", "q": "Nguyên tắc quan trọng nhất khi lựa chọn công cụ trực quan để truyền tải thông điệp là gì?", "opts": ["Đơn giản và rõ ràng.", "Đầy đủ mọi chi tiết của văn bản gốc nhằm mục đích đảm bảo người đọc không bỏ lỡ bất cứ từ ngữ nào dù là nhỏ nhất đã được ghi trong tài liệu tham khảo.", "Nhiều màu sắc nhất có thể.", "Sử dụng công nghệ mới nhất."], "ans": 0, "exp": "Nguyên tắc cơ bản của công cụ trực quan là phải đơn giản và rõ ràng để truyền tải thông điệp tốt nhất."}, {"n": 7, "lv": "TH", "q": "Để thể hiện một tiến trình lịch sử, loại công cụ minh họa nào sẽ phát huy hiệu quả tốt nhất?", "opts": ["Sơ đồ tư duy dạng mạng nhện.", "Bảng tính chứa dữ liệu thô.", "Sơ đồ dòng thời gian.", "Một đoạn văn bản dài có đánh dấu in đậm các mốc thời gian để người đọc tự tổng hợp lại thành một bức tranh toàn cảnh về các sự kiện đã xảy ra."], "ans": 2, "exp": "Sơ đồ dòng thời gian được thiết kế đặc biệt để tối ưu hóa việc hiển thị các sự kiện theo trình tự lịch sử."}, {"n": 8, "lv": "TH", "q": "Về chất lượng dữ liệu của công cụ trực quan, yêu cầu nào sau đây là cần thiết khi trình bày trước đám đông?", "opts": ["Có thể xem được từ khoảng cách xa.", "Phải chứa những hiệu ứng âm thanh cảnh báo thật lớn để thu hút sự chú ý của mọi người mỗi khi chuyển từ trang slide này sang trang slide tiếp theo.", "Phải có độ phân giải siêu nhỏ để tiết kiệm dung lượng.", "Chỉ sử dụng màu trắng đen."], "ans": 0, "exp": "Đảm bảo hình ảnh sắc nét và xem được từ xa giúp khán giả theo dõi dễ dàng."}, {"n": 9, "lv": "TH", "q": "Màu sắc trong bài trình chiếu hoặc sơ đồ tư duy có tác dụng chính là gì?", "opts": ["Tăng sự chú ý của người xem và cải thiện khả năng hiển thị thông tin.", "Tăng dung lượng của tệp lưu trữ.", "Thay thế hoàn toàn cho văn bản để người xem tự phát huy tối đa trí tưởng tượng của mình đối với từng màu sắc khác nhau được sử dụng trên trang chiếu.", "Làm cho cấu trúc phần mềm chạy mượt mà hơn."], "ans": 0, "exp": "Màu sắc được sử dụng hợp lý sẽ giúp làm nổi bật thông tin và thu hút sự chú ý."}, {"n": 10, "lv": "TH", "q": "Để trình bày sơ đồ tư duy một cách hiệu quả và bao quát, người ta thường cố gắng gói gọn toàn bộ sơ đồ trong phạm vi nào?", "opts": ["Nhiều tệp khác nhau.", "Trong một trang.", "Trên một màn hình đa nhiệm gồm hàng chục cửa sổ được mở song song nhằm tăng cường khả năng theo dõi nhiều luồng thông tin cùng lúc.", "Một tài liệu hàng chục trang."], "ans": 1, "exp": "Sơ đồ tư duy nên được trình bày trong một trang để người xem dễ dàng nắm bắt bức tranh toàn cảnh."}, {"n": 11, "lv": "TH", "q": "Để trình bày chi tiết cho một ý tưởng trên sơ đồ tư duy mà không làm rối sơ đồ chính, người dùng có thể làm gì?", "opts": ["Đính kèm văn bản, hình ảnh, video, trang tính.", "Viết tất cả các nội dung chi tiết dạng đoạn văn dài thành các nhánh con để tận dụng mọi không gian trống trên sơ đồ nhằm tránh việc phải sử dụng thêm tài liệu khác.", "Xóa bớt các ý tưởng khác đi.", "Tạo một sơ đồ hoàn toàn mới."], "ans": 0, "exp": "Tính năng đính kèm giúp cung cấp thông tin chi tiết mà vẫn giữ cho sơ đồ tư duy gọn gàng."}, {"n": 12, "lv": "TH", "q": "Các loại tệp nào sau đây KHÔNG thuộc nhóm dữ liệu thông thường được đính kèm vào sơ đồ tư duy để minh họa chi tiết?", "opts": ["Tệp văn bản.", "Mã nguồn hệ điều hành nguyên bản được viết bằng ngôn ngữ máy với mục đích thay đổi trực tiếp cấu trúc cốt lõi của phần mềm thiết kế sơ đồ tư duy.", "Tệp hình ảnh và video.", "Tệp trang tính."], "ans": 1, "exp": "Dữ liệu đính kèm minh họa thường là văn bản, ảnh, video, trang tính, không phải mã nguồn hệ thống."}, {"n": 13, "lv": "TH", "q": "Khi đính kèm một tệp trang tính vào nhánh của sơ đồ tư duy, mục đích chính thường là gì?", "opts": ["Trình bày các dữ liệu dạng bảng biểu, số liệu, tính toán.", "Minh họa các bước chuyển động trong thế giới thực.", "Định dạng lại font chữ cho toàn bộ sơ đồ tư duy để đảm bảo tính đồng nhất về mặt thẩm mỹ của sản phẩm khi xuất bản ra các định dạng khác nhau.", "Thay thế cho toàn bộ nội dung văn bản."], "ans": 0, "exp": "Trang tính là công cụ tối ưu để lưu trữ và trình bày các thông tin liên quan đến số liệu, tính toán."}, {"n": 14, "lv": "TH", "q": "Trong sơ đồ tư duy, việc đính kèm tệp văn bản thường mang lại lợi ích gì?", "opts": ["Cung cấp thông tin chi tiết, diễn giải cụ thể cho một nhánh từ khóa.", "Gây mất tập trung cho người xem vì văn bản thường dài dòng và chiếm toàn bộ không gian của màn hình chính ngay khi vừa khởi động phần mềm lên.", "Làm cho sơ đồ có màu sắc rực rỡ hơn.", "Tự động tính toán các con số tài chính."], "ans": 0, "exp": "Văn bản đính kèm chứa các đoạn diễn giải dài không tiện viết trực tiếp lên nhánh."}, {"n": 15, "lv": "TH", "q": "Đính kèm video vào sơ đồ tư duy phù hợp nhất cho mục đích nào sau đây?", "opts": ["Trình chiếu một đoạn phim minh họa trực quan sinh động về chủ đề đang nói đến.", "Lưu trữ các mã số bảo mật phức tạp.", "Giảm dung lượng tổng thể của tệp lưu trữ sơ đồ tư duy do công nghệ nén hình ảnh video hiện đại nhất luôn luôn tốt hơn nén các kí tự văn bản thô.", "Thay thế tính năng bảng tính dữ liệu."], "ans": 0, "exp": "Video cung cấp hình ảnh động trực quan sinh động nhất để minh họa thông tin."}, {"n": 16, "lv": "TH", "q": "Cả sơ đồ tư duy và bài trình chiếu đều được xem là loại công cụ gì trong hoạt động làm việc nhóm?", "opts": ["Công cụ hỗ trợ trao đổi thông tin và hợp tác.", "Phần mềm độc hại.", "Công cụ ép buộc các thành viên làm việc độc lập hoàn toàn với nhau thông qua việc khóa các tính năng chia sẻ kết nối internet trên mọi thiết bị.", "Thiết bị lưu trữ vật lý."], "ans": 0, "exp": "Đây là các công cụ phần mềm đặc thù giúp con người dễ dàng trình bày ý tưởng và cộng tác."}, {"n": 17, "lv": "TH", "q": "Để khán giả dễ dàng nắm bắt thông tin trên màn hình chiếu, bố cục hình ảnh cần phải như thế nào?", "opts": ["Phải có bố cục hợp lí, rõ ràng.", "Cố tình sắp xếp lộn xộn để kích thích trí tuệ của khán giả buộc họ phải suy nghĩ cực kì căng thẳng mới có thể tự tìm ra được thông điệp cốt lõi được giấu đi.", "Chỉ đặt hình ảnh ở góc nhỏ cuối trang.", "Che khuất phần văn bản."], "ans": 0, "exp": "Bố cục hợp lí giúp luồng thông tin hiển thị trực quan và người xem dễ tiếp thu."}, {"n": 18, "lv": "TH", "q": "Trong tình huống một thành viên của nhóm đang chia sẻ màn hình trực tuyến để chỉnh sửa, hành động nào là đúng chuẩn mực hợp tác?", "opts": ["Mở kênh hội thoại để trao đổi ý kiến kịp thời.", "Tắt mạng để tự mình chỉnh sửa offline một mình rồi sau đó gửi lại toàn bộ tệp mới đè lên tệp cũ của nhóm khiến mọi công sức của người khác bị mất.", "Rời khỏi không gian trực tuyến.", "Không đưa ra phản hồi nào."], "ans": 0, "exp": "Hội thoại song song với chỉnh sửa trực tuyến giúp nhóm thống nhất ý tưởng kịp thời."}, {"n": 19, "lv": "VD", "q": "Nhóm của Hùng muốn tạo một sản phẩm nói về các thế hệ máy tính từ xưa đến nay trong Triển lãm tin học. Công cụ trực quan nào là tối ưu nhất để truyền tải thông điệp tiến trình này?", "opts": ["Sơ đồ dòng thời gian.", "Một tệp âm thanh ghi âm lại toàn bộ các mốc lịch sử để người nghe có thể bật lên và nghe lặp đi lặp lại nhiều lần thay vì nhìn bằng mắt.", "Bảng tính kế toán.", "Biểu đồ hình tròn."], "ans": 0, "exp": "Sơ đồ dòng thời gian là công cụ chuyên biệt để hiển thị các sự kiện theo trật tự thời gian."}, {"n": 20, "lv": "VD", "q": "Bốn bạn học sinh trong nhóm do không sắp xếp được thời gian rảnh cùng nhau, nhưng vẫn cần hoàn thành chung một bài trình chiếu. Phương pháp làm việc nào sau đây là phù hợp nhất?", "opts": ["Chia sẻ bài trình chiếu trực tuyến để chủ động cập nhật.", "In bài trình chiếu ra giấy rồi chuyền tay nhau để từng người viết bút bi lên giấy bổ sung ý tưởng của mình theo cách truyền thống nhất.", "Tổ chức họp nhóm trình bày trực tiếp.", "Chỉ giao cho một người làm từ đầu đến cuối."], "ans": 0, "exp": "Do rảnh vào các thời điểm khác nhau, việc chia sẻ để chủ động cập nhật giúp ai rảnh lúc nào sẽ tự vào làm lúc đó."}, {"n": 21, "lv": "VD", "q": "Ngày mai là hạn chót nộp dự án. Tối nay, cả nhóm 5 người đều đang online và cần khẩn trương thống nhất nội dung. Giải pháp hợp tác nào mang lại hiệu suất cao nhất lúc này?", "opts": ["Chia sẻ sản phẩm để cộng tác theo thời gian thực kết hợp gọi thoại.", "Gửi email qua lại cho nhau để từng người một tải tệp về xem rồi tự sửa độc lập khiến hệ thống sinh ra hàng tá tệp tin khác nhau cực kì khó kiểm soát.", "Hẹn nhau sáng mai mới gặp để trình bày trực tiếp.", "Để mỗi người tự thiết kế một sơ đồ riêng lẻ."], "ans": 0, "exp": "Thời gian thực giúp mọi người cùng sửa chung một tệp ngay lập tức, tiết kiệm tối đa thời gian."}, {"n": 22, "lv": "VD", "q": "Bạn Mai phụ trách báo cáo kinh phí cho dự án 'Triển lãm tin học' thông qua sơ đồ tư duy. Để người xem có thể đối chiếu chính xác các con số khi cần, Mai nên đính kèm tệp định dạng nào vào nhánh 'Dự kiến thu chi'?", "opts": ["Tệp trang tính.", "Tệp hình ảnh chứa một bức tranh phong cảnh thiên nhiên dùng để làm nền minh họa nhằm tạo cảm giác thư giãn cho những người đang xem báo cáo tài chính căng thẳng.", "Tệp âm thanh.", "Tệp hệ thống."], "ans": 0, "exp": "Tệp trang tính chuyên dụng cho việc tính toán, lưu trữ dữ liệu dạng bảng biểu thu chi."}, {"n": 23, "lv": "VD", "q": "An muốn giải thích nguyên lý hoạt động phức tạp của máy tính cơ học Pascaline nhưng nhánh trên sơ đồ tư duy không đủ chỗ. Cách xử lí nào sau đây đảm bảo đúng nguyên tắc sơ đồ tư duy?", "opts": ["Đính kèm một tệp văn bản hoặc video mô tả chi tiết vào nhánh đó.", "Cố gắng thu nhỏ kích thước chữ xuống mức siêu nhỏ để có thể nhồi nhét toàn bộ các đoạn văn bản giải thích kĩ thuật dài dằng dặc đó trực tiếp lên bề mặt nhánh.", "Chia nhỏ nội dung thành 100 nhánh con lân cận.", "Xóa bỏ hoàn toàn ý tưởng đó đi."], "ans": 0, "exp": "Đính kèm tệp giúp giữ nguyên được cấu trúc 1 trang gọn gàng của sơ đồ mà vẫn cung cấp đủ chi tiết khi cần."}, {"n": 24, "lv": "VD", "q": "Khi thuyết trình trực tiếp tại hội trường lớn bằng bài trình chiếu, việc sử dụng hình ảnh minh họa cần lưu ý điều gì nhất?", "opts": ["Hình ảnh phải có độ phân giải cao để xem rõ từ khoảng cách xa.", "Hình ảnh nên làm mờ để tạo cảm giác bí ẩn nghệ thuật kích thích người ngồi hàng ghế cuối cùng phải tập trung cao độ hơn bình thường.", "Hình ảnh không cần liên quan đến nội dung.", "Chỉ dùng hình ảnh có kích thước dưới 10KB."], "ans": 0, "exp": "Tại hội trường lớn, khán giả ở xa sẽ không thấy được ảnh mờ hoặc nhỏ, do đó độ phân giải và độ nét là quan trọng nhất."}, {"n": 25, "lv": "VD", "q": "Trong sơ đồ tư duy giới thiệu về máy tính Charles Babbage, người tạo đã đính kèm một liên kết. Loại liên kết nào sau đây giúp mô phỏng sinh động nhất cỗ máy này hoạt động?", "opts": ["Liên kết đến tệp video.", "Liên kết đến một văn bản thuần túy không có định dạng chỉ chứa các dòng mã code dài mô tả vị trí các bánh răng cơ học của cỗ máy đó.", "Liên kết đến bảng tính excel thô.", "Liên kết đến tệp ghi âm."], "ans": 0, "exp": "Chuyển động cơ học của cỗ máy sẽ được mô phỏng sinh động và trực quan nhất qua video."}, {"n": 26, "lv": "VD", "q": "Để thu hút sự chú ý của người xem vào từ khóa 'Triển lãm' nằm ở trung tâm sơ đồ, bạn Lan nên áp dụng kĩ thuật gì đối với màu sắc?", "opts": ["Sử dụng màu nền nổi bật, tương phản mạnh với màu chữ.", "Sử dụng màu nền và màu chữ gần giống hệt nhau để tạo sự hòa quyện tuyệt đối giúp cho toàn bộ khối hình học trở thành một thể thống nhất không thể tách rời.", "Chỉ để nền trong suốt và chữ màu xám nhạt.", "Không sử dụng màu sắc nào."], "ans": 0, "exp": "Sử dụng màu sắc tương phản hợp lí giúp tăng khả năng hiển thị và thu hút sự chú ý."}, {"n": 27, "lv": "VD", "q": "Nếu một nhóm đang trình bày trực tiếp sản phẩm của mình và khán giả liên tục đặt câu hỏi làm gián đoạn, ưu điểm nào của phương pháp trình bày trực tiếp đang được thể hiện?", "opts": ["Khả năng tương tác, trực tiếp giải đáp thắc mắc người nghe.", "Người nghe có thể tự tải sơ đồ về và sửa lại nội dung ngay trên máy tính của họ dẫn đến việc thay đổi hoàn toàn kịch bản ban đầu của người thuyết trình.", "Khả năng làm việc độc lập của khán giả.", "Khả năng tự cập nhật tệp tin."], "ans": 0, "exp": "Trình bày trực tiếp cho phép giao tiếp hai chiều, người trình bày dễ dàng giải thích ngay các thắc mắc."}, {"n": 28, "lv": "VD", "q": "Nhóm của Khoa thiết kế một sơ đồ tư duy trải dài qua 5 trang giấy. Lỗi thiết kế này vi phạm khuyến nghị nào khi sử dụng sơ đồ tư duy?", "opts": ["Sơ đồ tư duy nên được trình bày bao quát gọn trong một trang.", "Sơ đồ tư duy bắt buộc phải được xuất ra định dạng video 3D phức tạp để người xem có thể nhìn thấy được toàn bộ các lớp lang ý nghĩa xếp chồng lên nhau.", "Không được đính kèm bất kì dữ liệu nào.", "Phải dùng phần mềm bảng tính."], "ans": 0, "exp": "Sơ đồ tư duy phát huy hiệu quả tốt nhất khi tổng quan các ý tưởng được gói gọn trong một không gian nhìn duy nhất (1 trang)."}, {"n": 29, "lv": "VD", "q": "Khi nhóm cộng tác theo thời gian thực nhưng lại không mở bất kì kênh hội thoại nào, nguy cơ lớn nhất có thể xảy ra là gì?", "opts": ["Xung đột ý tưởng hoặc vô tình xóa/sửa đè nội dung của nhau.", "Tốc độ đường truyền internet sẽ bị chậm lại đáng kể do hệ thống bắt buộc phải liên tục lưu trữ toàn bộ lịch sử chỉnh sửa độc lập của từng cá nhân trong nhóm.", "Tệp tin tự động biến thành tệp chỉ đọc.", "Phần mềm sẽ tự động đăng xuất."], "ans": 0, "exp": "Thiếu kênh trao đổi đồng thời (hội thoại) sẽ dẫn đến thiếu thống nhất, dễ làm hỏng cấu trúc ý tưởng chung."}, {"n": 30, "lv": "VD", "q": "Một bạn trong nhóm muốn lưu lại kỉ niệm hành trình tham gia câu lạc bộ Tin học từ lớp 8. Khi thiết kế sơ đồ tư duy, bạn ấy nên đính kèm tập tin nào vào nhánh 'Hoạt động CLB'?", "opts": ["Một thư mục hoặc tệp đính kèm các hình ảnh kỉ niệm.", "Một tập lệnh viết bằng ngôn ngữ lập trình nâng cao có chức năng tự động lấy tất cả các tài nguyên liên quan từ máy chủ ảo về máy tính cá nhân người dùng.", "Một trang tính chỉ chứa công thức toán học.", "Một tài liệu hướng dẫn lắp ráp phần cứng."], "ans": 0, "exp": "Để lưu lại kỉ niệm, bộ sưu tập hình ảnh là lựa chọn đính kèm trực quan và giàu ý nghĩa nhất."}];
+
+/* ---------- Hình minh họa bảng tính cho các câu cần hình ---------- */
+const rng=(a,b)=>{const c1=a.charCodeAt(0),c2=b.charCodeAt(0),r1=+a.slice(1),r2=+b.slice(1),o=[];for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)o.push(String.fromCharCode(c)+r);return o};
+const CAP_COPY='🟦 Ô nguồn (có công thức) · 🟧 Ô đích cần xác định';
+/* ---------- Hình minh họa vẽ bằng SVG (theo "Prompt tạo hình" trong ngân hàng câu hỏi) ---------- */
+function timelineSVG(){
+ const xs=[110,250,390,530],yrs=['1940','1960','1980','2000'];
+ let s=`<svg viewBox="0 0 640 250" width="640" height="250" role="img" style="height:34vh;max-width:100%;width:auto;display:block;margin:auto;font-family:'Segoe UI',Arial,sans-serif"><defs><marker id="tl" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#3d4a73"/></marker></defs><rect width="640" height="250" rx="10" fill="#f6f8fd"/><line x1="40" y1="178" x2="610" y2="178" stroke="#3d4a73" stroke-width="5" marker-end="url(#tl)"/>`;
+ xs.forEach((x,i)=>{
+  s+=`<line x1="${x}" y1="150" x2="${x}" y2="178" stroke="#94a3c4" stroke-width="2" stroke-dasharray="4 3"/><circle cx="${x}" cy="178" r="10" fill="#2563eb" stroke="#fff" stroke-width="3"/><text x="${x}" y="212" text-anchor="middle" font-size="20" font-weight="800" fill="#1b2540">${yrs[i]}</text>`;
+  if(i===0){s+=`<rect x="${x-34}" y="66" width="68" height="82" rx="4" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>`;for(let r=0;r<3;r++)for(let c=0;c<4;c++)s+=`<circle cx="${x-21+c*14}" cy="${82+r*18}" r="4" fill="${(r+c)%2?'#f59e0b':'#22c55e'}"/>`;s+=`<rect x="${x-26}" y="128" width="52" height="14" fill="#94a3b8"/>`}
+  if(i===1){s+=`<rect x="${x-34}" y="78" width="68" height="70" rx="4" fill="#d1d5db" stroke="#64748b" stroke-width="2"/><circle cx="${x-15}" cy="102" r="12" fill="#fff" stroke="#475569" stroke-width="3"/><circle cx="${x+15}" cy="102" r="12" fill="#fff" stroke="#475569" stroke-width="3"/><rect x="${x-26}" y="126" width="52" height="12" fill="#94a3b8"/>`}
+  if(i===2){s+=`<rect x="${x-30}" y="80" width="60" height="46" rx="4" fill="#e2e8f0" stroke="#475569" stroke-width="3"/><rect x="${x-24}" y="86" width="48" height="34" fill="#38bdf8"/><rect x="${x-8}" y="126" width="16" height="8" fill="#94a3b8"/><rect x="${x-34}" y="136" width="68" height="12" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>`}
+  if(i===3){s+=`<rect x="${x-32}" y="86" width="64" height="40" rx="4" fill="#1e293b" stroke="#475569" stroke-width="3"/><rect x="${x-27}" y="91" width="54" height="30" fill="#60a5fa"/><path d="M${x-40} 130 L${x+40} 130 L${x+34} 142 L${x-34} 142 Z" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>`}
+ });
+ return s+'</svg>';
+}
+function offlineSVG(){
+ const person=x=>`<circle cx="${x}" cy="64" r="20" fill="#fcd9b6" stroke="#64748b" stroke-width="2.5"/><path d="M${x-36} 150 Q${x-36} 92 ${x} 92 Q${x+36} 92 ${x+36} 150 Z" fill="#60a5fa" stroke="#64748b" stroke-width="2.5"/><rect x="${x-44}" y="150" width="88" height="8" rx="3" fill="#94a3b8"/><rect x="${x-32}" y="128" width="64" height="24" rx="3" fill="#e2e8f0" stroke="#475569" stroke-width="2.5"/><rect x="${x-26}" y="133" width="52" height="3" fill="#94a3b8"/><rect x="${x-26}" y="140" width="38" height="3" fill="#94a3b8"/>`;
+ return `<svg viewBox="0 0 640 230" width="640" height="230" role="img" style="height:32vh;max-width:100%;width:auto;display:block;margin:auto;font-family:'Segoe UI',Arial,sans-serif"><rect width="640" height="230" rx="10" fill="#f6f8fd"/>${person(150)}${person(490)}<line x1="215" y1="115" x2="425" y2="115" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 8"/><circle cx="320" cy="115" r="30" fill="#fff" stroke="#dc2626" stroke-width="5"/><line x1="300" y1="95" x2="340" y2="135" stroke="#dc2626" stroke-width="8" stroke-linecap="round"/><line x1="340" y1="95" x2="300" y2="135" stroke="#dc2626" stroke-width="8" stroke-linecap="round"/><text x="320" y="190" text-anchor="middle" font-size="17" font-weight="700" fill="#dc2626">Mất kết nối giao tiếp</text></svg>`;
+}
+const ILLUS={
+ 'VD19':{svg:timelineSVG(),cap:'Sơ đồ minh họa: các mốc 1940, 1960, 1980, 2000 cùng biểu tượng máy tính tương ứng'},
+ 'VD29':{svg:offlineSVG(),cap:'Hai người cùng làm việc từ xa nhưng không có kết nối trao đổi giữa họ'}
+};
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sheetHTML(cfg,q,revealed){
+  let h='<table class="sheet"><tr><th></th>'+cfg.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  cfg.rows.forEach(r=>{h+=`<tr><th>${r}</th>`;cfg.cols.forEach(c=>{
+    const a=c+r;let t=(cfg.cells&&cfg.cells[a])||'';const cl=[];
+    if(cfg.tbl&&cfg.tbl.includes(a))cl.push('tbl');
+    if(cfg.head&&cfg.head.includes(a))cl.push('hd');
+    if(a===cfg.src)cl.push('src');
+    if(a===cfg.tgt){cl.push(revealed?'tgtok':'tgt');t=revealed?(cfg.tgtReveal||q.opts[q.ans]):'?';}
+    h+=`<td class="${cl.join(' ')}">${esc(t)}</td>`;});h+='</tr>';});
+  return h+'</table>'+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:'');
+}
+
+/* ---------- Tiện ích ---------- */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={NB:{t:30,name:'Nhận biết'},TH:{t:45,name:'Thông hiểu'},VD:{t:60,name:'Vận dụng'}};
+const PTS=2, GIFT_V=.5;
+const GIFT_P=Math.min(1,Math.max(0,(parseFloat(new URLSearchParams(location.search).get('qua'))||20)/100)); // mặc định 20%; thử nhanh: thêm ?qua=100 sau tên file
+const fmt=n=>(Math.round(n*10)/10).toString().replace('.',',');
+
+/* ---------- Âm thanh (Web Audio, không cần file ngoài) ---------- */
+let AC=null,master,musicOn=true,musicTimer=null,step=0;
+function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);}catch(e){AC=null}if(AC&&AC.state==='suspended')AC.resume();}
+function tone(f,d=.15,type='sine',v=.2,t0=0,slide){if(!AC)return;const t=AC.currentTime+t0,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);}
+function noise(d,f0,f1,v){if(!AC)return;const n=AC.sampleRate*d|0,b=AC.createBuffer(1,n,AC.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=2;const t=AC.currentTime;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+const sfx={
+ click(){tone(660,.07,'triangle',.12)},
+ start(){[392,523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.2,i*.09))},
+ correct(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.22,i*.08))},
+ wrong(){tone(240,.4,'sawtooth',.16,0,100);tone(180,.45,'square',.09,.12,70)},
+ timeout(){[440,330,220].forEach((f,i)=>tone(f,.2,'square',.11,i*.2))},
+ tick(){tone(950,.05,'square',.06)},
+ launch(){noise(1.4,250,3000,.2);tone(90,1.4,'sawtooth',.07,0,500)},
+ boom(){noise(.35,2500,250,.07);tone(140,.3,'sine',.07,0,50)},
+ drop(){tone(1800,.7,'sine',.14,0,500);tone(900,.5,'triangle',.08,.1,300)},
+ gift(){[1200,1500,1800,2400,3000].forEach((f,i)=>tone(f,.16,'sine',.14,i*.05))},
+ arrive(){tone(300,.35,'sine',.2,0,1000);tone(600,.25,'triangle',.12,.1,1500)},
+ fanfare(){[523,659,784,659,784,1047,1319].forEach((f,i)=>tone(f,.28,'triangle',.22,i*.13))},
+ sad(){[392,370,349,330].forEach((f,i)=>tone(f,.35,'sine',.18,i*.25))}
+};
+const SCALE=[262,294,330,392,440,523,440,392,330,294];
+function musicTick(){if(!AC||!musicOn)return;const f=SCALE[step%SCALE.length];tone(f,.5,'triangle',.045);if(step%4===0)tone(f/2,.9,'sine',.06);if(step%8===4)tone(f*2,.3,'sine',.03,.12);step++;}
+function setMusic(on){musicOn=on;clearInterval(musicTimer);if(on&&AC)musicTimer=setInterval(musicTick,340);$('btnSnd').textContent=on?'🔊 Âm thanh':'🔇 Tắt tiếng';}
+
+/* ---------- Nền sao ---------- */
+const bg=$('bg'),bgc=bg.getContext('2d');let stars=[];
+function initStars(){bg.width=innerWidth;bg.height=innerHeight;stars=Array.from({length:140},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}))}
+addEventListener('resize',initStars);initStars();
+function drawStars(t){bgc.clearRect(0,0,bg.width,bg.height);stars.forEach(s=>{bgc.globalAlpha=.35+.65*Math.abs(Math.sin(t/1000*s.s+s.p));bgc.fillStyle='#fff';bgc.beginPath();bgc.arc(s.x,s.y,s.r,0,6.3);bgc.fill()});bgc.globalAlpha=1}
+
+/* ---------- Pháo hoa giấy ---------- */
+const fx=$('fx'),fxc=fx.getContext('2d');let conf=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight}addEventListener('resize',sizeFx);sizeFx();
+function confetti(n=90,ox=innerWidth/2,oy=innerHeight/3){const cols=['#ffb100','#ff4d79','#5b7cff','#12b774','#ff7a18','#a46bff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*9+3;conf.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-5,w:Math.random()*8+4,h:Math.random()*5+3,r:Math.random()*6,vr:Math.random()*.4-.2,c:cols[Math.random()*6|0],life:1})}}
+let confDirty=false;
+function drawConf(ds=1){if(!conf.length){if(confDirty){fxc.clearRect(0,0,fx.width,fx.height);confDirty=false}return}confDirty=true;fxc.clearRect(0,0,fx.width,fx.height);conf=conf.filter(p=>p.life>0);conf.forEach(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vy+=.28*ds;p.vx*=Math.pow(.99,ds);p.r+=p.vr*ds;p.life-=.008*ds;fxc.save();fxc.globalAlpha=Math.max(0,p.life);fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.w/2,-p.h/2,p.w,p.h);fxc.restore()})}
+
+/* ---------- Hệ Mặt Trời (canvas nhỏ + hoạt cảnh toàn màn hình, nền tối) ---------- */
+let sc=null,W=300,H=300,K=1;
+const CV={mini:{cv:$('sky'),W:300,H:300,kind:'mini'},big:{cv:$('bigsky'),W:800,H:600,kind:'big'},intro:{cv:$('introsky'),W:500,H:500,kind:'intro'}};
+let CUR=null;
+const STARS=(()=>{const a=Array.from({length:140},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}));return{all:a.slice(30),tw:a.slice(0,30)}})();
+CV.intro.ctx=CV.intro.cv.getContext('2d');CV.mini.ctx=CV.mini.cv.getContext('2d');CV.big.ctx=CV.big.cv.getContext('2d');
+function buildBg(o){ // vẽ sẵn nền sao + quỹ đạo một lần, mỗi khung hình chỉ cần drawImage
+ const c=o.bgCv||(o.bgCv=document.createElement('canvas'));c.width=Math.ceil(o.W*o.d);c.height=Math.ceil(o.H*o.d);
+ const x=c.getContext('2d');x.setTransform(o.d,0,0,o.d,0,0);
+ if(o.kind!=='mini'){x.fillStyle='#fff';STARS.all.forEach(s=>{x.globalAlpha=.3+.5*((s.p*7)%1);x.beginPath();x.arc(s.x*o.W,s.y*o.H,s.r*1.2,0,6.3);x.fill()});x.globalAlpha=1}
+ x.strokeStyle='rgba(150,170,255,.16)';x.lineWidth=1;const m=12*o.k;
+ PL.forEach(p=>{x.beginPath();x.ellipse(o.W/2,o.H/2,p.o*(o.W/2-m),p.o*(o.H/2-m),0,0,6.3);x.stroke()});
+}
+function sizeCv(o,w,h,dprMax){const d=Math.min(dprMax,devicePixelRatio||1);o.d=d;o.W=w;o.H=h;o.cv.width=Math.ceil(w*d);o.cv.height=Math.ceil(h*d);o.ctx.setTransform(d,0,0,d,0,0);
+ o.k=o.kind==='big'?Math.max(1.5,Math.min(w,h)/300):o.kind==='intro'?Math.max(1.2,Math.min(w,h)/300):1;buildBg(o)}
+function sizeSky(){const r=CV.mini.cv.getBoundingClientRect(),r2=CV.intro.cv.getBoundingClientRect();
+ sizeCv(CV.mini,Math.max(120,r.width),Math.max(120,r.height),1.5);sizeCv(CV.big,innerWidth,innerHeight,1);sizeCv(CV.intro,Math.max(160,r2.width),Math.max(160,r2.height),1.5)}
+function useCv(o){CUR=o;sc=o.ctx;W=o.W;H=o.H;K=o.k}
+new ResizeObserver(sizeSky).observe(CV.mini.cv.parentElement);new ResizeObserver(sizeSky).observe(CV.intro.cv.parentElement);addEventListener('resize',sizeSky);
+const PL=[
+ {n:'Thủy tinh',c1:'#d9d9d9',c2:'#6f6f6f',r:3.6,o:.17,sp:1.6,ph:.5},
+ {n:'Kim tinh',c1:'#ffe3a8',c2:'#c98b2e',r:5,o:.27,sp:1.2,ph:2.2},
+ {n:'Trái Đất',c1:'#7fd0ff',c2:'#1b5fb5',r:5.4,o:.38,sp:1.0,ph:4},
+ {n:'Hỏa tinh',c1:'#ff9f7a',c2:'#a8321a',r:4.4,o:.48,sp:.8,ph:1},
+ {n:'Mộc tinh',c1:'#f3d6a8',c2:'#a8744a',r:9,o:.62,sp:.5,ph:3.3},
+ {n:'Thổ tinh',c1:'#f1e0a6',c2:'#b79545',r:7.8,o:.75,sp:.38,ph:5.2,ring:1},
+ {n:'Thiên Vương',c1:'#bff3f0',c2:'#4ab5b5',r:6,o:.86,sp:.28,ph:.2},
+ {n:'Hải Vương',c1:'#8aa9ff',c2:'#2b3fb5',r:6,o:.96,sp:.22,ph:2.8}
+];
+const ROUTE=[0,1,3,4,2]; // câu 1..5 -> Thủy, Kim, Hỏa, Mộc, rồi về Trái Đất
+let SK={shipAt:null,visited:[],flight:null,parts:[],warp:0,asteroid:null,rings:[],floaters:[],onEnd:null};
+const sunPos=()=>({x:W/2,y:H/2});
+function plPos(i,t){const p=PL[i],a=p.ph+t/1000*(K>1?.1:.4)*p.sp,m=12*K;return{x:W/2+Math.cos(a)*p.o*(W/2-m),y:H/2+Math.sin(a)*p.o*(H/2-m),a}}
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function originPos(f,t){return f.from==null?sunPos():plPos(f.from,t)}
+function flightPos(f,p,t){const s=originPos(f,t),e=plPos(f.idx,t),k=ease(p),dx=e.x-s.x,dy=e.y-s.y,L=Math.hypot(dx,dy)||1,arc=Math.sin(Math.PI*p)*L*.14;return{x:s.x+dx*k-dy/L*arc,y:s.y+dy*k+dx/L*arc}}
+function spark(x,y,n,c,sp=2){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*sp*K;SK.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.02+Math.random()*.03,c,r:(Math.random()*2+1)*K*.8})}}
+function drawShip(x,y,ang,sz){sc.save();sc.translate(x,y);sc.rotate(ang);sc.scale(sz,sz);
+ const fl=10+Math.random()*7;sc.fillStyle='#ffb23c';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-6-fl,0);sc.lineTo(-6,3);sc.fill();sc.fillStyle='#fff3a0';sc.beginPath();sc.moveTo(-6,-1.6);sc.lineTo(-6-fl*.55,0);sc.lineTo(-6,1.6);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(-5,-4);sc.lineTo(-10,-8);sc.lineTo(-9,-1);sc.fill();sc.beginPath();sc.moveTo(-5,4);sc.lineTo(-10,8);sc.lineTo(-9,1);sc.fill();
+ sc.fillStyle='#eef3ff';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(5,-5,-6,-4);sc.lineTo(-6,4);sc.quadraticCurveTo(5,5,11,0);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(8,-3,5,-4);sc.lineTo(5,4);sc.quadraticCurveTo(8,3,11,0);sc.fill();
+ sc.fillStyle='#4fc3f7';sc.beginPath();sc.arc(0,0,2.2,0,6.3);sc.fill();sc.restore()}
+const SPR={};
+function planetSprite(i,k,d){const key=i+'|'+k.toFixed(2)+'|'+d;if(SPR[key])return SPR[key];
+ const p=PL[i],r=p.r*k,half=Math.ceil(r*(p.ring?2.1:1.1))+2,c=document.createElement('canvas');c.width=c.height=Math.ceil(half*2*d);
+ const x=c.getContext('2d');x.scale(d,d);x.translate(half,half);
+ if(p.ring){x.save();x.rotate(-.4);x.strokeStyle='rgba(240,220,160,.8)';x.lineWidth=2*k*.7;x.beginPath();x.ellipse(0,0,r*1.9,r*.6,0,0,6.3);x.stroke();x.restore()}
+ const g=x.createRadialGradient(-r*.35,-r*.35,r*.1,0,0,r);g.addColorStop(0,p.c1);g.addColorStop(1,p.c2);x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,6.3);x.fill();
+ if(p.n==='Trái Đất'){x.fillStyle='rgba(60,200,100,.75)';x.beginPath();x.arc(-r*.28,-r*.2,r*.4,0,6.3);x.fill()}
+ return SPR[key]={c,half}}
+function drawPlanet(i,x,y){const s=planetSprite(i,K,CUR.d);sc.drawImage(s.c,x-s.half,y-s.half,s.half*2,s.half*2)}
+let GIFTSPR=null;
+function giftSprite(){if(GIFTSPR)return GIFTSPR;const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.font='64px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('🎁',48,52);return GIFTSPR=c}
+let SUNSPR=null;
+function sunSprite(){if(SUNSPR)return SUNSPR;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+ const gl=x.createRadialGradient(128,128,6,128,128,128);gl.addColorStop(0,'rgba(255,220,100,.9)');gl.addColorStop(.35,'rgba(255,150,40,.35)');gl.addColorStop(1,'rgba(255,100,0,0)');x.fillStyle=gl;x.beginPath();x.arc(128,128,128,0,6.3);x.fill();
+ const sg=x.createRadialGradient(119,119,5,128,128,40);sg.addColorStop(0,'#fff6b0');sg.addColorStop(1,'#ff9f1c');x.fillStyle=sg;x.beginPath();x.arc(128,128,40,0,6.3);x.fill();return SUNSPR=c}
+function frameSky(t,big,intro){
+ sc.clearRect(0,0,W,H);
+ sc.drawImage(CUR.bgCv,0,0,W,H);
+ if(big||intro){STARS.tw.forEach(s=>{sc.globalAlpha=.25+.75*Math.abs(Math.sin(t/1000*s.s+s.p));sc.fillStyle='#fff';sc.beginPath();sc.arc(s.x*W,s.y*H,s.r*1.2,0,6.3);sc.fill()});sc.globalAlpha=1}
+ const sr=(11+Math.sin(t/400)*1.2+SK.warp*3)*K,gs=sr*3.2*2;sc.drawImage(sunSprite(),W/2-gs/2,H/2-gs/2,gs,gs);
+ const cur=S&&S.i!=null?ROUTE[S.i]:-1;
+ PL.forEach((p,i)=>{const q=plPos(i,t),r=p.r*K;
+  if(i===cur&&!SK.visited[i]&&S.active){sc.strokeStyle='rgba(255,216,107,'+(.4+.4*Math.sin(t/200))+')';sc.lineWidth=K*.8;sc.setLineDash([3*K,3*K]);sc.beginPath();sc.arc(q.x,q.y,r+(6+Math.sin(t/200)*1.5)*K,0,6.3);sc.stroke();sc.setLineDash([])}
+  drawPlanet(i,q.x,q.y);
+  if(SK.visited[i]){sc.strokeStyle='#2ee59d';sc.lineWidth=2*K*.7;sc.beginPath();sc.arc(q.x,q.y,r+4*K,0,6.3);sc.stroke();sc.fillStyle='#2ee59d';sc.font=`bold ${11*K}px sans-serif`;sc.textAlign='center';sc.fillText('✓',q.x,q.y-r-7*K)}
+  if(i<5||big||intro){sc.fillStyle='rgba(220,230,255,.8)';sc.font=`${9.5*K}px sans-serif`;sc.textAlign='center';sc.fillText(p.n,q.x,q.y+r+11*K)}
+ });
+ if(!(big&&SK.flight)){ // tàu đang đậu tại Mặt Trời hoặc hành tinh đã tới
+  const at=SK.shipAt,base=at==null?{x:W/2,y:H/2}:plPos(at,t),R=at==null?sr:PL[at].r*K,ang=-.7,d=R+(at==null?12:9)*K;
+  drawShip(base.x+Math.cos(ang)*d,base.y+Math.sin(ang)*d,ang,(big?1.1:.85)*K);
+ }
+ if(!big)return;
+ SK.rings=SK.rings.filter(r=>r.l>0);SK.rings.forEach(r=>{r.l-=.022;r.r+=1.3*K;const q=plPos(r.i,t);sc.strokeStyle=`rgba(46,229,157,${r.l})`;sc.lineWidth=3;sc.beginPath();sc.arc(q.x,q.y,r.r,0,6.3);sc.stroke()});
+ if(SK.asteroid){const a=SK.asteroid;a.x+=a.vx;a.y+=a.vy;a.l-=.008;sc.save();sc.translate(a.x,a.y);sc.rotate(t/150);sc.scale(K*1.4,K*1.4);sc.fillStyle='#8a6a55';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-2,-7);sc.lineTo(5,-4);sc.lineTo(7,2);sc.lineTo(1,7);sc.lineTo(-6,4);sc.fill();sc.restore();
+  spark(a.x,a.y,2,'#ff9f43',1);if(a.l<=0)SK.asteroid=null}
+ const f=SK.flight;
+ if(f){const p=Math.min(1,(t-f.t0)/f.dur),pos=flightPos(f,p,t),pp=flightPos(f,Math.max(0,p-.02),t),ang=Math.atan2(pos.y-pp.y,pos.x-pp.x);
+  if(f.gift&&!f.taken){
+   if(!f.ann&&p>=.04){f.ann=true;sfx.drop();$('cineTitle').textContent='🎁 Có quà bất ngờ rơi xuống! Tàu hãy nhặt nhé!'}
+   const gp=flightPos(f,.5,t),gk=Math.min(1,Math.max(0,(p-.04)/.3)),fall=(1-(1-Math.pow(1-gk,3)))*(gp.y+60*K),bob=gk>=1?Math.sin(t/160)*4*K:0,gy=gp.y-fall+bob;
+   if(gk>0){const pulse=1+.12*Math.sin(t/120);
+    const rg=sc.createRadialGradient(gp.x,gy,4,gp.x,gy,46*K*pulse);rg.addColorStop(0,'rgba(255,230,120,.75)');rg.addColorStop(1,'rgba(255,200,60,0)');sc.fillStyle=rg;sc.beginPath();sc.arc(gp.x,gy,46*K*pulse,0,6.3);sc.fill();
+    const gz=56*K*pulse;sc.save();sc.translate(gp.x,gy);sc.rotate(gk<1?Math.sin(t/90)*.3:0);sc.drawImage(giftSprite(),-gz/2,-gz/2,gz,gz);sc.restore();
+    spark(gp.x,gy,2,'#ffd86b',1.2)}
+  }
+  if(f.gift&&!f.taken&&p>=.5){f.taken=true;S.bonus+=GIFT_V;S.bonusCount++;sfx.gift();spark(pos.x,pos.y,90,'#ffd86b',5);SK.floaters.push({x:pos.x,y:pos.y,l:2,txt:'🎁 +0,5 điểm!'});$('cineTitle').textContent='🎉 Nhận quà! +0,5 điểm';updHud();$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10  🎁 +0,5';confetti(50,innerWidth/2,innerHeight/2)}
+  spark(pos.x-Math.cos(ang)*8*K,pos.y-Math.sin(ang)*8*K,2,'#ffb23c',1.2);
+  drawShip(pos.x,pos.y,ang,1.35*K);
+  if(p>=1){SK.flight=null;SK.shipAt=f.idx;SK.visited[f.idx]=true;SK.rings.push({i:f.idx,r:PL[f.idx].r*K+3,l:1});const q=plPos(f.idx,t);spark(q.x,q.y,50,'#2ee59d',3);sfx.arrive();if(SK.onEnd){const fn=SK.onEnd;SK.onEnd=null;fn()}}}
+ SK.parts=SK.parts.filter(p=>p.l>0);SK.parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l-=p.d;sc.globalAlpha=Math.max(0,p.l);sc.fillStyle=p.c;sc.beginPath();sc.arc(p.x,p.y,p.r,0,6.3);sc.fill()});sc.globalAlpha=1;
+ SK.floaters=SK.floaters.filter(f=>f.l>0);SK.floaters.forEach(f=>{f.y-=.7;f.l-=.012;sc.globalAlpha=Math.min(1,Math.max(0,f.l));sc.fillStyle='#ffe58a';sc.font=`bold ${26*K}px sans-serif`;sc.textAlign='center';sc.fillText(f.txt,f.x,f.y-14*K);sc.globalAlpha=1});
+}
+
+/* ---------- Logic trò chơi ---------- */
+let S={i:0,active:false};
+const player={name:'',cls:''};
+function pickPositions(n){ // vị trí đáp án đúng: rải đều A–D, không chữ nào quá 2 lần, ít nhất 3 chữ khác nhau
+ let p,g=0;do{p=Array.from({length:n},()=>Math.random()*4|0);g++}while(g<500&&([0,1,2,3].some(k=>p.filter(x=>x===k).length>2)||new Set(p).size<3));return p}
+function pickQuestions(){
+ const by=lv=>shuffle(QS.filter(q=>q.lv===lv));
+ const pos=pickPositions(5);
+ return [...by('NB').slice(0,3),...by('TH').slice(0,1),...by('VD').slice(0,1)].map((q,i)=>{
+  const wrong=shuffle([0,1,2,3].filter(k=>k!==q.ans)),opts=[];let w=0;
+  for(let k=0;k<4;k++)opts[k]=k===pos[i]?q.opts[q.ans]:q.opts[wrong[w++]];
+  return{...q,key:q.lv+q.n,opts,ans:pos[i]};});
+}
+function newGame(){
+ S={qs:pickQuestions(),i:0,base:0,bonus:0,bonusCount:0,res:[],active:true,answered:false,deadline:0,dur:30,lastTick:-1};
+ SK.visited=[];SK.flight=null;SK.parts=[];SK.rings=[];SK.floaters=[];SK.asteroid=null;SK.onEnd=null;SK.shipAt=null;S.busy=false;
+ $('start').classList.add('hide');$('end').classList.add('hide');$('game').classList.remove('hide');
+ $('hName').textContent=player.name;$('hClass').textContent=player.cls;
+ sizeSky();updHud();loadQ();
+}
+const total=()=>Math.min(10,S.base+S.bonus);
+function updHud(){$('hScore').textContent=fmt(total());$('hQ').textContent=(Math.min(S.i+1,5))+'/5'}
+function renderPips(){
+ $('pips').innerHTML=S.qs.map((q,i)=>{const r=S.res[i];return`<span class="pip ${i===S.i?'cur':''} ${r?(r.ok?'ok':'no'):''}">${i+1}. ${q.lv}${r?(r.ok?' ✓':' ✗'):''}</span>`}).join('');
+}
+function loadQ(){
+ const q=S.qs[S.i],L=LV[q.lv];S.answered=false;S.dur=L.t;S.deadline=performance.now()+L.t*1000;S.lastTick=-1;
+ renderPips();updHud();
+ $('lvl').className='lvl '+q.lv;S.lvlBase=`${q.lv} · ${L.name} · ⏱ `;S.lvlSec=L.t;$('lvl').textContent=S.lvlBase+L.t+' giây';
+ $('qtext').textContent=`Câu ${S.i+1}. ${q.q}`;
+ const il=$('illus'),cfg=ILLUS[q.key];
+ if(cfg){il.innerHTML=cfg.svg?cfg.svg+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:''):sheetHTML(cfg,q,false);il.classList.remove('hide')}else il.classList.add('hide');
+ {const mo=Math.max(...q.opts.map(o=>o.length)),ql=q.q.length,cl=$('qbox').classList;cl.toggle('long',mo>55||ql>170);cl.toggle('xlong',mo>90||ql>260)}
+ $('opts').innerHTML='';
+ q.opts.forEach((t,k)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<b>${'ABCD'[k]}</b><span></span>`;b.querySelector('span').textContent=t;b.onclick=()=>answer(k);$('opts').appendChild(b)});
+ $('fb').innerHTML='';$('btnNext').classList.add('hide');
+ const box=$('qbox');box.classList.remove('enter');void box.offsetWidth;box.classList.add('enter');$('qwrap').scrollTop=0;
+ sfx.click();
+ $('timer').classList.remove('low');$('tbar').classList.remove('low');
+}
+function answer(k){
+ if(S.answered)return;S.answered=true;
+ const q=S.qs[S.i],ok=k===q.ans,to=k<0;
+ const btns=[...$('opts').children];btns.forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('good');else if(i===k)b.classList.add('wrong');else b.classList.add('dim')});
+ S.res[S.i]={ok,to,q};
+ if(ok){S.base+=PTS;sfx.correct();confetti(70,innerWidth*.35,innerHeight*.5);}
+ else{to?sfx.timeout():sfx.wrong();
+  $('qbox').classList.remove('enter');$('qbox').style.animation='shake .45s'; setTimeout(()=>$('qbox').style.animation='',500)}
+ const cfg=ILLUS[q.key];if(cfg&&!cfg.svg)$('illus').innerHTML=sheetHTML(cfg,q,true);
+ const fb=$('fb');fb.innerHTML='';const d=document.createElement('div');d.className='fb '+(ok?'ok':'no');
+ const h=document.createElement('h3');h.textContent=ok?`✅ Chính xác! +${PTS} điểm — bấm “Câu tiếp theo” để ${S.i===4?'đưa tàu về Trái Đất! 🌍':'phóng tàu tới '+PL[ROUTE[S.i]].n+'! 🚀'}`:(to?'⏰ Hết giờ! Câu này tính là sai.':'❌ Chưa đúng rồi, cố lên nhé!');
+ const a=document.createElement('p');a.className='ans';a.textContent=`Đáp án đúng: ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;
+ const e=document.createElement('p');e.textContent='💡 Giải thích: '+q.exp;
+ d.append(h,a,e);fb.appendChild(d);
+ renderPips();updHud();
+ const nb=$('btnNext');nb.textContent=S.i===4?'🏆 Xem kết quả':'Câu tiếp theo ➜';nb.classList.remove('hide');nb.disabled=false;
+ setTimeout(()=>$('qwrap').scrollTo({top:$('qwrap').scrollHeight,behavior:'smooth'}),150);
+}
+function launchShip(){
+ const f={idx:ROUTE[S.i],from:SK.shipAt,t0:performance.now(),dur:4200,gift:Math.random()<GIFT_P,taken:false};
+ SK.flight=f;sfx.launch();useCv(CV.big,true);const sp=sunPos();spark(sp.x,sp.y,50,'#ffb23c',4);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function cinematic(){
+ if(S.busy)return;S.busy=true;$('btnNext').disabled=true;
+ const r=S.res[S.i],pl=PL[ROUTE[S.i]],from=SK.shipAt==null?'Mặt Trời':PL[SK.shipAt].n,el=$('cine'),rc=CV.mini.cv.getBoundingClientRect();
+ el.style.transformOrigin=`${rc.left+rc.width/2}px ${rc.top+rc.height/2}px`;
+ $('cineTitle').textContent=r.ok?(S.i===4?`🌍 Chặng cuối: tàu vũ trụ bay từ ${from} về Trái Đất!`:`🚀 Tàu vũ trụ bay từ ${from} tới ${pl.n}!`):(r.to?`⏰ Hết giờ – tàu phải đợi tại ${from}!`:`☄️ Trả lời sai – thiên thạch chặn đường, tàu đứng yên tại ${from}!`);
+ $('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10';
+ sizeSky();SK.warp=1;el.classList.add('on');
+ await sleep(800);
+ if(r.ok){await new Promise(res=>{SK.onEnd=res;launchShip()});$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10'+(SK.lastGiftTxt||'');await sleep(S.i===4?2400:1400);if(S.i===4)confetti(120,innerWidth/2,innerHeight/2)}
+ else{SK.asteroid={x:CV.big.W+30,y:CV.big.H*(.2+Math.random()*.3),vx:-6,vy:2.6,l:1};await sleep(2600)}
+ el.classList.remove('on');await sleep(750);
+ S.busy=false;nextQ();
+}
+function nextQ(){
+ if(S.i>=4){finish();return}
+ S.i++;SK.warp=1;loadQ();
+}
+function finish(){
+ S.active=false;const sc2=total();
+ $('game').classList.add('hide');$('end').classList.remove('hide');
+ $('endName').textContent=player.name;$('endSub').textContent=`Lớp ${player.cls} · Tin học 9 – Bài 7`;
+ const right=S.res.filter(r=>r&&r.ok).length;
+ let medal,icon;
+ if(sc2>=9){medal='👨‍🚀 Thuyền trưởng Hệ Mặt Trời!';icon='🏆'}else if(sc2>=7){medal='🌟 Phi hành gia giỏi!';icon='🥇'}else if(sc2>=5){medal='🚀 Phi hành đoàn khá!';icon='🥈'}else{medal='🔭 Cần luyện tập thêm, thử lại nhé!';icon='🌠'}
+ $('endMedal').textContent=medal+` (đúng ${right}/5${S.bonusCount?`, nhận ${S.bonusCount} quà 🎁`:''})`;$('endIcon').textContent=icon;
+ const rv=$('rev');rv.innerHTML='';
+ S.qs.forEach((q,i)=>{const r=S.res[i],d=document.createElement('div');d.className=r&&r.ok?'ok':'no';d.textContent=`${r&&r.ok?'✅':'❌'} Câu ${i+1} [${q.lv}] ${q.q}  → ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;rv.appendChild(d)});
+ let n=0;const el=$('endScore'),id=setInterval(()=>{n+=.1;if(n>=sc2){n=sc2;clearInterval(id)}el.textContent=fmt(n)},45);
+ if(sc2>=5)sfx.fanfare();else sfx.sad();startFw(sc2);
+}
+
+/* ---------- Pháo hoa màn hình tổng kết ---------- */
+const fwc=$('fw'),fwx=fwc.getContext('2d');
+let FW={r:[],p:[],next:0,rate:700,power:1};
+function sizeFw(){fwc.width=Math.round(innerWidth*.6);fwc.height=Math.round(innerHeight*.6)} // vẽ ở 60% độ phân giải rồi phóng ra, nhẹ hơn nhiềuaddEventListener('resize',sizeFw);
+function fwLaunch(){const w=fwc.width,h=fwc.height;FW.r.push({x:w*(.1+Math.random()*.8),y:h+10,ty:h*(.1+Math.random()*.35),vy:-(11+Math.random()*3)*h/800,h:Math.random()*360})}
+function fwExplode(r){
+ const h=fwc.height,k=h/800,n=Math.round((45+Math.random()*40)*FW.power),type=Math.random()<.35?'ring':'sphere',h2=(r.h+120+Math.random()*120)%360;
+ sfx.boom();
+ for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.1,v=(type==='ring'?5.5:Math.random()*6.5+1)*k*(.85+FW.power*.15);
+  FW.p.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.009+Math.random()*.01,h:Math.random()<.65?r.h:h2,s:k})}
+}
+function startFw(score){
+ sizeFw();fwx.fillStyle='#03050d';fwx.fillRect(0,0,fwc.width,fwc.height);
+ FW.r=[];FW.p=[];
+ FW.power=score>=9?1.3:score>=7?1:score>=5?.8:.6;FW.rate=score>=9?450:score>=7?650:score>=5?900:1400;
+ const n=score>=5?5:2;for(let i=0;i<n;i++)setTimeout(fwLaunch,i*220);
+ FW.next=performance.now()+1200;
+}
+function frameFw(t,ds){
+ fwx.globalCompositeOperation='source-over';fwx.fillStyle=`rgba(3,5,13,${1-Math.pow(.8,ds)})`;fwx.fillRect(0,0,fwc.width,fwc.height);
+ if(t>FW.next){const c=1+(Math.random()<.4?1:0)+(FW.power>1?1:0);for(let i=0;i<c;i++)setTimeout(fwLaunch,i*140);FW.next=t+FW.rate*(.6+Math.random()*.8)}
+ fwx.globalCompositeOperation='lighter';
+ const k=fwc.height/800,f=Math.pow(.985,ds);
+ FW.r=FW.r.filter(r=>{r.y+=r.vy*ds;r.vy*=f;fwx.fillStyle=`hsl(${r.h},100%,75%)`;fwx.beginPath();fwx.arc(r.x,r.y,2.2*k,0,6.3);fwx.fill();
+  if(Math.random()<.8*ds){FW.p.push({x:r.x,y:r.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,l:.6,d:.04,h:r.h,s:k*.6})}
+  if(r.y<=r.ty||r.vy>-1.8){fwExplode(r);return false}return true});
+ FW.p=FW.p.filter(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vx*=f;p.vy=p.vy*f+.05*p.s*ds;p.l-=p.d*ds;if(p.l<=0)return false;
+  fwx.fillStyle=`hsla(${p.h},100%,${55+p.l*20}%,${Math.min(1,p.l*1.4)})`;fwx.beginPath();fwx.arc(p.x,p.y,(1.2+p.l*1.8)*p.s*1.3,0,6.3);fwx.fill();return true});
+ fwx.globalCompositeOperation='source-over';
+}
+
+/* ---------- Vòng lặp chính (đồng hồ + hoạt cảnh) ---------- */
+const ring=$('ring');
+let lastT=0,lastDom=0;
+function loop(t){
+ requestAnimationFrame(loop);
+ const dt=t-lastT,minDt=S.busy?20:32; // cảnh phóng to chạy mượt, còn lại ~30 khung/giây
+ if(dt<minDt)return;lastT=t;const ds=Math.min(3,dt/16.67);
+ drawConf(ds);
+ if(!$('end').classList.contains('hide'))frameFw(t,ds);
+ else if(!$('start').classList.contains('hide')){useCv(CV.intro);frameSky(t,false,true)}
+ else if(!$('game').classList.contains('hide')&&!S.busy){useCv(CV.mini);frameSky(t,false)}
+ if(S.busy){useCv(CV.big);frameSky(t,true)}
+ SK.warp=Math.max(0,SK.warp-.005*ds);
+ if(S.active&&!S.answered){
+  const left=Math.max(0,(S.deadline-performance.now())/1000);
+  if(left<=0){answer(-1)}
+  else if(t-lastDom>100){lastDom=t;
+   const frac=left/S.dur,sec=Math.ceil(left);
+   $('tnum').textContent=sec;if(sec!==S.lvlSec){S.lvlSec=sec;$('lvl').textContent=S.lvlBase+sec+' giây'}$('lvl').classList.toggle('low',left<=5);
+   $('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
+   const low=left<=5||frac<.25;$('timer').classList.toggle('low',low);$('tbar').classList.toggle('low',low);
+   ring.style.stroke=frac>.5?'#12b774':frac>.25?'#ffc93c':'#ff5d7a';
+   if(left<=5&&sec!==S.lastTick&&sec>0){S.lastTick=sec;sfx.tick()}
+  }
+ }
+}
+
+/* ---------- Sự kiện ---------- */
+function toggleFs(){const d=document;if(!d.fullscreenElement&&!d.webkitFullscreenElement){(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement).catch(()=>{})}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}
+document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('btnFs').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';$('btnFsStart').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';setTimeout(()=>{sizeSky();initStars();sizeFx()},200)});
+$('btnFs').onclick=$('btnFsStart').onclick=toggleFs;
+$('btnSnd').onclick=()=>{initAudio();setMusic(!musicOn)};
+$('btnStart').onclick=()=>{
+ const n=$('inName').value.trim(),c=$('inClass').value.trim();let bad=false;
+ [['inName',n],['inClass',c]].forEach(([id,v])=>{const el=$(id);el.classList.remove('err');if(!v){void el.offsetWidth;el.classList.add('err');bad=true}});
+ if(bad)return;
+ player.name=n;player.cls=c;initAudio();sfx.start();setMusic(true);newGame();
+};
+['inName','inClass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('btnStart').click()}));
+$('btnNext').onclick=()=>{sfx.click();cinematic()};
+$('btnAgain').onclick=()=>{initAudio();sfx.start();newGame()};
+$('btnChange').onclick=()=>{$('end').classList.add('hide');$('start').classList.remove('hide');$('inName').value='';$('inClass').value='';$('inName').focus()};
+addEventListener('keydown',e=>{
+ if(!S.active||$('game').classList.contains('hide'))return;
+ const k=e.key.toUpperCase(),i='ABCD'.indexOf(k),j='1234'.indexOf(k);
+ if(!S.answered&&(i>=0||j>=0)&&k.length===1)answer(i>=0?i:j);
+ else if(e.key==='Enter'&&S.answered&&!S.busy&&!$('btnNext').disabled&&!$('btnNext').classList.contains('hide'))$('btnNext').click();
+});
+sizeSky();requestAnimationFrame(loop);
+$('inName').focus();
+</script>
+</body>
+</html>
