@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Du hành Hệ Mặt Trời – Tin học 6 Bài 6</title>
+<style>
+:root{--bg:#eef3ff;--panel:rgba(255,255,255,.92);--line:rgba(90,110,200,.28);--tx:#1c2545;--mute:#5a678f;--ok:#12b774;--bad:#e5385a;--warn:#e08a00;--pri:#5b7cff;--acc:#ff9f43}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:radial-gradient(ellipse at 20% 10%,#ffffff 0%,#e7eeff 45%,#d8e3ff 100%);color:var(--tx);overflow:hidden}
+#bg{display:none}
+#fx{position:fixed;inset:0;z-index:60;pointer-events:none}
+button{font-family:inherit;cursor:pointer}
+.hide{display:none!important}
+.overlay{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 30px;width:min(560px,100%);box-shadow:0 20px 50px rgba(60,80,160,.22);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{opacity:0;transform:scale(.85) translateY(20px)}to{opacity:1;transform:none}}
+.logo{font-size:56px;text-align:center;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-4deg)}}
+.card h1{text-align:center;font-size:26px;margin:6px 0 4px;background:linear-gradient(90deg,#ff7a18,#ff3d77,#7a4dff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .sub{text-align:center;color:var(--mute);font-size:14px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 5px;font-weight:600}
+input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--tx);font-size:16px;outline:none;transition:.2s}
+input:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(91,124,255,.22)}
+input.err{border-color:var(--bad);animation:shake .4s}
+.rules{margin:16px 0;padding:12px 14px;border-radius:12px;background:#eef2ff;font-size:13.5px;line-height:1.7;color:#34406b}
+.btn{border:none;border-radius:14px;padding:13px 22px;font-size:16px;font-weight:700;color:#fff;background:linear-gradient(135deg,#5b7cff,#8b5bff);box-shadow:0 6px 18px rgba(91,124,255,.35);transition:.2s}
+.btn:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.go{width:100%;margin-top:6px;background:linear-gradient(135deg,#ff9f43,#ff4d79);box-shadow:0 6px 18px rgba(255,100,90,.35)}
+.btn.ghost{background:#eef2ff;color:var(--tx);box-shadow:none;border:1px solid var(--line);font-weight:600;font-size:14px;padding:10px 16px}
+.row{display:flex;gap:10px;margin-top:10px}
+.row .btn{flex:1}
+#game{position:relative;z-index:5;height:100%;display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,26vw,440px);gap:14px;padding:14px}
+.left,.right{background:var(--panel);border:1px solid var(--line);border-radius:20px;min-height:0;display:flex;flex-direction:column;box-shadow:0 10px 30px rgba(60,80,160,.15)}
+.left{padding:16px 24px;overflow:hidden;position:relative}
+.qwrap{flex:1;overflow-y:auto;padding-right:4px}
+.pips{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.pip{padding:6px 2px;text-align:center;white-space:nowrap;border-radius:99px;font-size:clamp(11px,1vw,16px);font-weight:700;background:#e9edfa;color:var(--mute);border:1px solid transparent;transition:.3s}
+.pip.cur{border-color:var(--warn);color:#a86200;background:#fff3d6;transform:scale(1.06)}
+.pip.ok{background:#d6f7e8;color:#0b7a53}
+.pip.no{background:#ffdfe6;color:#c42b4b}
+.tbar{height:8px;border-radius:99px;background:#e2e8f8;overflow:hidden;margin-bottom:14px}
+.tbar i{display:block;height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#2ee59d,#ffc93c);transform-origin:left}
+.tbar.low i{background:linear-gradient(90deg,#ff5d7a,#ff9f43)}
+.lvl{display:inline-block;padding:6px 18px;border-radius:99px;font-size:clamp(16px,1.6vw,26px);font-variant-numeric:tabular-nums;font-weight:800;letter-spacing:.5px;margin-bottom:10px}
+.lvl.low{background:#ffdfe6!important;color:#c42b4b!important;animation:beat .5s infinite}
+.lvl.NB{background:#d4f7e8;color:#0b7a53}.lvl.TH{background:#fff1c2;color:#8a6100}.lvl.VD{background:#ffd9ec;color:#a3195f}
+.qtext{font-size:clamp(22px,2.5vw,42px);line-height:1.4;font-weight:700;margin-bottom:20px}
+.enter{animation:slideIn .55s cubic-bezier(.2,1,.3,1)}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.opt{display:flex;align-items:center;gap:12px;text-align:left;width:100%;padding:18px 20px;border-radius:16px;border:3px solid var(--line);background:#fff;color:var(--tx);font-weight:600;font-size:clamp(21px,2.4vw,40px);line-height:1.3;transition:.18s;position:relative;overflow:hidden}
+.opt:hover:not(:disabled){border-color:var(--pri);transform:translateY(-3px);background:#f1f4ff}
+.opt b{flex:none;width:clamp(40px,3.6vw,64px);height:clamp(40px,3.6vw,64px);border-radius:50%;display:grid;place-items:center;background:#e3e9ff;color:#3a4a9a;font-size:clamp(20px,2.2vw,36px)}
+.opt span{word-break:break-word}
+.opt:disabled{cursor:default}
+.opt.good{border-color:var(--ok);background:#dcf8ec;animation:glow 1s ease 2}
+.opt.good b{background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:#ffe3e9;animation:shake .45s}
+.opt.wrong b{background:var(--bad);color:#fff}
+.opt.dim{opacity:.5}
+@keyframes glow{50%{box-shadow:0 0 24px rgba(18,183,116,.55)}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.fb{margin-top:16px;border-radius:14px;padding:14px 16px;animation:slideIn .5s}
+.fb.ok{background:#e4faf0;border:1px solid var(--ok)}
+.fb.no{background:#ffecef;border:1px solid var(--bad)}
+.fb h3{font-size:clamp(20px,2.2vw,34px);margin-bottom:8px}
+.fb p{line-height:1.5;font-size:clamp(17px,1.8vw,30px);color:#2a3560}
+.fb .ans{margin-bottom:6px;font-weight:600}
+.nextrow{display:flex;justify-content:flex-end;padding-top:12px}
+.nextrow .btn{font-size:clamp(17px,1.7vw,28px);padding:14px 28px}
+.illus{margin:0 0 16px;padding:10px 12px;border-radius:14px;background:#f3f6ff;border:1px dashed var(--line);overflow-x:auto}
+.sheet{border-collapse:collapse;font-size:clamp(15px,1.6vw,26px);margin:auto;background:#fff;color:#1b2540;box-shadow:0 4px 14px rgba(60,80,160,.25)}
+.sheet th{background:#e8ecf5;font-weight:700;color:#4a5578;padding:4px 10px;border:1px solid #c5cce0;min-width:36px}
+.sheet td{padding:7px 14px;border:1px solid #d0d6e6;min-width:clamp(90px,9vw,150px);text-align:center;font-family:Consolas,monospace;height:clamp(32px,3vw,52px)}
+.sheet td.hd{background:#dfe7ff;font-weight:700;font-family:inherit}
+.sheet td.tbl{background:#fff4c9}
+.sheet td.src{background:#cfe3ff;outline:3px solid #3b82f6;outline-offset:-3px;font-weight:700}
+.sheet td.tgt{background:#ffe2c2;outline:3px solid #ff8a1f;outline-offset:-3px;font-weight:800;animation:pulse 1.2s infinite}
+.sheet td.tgtok{background:#c9f7de;outline:3px solid #19c37d;outline-offset:-3px;font-weight:800;animation:pop .5s}
+@keyframes pulse{50%{background:#fff0dc}}
+.cap{text-align:center;font-size:clamp(13px,1.3vw,20px);color:var(--mute);margin-top:7px}
+.right{padding:14px;gap:10px;overflow:hidden}
+.right h2{font-size:clamp(20px,1.9vw,32px);line-height:1.35;text-align:center;color:#4b34d8}
+.right h2 small{display:block;color:var(--mute);font-weight:600;font-size:clamp(14px,1.3vw,22px);line-height:1.3;margin-top:4px}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#eef2ff;border-radius:12px;padding:7px 10px;min-width:0}
+.chip small{display:block;font-size:clamp(10px,.9vw,14px);color:var(--mute);text-transform:uppercase;letter-spacing:.6px}
+.chip b{font-size:clamp(16px,1.5vw,26px);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip.big b{font-size:clamp(20px,2vw,34px);color:#d97706}
+.timer{display:flex;align-items:center;gap:12px;background:#eef2ff;border-radius:14px;padding:8px 12px}
+.timer svg{width:clamp(62px,5vw,86px);height:clamp(62px,5vw,86px);flex:none}
+.timer .ring{fill:none;stroke-width:7;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.timer .t{font-size:clamp(34px,3.2vw,54px);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.timer small{color:var(--mute);font-size:12px}
+.timer.low .t{color:var(--bad);animation:beat .5s infinite}
+@keyframes beat{50%{transform:scale(1.18)}}
+.info.three{grid-template-columns:.9fr .9fr 1.5fr}
+.chip.tm{display:flex;align-items:center;gap:8px}
+.chip.tm small{white-space:nowrap}
+#hName{white-space:normal;line-height:1.2}
+.chip.tm svg{width:clamp(26px,2.2vw,40px);height:clamp(26px,2.2vw,40px);flex:none}
+.chip.tm b{font-size:clamp(20px,2vw,34px);font-variant-numeric:tabular-nums}
+.chip.tm.low b{color:var(--bad);animation:beat .5s infinite}
+.ring{fill:none;stroke-width:9;stroke-linecap:round;transform:rotate(-90deg);transform-origin:center}
+.tools{display:flex;gap:8px}
+.tools .btn{flex:1;padding:8px 6px;font-size:13px}
+.skywrap{flex:1;min-height:200px;border-radius:14px;overflow:hidden;border:1px solid #1d2a5c;background:radial-gradient(circle at center,#0d1a45,#04060f);position:relative}
+#sky{width:100%;height:100%;display:block}
+.hint{position:absolute;left:8px;bottom:6px;font-size:11px;color:#9aa8d8;pointer-events:none}
+/* hoạt cảnh toàn màn hình (giao diện tối) */
+#cine{position:fixed;inset:0;z-index:40;background:radial-gradient(circle at center,#0d1a45 0%,#04060f 75%);transform:scale(.12);opacity:0;border-radius:40px;pointer-events:none;transition:transform .7s cubic-bezier(.2,.9,.3,1),opacity .45s,border-radius .7s;overflow:hidden}
+#cine.on{transform:none;opacity:1;border-radius:0;pointer-events:auto}
+#bigsky{position:absolute;inset:0;width:100%;height:100%}
+#cineTitle{position:absolute;top:3.5vh;left:0;right:0;text-align:center;color:#fff;font-size:clamp(20px,3vw,38px);font-weight:800;text-shadow:0 0 24px rgba(255,200,80,.8);padding:0 16px}
+#cineSub{position:absolute;bottom:4vh;left:0;right:0;text-align:center;color:#ffe58a;font-size:clamp(16px,2vw,26px);font-weight:700}
+.score{font-size:76px;font-weight:900;text-align:center;line-height:1;background:linear-gradient(180deg,#ff9f1c,#ff4d79);-webkit-background-clip:text;background-clip:text;color:transparent}
+.score small{font-size:28px}
+.medal{text-align:center;font-size:19px;font-weight:700;margin:6px 0 12px}
+.rev{margin:10px 0;display:grid;gap:6px;max-height:240px;overflow:auto}
+.rev div{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;background:#f1f4ff;border-radius:10px;padding:8px 10px}
+.rev .ok{border-left:4px solid var(--ok)}.rev .no{border-left:4px solid var(--bad)}
+.introsky{position:relative;flex:1 1 0;min-width:0;max-width:640px;height:min(660px,88vh);border-radius:22px;overflow:hidden;background:radial-gradient(circle at center,#0d1a45,#04060f);border:1px solid #1d2a5c;box-shadow:0 20px 50px rgba(20,30,90,.4);animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+#introsky{width:100%;height:100%;display:block}
+.introcap{position:absolute;top:14px;left:0;right:0;text-align:center;color:#ffe58a;font-weight:800;font-size:clamp(16px,1.7vw,28px);text-shadow:0 0 16px rgba(255,200,80,.7);pointer-events:none}
+#end{background:radial-gradient(ellipse at center,#0a0f26 0%,#03050d 70%,#000 100%);overflow:auto}
+#fw{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+#end .card{position:relative;z-index:2;background:#fff;box-shadow:0 0 70px rgba(255,255,255,.28)}
+#start{gap:28px}
+#start .introsky{order:2}
+#start .card{flex:0 1 540px}
+.long .qtext{font-size:clamp(20px,2.1vw,36px)}
+.long .opt{font-size:clamp(17px,1.8vw,30px);padding:14px 16px}
+.xlong .qtext{font-size:clamp(18px,1.8vw,31px)}
+.xlong .opts{grid-template-columns:1fr}
+.xlong .opt{font-size:clamp(16px,1.6vw,27px);padding:11px 16px}
+@media(max-width:900px){
+ #start{flex-direction:column;justify-content:flex-start}
+ #start .introsky{order:-1}
+ .introsky{flex:none;width:100%;max-width:560px;height:240px}
+ .opts{grid-template-columns:1fr}
+ body{overflow:auto}#game{grid-template-columns:1fr;height:auto;min-height:100%}
+ .right{order:-1}.skywrap{min-height:230px}.left{min-height:70vh}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<canvas id="fx"></canvas>
+<div id="cine"><canvas id="bigsky"></canvas><div id="cineTitle"></div><div id="cineSub"></div></div>
+
+<!-- MÀN HÌNH BẮT ĐẦU -->
+<div class="overlay" id="start">
+  <div class="introsky"><canvas id="introsky"></canvas><div class="introcap">🌌 Hệ Mặt Trời</div></div>
+  <div class="card">
+    <div class="logo">🚀</div>
+    <h1>DU HÀNH HỆ MẶT TRỜI</h1>
+    <div class="sub">Tin học 6 – Bài 6: Mạng thông tin toàn cầu</div>
+    <label for="inName">Họ và tên</label>
+    <input id="inName" maxlength="40" placeholder="Nhập họ và tên của em" autocomplete="off">
+    <label for="inClass">Lớp</label>
+    <input id="inClass" maxlength="12" placeholder="Ví dụ: 6A1" autocomplete="off">
+    <div class="rules">
+      🎯 <b>5 câu ngẫu nhiên</b>: 3 Nhận biết (⏱ 30 giây) · 1 Thông hiểu (⏱ 45 giây) · 1 Vận dụng (⏱ 60 giây)<br>
+      ✅ Trả lời đúng: <b>+2 điểm</b>. Mỗi lần chuyển câu, Hệ Mặt Trời phóng to toàn màn hình: tàu bay lần lượt Mặt Trời → Thủy tinh → Kim tinh → Hỏa tinh → Mộc tinh → về Trái Đất<br>
+      🎁 Trên đường bay có <b>20%</b> cơ hội có hộp quà 🎁 rơi xuống, tàu nhặt được sẽ nhận <b>+0,5 điểm</b><br>
+      ⏰ Hết giờ sẽ tính là trả lời sai · Điểm tối đa <b>10</b>
+    </div>
+    <button class="btn go" id="btnStart">🚀 BẮT ĐẦU CHƠI</button>
+    <div class="row"><button class="btn ghost" id="btnFsStart">⛶ Toàn màn hình</button></div>
+  </div>
+</div>
+
+<!-- GIAO DIỆN CHƠI -->
+<div id="game" class="hide">
+  <section class="left">
+    <div class="tbar" id="tbar"><i id="tfill"></i></div>
+    <div class="qwrap" id="qwrap">
+      <div id="qbox">
+        <span class="lvl" id="lvl"></span>
+        <div class="qtext" id="qtext"></div>
+        <div class="illus hide" id="illus"></div>
+        <div class="opts" id="opts"></div>
+        <div id="fb"></div>
+      </div>
+    </div>
+    <div class="nextrow"><button class="btn hide" id="btnNext">Câu tiếp theo ➜</button></div>
+  </section>
+
+  <aside class="right">
+    <h2>📘 Tin học 6 – Bài 6<small>Mạng thông tin toàn cầu</small></h2>
+    <div class="info">
+      <div class="chip"><small>Họ tên</small><b id="hName">-</b></div>
+      <div class="chip"><small>Lớp</small><b id="hClass">-</b></div>
+    </div>
+    <div class="info three">
+      <div class="chip"><small>Câu hỏi</small><b id="hQ">1/5</b></div>
+      <div class="chip big"><small>Điểm</small><b id="hScore">0</b></div>
+      <div class="chip tm" id="timer">
+        <svg viewBox="0 0 70 70"><circle cx="35" cy="35" r="30" fill="none" stroke="rgba(0,0,0,.09)" stroke-width="9"/><circle class="ring" id="ring" cx="35" cy="35" r="30" stroke="#12b774" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg>
+        <div><small>Thời gian</small><b><span id="tnum">30</span>s</b></div>
+      </div>
+    </div>
+    <div class="pips" id="pips"></div>
+    <div class="tools">
+      <button class="btn ghost" id="btnFs">⛶ Toàn màn hình</button>
+      <button class="btn ghost" id="btnSnd">🔊 Âm thanh</button>
+    </div>
+    <div class="skywrap"><canvas id="sky"></canvas><div class="hint">Bấm “Câu tiếp theo” để phóng tàu 🚀</div></div>
+  </aside>
+</div>
+
+<!-- MÀN HÌNH KẾT QUẢ -->
+<div class="overlay hide" id="end">
+  <canvas id="fw"></canvas>
+  <div class="card">
+    <div class="logo" id="endIcon">🏆</div>
+    <h1 id="endName"></h1>
+    <div class="sub" id="endSub"></div>
+    <div class="score"><span id="endScore">0</span><small> / 10</small></div>
+    <div class="medal" id="endMedal"></div>
+    <div class="rev" id="rev"></div>
+    <div class="row"><button class="btn" id="btnAgain">🔄 Chơi lại</button><button class="btn ghost" id="btnChange">👤 Đổi người chơi</button></div>
+  </div>
+</div>
+
+<script>
+const QS = [{"n": 101, "lv": "NB", "q": "Viết tắt WWW trong lĩnh vực Internet có nghĩa đầy đủ là gì?", "opts": ["World Wide Web", "World Wide Wire", "Web World Wide", "Wide Web World"], "ans": 0, "exp": "WWW là viết tắt của World Wide Web, nghĩa là mạng thông tin toàn cầu."}, {"n": 102, "lv": "NB", "q": "World Wide Web (WWW) còn được gọi là gì?", "opts": ["Mạng thông tin toàn cầu", "Mạng điện thoại di động", "Mạng truyền hình cáp", "Mạng điện quốc gia"], "ans": 0, "exp": "WWW là mạng thông tin toàn cầu, gồm các website trên Internet liên kết với nhau."}, {"n": 103, "lv": "NB", "q": "Thông tin trên mạng thông tin toàn cầu được tổ chức dưới dạng nào?", "opts": ["Các trang web kết nối với nhau bằng các liên kết", "Các ô tính xếp thành hàng và cột", "Các thư mục nằm trong ổ đĩa", "Các trang chiếu liên tiếp nhau"], "ans": 0, "exp": "Thông tin được tổ chức thành các trang web (trang siêu văn bản) nối với nhau bằng liên kết."}, {"n": 104, "lv": "NB", "q": "Trang web là gì?", "opts": ["Một trang thông tin trên Internet có thể chứa văn bản, hình ảnh, âm thanh, video", "Một phần mềm soạn thảo văn bản", "Một thiết bị dùng để kết nối mạng", "Một tệp chỉ chứa các con số"], "ans": 0, "exp": "Trang web có thể chứa văn bản, hình ảnh, âm thanh, video và các liên kết."}, {"n": 105, "lv": "NB", "q": "Website (trang thông tin điện tử) là gì?", "opts": ["Tập hợp các trang web có liên quan đến nhau, truy cập qua một địa chỉ", "Một chiếc máy tính kết nối Internet", "Một loại phần mềm diệt vi rút", "Một tệp ảnh trên máy tính"], "ans": 0, "exp": "Website gồm nhiều trang web liên quan, được truy cập thông qua một địa chỉ."}, {"n": 106, "lv": "NB", "q": "Trang web được mở ra đầu tiên khi truy cập một website gọi là gì?", "opts": ["Trang chủ", "Trang cuối", "Trang tính", "Trang in"], "ans": 0, "exp": "Trang chủ (homepage) là trang đầu tiên hiện ra khi truy cập website."}, {"n": 107, "lv": "NB", "q": "Phần mềm ứng dụng nào giúp người dùng truy cập các website trên Internet?", "opts": ["Trình duyệt web", "Phần mềm soạn thảo văn bản", "Phần mềm bảng tính", "Phần mềm vẽ tranh"], "ans": 0, "exp": "Trình duyệt web (web browser) giúp truy cập và xem các trang web."}, {"n": 108, "lv": "NB", "q": "Phần mềm nào sau đây là trình duyệt web?", "opts": ["Google Chrome", "Microsoft Word", "Paint", "Máy tính (Calculator)"], "ans": 0, "exp": "Google Chrome là trình duyệt web; các phần mềm còn lại không dùng để duyệt web."}, {"n": 109, "lv": "NB", "q": "Microsoft Edge là phần mềm gì?", "opts": ["Trình duyệt web", "Phần mềm trình chiếu", "Phần mềm nghe nhạc", "Hệ điều hành"], "ans": 0, "exp": "Microsoft Edge là một trình duyệt web, giống Google Chrome, Mozilla Firefox."}, {"n": 110, "lv": "NB", "q": "Liên kết (hyperlink) trên trang web có tác dụng gì?", "opts": ["Dẫn tới một nội dung hoặc trang web khác khi nháy chuột vào", "Xoá trang web hiện tại", "Tắt máy tính", "Làm tăng dung lượng ổ đĩa"], "ans": 0, "exp": "Nháy chuột vào liên kết sẽ chuyển tới nội dung hoặc trang web mà liên kết trỏ đến."}, {"n": 111, "lv": "NB", "q": "Liên kết trên trang web thường được hiển thị như thế nào?", "opts": ["Chữ có màu khác và thường gạch chân, hoặc là hình ảnh", "Luôn là một ô vuông màu đen", "Chỉ là các con số", "Không bao giờ nhìn thấy được"], "ans": 0, "exp": "Liên kết thường là chữ khác màu (hay gạch chân) hoặc hình ảnh có thể nháy chuột vào."}, {"n": 112, "lv": "NB", "q": "Khi nháy chuột vào một liên kết trên trang web thì điều gì xảy ra?", "opts": ["Trình duyệt chuyển tới nội dung hoặc trang web mà liên kết trỏ tới", "Máy tính tự khởi động lại", "Trang web hiện tại bị xoá khỏi Internet", "Trình duyệt bị tắt"], "ans": 0, "exp": "Liên kết dẫn tới nội dung khác mà không làm mất trang web gốc."}, {"n": 113, "lv": "NB", "q": "Thanh địa chỉ của trình duyệt dùng để làm gì?", "opts": ["Nhập và hiển thị địa chỉ của trang web", "Gõ văn bản dài nhiều đoạn", "Chọn phông chữ", "Chỉnh độ sáng màn hình"], "ans": 0, "exp": "Thanh địa chỉ dùng để nhập địa chỉ trang web và hiển thị địa chỉ trang hiện tại."}, {"n": 114, "lv": "NB", "q": "Sau khi nhập địa chỉ trang web vào thanh địa chỉ, em nhấn phím nào để mở trang đó?", "opts": ["Enter", "Esc", "Caps Lock", "Shift"], "ans": 0, "exp": "Nhấn Enter để trình duyệt tải và hiển thị trang web."}, {"n": 115, "lv": "NB", "q": "Địa chỉ nào sau đây là địa chỉ của một website?", "opts": ["https://vietnamnet.vn", "C:\\Users\\HocSinh\\Baitap", "Lop6A.docx", "Ctrl + Alt + Delete"], "ans": 0, "exp": "Địa chỉ website thường có dạng https://tên-miền, ví dụ https://vietnamnet.vn."}, {"n": 116, "lv": "NB", "q": "Nút mũi tên quay sang trái (Back) trên trình duyệt có tác dụng gì?", "opts": ["Quay lại trang web vừa xem trước đó", "Tải lại trang hiện tại", "Đóng trình duyệt", "Đưa về trang chủ"], "ans": 0, "exp": "Nút Back giúp quay lại trang web đã xem ngay trước đó."}, {"n": 117, "lv": "NB", "q": "Nút mũi tên quay sang phải (Forward) trên trình duyệt có tác dụng gì?", "opts": ["Đi tới trang web kế tiếp trong lịch sử đã xem", "Quay về trang chủ", "Lưu địa chỉ trang web", "Xoá trang web"], "ans": 0, "exp": "Nút Forward chuyển tới trang đã xem phía sau trong lịch sử duyệt web."}, {"n": 118, "lv": "NB", "q": "Nút có hình mũi tên cong tròn (Reload) trên trình duyệt dùng để làm gì?", "opts": ["Tải lại trang web hiện tại", "Quay lại trang trước", "Mở một cửa sổ mới", "Tắt âm thanh"], "ans": 0, "exp": "Nút Reload tải lại nội dung của trang web đang mở."}, {"n": 119, "lv": "NB", "q": "Nút Trang chủ (Home) trên trình duyệt có tác dụng gì?", "opts": ["Mở trang chủ mà trình duyệt được thiết đặt", "Xoá lịch sử duyệt web", "Tắt máy tính", "Thu nhỏ cửa sổ trình duyệt"], "ans": 0, "exp": "Nút Home đưa người dùng về trang chủ đã thiết đặt trong trình duyệt."}, {"n": 120, "lv": "NB", "q": "Thanh đánh dấu (Bookmarks bar) của trình duyệt có tác dụng gì?", "opts": ["Lưu địa chỉ các trang web hay dùng để truy cập lại nhanh", "Soạn thảo văn bản", "Chỉnh sửa ảnh", "Tính toán số liệu"], "ans": 0, "exp": "Bookmarks bar lưu địa chỉ trang web để mở lại nhanh khi cần."}, {"n": 121, "lv": "NB", "q": "Thẻ (tab) trong trình duyệt cho phép làm gì?", "opts": ["Mở nhiều trang web cùng lúc trong một cửa sổ trình duyệt", "Gửi thư điện tử", "Cài đặt phần mềm mới", "Xoá toàn bộ lịch sử"], "ans": 0, "exp": "Mỗi thẻ hiển thị một trang web, giúp mở nhiều trang cùng lúc."}, {"n": 122, "lv": "NB", "q": "Thông tin trên các trang web có thể ở dạng nào?", "opts": ["Văn bản, hình ảnh, âm thanh, video", "Chỉ có văn bản thuần", "Chỉ có hình ảnh", "Chỉ có âm thanh"], "ans": 0, "exp": "Trang web có thể kết hợp nhiều dạng thông tin: văn bản, hình ảnh, âm thanh, video."}, {"n": 123, "lv": "NB", "q": "Muốn tra cứu thông tin trên Internet, trước hết em cần mở phần mềm nào?", "opts": ["Trình duyệt web", "Phần mềm soạn thảo văn bản", "Phần mềm bảng tính", "Phần mềm trình chiếu"], "ans": 0, "exp": "Cần mở trình duyệt web để truy cập các website và tra cứu thông tin."}, {"n": 124, "lv": "NB", "q": "Khi cần tìm thông tin nhưng chưa biết địa chỉ website, em có thể làm gì?", "opts": ["Dùng website tìm kiếm và nhập từ khoá cần tìm", "Nhập ngẫu nhiên các con số vào thanh địa chỉ", "Xoá bộ nhớ của trình duyệt", "Tắt kết nối mạng"], "ans": 0, "exp": "Website tìm kiếm giúp tìm trang web theo từ khoá em nhập."}, {"n": 125, "lv": "NB", "q": "Một trang web có thể mở bằng trình duyệt nào?", "opts": ["Bằng bất kì trình duyệt web nào", "Chỉ bằng một trình duyệt duy nhất", "Chỉ bằng phần mềm soạn thảo văn bản", "Không thể mở bằng trình duyệt"], "ans": 0, "exp": "Trang web có thể được xem trên nhiều trình duyệt web khác nhau."}, {"n": 126, "lv": "NB", "q": "Mạng thông tin toàn cầu (WWW) hoạt động dựa trên nền tảng nào?", "opts": ["Mạng Internet", "Mạng điện thoại bàn", "Mạng truyền thanh", "Mạng điện quốc gia"], "ans": 0, "exp": "WWW là hệ thống các website chạy trên nền Internet."}, {"n": 127, "lv": "NB", "q": "Trang siêu văn bản thường chứa những gì?", "opts": ["Văn bản, hình ảnh, âm thanh, video và các liên kết", "Chỉ gồm các con số", "Chỉ gồm các tệp phần mềm", "Chỉ gồm các lệnh điều khiển máy tính"], "ans": 0, "exp": "Trang siêu văn bản tích hợp nhiều dạng dữ liệu và có các liên kết tới nơi khác."}, {"n": 128, "lv": "NB", "q": "Để truy cập một website, thiết bị của em cần có những gì?", "opts": ["Kết nối Internet và trình duyệt web", "Chỉ cần máy in", "Chỉ cần loa ngoài", "Chỉ cần bàn phím"], "ans": 0, "exp": "Cần kết nối Internet và phần mềm trình duyệt để truy cập website."}, {"n": 129, "lv": "NB", "q": "Để mở lại nhanh một trang web đã lưu trên thanh đánh dấu, em làm thế nào?", "opts": ["Nháy chuột vào tên trang web đó trên thanh đánh dấu", "Nhấn tổ hợp Ctrl + P", "Khởi động lại máy tính", "Gõ lại toàn bộ nội dung trang web"], "ans": 0, "exp": "Chỉ cần nháy chuột vào tên trang web đã lưu trên thanh đánh dấu."}, {"n": 130, "lv": "NB", "q": "Kho thông tin trên Internet có đặc điểm nào sau đây?", "opts": ["Rất lớn và thường xuyên được cập nhật", "Rất nhỏ và không bao giờ thay đổi", "Chỉ có thông tin về một lĩnh vực", "Chỉ có thông tin bằng tiếng Việt"], "ans": 0, "exp": "Internet chứa lượng thông tin khổng lồ, luôn được bổ sung và cập nhật."}, {"n": 1, "lv": "TH", "q": "Mạng thông tin toàn cầu (World Wide Web) được hiểu là gì?", "opts": ["Là một phần mềm được cài đặt trên máy tính để kết nối mạng cục bộ.", "Là hệ thống các website trên Internet được liên kết với nhau.", "Là một hệ thống cáp quang ngầm dưới biển kết nối các quốc gia và vùng lãnh thổ với nhau để truyền tải dữ liệu dung lượng lớn qua đại dương.", "Là tên gọi khác của các thiết bị phát sóng Wi-Fi trong gia đình."], "ans": 1, "exp": "World Wide Web là mạng thông tin toàn cầu, liên kết các website trên Internet."}, {"n": 2, "lv": "TH", "q": "Điểm khác biệt cơ bản nhất giữa trang siêu văn bản và trang văn bản thông thường là gì?", "opts": ["Trang siêu văn bản có chứa các liên kết trỏ đến vị trí khác.", "Trang siêu văn bản bắt buộc phải có dung lượng lớn hơn rất nhiều.", "Trang văn bản thông thường được trình bày bằng nhiều phông chữ nghệ thuật phức tạp nhằm thu hút sự chú ý của người đọc trên màn hình máy tính hơn trang siêu văn bản.", "Trang siêu văn bản chỉ có thể hiển thị văn bản thuần túy."], "ans": 0, "exp": "Trang siêu văn bản (Hypertext) là trang văn bản đặc biệt có chứa các liên kết trỏ đến vị trí khác trong trang hay các trang web khác."}, {"n": 3, "lv": "TH", "q": "Mối quan hệ giữa trang web và website được mô tả như thế nào?", "opts": ["Trang web là một hệ thống mạng máy tính vật lí dùng để lưu trữ toàn bộ dữ liệu của một website bất kì trên Internet để người dùng toàn cầu truy cập.", "Website là tập hợp các trang web liên quan được truy cập qua một địa chỉ.", "Website là một thành phần nhỏ nằm bên trong một trang web độc lập.", "Trang web và website là hai khái niệm hoàn toàn giống nhau."], "ans": 1, "exp": "Mỗi website là tập hợp các trang web liên quan và được truy cập thông qua một địa chỉ duy nhất."}, {"n": 4, "lv": "TH", "q": "Khi truy cập vào một website, trang đầu tiên được mở ra gọi là gì?", "opts": ["Trang chủ", "Trang liên kết ẩn được lập trình bằng các đoạn mã phức tạp nhằm kiểm tra mức độ an toàn của thiết bị trước khi cho phép tải nội dung chính xác về máy.", "Trang siêu văn bản", "Trang cuối"], "ans": 0, "exp": "Trang chủ (homepage) của website là trang được mở ra đầu tiên khi truy cập website đó."}, {"n": 5, "lv": "TH", "q": "Phần mềm ứng dụng nào sau đây giúp người sử dụng truy cập các website?", "opts": ["Hệ điều hành", "Trình duyệt web", "Phần mềm soạn thảo văn bản cao cấp có tính năng kết nối mạng diện rộng chuyên dùng để biên tập sách điện tử và xuất bản nội dung trực tuyến.", "Phần mềm diệt virus"], "ans": 1, "exp": "Trình duyệt (web browser) là phần mềm ứng dụng giúp người sử dụng truy cập các website trên Internet."}, {"n": 6, "lv": "TH", "q": "Khẳng định nào sau đây là sai khi nói về trình duyệt?", "opts": ["Google Chrome, Cốc Cốc và Safari là các phần mềm chuyên biệt chỉ được cấp phép hoạt động nội bộ tại các cơ quan chính phủ quản lí dữ liệu siêu lớn.", "Người sử dụng có thể cài đặt và sử dụng nhiều trình duyệt trên một máy tính.", "Các trình duyệt có các chức năng chính và cách sử dụng tương tự nhau.", "Một máy tính chỉ được phép sử dụng duy nhất một trình duyệt web."], "ans": 3, "exp": "Người sử dụng có thể cài đặt và sử dụng nhiều trình duyệt trên một máy tính."}, {"n": 7, "lv": "TH", "q": "Để mở một trang web cụ thể khi đã biết địa chỉ, ta thao tác như thế nào trên trình duyệt?", "opts": ["Nhập địa chỉ trang web đó vào thanh địa chỉ rồi nhấn Enter.", "Nhập tên trang web đó vào thanh tìm kiếm toàn cầu của máy tính cá nhân để hệ điều hành quét toàn bộ ổ cứng và tự động kết nối với mạng ngoại bộ.", "Nhấn tổ hợp phím tắt trên bàn phím.", "Nháy đúp chuột vào giữa màn hình nền của trình duyệt."], "ans": 0, "exp": "Để truy cập một trang web, ta nhập địa chỉ của trang đó vào thanh địa chỉ của trình duyệt rồi nhấn Enter."}, {"n": 8, "lv": "TH", "q": "Khi di chuyển con trỏ chuột vào một liên kết trên trang web, biểu tượng con trỏ thường chuyển thành hình gì?", "opts": ["Hình mũi tên hai chiều kèm theo biểu tượng tải dữ liệu vòng tròn báo hiệu hệ thống đang tiến hành nén tệp tin đa phương tiện ở chế độ chạy ngầm.", "Hình bàn tay", "Hình đồng đồng cát", "Hình dấu thập"], "ans": 1, "exp": "Khi di chuyển con trỏ chuột vào liên kết, biểu tượng con trỏ chuột thường chuyển thành hình bàn tay."}, {"n": 9, "lv": "TH", "q": "Chức năng của thanh đánh dấu (Bookmarks bar) trên trình duyệt là gì?", "opts": ["Lưu trữ tự động toàn bộ hình ảnh và video trên trang web tải về ổ đĩa cục bộ của máy tính để người dùng có thể xem lại khi không có mạng Internet.", "Lưu địa chỉ trang web để truy cập lại nhanh chóng khi cần.", "Đánh dấu các đoạn văn bản quan trọng.", "Dịch trang web sang ngôn ngữ khác."], "ans": 1, "exp": "Có thể lưu địa chỉ trang web vào thanh đánh dấu (Bookmarks bar) của trình duyệt để truy cập lại trang đó nhanh chóng khi cần."}, {"n": 10, "lv": "TH", "q": "Thông tin trên mạng Internet được tổ chức dưới dạng nào?", "opts": ["Thành các trang siêu văn bản kết nối với nhau bởi các liên kết.", "Thành các tệp văn bản độc lập sắp xếp theo thứ tự bảng chữ cái.", "Thành các thư mục chứa dữ liệu tĩnh.", "Thành một cuốn sách điện tử có trang bìa, mục lục chi tiết và các phần nội dung được bảo mật mã hóa vĩnh viễn trên một máy chủ đám mây nội bộ."], "ans": 0, "exp": "Thông tin trên Internet được tạo nên từ nhiều trang web (siêu văn bản) kết nối với nhau bởi các liên kết."}, {"n": 11, "lv": "TH", "q": "Địa chỉ trang chủ của website và địa chỉ của website có mối liên hệ gì?", "opts": ["Là hai địa chỉ hoàn toàn khác nhau.", "Địa chỉ của trang chủ chính là địa chỉ của website.", "Trang chủ chỉ sử dụng các chuỗi số kết nối vật lý.", "Trang chủ hoàn toàn không có địa chỉ cụ thể mà chỉ hiển thị ngẫu nhiên dựa trên lịch sử tìm kiếm từ khóa của người dùng thông qua các thuật toán ẩn."], "ans": 1, "exp": "Địa chỉ của trang chủ chính là địa chỉ của website."}, {"n": 12, "lv": "TH", "q": "Hoạt động di chuyển theo các liên kết trên mạng thông tin toàn cầu được gọi là gì?", "opts": ["Lướt sóng thông tin thông qua một cổng kết nối bảo mật sử dụng mạng nơ-ron nhân tạo nhằm tối ưu hóa đường truyền dữ liệu xuyên quốc gia.", "Duyệt web", "Khai thác dữ liệu", "Soạn thảo văn bản"], "ans": 1, "exp": "Hoạt động di chuyển theo các liên kết để xem các trang web được gọi là duyệt web."}, {"n": 13, "lv": "TH", "q": "Trong cấu trúc một website, yếu tố nào giúp kết nối trang web này với trang web khác?", "opts": ["Dấu trang", "Liên kết", "Phần mềm kết nối", "Thanh cuộn dọc điều hướng các đoạn văn bản dài trên màn hình cảm ứng để người dùng đọc tin tức mà không cần dùng thao tác nhấp chuột vật lý."], "ans": 1, "exp": "Các trang web được nối với nhau thông qua các liên kết."}, {"n": 14, "lv": "TH", "q": "Địa chỉ nào sau đây là địa chỉ của một website?", "opts": ["nguyenvana@gmail.com", "https://vi.wikipedia.org", "C:\\Users\\Documents", "192.168.1.1 là địa chỉ IP nội bộ cấp phát tự động cho các thiết bị định tuyến trong mạng gia đình nhằm quản lí việc phân bổ băng thông của người dùng."], "ans": 1, "exp": "https://vi.wikipedia.org là địa chỉ trang chủ của website Bách khoa toàn thư mở tiếng Việt."}, {"n": 15, "lv": "TH", "q": "Ai là người có quyền quản lí một website trên Internet?", "opts": ["Tất cả những người truy cập đều có quyền quản lí và chỉnh sửa mã nguồn cốt lõi của hệ thống mạng thông tin toàn cầu vào bất cứ thời điểm nào trong ngày.", "Một người hoặc một tổ chức.", "Một hệ thống trí tuệ nhân tạo.", "Trình duyệt web."], "ans": 1, "exp": "Mỗi website do một người hoặc một tổ chức quản lí."}, {"n": 16, "lv": "TH", "q": "Trang siêu văn bản KHÔNG thể chứa dạng dữ liệu nào sau đây?", "opts": ["Hình ảnh, âm thanh và các chuỗi mã nguồn lập trình trí tuệ nhân tạo có khả năng tự động phân tích hành vi lướt web của con người mỗi ngày.", "Vật thể vật lí có thể cầm nắm.", "Video", "Văn bản"], "ans": 1, "exp": "Trang siêu văn bản là môi trường kĩ thuật số chỉ tích hợp văn bản, hình ảnh, âm thanh, video,... chứ không thể chứa vật thể vật lí."}, {"n": 17, "lv": "TH", "q": "Để nhập từ khóa cần tra cứu trên một trang web, người ta thường thao tác ở vị trí nào?", "opts": ["Nút quay lại trang trước nằm ở góc trái phía trên của trình duyệt giúp lưu lại tạm thời lịch sử thao tác phím bấm của người dùng trên hệ thống.", "Ô nhập từ hoặc cụm từ cần tra cứu.", "Vùng hiển thị logo của website.", "Nút đánh dấu trang."], "ans": 1, "exp": "Các trang web tra cứu thường cung cấp ô nhập từ hoặc cụm từ cần tra cứu để tìm kiếm thông tin."}, {"n": 18, "lv": "TH", "q": "Đặc điểm nổi bật của kho thông tin khổng lồ trên Internet là gì?", "opts": ["Được tạo nên từ nhiều trang web.", "Chỉ chứa thông tin dưới dạng văn bản đen trắng.", "Lưu trữ hoàn toàn ngoại tuyến.", "Không có bất kỳ hình ảnh hay âm thanh nào vì hệ thống chỉ ưu tiên truyền tải chuỗi kí tự cơ bản để tiết kiệm tối đa tài nguyên băng thông mạng."], "ans": 0, "exp": "Kho thông tin khổng lồ trên Internet được tạo nên từ nhiều trang web kết nối với nhau giống như mạng nhện."}, {"n": 19, "lv": "VD", "q": "Bạn Khoai muốn tìm hiểu về bộ phim hành động đang nổi bật trên mạng. Phần mềm nào trên máy tính giúp Khoai bắt đầu việc duyệt web để tìm kiếm thông tin này?", "opts": ["Microsoft Word là một trình soạn thảo tài liệu chuyên sâu hỗ trợ định dạng văn bản hàng loạt và chia sẻ dữ liệu ngoại tuyến qua các thiết bị lưu trữ.", "Google Chrome", "Ứng dụng xem ảnh", "Microsoft Excel"], "ans": 1, "exp": "Để khai thác thông tin từ các website trên Internet, người dùng cần sử dụng trình duyệt web như Google Chrome."}, {"n": 20, "lv": "VD", "q": "Một giáo viên vùng biên giới thường truy cập trang web học tiếng Anh để luyện phát âm mỗi tối. Để ngày mai có thể mở lại trang này bằng một lần nhấp chuột mà không cần gõ lại địa chỉ, giáo viên đó nên dùng tính năng nào?", "opts": ["Ghi chú ra giấy nhớ", "Nút đánh dấu trang (Bookmark)", "Chụp ảnh màn hình", "Lưu toàn bộ mã nguồn của trang web hiện tại thành một thư mục mã hóa phức tạp trên điện thoại thông minh để xem lại bằng ứng dụng đọc văn bản."], "ans": 1, "exp": "Lưu địa chỉ trang web vào thanh đánh dấu (Bookmarks) giúp truy cập lại nhanh chóng bằng cách nháy chuột vào tên trang đã lưu."}, {"n": 21, "lv": "VD", "q": "Bạn đang xem hướng dẫn \"cách nấu hàu sữa mồng tơi\" trên mạng và click nhầm vào một liên kết quảng cáo gia vị. Nút nào trên trình duyệt giúp bạn lập tức trở lại trang hướng dẫn nấu ăn?", "opts": ["Nút Tải lại trang (Reload)", "Nút Quay về trang trước", "Nút Trang chủ (Home)", "Nút Đến trang tiếp theo (Forward) chuyên dùng để nhảy vọt qua nhiều trang nội dung không mong muốn dựa trên các tùy chọn bộ lọc thông minh đã thiết lập."], "ans": 1, "exp": "Trình duyệt có chức năng \"Quay về trang trước\" (mũi tên trái) cho phép người dùng lùi lại trang web vừa xem trước đó."}, {"n": 22, "lv": "VD", "q": "Người dùng nhập địa chỉ website của ngân hàng BIDV vào thanh địa chỉ và nhấn Enter. Màn hình đầu tiên hiện ra hiển thị các danh mục dịch vụ chung của ngân hàng. Trang hiển thị đầu tiên này được gọi là gì?", "opts": ["Trang chủ", "Dấu trang", "Trang cá nhân", "Trang lưu trữ nội bộ bảo mật của khách hàng và chỉ được mở khóa thông qua mã xác thực vân tay đa lớp kết nối trực tiếp với máy chủ trung tâm."], "ans": 0, "exp": "Trang được mở ra đầu tiên khi truy cập một website được gọi là trang chủ của website đó."}, {"n": 23, "lv": "VD", "q": "Bạn đang đọc báo về \"thanh long ruột tím\". Trong bài, chữ \"thanh long ruột đỏ\" được tô màu xanh và gạch chân. Khi di chuyển con trỏ chuột vào dòng chữ này, biểu tượng chuột chuyển thành hình bàn tay, báo hiệu điều gì?", "opts": ["Dòng chữ đó bị lỗi hiển thị phông chữ nghiêm trọng do bộ gõ tiếng Việt đang xảy ra xung đột với mã nguồn của trang báo mạng trong lúc tải dữ liệu.", "Đó là một liên kết (hyperlink) trỏ đến một vị trí khác hoặc trang web khác.", "Đó là cảnh báo trang web bị nhiễm virus.", "Dòng chữ đó là tiêu đề chính."], "ans": 1, "exp": "Khi trỏ chuột vào liên kết, biểu tượng con trỏ biến thành hình bàn tay, cho phép nháy chuột để chuyển tới nội dung được xác định bởi liên kết."}, {"n": 24, "lv": "VD", "q": "Khi tìm kiếm tài liệu chuẩn bị bài phát biểu cho Chi hội Người cao tuổi, bạn nhấp vào dòng chữ \"Mẫu bài phát biểu hay\", lập tức màn hình chuyển từ trang tìm kiếm sang một trang văn bản mới chứa nội dung chi tiết. Thành phần nào đã giúp thực hiện cú nhảy trang này?", "opts": ["Trình duyệt web", "Liên kết", "Mạng viễn thông", "Đánh dấu vị trí trang cá nhân trên hệ thống lưu trữ kĩ thuật số toàn cầu để máy chủ liên tục gửi thông báo cập nhật tài liệu mới cho người dùng."], "ans": 1, "exp": "Các trang siêu văn bản tích hợp các liên kết trỏ đến vị trí khác trong trang hay trang web khác."}, {"n": 25, "lv": "VD", "q": "Bà ngoại đang đọc tin tức trực tuyến, bà nhấp chuột vào hình ảnh một em bé và màn hình liền mở ra một bài viết chi tiết về chính sách hỗ trợ trẻ em. Hành động liên tục nhấp chuột đi từ trang này sang trang khác của bà ngoại được gọi là gì?", "opts": ["Đánh dấu trang", "Duyệt web", "Lập trình lại toàn bộ cấu trúc mã nguồn của trang báo điện tử để hệ thống tự động hiển thị nội dung theo ý muốn cá nhân từ máy chủ trung tâm.", "Khởi động lại hệ thống"], "ans": 1, "exp": "Hoạt động di chuyển theo các liên kết để xem các trang web được gọi là duyệt web."}, {"n": 26, "lv": "VD", "q": "Để có thể truy cập mạng thông tin toàn cầu và tra cứu cách mở khóa nút Tác vụ, chiếc điện thoại thông minh cần cài đặt ít nhất bao nhiêu trình duyệt web?", "opts": ["3", "1", "2", "4"], "ans": 1, "exp": "Người sử dụng cần sử dụng một phần mềm ứng dụng được gọi là trình duyệt web, cài đặt nhiều hơn 1 là tùy chọn chứ không bắt buộc."}, {"n": 27, "lv": "VD", "q": "Nếu bạn cần tìm kiếm phần mềm hỗ trợ giải nén file zip trực tuyến, bạn cần mở công cụ nào sau đây để tiến hành nhập từ khóa tìm kiếm?", "opts": ["Phần mềm soạn thảo văn bản cao cấp cung cấp hàng loạt mẫu định dạng có sẵn hỗ trợ trình bày trực tiếp mà không cần kết nối mạng viễn thông toàn cầu.", "Trình duyệt web", "Phần mềm diệt virus", "Trình quản lý thư mục"], "ans": 1, "exp": "Cần mở trình duyệt web để có thể truy cập các website tìm kiếm trên Internet."}, {"n": 28, "lv": "VD", "q": "Trong quá trình tìm mua chiếc ghế văn phòng thương hiệu Dona của Quy Phúc, trình duyệt bị tắt đột ngột. Hôm sau, bạn mở trình duyệt và nhấp ngay vào tên sản phẩm trên một thanh ngang phía dưới thanh địa chỉ để mở lại trang cũ mà không cần tra Google. Bạn đã sử dụng tính năng nào?", "opts": ["Nút quay lại trang chủ", "Thanh đánh dấu (Bookmarks bar)", "Nút tải lại trang liên tục cập nhật bộ nhớ tạm của hệ thống máy tính để hiển thị phiên bản mới nhất của đồ nội thất mà không tiêu tốn dung lượng 4G.", "Ô tìm kiếm"], "ans": 1, "exp": "Nháy chuột vào tên trang web trên thanh đánh dấu (Bookmarks bar) giúp người dùng truy cập lại trang web đã lưu."}, {"n": 29, "lv": "VD", "q": "Bạn muốn copy chính xác địa chỉ URL bài viết hướng dẫn làm món trứng bắc thảo để gửi cho bạn bè. Bạn cần nhấp chuột vào vị trí nào trên giao diện trình duyệt để bôi đen toàn bộ địa chỉ (ví dụ: https://...)?", "opts": ["Thanh trạng thái kết nối mạng ẩn ở viền dưới của màn hình thiết bị di động chuyên dùng để theo dõi tốc độ truyền tải gói tin của mạng thông tin toàn cầu.", "Thanh địa chỉ", "Các mục chính của trang", "Nút tải lại"], "ans": 1, "exp": "Thanh địa chỉ trên trình duyệt là nơi hiển thị toàn bộ địa chỉ truy cập của trang web hiện tại."}, {"n": 30, "lv": "VD", "q": "Một học sinh nhập chính xác địa chỉ \"https://vtvgo.vn\" vào thanh địa chỉ của trình duyệt nhưng màn hình vẫn đứng im. Nguyên nhân là do học sinh đó đã quên thao tác bắt buộc nào?", "opts": ["Bấm nút đánh dấu trang", "Nhấn phím Enter", "Nhập tên miền bằng tiếng Việt có dấu hoàn chỉnh để trình duyệt đối chiếu chéo với danh sách từ khóa hệ thống nhằm tăng độ chính xác tuyệt đối.", "Click chuột phải"], "ans": 1, "exp": "Thao tác truy cập đúng là nhập địa chỉ trang web vào ô địa chỉ, sau đó bắt buộc phải nhấn phím Enter để thực hiện lệnh tải trang."}];
+
+/* ---------- Hình minh họa bảng tính cho các câu cần hình ---------- */
+const rng=(a,b)=>{const c1=a.charCodeAt(0),c2=b.charCodeAt(0),r1=+a.slice(1),r2=+b.slice(1),o=[];for(let c=c1;c<=c2;c++)for(let r=r1;r<=r2;r++)o.push(String.fromCharCode(c)+r);return o};
+const CAP_COPY='🟦 Ô nguồn (có công thức) · 🟧 Ô đích cần xác định';
+/* ---------- Hình minh họa vẽ bằng SVG (theo "Prompt tạo hình" trong ngân hàng câu hỏi) ---------- */
+const SVGSTYLE="height:34vh;max-width:100%;width:auto;display:block;margin:auto;font-family:'Segoe UI',Arial,sans-serif";
+function browserFrame(w,h,addr){return `<rect width="${w}" height="${h}" rx="10" fill="#f6f8fd"/><rect x="10" y="10" width="${w-20}" height="${h-20}" rx="8" fill="#fff" stroke="#9aa6c6" stroke-width="2"/><rect x="10" y="10" width="${w-20}" height="22" rx="8" fill="#e3e8f4"/><circle cx="28" cy="21" r="4.5" fill="#f87171"/><circle cx="44" cy="21" r="4.5" fill="#fbbf24"/><circle cx="60" cy="21" r="4.5" fill="#34d399"/>`}
+function arrowCursor(x,y){return `<path d="M${x} ${y} L${x} ${y+26} L${x+7} ${y+20} L${x+12} ${y+31} L${x+17} ${y+29} L${x+12} ${y+18} L${x+21} ${y+18} Z" fill="#fff" stroke="#111" stroke-width="2" stroke-linejoin="round"/>`}
+function handCursor(x,y){return `<g transform="translate(${x},${y}) rotate(-18 13 15)"><rect x="0" y="14" width="26" height="17" rx="7" fill="#fff" stroke="#111" stroke-width="2"/><rect x="7" y="0" width="8" height="22" rx="4" fill="#fff" stroke="#111" stroke-width="2"/><rect x="8" y="14" width="6" height="8" fill="#fff"/><line x1="15" y1="19" x2="15" y2="27" stroke="#111" stroke-width="1.5"/><line x1="20" y1="19" x2="20" y2="27" stroke="#111" stroke-width="1.5"/></g>`}
+function linkHoverSVG(){
+ return `<svg viewBox="0 0 640 300" width="640" height="300" role="img" style="${SVGSTYLE}">${browserFrame(640,300)}
+ <rect x="76" y="40" width="470" height="22" rx="11" fill="#f1f4fb" stroke="#c5cce0"/><text x="92" y="56" font-size="13" fill="#667">https://trang-web-don-gian.vn</text>
+ <rect x="40" y="84" width="260" height="16" rx="3" fill="#1b2540"/>
+ <rect x="40" y="116" width="540" height="9" rx="3" fill="#cbd5e1"/><rect x="40" y="134" width="500" height="9" rx="3" fill="#cbd5e1"/><rect x="40" y="152" width="520" height="9" rx="3" fill="#cbd5e1"/>
+ <text x="330" y="224" font-size="20" fill="#1d4ed8" text-decoration="underline" font-weight="600">Xem thêm bài viết liên quan</text><line x1="330" y1="228" x2="595" y2="228" stroke="#1d4ed8" stroke-width="2"/>
+ <rect x="40" y="262" width="240" height="9" rx="3" fill="#cbd5e1"/>
+ ${arrowCursor(150,190)}<path d="M190 214 Q250 236 318 226" fill="none" stroke="#94a3b8" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#mv)"/>
+ <defs><marker id="mv" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/></marker></defs>
+ ${handCursor(352,230)}
+ <text x="320" y="289" text-anchor="middle" font-size="14" font-weight="700" fill="#dc2626">Con trỏ chuột khi chạm vào đoạn chữ gạch chân màu xanh</text></svg>`;
+}
+function backBtnSVG(){
+ return `<svg viewBox="0 0 640 210" width="640" height="210" role="img" style="${SVGSTYLE}">${browserFrame(640,210)}
+ <rect x="22" y="42" width="48" height="40" rx="20" fill="#dbeafe" stroke="#3b82f6" stroke-width="3"/>
+ <path d="M54 62 L36 62 M44 53 L36 62 L44 71" fill="none" stroke="#1d4ed8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M104 62 L122 62 M114 53 L122 62 L114 71" fill="none" stroke="#94a3b8" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M175 62 A11 11 0 1 1 168 52 M168 46 L168 54 L176 54" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+ <path d="M226 64 L238 52 L250 64 M230 62 L230 74 L246 74 L246 62" fill="none" stroke="#475569" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+ <rect x="272" y="46" width="340" height="32" rx="16" fill="#f1f4fb" stroke="#c5cce0"/><text x="290" y="67" font-size="14" fill="#667">https://quang-cao-gia-vi.vn</text>
+ ${arrowCursor(40,70)}
+ <rect x="30" y="104" width="580" height="12" rx="3" fill="#e2e8f0"/><rect x="30" y="126" width="520" height="12" rx="3" fill="#e2e8f0"/><rect x="30" y="148" width="560" height="12" rx="3" fill="#e2e8f0"/>
+ <text x="320" y="190" text-anchor="middle" font-size="14" font-weight="700" fill="#2563eb">Góc trên bên trái của trình duyệt: một nút mũi tên đang được tô sáng màu xanh</text></svg>`;
+}
+const ILLUS={
+ 'TH8':{svg:linkHoverSVG(),cap:'Con trỏ chuột chạm vào đoạn văn bản có gạch chân màu xanh dương và biến thành biểu tượng ngón trỏ'},
+ 'VD21':{svg:backBtnSVG(),cap:'Góc trên cùng bên trái của trình duyệt; con trỏ chuột đang trỏ vào một nút lệnh'}
+};
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sheetHTML(cfg,q,revealed){
+  let h='<table class="sheet"><tr><th></th>'+cfg.cols.map(c=>`<th>${c}</th>`).join('')+'</tr>';
+  cfg.rows.forEach(r=>{h+=`<tr><th>${r}</th>`;cfg.cols.forEach(c=>{
+    const a=c+r;let t=(cfg.cells&&cfg.cells[a])||'';const cl=[];
+    if(cfg.tbl&&cfg.tbl.includes(a))cl.push('tbl');
+    if(cfg.head&&cfg.head.includes(a))cl.push('hd');
+    if(a===cfg.src)cl.push('src');
+    if(a===cfg.tgt){cl.push(revealed?'tgtok':'tgt');t=revealed?(cfg.tgtReveal||q.opts[q.ans]):'?';}
+    h+=`<td class="${cl.join(' ')}">${esc(t)}</td>`;});h+='</tr>';});
+  return h+'</table>'+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:'');
+}
+
+/* ---------- Tiện ích ---------- */
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const LV={NB:{t:30,name:'Nhận biết'},TH:{t:45,name:'Thông hiểu'},VD:{t:60,name:'Vận dụng'}};
+const PTS=2, GIFT_V=.5;
+const GIFT_P=Math.min(1,Math.max(0,(parseFloat(new URLSearchParams(location.search).get('qua'))||20)/100)); // mặc định 20%; thử nhanh: thêm ?qua=100 sau tên file
+const fmt=n=>(Math.round(n*10)/10).toString().replace('.',',');
+
+/* ---------- Âm thanh (Web Audio, không cần file ngoài) ---------- */
+let AC=null,master,musicOn=true,musicTimer=null,step=0;
+function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.9;master.connect(AC.destination);}catch(e){AC=null}if(AC&&AC.state==='suspended')AC.resume();}
+function tone(f,d=.15,type='sine',v=.2,t0=0,slide){if(!AC)return;const t=AC.currentTime+t0,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(slide,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(master);o.start(t);o.stop(t+d+.03);}
+function noise(d,f0,f1,v){if(!AC)return;const n=AC.sampleRate*d|0,b=AC.createBuffer(1,n,AC.sampleRate),a=b.getChannelData(0);for(let i=0;i<n;i++)a[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=2;const t=AC.currentTime;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+d);const g=AC.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.15);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(f);f.connect(g);g.connect(master);s.start();}
+const sfx={
+ click(){tone(660,.07,'triangle',.12)},
+ start(){[392,523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.2,i*.09))},
+ correct(){[523,659,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.22,i*.08))},
+ wrong(){tone(240,.4,'sawtooth',.16,0,100);tone(180,.45,'square',.09,.12,70)},
+ timeout(){[440,330,220].forEach((f,i)=>tone(f,.2,'square',.11,i*.2))},
+ tick(){tone(950,.05,'square',.06)},
+ launch(){noise(1.4,250,3000,.2);tone(90,1.4,'sawtooth',.07,0,500)},
+ boom(){noise(.35,2500,250,.07);tone(140,.3,'sine',.07,0,50)},
+ drop(){tone(1800,.7,'sine',.14,0,500);tone(900,.5,'triangle',.08,.1,300)},
+ gift(){[1200,1500,1800,2400,3000].forEach((f,i)=>tone(f,.16,'sine',.14,i*.05))},
+ arrive(){tone(300,.35,'sine',.2,0,1000);tone(600,.25,'triangle',.12,.1,1500)},
+ fanfare(){[523,659,784,659,784,1047,1319].forEach((f,i)=>tone(f,.28,'triangle',.22,i*.13))},
+ sad(){[392,370,349,330].forEach((f,i)=>tone(f,.35,'sine',.18,i*.25))}
+};
+const SCALE=[262,294,330,392,440,523,440,392,330,294];
+function musicTick(){if(!AC||!musicOn)return;const f=SCALE[step%SCALE.length];tone(f,.5,'triangle',.045);if(step%4===0)tone(f/2,.9,'sine',.06);if(step%8===4)tone(f*2,.3,'sine',.03,.12);step++;}
+function setMusic(on){musicOn=on;clearInterval(musicTimer);if(on&&AC)musicTimer=setInterval(musicTick,340);$('btnSnd').textContent=on?'🔊 Âm thanh':'🔇 Tắt tiếng';}
+
+/* ---------- Nền sao ---------- */
+const bg=$('bg'),bgc=bg.getContext('2d');let stars=[];
+function initStars(){bg.width=innerWidth;bg.height=innerHeight;stars=Array.from({length:140},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}))}
+addEventListener('resize',initStars);initStars();
+function drawStars(t){bgc.clearRect(0,0,bg.width,bg.height);stars.forEach(s=>{bgc.globalAlpha=.35+.65*Math.abs(Math.sin(t/1000*s.s+s.p));bgc.fillStyle='#fff';bgc.beginPath();bgc.arc(s.x,s.y,s.r,0,6.3);bgc.fill()});bgc.globalAlpha=1}
+
+/* ---------- Pháo hoa giấy ---------- */
+const fx=$('fx'),fxc=fx.getContext('2d');let conf=[];
+function sizeFx(){fx.width=innerWidth;fx.height=innerHeight}addEventListener('resize',sizeFx);sizeFx();
+function confetti(n=90,ox=innerWidth/2,oy=innerHeight/3){const cols=['#ffb100','#ff4d79','#5b7cff','#12b774','#ff7a18','#a46bff'];for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*9+3;conf.push({x:ox,y:oy,vx:Math.cos(a)*v,vy:Math.sin(a)*v-5,w:Math.random()*8+4,h:Math.random()*5+3,r:Math.random()*6,vr:Math.random()*.4-.2,c:cols[Math.random()*6|0],life:1})}}
+let confDirty=false;
+function drawConf(ds=1){if(!conf.length){if(confDirty){fxc.clearRect(0,0,fx.width,fx.height);confDirty=false}return}confDirty=true;fxc.clearRect(0,0,fx.width,fx.height);conf=conf.filter(p=>p.life>0);conf.forEach(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vy+=.28*ds;p.vx*=Math.pow(.99,ds);p.r+=p.vr*ds;p.life-=.008*ds;fxc.save();fxc.globalAlpha=Math.max(0,p.life);fxc.translate(p.x,p.y);fxc.rotate(p.r);fxc.fillStyle=p.c;fxc.fillRect(-p.w/2,-p.h/2,p.w,p.h);fxc.restore()})}
+
+/* ---------- Hệ Mặt Trời (canvas nhỏ + hoạt cảnh toàn màn hình, nền tối) ---------- */
+let sc=null,W=300,H=300,K=1;
+const CV={mini:{cv:$('sky'),W:300,H:300,kind:'mini'},big:{cv:$('bigsky'),W:800,H:600,kind:'big'},intro:{cv:$('introsky'),W:500,H:500,kind:'intro'}};
+let CUR=null;
+const STARS=(()=>{const a=Array.from({length:140},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.4+.2,p:Math.random()*6,s:Math.random()*2+.5}));return{all:a.slice(30),tw:a.slice(0,30)}})();
+CV.intro.ctx=CV.intro.cv.getContext('2d');CV.mini.ctx=CV.mini.cv.getContext('2d');CV.big.ctx=CV.big.cv.getContext('2d');
+function buildBg(o){ // vẽ sẵn nền sao + quỹ đạo một lần, mỗi khung hình chỉ cần drawImage
+ const c=o.bgCv||(o.bgCv=document.createElement('canvas'));c.width=Math.ceil(o.W*o.d);c.height=Math.ceil(o.H*o.d);
+ const x=c.getContext('2d');x.setTransform(o.d,0,0,o.d,0,0);
+ if(o.kind!=='mini'){x.fillStyle='#fff';STARS.all.forEach(s=>{x.globalAlpha=.3+.5*((s.p*7)%1);x.beginPath();x.arc(s.x*o.W,s.y*o.H,s.r*1.2,0,6.3);x.fill()});x.globalAlpha=1}
+ x.strokeStyle='rgba(150,170,255,.16)';x.lineWidth=1;const m=12*o.k;
+ PL.forEach(p=>{x.beginPath();x.ellipse(o.W/2,o.H/2,p.o*(o.W/2-m),p.o*(o.H/2-m),0,0,6.3);x.stroke()});
+}
+function sizeCv(o,w,h,dprMax){const d=Math.min(dprMax,devicePixelRatio||1);o.d=d;o.W=w;o.H=h;o.cv.width=Math.ceil(w*d);o.cv.height=Math.ceil(h*d);o.ctx.setTransform(d,0,0,d,0,0);
+ o.k=o.kind==='big'?Math.max(1.5,Math.min(w,h)/300):o.kind==='intro'?Math.max(1.2,Math.min(w,h)/300):1;buildBg(o)}
+function sizeSky(){const r=CV.mini.cv.getBoundingClientRect(),r2=CV.intro.cv.getBoundingClientRect();
+ sizeCv(CV.mini,Math.max(120,r.width),Math.max(120,r.height),1.5);sizeCv(CV.big,innerWidth,innerHeight,1);sizeCv(CV.intro,Math.max(160,r2.width),Math.max(160,r2.height),1.5)}
+function useCv(o){CUR=o;sc=o.ctx;W=o.W;H=o.H;K=o.k}
+new ResizeObserver(sizeSky).observe(CV.mini.cv.parentElement);new ResizeObserver(sizeSky).observe(CV.intro.cv.parentElement);addEventListener('resize',sizeSky);
+const PL=[
+ {n:'Thủy tinh',c1:'#d9d9d9',c2:'#6f6f6f',r:3.6,o:.17,sp:1.6,ph:.5},
+ {n:'Kim tinh',c1:'#ffe3a8',c2:'#c98b2e',r:5,o:.27,sp:1.2,ph:2.2},
+ {n:'Trái Đất',c1:'#7fd0ff',c2:'#1b5fb5',r:5.4,o:.38,sp:1.0,ph:4},
+ {n:'Hỏa tinh',c1:'#ff9f7a',c2:'#a8321a',r:4.4,o:.48,sp:.8,ph:1},
+ {n:'Mộc tinh',c1:'#f3d6a8',c2:'#a8744a',r:9,o:.62,sp:.5,ph:3.3},
+ {n:'Thổ tinh',c1:'#f1e0a6',c2:'#b79545',r:7.8,o:.75,sp:.38,ph:5.2,ring:1},
+ {n:'Thiên Vương',c1:'#bff3f0',c2:'#4ab5b5',r:6,o:.86,sp:.28,ph:.2},
+ {n:'Hải Vương',c1:'#8aa9ff',c2:'#2b3fb5',r:6,o:.96,sp:.22,ph:2.8}
+];
+const ROUTE=[0,1,3,4,2]; // câu 1..5 -> Thủy, Kim, Hỏa, Mộc, rồi về Trái Đất
+let SK={shipAt:null,visited:[],flight:null,parts:[],warp:0,asteroid:null,rings:[],floaters:[],onEnd:null};
+const sunPos=()=>({x:W/2,y:H/2});
+function plPos(i,t){const p=PL[i],a=p.ph+t/1000*(K>1?.1:.4)*p.sp,m=12*K;return{x:W/2+Math.cos(a)*p.o*(W/2-m),y:H/2+Math.sin(a)*p.o*(H/2-m),a}}
+const ease=p=>p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+function originPos(f,t){return f.from==null?sunPos():plPos(f.from,t)}
+function flightPos(f,p,t){const s=originPos(f,t),e=plPos(f.idx,t),k=ease(p),dx=e.x-s.x,dy=e.y-s.y,L=Math.hypot(dx,dy)||1,arc=Math.sin(Math.PI*p)*L*.14;return{x:s.x+dx*k-dy/L*arc,y:s.y+dy*k+dx/L*arc}}
+function spark(x,y,n,c,sp=2){for(let i=0;i<n;i++){const a=Math.random()*6.28,v=Math.random()*sp*K;SK.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.02+Math.random()*.03,c,r:(Math.random()*2+1)*K*.8})}}
+function drawShip(x,y,ang,sz){sc.save();sc.translate(x,y);sc.rotate(ang);sc.scale(sz,sz);
+ const fl=10+Math.random()*7;sc.fillStyle='#ffb23c';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-6-fl,0);sc.lineTo(-6,3);sc.fill();sc.fillStyle='#fff3a0';sc.beginPath();sc.moveTo(-6,-1.6);sc.lineTo(-6-fl*.55,0);sc.lineTo(-6,1.6);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(-5,-4);sc.lineTo(-10,-8);sc.lineTo(-9,-1);sc.fill();sc.beginPath();sc.moveTo(-5,4);sc.lineTo(-10,8);sc.lineTo(-9,1);sc.fill();
+ sc.fillStyle='#eef3ff';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(5,-5,-6,-4);sc.lineTo(-6,4);sc.quadraticCurveTo(5,5,11,0);sc.fill();
+ sc.fillStyle='#ff5d7a';sc.beginPath();sc.moveTo(11,0);sc.quadraticCurveTo(8,-3,5,-4);sc.lineTo(5,4);sc.quadraticCurveTo(8,3,11,0);sc.fill();
+ sc.fillStyle='#4fc3f7';sc.beginPath();sc.arc(0,0,2.2,0,6.3);sc.fill();sc.restore()}
+const SPR={};
+function planetSprite(i,k,d){const key=i+'|'+k.toFixed(2)+'|'+d;if(SPR[key])return SPR[key];
+ const p=PL[i],r=p.r*k,half=Math.ceil(r*(p.ring?2.1:1.1))+2,c=document.createElement('canvas');c.width=c.height=Math.ceil(half*2*d);
+ const x=c.getContext('2d');x.scale(d,d);x.translate(half,half);
+ if(p.ring){x.save();x.rotate(-.4);x.strokeStyle='rgba(240,220,160,.8)';x.lineWidth=2*k*.7;x.beginPath();x.ellipse(0,0,r*1.9,r*.6,0,0,6.3);x.stroke();x.restore()}
+ const g=x.createRadialGradient(-r*.35,-r*.35,r*.1,0,0,r);g.addColorStop(0,p.c1);g.addColorStop(1,p.c2);x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,6.3);x.fill();
+ if(p.n==='Trái Đất'){x.fillStyle='rgba(60,200,100,.75)';x.beginPath();x.arc(-r*.28,-r*.2,r*.4,0,6.3);x.fill()}
+ return SPR[key]={c,half}}
+function drawPlanet(i,x,y){const s=planetSprite(i,K,CUR.d);sc.drawImage(s.c,x-s.half,y-s.half,s.half*2,s.half*2)}
+let GIFTSPR=null;
+function giftSprite(){if(GIFTSPR)return GIFTSPR;const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.font='64px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('🎁',48,52);return GIFTSPR=c}
+let SUNSPR=null;
+function sunSprite(){if(SUNSPR)return SUNSPR;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');
+ const gl=x.createRadialGradient(128,128,6,128,128,128);gl.addColorStop(0,'rgba(255,220,100,.9)');gl.addColorStop(.35,'rgba(255,150,40,.35)');gl.addColorStop(1,'rgba(255,100,0,0)');x.fillStyle=gl;x.beginPath();x.arc(128,128,128,0,6.3);x.fill();
+ const sg=x.createRadialGradient(119,119,5,128,128,40);sg.addColorStop(0,'#fff6b0');sg.addColorStop(1,'#ff9f1c');x.fillStyle=sg;x.beginPath();x.arc(128,128,40,0,6.3);x.fill();return SUNSPR=c}
+function frameSky(t,big,intro){
+ sc.clearRect(0,0,W,H);
+ sc.drawImage(CUR.bgCv,0,0,W,H);
+ if(big||intro){STARS.tw.forEach(s=>{sc.globalAlpha=.25+.75*Math.abs(Math.sin(t/1000*s.s+s.p));sc.fillStyle='#fff';sc.beginPath();sc.arc(s.x*W,s.y*H,s.r*1.2,0,6.3);sc.fill()});sc.globalAlpha=1}
+ const sr=(11+Math.sin(t/400)*1.2+SK.warp*3)*K,gs=sr*3.2*2;sc.drawImage(sunSprite(),W/2-gs/2,H/2-gs/2,gs,gs);
+ const cur=S&&S.i!=null?ROUTE[S.i]:-1;
+ PL.forEach((p,i)=>{const q=plPos(i,t),r=p.r*K;
+  if(i===cur&&!SK.visited[i]&&S.active){sc.strokeStyle='rgba(255,216,107,'+(.4+.4*Math.sin(t/200))+')';sc.lineWidth=K*.8;sc.setLineDash([3*K,3*K]);sc.beginPath();sc.arc(q.x,q.y,r+(6+Math.sin(t/200)*1.5)*K,0,6.3);sc.stroke();sc.setLineDash([])}
+  drawPlanet(i,q.x,q.y);
+  if(SK.visited[i]){sc.strokeStyle='#2ee59d';sc.lineWidth=2*K*.7;sc.beginPath();sc.arc(q.x,q.y,r+4*K,0,6.3);sc.stroke();sc.fillStyle='#2ee59d';sc.font=`bold ${11*K}px sans-serif`;sc.textAlign='center';sc.fillText('✓',q.x,q.y-r-7*K)}
+  if(i<5||big||intro){sc.fillStyle='rgba(220,230,255,.8)';sc.font=`${9.5*K}px sans-serif`;sc.textAlign='center';sc.fillText(p.n,q.x,q.y+r+11*K)}
+ });
+ if(!(big&&SK.flight)){ // tàu đang đậu tại Mặt Trời hoặc hành tinh đã tới
+  const at=SK.shipAt,base=at==null?{x:W/2,y:H/2}:plPos(at,t),R=at==null?sr:PL[at].r*K,ang=-.7,d=R+(at==null?12:9)*K;
+  drawShip(base.x+Math.cos(ang)*d,base.y+Math.sin(ang)*d,ang,(big?1.1:.85)*K);
+ }
+ if(!big)return;
+ SK.rings=SK.rings.filter(r=>r.l>0);SK.rings.forEach(r=>{r.l-=.022;r.r+=1.3*K;const q=plPos(r.i,t);sc.strokeStyle=`rgba(46,229,157,${r.l})`;sc.lineWidth=3;sc.beginPath();sc.arc(q.x,q.y,r.r,0,6.3);sc.stroke()});
+ if(SK.asteroid){const a=SK.asteroid;a.x+=a.vx;a.y+=a.vy;a.l-=.008;sc.save();sc.translate(a.x,a.y);sc.rotate(t/150);sc.scale(K*1.4,K*1.4);sc.fillStyle='#8a6a55';sc.beginPath();sc.moveTo(-6,-3);sc.lineTo(-2,-7);sc.lineTo(5,-4);sc.lineTo(7,2);sc.lineTo(1,7);sc.lineTo(-6,4);sc.fill();sc.restore();
+  spark(a.x,a.y,2,'#ff9f43',1);if(a.l<=0)SK.asteroid=null}
+ const f=SK.flight;
+ if(f){const p=Math.min(1,(t-f.t0)/f.dur),pos=flightPos(f,p,t),pp=flightPos(f,Math.max(0,p-.02),t),ang=Math.atan2(pos.y-pp.y,pos.x-pp.x);
+  if(f.gift&&!f.taken){
+   if(!f.ann&&p>=.04){f.ann=true;sfx.drop();$('cineTitle').textContent='🎁 Có quà bất ngờ rơi xuống! Tàu hãy nhặt nhé!'}
+   const gp=flightPos(f,.5,t),gk=Math.min(1,Math.max(0,(p-.04)/.3)),fall=(1-(1-Math.pow(1-gk,3)))*(gp.y+60*K),bob=gk>=1?Math.sin(t/160)*4*K:0,gy=gp.y-fall+bob;
+   if(gk>0){const pulse=1+.12*Math.sin(t/120);
+    const rg=sc.createRadialGradient(gp.x,gy,4,gp.x,gy,46*K*pulse);rg.addColorStop(0,'rgba(255,230,120,.75)');rg.addColorStop(1,'rgba(255,200,60,0)');sc.fillStyle=rg;sc.beginPath();sc.arc(gp.x,gy,46*K*pulse,0,6.3);sc.fill();
+    const gz=56*K*pulse;sc.save();sc.translate(gp.x,gy);sc.rotate(gk<1?Math.sin(t/90)*.3:0);sc.drawImage(giftSprite(),-gz/2,-gz/2,gz,gz);sc.restore();
+    spark(gp.x,gy,2,'#ffd86b',1.2)}
+  }
+  if(f.gift&&!f.taken&&p>=.5){f.taken=true;S.bonus+=GIFT_V;S.bonusCount++;sfx.gift();spark(pos.x,pos.y,90,'#ffd86b',5);SK.floaters.push({x:pos.x,y:pos.y,l:2,txt:'🎁 +0,5 điểm!'});$('cineTitle').textContent='🎉 Nhận quà! +0,5 điểm';updHud();$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10  🎁 +0,5';confetti(50,innerWidth/2,innerHeight/2)}
+  spark(pos.x-Math.cos(ang)*8*K,pos.y-Math.sin(ang)*8*K,2,'#ffb23c',1.2);
+  drawShip(pos.x,pos.y,ang,1.35*K);
+  if(p>=1){SK.flight=null;SK.shipAt=f.idx;SK.visited[f.idx]=true;SK.rings.push({i:f.idx,r:PL[f.idx].r*K+3,l:1});const q=plPos(f.idx,t);spark(q.x,q.y,50,'#2ee59d',3);sfx.arrive();if(SK.onEnd){const fn=SK.onEnd;SK.onEnd=null;fn()}}}
+ SK.parts=SK.parts.filter(p=>p.l>0);SK.parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.l-=p.d;sc.globalAlpha=Math.max(0,p.l);sc.fillStyle=p.c;sc.beginPath();sc.arc(p.x,p.y,p.r,0,6.3);sc.fill()});sc.globalAlpha=1;
+ SK.floaters=SK.floaters.filter(f=>f.l>0);SK.floaters.forEach(f=>{f.y-=.7;f.l-=.012;sc.globalAlpha=Math.min(1,Math.max(0,f.l));sc.fillStyle='#ffe58a';sc.font=`bold ${26*K}px sans-serif`;sc.textAlign='center';sc.fillText(f.txt,f.x,f.y-14*K);sc.globalAlpha=1});
+}
+
+/* ---------- Logic trò chơi ---------- */
+let S={i:0,active:false};
+const player={name:'',cls:''};
+function pickPositions(n){ // vị trí đáp án đúng: rải đều A–D, không chữ nào quá 2 lần, ít nhất 3 chữ khác nhau
+ let p,g=0;do{p=Array.from({length:n},()=>Math.random()*4|0);g++}while(g<500&&([0,1,2,3].some(k=>p.filter(x=>x===k).length>2)||new Set(p).size<3));return p}
+function pickQuestions(){
+ const by=lv=>shuffle(QS.filter(q=>q.lv===lv));
+ const pos=pickPositions(5);
+ return [...by('NB').slice(0,3),...by('TH').slice(0,1),...by('VD').slice(0,1)].map((q,i)=>{
+  const wrong=shuffle([0,1,2,3].filter(k=>k!==q.ans)),opts=[];let w=0;
+  for(let k=0;k<4;k++)opts[k]=k===pos[i]?q.opts[q.ans]:q.opts[wrong[w++]];
+  return{...q,key:q.lv+q.n,opts,ans:pos[i]};});
+}
+function newGame(){
+ S={qs:pickQuestions(),i:0,base:0,bonus:0,bonusCount:0,res:[],active:true,answered:false,deadline:0,dur:30,lastTick:-1};
+ SK.visited=[];SK.flight=null;SK.parts=[];SK.rings=[];SK.floaters=[];SK.asteroid=null;SK.onEnd=null;SK.shipAt=null;S.busy=false;
+ $('start').classList.add('hide');$('end').classList.add('hide');$('game').classList.remove('hide');
+ $('hName').textContent=player.name;$('hClass').textContent=player.cls;
+ sizeSky();updHud();loadQ();
+}
+const total=()=>Math.min(10,S.base+S.bonus);
+function updHud(){$('hScore').textContent=fmt(total());$('hQ').textContent=(Math.min(S.i+1,5))+'/5'}
+function renderPips(){
+ $('pips').innerHTML=S.qs.map((q,i)=>{const r=S.res[i];return`<span class="pip ${i===S.i?'cur':''} ${r?(r.ok?'ok':'no'):''}">${i+1}. ${q.lv}${r?(r.ok?' ✓':' ✗'):''}</span>`}).join('');
+}
+function loadQ(){
+ const q=S.qs[S.i],L=LV[q.lv];S.answered=false;S.dur=L.t;S.deadline=performance.now()+L.t*1000;S.lastTick=-1;
+ renderPips();updHud();
+ $('lvl').className='lvl '+q.lv;S.lvlBase=`${q.lv} · ${L.name} · ⏱ `;S.lvlSec=L.t;$('lvl').textContent=S.lvlBase+L.t+' giây';
+ $('qtext').textContent=`Câu ${S.i+1}. ${q.q}`;
+ const il=$('illus'),cfg=ILLUS[q.key];
+ if(cfg){il.innerHTML=cfg.svg?cfg.svg+(cfg.cap?`<div class="cap">${cfg.cap}</div>`:''):sheetHTML(cfg,q,false);il.classList.remove('hide')}else il.classList.add('hide');
+ {const mo=Math.max(...q.opts.map(o=>o.length)),ql=q.q.length,cl=$('qbox').classList;cl.toggle('long',mo>55||ql>170);cl.toggle('xlong',mo>90||ql>260)}
+ $('opts').innerHTML='';
+ q.opts.forEach((t,k)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<b>${'ABCD'[k]}</b><span></span>`;b.querySelector('span').textContent=t;b.onclick=()=>answer(k);$('opts').appendChild(b)});
+ $('fb').innerHTML='';$('btnNext').classList.add('hide');
+ const box=$('qbox');box.classList.remove('enter');void box.offsetWidth;box.classList.add('enter');$('qwrap').scrollTop=0;
+ sfx.click();
+ $('timer').classList.remove('low');$('tbar').classList.remove('low');
+}
+function answer(k){
+ if(S.answered)return;S.answered=true;
+ const q=S.qs[S.i],ok=k===q.ans,to=k<0;
+ const btns=[...$('opts').children];btns.forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('good');else if(i===k)b.classList.add('wrong');else b.classList.add('dim')});
+ S.res[S.i]={ok,to,q};
+ if(ok){S.base+=PTS;sfx.correct();confetti(70,innerWidth*.35,innerHeight*.5);}
+ else{to?sfx.timeout():sfx.wrong();
+  $('qbox').classList.remove('enter');$('qbox').style.animation='shake .45s'; setTimeout(()=>$('qbox').style.animation='',500)}
+ const cfg=ILLUS[q.key];if(cfg&&!cfg.svg)$('illus').innerHTML=sheetHTML(cfg,q,true);
+ const fb=$('fb');fb.innerHTML='';const d=document.createElement('div');d.className='fb '+(ok?'ok':'no');
+ const h=document.createElement('h3');h.textContent=ok?`✅ Chính xác! +${PTS} điểm — bấm “Câu tiếp theo” để ${S.i===4?'đưa tàu về Trái Đất! 🌍':'phóng tàu tới '+PL[ROUTE[S.i]].n+'! 🚀'}`:(to?'⏰ Hết giờ! Câu này tính là sai.':'❌ Chưa đúng rồi, cố lên nhé!');
+ const a=document.createElement('p');a.className='ans';a.textContent=`Đáp án đúng: ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;
+ const e=document.createElement('p');e.textContent='💡 Giải thích: '+q.exp;
+ d.append(h,a,e);fb.appendChild(d);
+ renderPips();updHud();
+ const nb=$('btnNext');nb.textContent=S.i===4?'🏆 Xem kết quả':'Câu tiếp theo ➜';nb.classList.remove('hide');nb.disabled=false;
+ setTimeout(()=>$('qwrap').scrollTo({top:$('qwrap').scrollHeight,behavior:'smooth'}),150);
+}
+function launchShip(){
+ const f={idx:ROUTE[S.i],from:SK.shipAt,t0:performance.now(),dur:4200,gift:Math.random()<GIFT_P,taken:false};
+ SK.flight=f;sfx.launch();useCv(CV.big,true);const sp=sunPos();spark(sp.x,sp.y,50,'#ffb23c',4);
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function cinematic(){
+ if(S.busy)return;S.busy=true;$('btnNext').disabled=true;
+ const r=S.res[S.i],pl=PL[ROUTE[S.i]],from=SK.shipAt==null?'Mặt Trời':PL[SK.shipAt].n,el=$('cine'),rc=CV.mini.cv.getBoundingClientRect();
+ el.style.transformOrigin=`${rc.left+rc.width/2}px ${rc.top+rc.height/2}px`;
+ $('cineTitle').textContent=r.ok?(S.i===4?`🌍 Chặng cuối: tàu vũ trụ bay từ ${from} về Trái Đất!`:`🚀 Tàu vũ trụ bay từ ${from} tới ${pl.n}!`):(r.to?`⏰ Hết giờ – tàu phải đợi tại ${from}!`:`☄️ Trả lời sai – thiên thạch chặn đường, tàu đứng yên tại ${from}!`);
+ $('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10';
+ sizeSky();SK.warp=1;el.classList.add('on');
+ await sleep(800);
+ if(r.ok){await new Promise(res=>{SK.onEnd=res;launchShip()});$('cineSub').textContent='Điểm hiện tại: '+fmt(total())+' / 10'+(SK.lastGiftTxt||'');await sleep(S.i===4?2400:1400);if(S.i===4)confetti(120,innerWidth/2,innerHeight/2)}
+ else{SK.asteroid={x:CV.big.W+30,y:CV.big.H*(.2+Math.random()*.3),vx:-6,vy:2.6,l:1};await sleep(2600)}
+ el.classList.remove('on');await sleep(750);
+ S.busy=false;nextQ();
+}
+function nextQ(){
+ if(S.i>=4){finish();return}
+ S.i++;SK.warp=1;loadQ();
+}
+function finish(){
+ S.active=false;const sc2=total();
+ $('game').classList.add('hide');$('end').classList.remove('hide');
+ $('endName').textContent=player.name;$('endSub').textContent=`Lớp ${player.cls} · Tin học 6 – Bài 6`;
+ const right=S.res.filter(r=>r&&r.ok).length;
+ let medal,icon;
+ if(sc2>=9){medal='👨‍🚀 Thuyền trưởng Hệ Mặt Trời!';icon='🏆'}else if(sc2>=7){medal='🌟 Phi hành gia giỏi!';icon='🥇'}else if(sc2>=5){medal='🚀 Phi hành đoàn khá!';icon='🥈'}else{medal='🔭 Cần luyện tập thêm, thử lại nhé!';icon='🌠'}
+ $('endMedal').textContent=medal+` (đúng ${right}/5${S.bonusCount?`, nhận ${S.bonusCount} quà 🎁`:''})`;$('endIcon').textContent=icon;
+ const rv=$('rev');rv.innerHTML='';
+ S.qs.forEach((q,i)=>{const r=S.res[i],d=document.createElement('div');d.className=r&&r.ok?'ok':'no';d.textContent=`${r&&r.ok?'✅':'❌'} Câu ${i+1} [${q.lv}] ${q.q}  → ${'ABCD'[q.ans]}. ${q.opts[q.ans]}`;rv.appendChild(d)});
+ let n=0;const el=$('endScore'),id=setInterval(()=>{n+=.1;if(n>=sc2){n=sc2;clearInterval(id)}el.textContent=fmt(n)},45);
+ if(sc2>=5)sfx.fanfare();else sfx.sad();startFw(sc2);
+}
+
+/* ---------- Pháo hoa màn hình tổng kết ---------- */
+const fwc=$('fw'),fwx=fwc.getContext('2d');
+let FW={r:[],p:[],next:0,rate:700,power:1};
+function sizeFw(){fwc.width=Math.round(innerWidth*.6);fwc.height=Math.round(innerHeight*.6)} // vẽ ở 60% độ phân giải rồi phóng ra, nhẹ hơn nhiềuaddEventListener('resize',sizeFw);
+function fwLaunch(){const w=fwc.width,h=fwc.height;FW.r.push({x:w*(.1+Math.random()*.8),y:h+10,ty:h*(.1+Math.random()*.35),vy:-(11+Math.random()*3)*h/800,h:Math.random()*360})}
+function fwExplode(r){
+ const h=fwc.height,k=h/800,n=Math.round((45+Math.random()*40)*FW.power),type=Math.random()<.35?'ring':'sphere',h2=(r.h+120+Math.random()*120)%360;
+ sfx.boom();
+ for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.1,v=(type==='ring'?5.5:Math.random()*6.5+1)*k*(.85+FW.power*.15);
+  FW.p.push({x:r.x,y:r.y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:1,d:.009+Math.random()*.01,h:Math.random()<.65?r.h:h2,s:k})}
+}
+function startFw(score){
+ sizeFw();fwx.fillStyle='#03050d';fwx.fillRect(0,0,fwc.width,fwc.height);
+ FW.r=[];FW.p=[];
+ FW.power=score>=9?1.3:score>=7?1:score>=5?.8:.6;FW.rate=score>=9?450:score>=7?650:score>=5?900:1400;
+ const n=score>=5?5:2;for(let i=0;i<n;i++)setTimeout(fwLaunch,i*220);
+ FW.next=performance.now()+1200;
+}
+function frameFw(t,ds){
+ fwx.globalCompositeOperation='source-over';fwx.fillStyle=`rgba(3,5,13,${1-Math.pow(.8,ds)})`;fwx.fillRect(0,0,fwc.width,fwc.height);
+ if(t>FW.next){const c=1+(Math.random()<.4?1:0)+(FW.power>1?1:0);for(let i=0;i<c;i++)setTimeout(fwLaunch,i*140);FW.next=t+FW.rate*(.6+Math.random()*.8)}
+ fwx.globalCompositeOperation='lighter';
+ const k=fwc.height/800,f=Math.pow(.985,ds);
+ FW.r=FW.r.filter(r=>{r.y+=r.vy*ds;r.vy*=f;fwx.fillStyle=`hsl(${r.h},100%,75%)`;fwx.beginPath();fwx.arc(r.x,r.y,2.2*k,0,6.3);fwx.fill();
+  if(Math.random()<.8*ds){FW.p.push({x:r.x,y:r.y,vx:(Math.random()-.5)*.6,vy:Math.random()*.8,l:.6,d:.04,h:r.h,s:k*.6})}
+  if(r.y<=r.ty||r.vy>-1.8){fwExplode(r);return false}return true});
+ FW.p=FW.p.filter(p=>{p.x+=p.vx*ds;p.y+=p.vy*ds;p.vx*=f;p.vy=p.vy*f+.05*p.s*ds;p.l-=p.d*ds;if(p.l<=0)return false;
+  fwx.fillStyle=`hsla(${p.h},100%,${55+p.l*20}%,${Math.min(1,p.l*1.4)})`;fwx.beginPath();fwx.arc(p.x,p.y,(1.2+p.l*1.8)*p.s*1.3,0,6.3);fwx.fill();return true});
+ fwx.globalCompositeOperation='source-over';
+}
+
+/* ---------- Vòng lặp chính (đồng hồ + hoạt cảnh) ---------- */
+const ring=$('ring');
+let lastT=0,lastDom=0;
+function loop(t){
+ requestAnimationFrame(loop);
+ const dt=t-lastT,minDt=S.busy?20:32; // cảnh phóng to chạy mượt, còn lại ~30 khung/giây
+ if(dt<minDt)return;lastT=t;const ds=Math.min(3,dt/16.67);
+ drawConf(ds);
+ if(!$('end').classList.contains('hide'))frameFw(t,ds);
+ else if(!$('start').classList.contains('hide')){useCv(CV.intro);frameSky(t,false,true)}
+ else if(!$('game').classList.contains('hide')&&!S.busy){useCv(CV.mini);frameSky(t,false)}
+ if(S.busy){useCv(CV.big);frameSky(t,true)}
+ SK.warp=Math.max(0,SK.warp-.005*ds);
+ if(S.active&&!S.answered){
+  const left=Math.max(0,(S.deadline-performance.now())/1000);
+  if(left<=0){answer(-1)}
+  else if(t-lastDom>100){lastDom=t;
+   const frac=left/S.dur,sec=Math.ceil(left);
+   $('tnum').textContent=sec;if(sec!==S.lvlSec){S.lvlSec=sec;$('lvl').textContent=S.lvlBase+sec+' giây'}$('lvl').classList.toggle('low',left<=5);
+   $('tfill').style.transform=`scaleX(${frac})`;ring.style.strokeDashoffset=188.5*(1-frac);
+   const low=left<=5||frac<.25;$('timer').classList.toggle('low',low);$('tbar').classList.toggle('low',low);
+   ring.style.stroke=frac>.5?'#12b774':frac>.25?'#ffc93c':'#ff5d7a';
+   if(left<=5&&sec!==S.lastTick&&sec>0){S.lastTick=sec;sfx.tick()}
+  }
+ }
+}
+
+/* ---------- Sự kiện ---------- */
+function toggleFs(){const d=document;if(!d.fullscreenElement&&!d.webkitFullscreenElement){(d.documentElement.requestFullscreen||d.documentElement.webkitRequestFullscreen).call(d.documentElement).catch(()=>{})}else{(d.exitFullscreen||d.webkitExitFullscreen).call(d)}}
+document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('btnFs').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';$('btnFsStart').textContent=on?'⛶ Thoát toàn màn hình':'⛶ Toàn màn hình';setTimeout(()=>{sizeSky();initStars();sizeFx()},200)});
+$('btnFs').onclick=$('btnFsStart').onclick=toggleFs;
+$('btnSnd').onclick=()=>{initAudio();setMusic(!musicOn)};
+$('btnStart').onclick=()=>{
+ const n=$('inName').value.trim(),c=$('inClass').value.trim();let bad=false;
+ [['inName',n],['inClass',c]].forEach(([id,v])=>{const el=$(id);el.classList.remove('err');if(!v){void el.offsetWidth;el.classList.add('err');bad=true}});
+ if(bad)return;
+ player.name=n;player.cls=c;initAudio();sfx.start();setMusic(true);newGame();
+};
+['inName','inClass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('btnStart').click()}));
+$('btnNext').onclick=()=>{sfx.click();cinematic()};
+$('btnAgain').onclick=()=>{initAudio();sfx.start();newGame()};
+$('btnChange').onclick=()=>{$('end').classList.add('hide');$('start').classList.remove('hide');$('inName').value='';$('inClass').value='';$('inName').focus()};
+addEventListener('keydown',e=>{
+ if(!S.active||$('game').classList.contains('hide'))return;
+ const k=e.key.toUpperCase(),i='ABCD'.indexOf(k),j='1234'.indexOf(k);
+ if(!S.answered&&(i>=0||j>=0)&&k.length===1)answer(i>=0?i:j);
+ else if(e.key==='Enter'&&S.answered&&!S.busy&&!$('btnNext').disabled&&!$('btnNext').classList.contains('hide'))$('btnNext').click();
+});
+sizeSky();requestAnimationFrame(loop);
+$('inName').focus();
+</script>
+</body>
+</html>

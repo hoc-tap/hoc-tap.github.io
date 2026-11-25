@@ -33,7 +33,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -44,7 +44,7 @@
             -webkit-user-select: none;
         }
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Nunito Sans', system-ui, sans-serif;
         }
         .font-code {
             font-family: 'Fira Code', monospace;
@@ -80,18 +80,202 @@
         .glow-pink {
             box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
         }
+
+        :root {
+            --page: #091525;
+            --panel: #13243a;
+            --panel-soft: #192c44;
+            --line: #334a63;
+            --ink: #f3f8ff;
+            --muted: #bbcadb;
+            --accent: #69e1ef;
+        }
+        body {
+            color: var(--ink);
+            background: radial-gradient(circle at 50% -20%, #24426a 0, transparent 42%), var(--page) !important;
+        }
+        button { cursor: pointer; }
+        button:focus-visible { outline: 3px solid #ffe08a; outline-offset: 3px; }
+        button:disabled { cursor: not-allowed; }
+        .app-shell {
+            display: grid;
+            grid-template-columns: minmax(245px, 1fr) minmax(450px, 2.45fr) minmax(245px, 1fr);
+            gap: 16px;
+            width: min(100%, 1800px);
+            height: 100dvh;
+            min-height: 590px;
+            margin: auto;
+            padding: 16px;
+        }
+        .side-panel {
+            min-height: 0;
+            overflow-y: auto;
+            scrollbar-gutter: stable;
+            padding-right: 2px;
+            justify-content: flex-start;
+            gap: 14px;
+        }
+        .panel-card, .brand-card {
+            background: var(--panel) !important;
+            border: 1px solid var(--line) !important;
+            border-radius: 22px;
+            box-shadow: 0 12px 30px #030b1760;
+        }
+        .panel-card { padding: 18px !important; flex: none !important; }
+        .brand-card {
+            padding: 23px 16px !important;
+            background: linear-gradient(145deg, #163b58, #13243a 72%) !important;
+        }
+        .brand-card h1 {
+            font-size: clamp(19px, 1.45vw, 25px);
+            line-height: 1.16;
+            letter-spacing: -.025em;
+            background: none;
+            -webkit-text-fill-color: currentColor;
+            color: #f7fbff;
+        }
+        .brand-card p { font-size: 11px; letter-spacing: .09em; color: #bfe9f0; }
+        .section-title { font-size: 13px !important; letter-spacing: .055em; color: var(--muted) !important; }
+        .mode-btn { min-height: 45px; padding: 10px 13px; font-size: 13px !important; text-align: left; }
+        .diff-btn { min-height: 40px; font-size: 13px !important; }
+        #modeSelector .mode-btn:not(.active), #diffSelector .diff-btn:not(.active) {
+            background: #223650 !important; color: #e3edf8 !important;
+        }
+        #modeSelector .mode-btn.active { background: #73e3ed !important; color: #092236 !important; }
+        #diffSelector .diff-btn.active { color: #102236 !important; }
+        .stats-grid > div, .lives-row, .settings-row, #gameOverStats > div {
+            background: var(--panel-soft) !important;
+            border: 1px solid var(--line) !important;
+            border-radius: 14px;
+        }
+        .stats-grid > div { min-height: 83px; padding: 10px !important; }
+        .stats-grid > div span:first-child { font-size: 11px; color: var(--muted); }
+        .stats-grid > div span:last-child { font-size: clamp(23px, 2vw, 31px); line-height: 1.2; }
+        .lives-row { min-height: 48px; }
+        .lives-row > span { color: var(--ink); }
+        #livesContainer { color: #fb7185 !important; gap: 5px; }
+        .game-controls { position: sticky; bottom: 0; padding: 8px 0 2px; background: var(--page); z-index: 2; }
+        .game-controls button { min-height: 48px; }
+        #btnStart, #overlayActionBtn {
+            background: #76e3ee !important;
+            color: #082637 !important;
+            box-shadow: 0 8px 24px #2bbbd230;
+        }
+        .arena {
+            min-width: 0;
+            min-height: 0;
+            background: radial-gradient(circle at 50% 36%, #214668 0, #142c47 45%, #102238 100%) !important;
+            border: 1px solid #53738e !important;
+            border-radius: 24px;
+            box-shadow: 0 20px 48px #020a1870, inset 0 0 80px #56c8e508;
+        }
+        .arena::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#b3e5f424 1px, transparent 1px);
+            background-size: 25px 25px;
+            mask-image: linear-gradient(to bottom, #0008, transparent 78%);
+            pointer-events: none;
+        }
+        .arena-status { padding: 20px !important; gap: 8px; flex-wrap: wrap; }
+        #targetStatus, #gameStatusBadge {
+            font-size: 12px !important;
+            padding: 8px 11px !important;
+            background: #10243be8 !important;
+            border-color: #60809b !important;
+            box-shadow: 0 5px 15px #06132270;
+        }
+        #activeWordHint { color: #fff !important; }
+        .overlay-backdrop { background: #08182bcc !important; padding: 20px !important; }
+        .overlay-card {
+            background: #172c45 !important;
+            border: 1px solid #5c829c !important;
+            border-radius: 24px;
+            box-shadow: 0 24px 80px #020a1899;
+            padding: clamp(20px, 3vw, 34px) !important;
+        }
+        .overlay-card h2 { line-height: 1.18; font-size: clamp(22px, 2vw, 29px); }
+        .overlay-card p { font-size: 15px !important; line-height: 1.6; color: #d4e1ee !important; }
+        .settings-row { min-height: 45px; }
+        .settings-row span { font-size: 12px; color: #e6eff9; }
+        .settings-row button { flex: none; }
+        .scores-card { min-height: 160px; display: flex; flex-direction: column; }
+        #scoresList { min-height: 85px; max-height: 230px; font-size: 12px; }
+        #scoresList .text-\[9px\] { font-size: 11px; }
+        .tips-list { font-size: 12px !important; line-height: 1.55; color: #d5e2ef; }
+        html:not(.dark) {
+            --page: #eaf2f8;
+            --panel: #ffffff;
+            --panel-soft: #eff5fa;
+            --line: #c8d8e6;
+            --ink: #193249;
+            --muted: #50697e;
+        }
+        html:not(.dark) body { background: radial-gradient(circle at 50% -20%, #d7eff6, transparent 45%), var(--page) !important; }
+        html:not(.dark) .brand-card { background: linear-gradient(145deg, #d7f3f8, #fff 75%) !important; }
+        html:not(.dark) .brand-card h1 { color: #153b52; }
+        html:not(.dark) .brand-card p { color: #42667b; }
+        html:not(.dark) .arena { background: radial-gradient(circle at 50% 35%, #eefaff, #dbeefa) !important; }
+        html:not(.dark) .panel-card .text-slate-400,
+        html:not(.dark) .panel-card .text-slate-500 { color: #526c80 !important; }
+        html:not(.dark) .panel-card .text-slate-300:not(button) { color: #29475c !important; }
+        html:not(.dark) .panel-card .text-cyan-400 { color: #0e7490 !important; }
+        html:not(.dark) .panel-card .text-emerald-400 { color: #047857 !important; }
+        html:not(.dark) .panel-card .text-yellow-400 { color: #a16207 !important; }
+        html:not(.dark) .panel-card .text-pink-500 { color: #be185d !important; }
+        html:not(.dark) .section-title, html:not(.dark) .tips-list, html:not(.dark) .settings-row span, html:not(.dark) .lives-row > span { color: #29475c !important; }
+        html:not(.dark) .stats-grid > div span:first-child { color: #536d80; }
+        html:not(.dark) .settings-row, html:not(.dark) .lives-row { color: #29475c; }
+        @media (max-width: 1100px) {
+            .app-shell { grid-template-columns: minmax(210px, 1fr) minmax(380px, 2fr); height: auto; min-height: 100dvh; }
+            .side-panel { overflow: visible; }
+            .right-panel { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+            .right-panel .tips-card { grid-column: 1 / -1; }
+            .arena { min-height: 680px; }
+        }
+        @media (max-width: 700px) {
+            .app-shell {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr);
+                grid-template-areas: 'brand' 'config' 'controls' 'arena' 'stats' 'settings';
+                height: auto;
+                padding: 10px;
+                gap: 10px;
+            }
+            .left-panel { display: contents !important; }
+            .brand-card { grid-area: brand; }
+            .left-panel .config-card { grid-area: config; }
+            .game-controls { grid-area: controls; position: static; padding: 0; background: transparent; }
+            .arena { grid-area: arena; min-height: 520px; height: 68dvh; }
+            .left-panel .stats-card { grid-area: stats; }
+            .right-panel { grid-area: settings; display: flex; flex-direction: column; }
+            .right-panel > * { width: 100%; }
+            .panel-card { padding: 16px !important; }
+            .overlay-backdrop { padding: 12px !important; }
+            .overlay-card { padding: 18px !important; }
+            .overlay-card p { font-size: 13px !important; }
+        }
+        @media (max-height: 720px) and (min-width: 1101px) {
+            .app-shell { min-height: 0; }
+            .panel-card { padding: 13px !important; }
+            .brand-card { padding: 14px !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-screen w-screen overflow-hidden transition-colors duration-300">
+<body class="transition-colors duration-300">
 
     <!-- BỐ CỤC 3 CỘT KHÔNG CÓ NAVBAR - TRÀN TOÀN MÀN HÌNH -->
-    <div class="grid grid-cols-12 h-screen w-screen p-3 gap-3 overflow-hidden box-border">
+    <div class="app-shell box-border">
 
         <!-- ==================== CỘT TRÁI (LEFT PANEL - ~25%) ==================== -->
-        <div class="col-span-3 flex flex-col justify-between h-full gap-3 overflow-hidden">
+        <div class="side-panel left-panel flex flex-col">
             
             <!-- Thẻ 1: Tiêu đề trò chơi -->
-            <div class="bg-slate-900/90 border border-cyan-500/30 dark:border-cyan-500/30 rounded-2xl p-4 shadow-lg backdrop-blur flex flex-col items-center justify-center text-center relative overflow-hidden shrink-0">
+            <div class="brand-card flex flex-col items-center justify-center text-center relative overflow-hidden shrink-0">
                 <div class="absolute -right-6 -top-6 w-20 h-20 bg-cyan-500/10 rounded-full blur-xl pointer-events-none"></div>
                 <div class="flex items-center gap-2 mb-1">
                     <i class="fa-solid font-bold fa-keyboard text-cyan-400 text-2xl animate-bounce"></i>
@@ -103,7 +287,7 @@
             </div>
 
             <!-- Thẻ 2: Cấu hình chế độ & độ khó -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg flex flex-col gap-3 shrink-0">
+            <div class="panel-card config-card flex flex-col gap-3 shrink-0">
                 <div>
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
                         <i class="fa-solid fa-gamepad text-cyan-400"></i> Chế Độ Chơi:
@@ -137,7 +321,7 @@
             </div>
 
             <!-- Thẻ 3: Bảng Thống kê Trực tiếp (Live Stats) -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg flex-1 flex flex-col justify-around">
+            <div class="panel-card stats-card flex flex-col justify-around">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center justify-between">
                     <span><i class="fa-solid fa-chart-line text-pink-400 mr-1"></i> Thống kê Trận đấu</span>
                     <span id="comboBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 animate-pulse">
@@ -145,7 +329,7 @@
                     </span>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="stats-grid grid grid-cols-2 gap-2">
                     <!-- Điểm số -->
                     <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-2 flex flex-col items-center justify-center">
                         <span class="text-[10px] text-slate-400 font-semibold uppercase">Điểm Số</span>
@@ -169,7 +353,7 @@
                 </div>
 
                 <!-- Mạng / Máu (Lives) -->
-                <div class="mt-2 bg-slate-950/60 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between">
+                <div class="lives-row mt-2 p-2.5 flex items-center justify-between">
                     <span class="text-xs font-bold text-slate-300">Sinh Mạng:</span>
                     <div id="livesContainer" class="flex gap-1 text-red-500 text-base">
                         <i class="fa-solid fa-heart animate-pulse"></i>
@@ -182,14 +366,14 @@
             </div>
 
             <!-- Thẻ 4: Các Nút Điều Khiển Chính -->
-            <div class="flex gap-2 shrink-0">
+            <div class="game-controls flex gap-2 shrink-0">
                 <button id="btnStart" class="flex-1 py-3 px-4 rounded-xl font-black text-sm uppercase tracking-wider bg-gradient-to-r from-cyan-400 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-2">
                     <i class="fa-solid fa-play"></i> BẮT ĐẦU
                 </button>
-                <button id="btnPause" disabled class="py-3 px-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-400 opacity-50 cursor-not-allowed hover:bg-slate-700 transition-all flex items-center justify-center">
+                <button id="btnPause" aria-label="Tạm dừng hoặc tiếp tục" title="Tạm dừng hoặc tiếp tục" disabled class="py-3 px-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-400 opacity-50 cursor-not-allowed hover:bg-slate-700 transition-all flex items-center justify-center">
                     <i class="fa-solid fa-pause"></i>
                 </button>
-                <button id="btnReset" class="py-3 px-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center">
+                <button id="btnReset" aria-label="Chơi lại" title="Chơi lại" class="py-3 px-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 active:scale-95 transition-all flex items-center justify-center">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
             </div>
@@ -197,10 +381,10 @@
         </div>
 
         <!-- ==================== CỘT GIỮA (CENTER PANEL - SÂN CHƠI CANVAS ~50%) ==================== -->
-        <div class="col-span-6 h-full flex flex-col relative rounded-2xl border border-cyan-500/30 bg-slate-900/80 shadow-2xl overflow-hidden" id="arenaWrapper">
+        <div class="arena flex flex-col relative overflow-hidden" id="arenaWrapper">
             
             <!-- Thanh trạng thái nhỏ đầu sân chơi -->
-            <div class="absolute top-0 left-0 right-0 p-3 flex justify-between items-center pointer-events-none z-10 bg-gradient-to-b from-slate-950/80 to-transparent">
+            <div class="arena-status absolute top-0 left-0 right-0 flex justify-between items-center pointer-events-none z-10 bg-gradient-to-b from-slate-950/80 to-transparent">
                 <div class="flex items-center gap-2">
                     <span id="targetStatus" class="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-800/80 text-cyan-400 border border-cyan-500/30">
                         MỤC TIÊU: <span class="text-white font-black" id="activeWordHint">---</span>
@@ -218,14 +402,14 @@
             <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-pink-500 to-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)] pointer-events-none"></div>
 
             <!-- Overlay Màn hình bắt đầu / Tạm dừng / Game over -->
-            <div id="overlayModal" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 transition-all duration-300">
-                <div class="max-w-md w-full bg-slate-900 border border-cyan-500/40 rounded-2xl p-6 shadow-2xl flex flex-col items-center relative overflow-hidden">
+            <div id="overlayModal" class="overlay-backdrop absolute inset-0 backdrop-blur-md flex flex-col items-center justify-center text-center z-20 transition-all duration-300">
+                <div class="overlay-card max-w-md w-full flex flex-col items-center relative overflow-hidden">
                     <div class="w-16 h-16 rounded-full bg-cyan-500/10 border border-cyan-400 flex items-center justify-center text-cyan-400 text-3xl mb-4">
                         <i id="overlayIcon" class="fa-solid fa-keyboard"></i>
                     </div>
                     <h2 id="overlayTitle" class="text-2xl font-black text-white uppercase tracking-wide mb-2">SẴN SÀNG CHINH PHỤC?</h2>
                     <p id="overlayDesc" class="text-xs text-slate-300 mb-6 leading-relaxed">
-                        Nhấn phím bất kỳ hoặc chọn nút Bắt Đầu bên dưới để gõ nổ các bong bóng trước khi chúng chạm vạch đỏ!
+                        Nhấn phím Space hoặc chọn Bắt đầu để gõ các chữ trên bong bóng trước khi chúng chạm vạch đỏ.
                     </p>
 
                     <!-- Kết quả thống kê sau khi thua game -->
@@ -257,41 +441,41 @@
         </div>
 
         <!-- ==================== CỘT PHẢI (RIGHT PANEL - CÀI ĐẶT & KỶ LỤC ~25%) ==================== -->
-        <div class="col-span-3 flex flex-col justify-between h-full gap-3 overflow-hidden">
+        <div class="side-panel right-panel flex flex-col">
             
             <!-- Thẻ 1: Khung Cài Đặt (Settings) -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg shrink-0">
+            <div class="panel-card shrink-0">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <i class="fa-solid fa-sliders text-cyan-400"></i> Cài Đặt Ứng Dụng
                 </div>
 
                 <div class="space-y-2">
                     <!-- Bật/tắt Dark/Light Mode -->
-                    <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                    <div class="settings-row flex items-center justify-between p-2">
                         <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
                             <i class="fa-solid fa-moon text-indigo-400"></i> Chế độ Tối/Sáng
                         </span>
-                        <button id="btnThemeToggle" class="w-10 h-5 bg-cyan-600 rounded-full relative transition-colors p-0.5">
+                        <button id="btnThemeToggle" aria-label="Đổi giao diện sáng tối" title="Đổi giao diện sáng tối" class="w-10 h-5 bg-cyan-600 rounded-full relative transition-colors p-0.5">
                             <div id="themeDot" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-5"></div>
                         </button>
                     </div>
 
                     <!-- Bật/tắt Âm thanh FX -->
-                    <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                    <div class="settings-row flex items-center justify-between p-2">
                         <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
                             <i id="sfxIcon" class="fa-solid fa-volume-high text-emerald-400"></i> Âm Thanh (SFX)
                         </span>
-                        <button id="btnSfxToggle" class="w-10 h-5 bg-cyan-600 rounded-full relative transition-colors p-0.5">
+                        <button id="btnSfxToggle" aria-label="Bật tắt âm thanh" title="Bật tắt âm thanh" class="w-10 h-5 bg-cyan-600 rounded-full relative transition-colors p-0.5">
                             <div id="sfxDot" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-5"></div>
                         </button>
                     </div>
 
                     <!-- Bật/tắt Nhạc Nền (BGM Synth) -->
-                    <div class="flex items-center justify-between bg-slate-950/60 p-2 rounded-xl border border-slate-800">
+                    <div class="settings-row flex items-center justify-between p-2">
                         <span class="text-xs font-semibold text-slate-300 flex items-center gap-2">
                             <i id="bgmIcon" class="fa-solid fa-music text-pink-400"></i> Nhạc Nền (BGM)
                         </span>
-                        <button id="btnBgmToggle" class="w-10 h-5 bg-slate-700 rounded-full relative transition-colors p-0.5">
+                        <button id="btnBgmToggle" aria-label="Bật tắt nhạc nền" title="Bật tắt nhạc nền" class="w-10 h-5 bg-slate-700 rounded-full relative transition-colors p-0.5">
                             <div id="bgmDot" class="w-4 h-4 bg-white rounded-full transition-transform translate-x-0"></div>
                         </button>
                     </div>
@@ -304,7 +488,7 @@
             </div>
 
             <!-- Thẻ 2: Bảng Xếp Hạng & Kỷ Lục (High Scores) -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg flex-1 flex flex-col overflow-hidden">
+            <div class="panel-card scores-card">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
                     <span><i class="fa-solid fa-trophy text-yellow-400 mr-1"></i> Bảng Kỷ Lục</span>
                     <button id="btnClearScores" class="text-[10px] text-slate-500 hover:text-red-400 font-normal">Xóa dữ liệu</button>
@@ -317,11 +501,11 @@
             </div>
 
             <!-- Thẻ 3: Khung Hướng Dẫn Nhanh (Instructions) -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 shadow-lg shrink-0">
+            <div class="panel-card tips-card shrink-0">
                 <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                     <i class="fa-solid fa-lightbulb text-amber-400"></i> Mẹo Gõ Phím 10 Ngón
                 </div>
-                <ul class="text-[11px] text-slate-300 space-y-1 list-disc pl-4 leading-snug">
+                <ul class="tips-list space-y-1 list-disc pl-4">
                     <li>Đặt tay đúng vị trí <b>A S D F</b> (tay trái) & <b>J K L ;</b> (tay phải).</li>
                     <li>Nắm vững từ đang rơi để chủ động gõ phím đầu tiên.</li>
                     <li>Tận dụng <b>Combo x2, x3</b> bằng cách gõ liên tục không sai phím nào!</li>
@@ -548,7 +732,7 @@
                 this.typedIndex = 0; // Số ký tự đã gõ đúng
                 
                 // Kích thước bong bóng theo độ dài từ
-                this.radius = Math.max(26, text.length * 7 + 14);
+                this.radius = Math.max(32, text.length * 7 + 14);
                 this.x = Math.random() * (canvasWidth - this.radius * 2) + this.radius;
                 this.y = -this.radius;
                 this.speed = speed;
@@ -603,13 +787,21 @@
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
                 ctx.fill();
 
-                // Vẽ chữ inside bong bóng
-                ctx.font = `bold ${this.radius * 0.55}px 'Fira Code', monospace`;
+                // Giữ chữ nằm gọn trong bong bóng ở cả chế độ từ dài.
+                ctx.shadowBlur = 0;
+                let fontSize = Math.min(32, this.radius * 0.85);
+                ctx.font = `bold ${fontSize}px 'Fira Code', monospace`;
+                const maxTextWidth = this.radius * 1.72;
+                const measuredWidth = ctx.measureText(this.text).width;
+                if (measuredWidth > maxTextWidth) {
+                    fontSize *= maxTextWidth / measuredWidth;
+                    ctx.font = `bold ${fontSize}px 'Fira Code', monospace`;
+                }
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
                 if (this.typedIndex > 0) {
-                    // Highlight chữ đã gõ đúng màu Xanh lá lá cây sáng, chữ chưa gõ màu tối
+                    // Gạch dưới phần đã gõ, giữ độ tương phản của chữ trên mọi màu bóng.
                     const typedPart = this.text.substring(0, this.typedIndex);
                     const remainingPart = this.text.substring(this.typedIndex);
 
@@ -619,8 +811,14 @@
 
                     // Phần đã gõ
                     ctx.textAlign = 'left';
-                    ctx.fillStyle = '#10b981'; // Green accent
+                    ctx.fillStyle = this.colorScheme.text;
                     ctx.fillText(typedPart, startX, 0);
+                    ctx.beginPath();
+                    ctx.strokeStyle = this.colorScheme.text;
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(startX, fontSize * 0.37);
+                    ctx.lineTo(startX + typedWidth, fontSize * 0.37);
+                    ctx.stroke();
 
                     // Phần chưa gõ
                     ctx.fillStyle = this.colorScheme.text;
@@ -689,14 +887,17 @@
             canvas.height = arenaWrapper.clientHeight;
         }
         window.addEventListener('resize', resizeCanvas);
+        document.addEventListener('fullscreenchange', resizeCanvas);
         resizeCanvas();
 
         // =========================================================================
         // 7. THUẬT TOÁN XỬ LÝ PHÍM GÕ (INPUT RECOGNITION LOGIC)
         // =========================================================================
-        window.addEventListener('keydown', (e) => {
-            // Bỏ qua các phím điều khiển hệ thống ngoại trừ Space khi tạm dừng
-            if (e.key === ' ' && (!state.isPlaying || state.isPaused)) {
+        function handleGameKey(e) {
+            // Dùng mã phím vật lý để bộ gõ tiếng Việt không đổi A-Z thành ký tự có dấu.
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+            if ((e.code === 'Space' || e.key === ' ') && (!state.isPlaying || state.isPaused)) {
                 e.preventDefault();
                 togglePlayStart();
                 return;
@@ -704,10 +905,12 @@
 
             if (!state.isPlaying || state.isPaused) return;
 
-            const charTyped = e.key.toUpperCase();
+            const physicalLetter = /^Key([A-Z])$/.exec(e.code || '');
+            const charTyped = physicalLetter ? physicalLetter[1] : (e.key || '').toUpperCase();
 
-            // Chỉ nhận ký tự A-Z hoặc chữ cái
-            if (charTyped.length !== 1 || !/[A-Z]/.test(charTyped)) return;
+            // Chỉ nhận A-Z; giá trị e.key có thể là "Process" hoặc chữ có dấu khi IME bật.
+            if (!/^[A-Z]$/.test(charTyped)) return;
+            e.preventDefault();
 
             state.totalKeyPresses++;
 
@@ -759,7 +962,31 @@
             }
 
             updateStatsDisplay();
+        }
+
+        // UniKey có thể chặn keydown khi đổi dấu nhưng vẫn chuyển keyup của phím gốc.
+        // Dùng keyup khi thiếu keydown, và chỉ tính một lần nếu cả hai cùng xuất hiện.
+        const keysSeenOnDown = new Set();
+        const keyIdentity = e => e.code || (e.key || '').toUpperCase();
+
+        window.addEventListener('keydown', e => {
+            const identity = keyIdentity(e);
+            if (/^Key[A-Z]$/.test(identity) || identity === 'Space' || identity === ' ') {
+                if (keysSeenOnDown.has(identity)) {
+                    e.preventDefault();
+                    return;
+                }
+                keysSeenOnDown.add(identity);
+            }
+            handleGameKey(e);
         });
+
+        window.addEventListener('keyup', e => {
+            if (keysSeenOnDown.delete(keyIdentity(e))) return;
+            handleGameKey(e);
+        });
+
+        window.addEventListener('blur', () => keysSeenOnDown.clear());
 
         // Xử lý khi gõ sai
         function handleMistake(bubble) {
@@ -925,7 +1152,20 @@
         // =========================================================================
         // 10. ĐIỀU KHIỂN TRẠNG THÁI GAME (START, PAUSE, RESET, GAME OVER)
         // =========================================================================
+        function enterGameFullscreen() {
+            if (window.matchMedia('(min-width: 701px)').matches && !document.fullscreenElement) {
+                document.documentElement.requestFullscreen?.().catch(err => console.warn('Không thể mở toàn màn hình:', err));
+            }
+        }
+
+        function exitGameFullscreen() {
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen().catch(err => console.warn('Không thể thoát toàn màn hình:', err));
+            }
+        }
+
         function startGame() {
+            enterGameFullscreen();
             state.isPlaying = true;
             state.isPaused = false;
             state.score = 0;
@@ -949,6 +1189,7 @@
             document.getElementById('btnStart').disabled = true;
             document.getElementById('btnStart').classList.add('opacity-50');
             document.getElementById('btnPause').disabled = false;
+            document.getElementById('btnPause').innerHTML = `<i class="fa-solid fa-pause"></i>`;
             document.getElementById('btnPause').classList.remove('opacity-50', 'cursor-not-allowed');
 
             document.getElementById('gameStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> ĐANG CHƠI`;
@@ -968,8 +1209,9 @@
             if (state.isPaused) {
                 btnPause.innerHTML = `<i class="fa-solid fa-play"></i>`;
                 document.getElementById('overlayTitle').innerText = 'ĐANG TẠM DỪNG';
-                document.getElementById('overlayDesc').innerText = 'Nhấn Nút Bắt đầu hoặc phím Space để tiếp tục trận đấu.';
+                document.getElementById('overlayDesc').innerText = 'Nhấn Tiếp tục hoặc phím Space để trở lại trận đấu.';
                 document.getElementById('overlayIcon').className = 'fa-solid fa-pause';
+                document.getElementById('overlayActionBtn').innerText = 'TIẾP TỤC (Space)';
                 document.getElementById('gameOverStats').classList.add('hidden');
                 document.getElementById('overlayModal').classList.remove('hidden');
             } else {
@@ -980,8 +1222,17 @@
         }
 
         function resetGame() {
+            exitGameFullscreen();
             state.isPlaying = false;
             state.isPaused = false;
+            state.score = 0;
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.lives = 5;
+            state.totalKeyPresses = 0;
+            state.correctKeyPresses = 0;
+            state.startTime = null;
+            state.activeBubble = null;
             bubbles = [];
             particles = [];
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -989,11 +1240,14 @@
             document.getElementById('btnStart').disabled = false;
             document.getElementById('btnStart').classList.remove('opacity-50');
             document.getElementById('btnPause').disabled = true;
+            document.getElementById('btnPause').innerHTML = `<i class="fa-solid fa-pause"></i>`;
             document.getElementById('btnPause').classList.add('opacity-50', 'cursor-not-allowed');
 
             document.getElementById('overlayTitle').innerText = 'SẴN SÀNG CHINH PHỤC?';
             document.getElementById('overlayDesc').innerText = 'Chọn chế độ chơi và nhấn Bắt Đầu để thử thách kỹ năng gõ phím của bạn!';
             document.getElementById('overlayIcon').className = 'fa-solid fa-keyboard';
+            document.getElementById('overlayActionBtn').innerText = 'BẮT ĐẦU NGAY (Space)';
+            document.getElementById('wpmText').innerText = '0';
             document.getElementById('gameOverStats').classList.add('hidden');
             document.getElementById('overlayModal').classList.remove('hidden');
 
@@ -1004,7 +1258,10 @@
         }
 
         function gameOver() {
+            exitGameFullscreen();
             state.isPlaying = false;
+            document.getElementById('gameStatusBadge').innerHTML = `<span class="w-2 h-2 rounded-full bg-red-400"></span> KẾT THÚC`;
+            document.getElementById('gameStatusBadge').className = `text-xs font-bold px-3 py-1 rounded-full bg-slate-800/80 text-red-400 border border-red-500/30 flex items-center gap-1.5`;
             
             // Lưu kết quả vào LocalStorage
             saveHighScore();

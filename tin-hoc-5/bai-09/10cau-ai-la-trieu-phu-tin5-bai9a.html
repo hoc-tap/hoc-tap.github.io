@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai là triệu phú – Tin học 5 bài 9A</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:#050824;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fx{z-index:50}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;z-index:2}
+.screen{position:absolute;inset:0;display:none;padding:40px 60px}
+.screen.on{display:block;animation:fadein .6s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:110px;text-align:center;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 25px #ffb30088)}
+@keyframes shine{to{background-position:300%}}
+.btn{font-size:64px;font-weight:800;font-family:inherit;color:#1a1200;background:linear-gradient(#ffe27a,#ffb300);border:0;border-radius:60px;padding:26px 100px;cursor:pointer;box-shadow:0 0 40px #ffb300aa,0 8px 0 #a56a00;transition:.2s}
+.btn:hover{transform:translateY(-4px) scale(1.05)}
+.btn.sm{font-size:34px;padding:16px 46px}
+#start{text-align:center;padding-top:150px}
+#start p{font-size:38px;margin:30px 0 60px;color:#bcd}
+.orb{font-size:170px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-25px) rotate(6deg)}}
+.rules{display:flex;gap:26px;justify-content:center;margin-bottom:60px}
+.rules{flex-wrap:wrap}.rules div{background:#ffffff14;border:2px solid #ffffff33;border-radius:24px;padding:18px 26px;font-size:28px;backdrop-filter:blur(6px)}
+/* game – giao diện theo mẫu */
+#game{padding:0}
+.pill{display:flex;align-items:center;gap:16px;background:linear-gradient(#10267a,#050f40);border:3px solid #ffd54a;border-radius:34px;padding:10px 30px;box-shadow:0 0 25px #ffb30066}
+.pill small{display:block;font-size:20px;color:#bcd}.pill b{font-size:44px;color:#ffd54a;font-weight:800}.pill .coin{font-size:54px}
+#hud-l{position:absolute;left:60px;top:30px;display:flex;gap:14px}#hud-l .pill{padding:10px 22px}
+#hud-r{position:absolute;right:60px;top:30px;display:flex;gap:12px;align-items:center}
+.ic{width:70px;height:70px;border-radius:50%;border:3px solid #ffd54a;background:#0a1550;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 0 18px #ffb30055}
+#toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#000d;border:2px solid #ffd54a;border-radius:30px;padding:10px 30px;font-size:26px;z-index:30;opacity:0;transition:.4s;pointer-events:none}#toast.on{opacity:1}
+.ic.off{opacity:.45;filter:grayscale(1)}
+.logo{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:8px 80px 14px;border:5px solid #ffd54a;border-radius:90px/60px;background:radial-gradient(#1b3a8f,#050f40);box-shadow:0 0 45px #ffb300aa;text-align:center;line-height:1}
+.logo small{display:block;font-size:32px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 12px #38f}
+.logo b{display:block;font-size:80px;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+#helps{position:absolute;left:320px;top:175px;width:960px;display:flex;gap:16px}
+.help{flex:1;height:160px;border-radius:30px;border:3px solid #6cf;background:radial-gradient(#2a46c0,#0a1550);color:#fff;cursor:pointer;box-shadow:0 0 22px #3af6;transition:.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+.help i{font-style:normal;font-size:56px;line-height:1}.help b{font-size:46px;line-height:1}
+.help small{font-size:20px;font-weight:600;color:#cde;line-height:1.15;padding:4px 8px 0}
+.help:hover:not(.used){transform:scale(1.08);box-shadow:0 0 40px #6cf;border-color:#fff}
+.help.used{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.help.used::after{content:"✕";position:absolute;inset:0;font-size:120px;color:#f55;line-height:160px}
+#qtab{position:absolute;left:800px;transform:translateX(-50%);top:385px;z-index:3;padding:8px 56px;background:linear-gradient(#ffd54a,#e69500);color:#1a1200;font-size:30px;font-weight:900;white-space:nowrap;clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,24px 100%,0 50%)}
+#qbox{position:absolute;left:60px;top:422px;width:1480px;height:290px;padding:4px;background:linear-gradient(#9ef,#38f);clip-path:polygon(62px 0,calc(100% - 62px) 0,100% 50%,calc(100% - 62px) 100%,62px 100%,0 50%);filter:drop-shadow(0 0 20px #38f)}
+#qin{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 110px;font-size:48px;font-weight:700;line-height:1.3;background:linear-gradient(#10267a,#050f40);clip-path:polygon(60px 0,calc(100% - 60px) 0,100% 50%,calc(100% - 60px) 100%,60px 100%,0 50%)}
+#answers{position:absolute;left:60px;top:735px;width:1480px;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.ans{height:135px;padding:3px;background:#6cf;border:0;color:#fff;cursor:pointer;transition:.2s;font-family:inherit;clip-path:polygon(36px 0,calc(100% - 36px) 0,100% 50%,calc(100% - 36px) 100%,36px 100%,0 50%)}
+.ans .in{height:100%;display:flex;align-items:center;gap:18px;padding:0 64px;font-size:46px;font-weight:600;text-align:left;line-height:1.1;background:linear-gradient(#10267a,#050f40);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,34px 100%,0 50%)}
+.ans b{color:#ffb300;font-size:56px}.ans .in>span:first-of-type{flex:1}.cf{margin-left:auto;flex:none;background:#1a1200;color:#ffd54a;border-radius:40px;padding:8px 16px;font-size:21px;font-weight:900;white-space:nowrap;box-shadow:0 0 18px #0008;transition:.2s}.ans.sel .in{padding-right:36px;font-size:38px;line-height:1.05;gap:14px}.ans.sel.long .in{font-size:31px}.ans.xl .in{font-size:29px;line-height:1.05}.ans.xxl .in{font-size:25px;line-height:1.05}.ans.sel.xl .in{font-size:26px}.ans.sel.xxl .in{font-size:22px}.ans.xl b,.ans.xxl b{font-size:44px}.ans.sel.xl .cf,.ans.sel.xxl .cf{font-size:18px;padding:6px 12px}.ans.sel b{font-size:50px}.cf:hover{transform:scale(1.1);background:#000}.ans.long .in{font-size:37px;line-height:1.1}
+.ans:hover:not(:disabled){background:#fff;transform:scale(1.02)}
+.ans:hover:not(:disabled) .in{background:linear-gradient(#1c3fb0,#0a1a70)}
+.ans.sel,.ans.sel:hover{background:#fff;animation:blink .5s infinite alternate}
+.ans.sel .in,.ans.sel:hover .in{background:linear-gradient(#ffd54a,#e69500);color:#1a1200}.ans.sel b{color:#1a1200}
+@keyframes blink{to{filter:brightness(1.35)}}
+.ans.ok{background:#fff;animation:pop .6s,blink .5s infinite alternate}
+.ans.ok .in{background:linear-gradient(#3ddc6b,#0c8a35)}.ans.ok b{color:#fff}
+@keyframes pop{40%{transform:scale(1.1)}}
+.ans.bad{background:#fff;animation:shake .5s}
+.ans.bad .in{background:linear-gradient(#ff5b5b,#a00)}.ans.bad b{color:#fff}
+@keyframes shake{20%,60%{transform:translateX(-18px)}40%,80%{transform:translateX(18px)}}
+@keyframes pulse{to{box-shadow:0 0 50px #ffb300}}
+.ans.gone{visibility:hidden}
+#panel{position:absolute;left:320px;top:165px;width:960px;height:210px;display:none;flex-direction:row;justify-content:center;align-items:center;gap:24px;background:#000c;border:3px solid #ffd54a;border-radius:30px;padding:14px 28px;font-size:25px;z-index:5;animation:fadein .4s}
+#panel.on{display:flex}#panel span{line-height:1.35}
+#game.pan #helps{visibility:hidden}
+#ladder{position:absolute;left:1580px;top:160px;width:280px;height:870px;display:flex;flex-direction:column;gap:8px;padding:14px;background:#050f40cc;border:4px solid #ffd54a;border-radius:30px;box-shadow:0 0 35px #ffb30066}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:40px;font-size:27px;font-weight:700;color:#ffd54a;transition:.4s}
+.step i{width:46px;height:46px;border-radius:12px;border:2px solid #ffd54a;display:grid;place-items:center;font-style:normal;font-size:26px;color:#fff}
+.step span{flex:1;text-align:right}.step.safe{color:#fff}
+.step.done{color:#3f6;background:#3f62}
+.step.now{background:linear-gradient(#ffd54a,#e69500);color:#1a1200;transform:scale(1.06);box-shadow:0 0 30px #ffb300}.step.now i{color:#1a1200;border-color:#1a1200}
+/* overlay */
+#ov{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;text-align:center;padding:60px}
+#ov.on{display:flex;animation:fadein .4s}
+#ov h2{font-size:80px;color:#ffd54a;margin-bottom:20px}
+#ov p{font-size:40px;max-width:1300px;margin-bottom:30px;line-height:1.35}
+#ov input{font-size:38px;font-weight:600;font-family:inherit;padding:12px 28px;border-radius:30px;border:3px solid #6cf;background:#0a1550;color:#fff;text-align:center;margin-bottom:26px}
+#cd{font-size:230px;font-weight:900;color:#fff;text-shadow:0 0 40px #38f;line-height:1}
+#cd.low{color:#f55;animation:pulse .4s infinite alternate}
+.letters{display:flex;gap:30px;margin:10px 0 30px}
+.letters button{width:130px;height:130px;font-size:70px}
+#gift{font-size:300px;cursor:pointer;animation:drop 1s cubic-bezier(.3,1.6,.5,1),wob 1s 1s infinite;filter:drop-shadow(0 0 60px #ff0)}
+@keyframes drop{from{transform:translateY(-900px)}}
+@keyframes wob{25%{transform:rotate(-12deg) scale(1.1)}75%{transform:rotate(12deg) scale(1.1)}}
+.big{font-size:260px;font-weight:900;color:#ffd54a;text-shadow:0 0 50px #ffb300;line-height:1}
+#wl{max-height:250px;overflow:auto;font-size:26px;text-align:left;margin:10px auto 20px;width:1300px;color:#fbb}
+.fig .bub{position:absolute;top:2px;right:8px;font-size:34px;font-style:normal}
+.fig[data-m=talk] .bub::after{content:"💬"}.fig[data-m=think] .bub::after{content:"🤔"}
+.fig[data-m=ok] .bub::after{content:"😄"}.fig[data-m=bad] .bub::after{content:"😢"}
+.fig[data-m=ok]{animation:pop .6s}.fig[data-m=bad]{animation:shake .5s}.fig[data-m=think]{box-shadow:0 0 35px #ffb300}
+.mouth{transform-box:fill-box;transform-origin:center}
+.fig[data-m=talk] .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{to{transform:scaleY(.2)}}
+#cast{position:absolute;inset:0;pointer-events:none}
+.fig{position:absolute;width:230px;height:210px;pointer-events:auto;border:4px solid #6cf;border-radius:26px;background:radial-gradient(#3a58d8,#0a1550);box-shadow:0 0 30px #38f9;cursor:pointer;overflow:hidden;transition:.3s}
+#host{left:60px;top:165px}#me{left:1310px;top:165px}
+.fig:hover{transform:scale(1.04)}
+.fig svg{position:absolute;left:10px;top:14px;width:calc(100% - 20px);height:calc(100% - 54px)}
+.fig img{position:absolute;left:0;top:0;width:100%;height:calc(100% - 38px);object-fit:cover;display:none}
+.fig .bub{font-size:26px}.fig label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:#000b;border:2px solid #ffd54a;border-radius:20px;padding:3px 12px;font-size:17px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<canvas id="bg"></canvas><canvas id="fx"></canvas>
+<div id="stage">
+<section class="screen" id="start">
+ <div class="orb">💎</div>
+ <h1>AI LÀ TRIỆU PHÚ</h1>
+ <p>Tin học 5 – Bài 9A: Sử dụng phần mềm đồ hoạ tạo sản phẩm số</p>
+ <div class="rules"><div>🎯 10 câu – tối đa 10 điểm</div><div>❤️ Được sai 2 lần</div><div>🛡 Mốc an toàn câu 5</div><div>🎁 Có thể nhận quà +1 điểm</div><div>💡 4 quyền trợ giúp</div></div>
+ <button class="btn" id="go">▶ BẮT ĐẦU</button>
+ <p style="font-size:24px;margin-top:40px">Phím tắt: Bấm đáp án rồi bấm ✔ XÁC NHẬN (hoặc Enter) • A B C D chọn nhanh • 1–4 trợ giúp • F toàn màn hình • M tắt âm • V bật/tắt giọng đọc • R đọc lại câu hỏi</p>
+</section>
+<section class="screen" id="game">
+ <div id="hud-l"><div class="pill"><span class="coin">🪙</span><div><small>Điểm hiện tại</small><b id="sc">⭐ 0/10</b></div></div><div class="pill"><div><small>Được sai</small><b id="lv">❤️❤️</b></div></div></div>
+ <div class="logo"><small>AI LÀ</small><b>TRIỆU PHÚ</b></div>
+ <div id="hud-r"><div class="pill"><span class="coin">🏆</span><div><small>Câu hỏi số</small><b id="qn">1 / 10</b></div></div><button class="ic" id="rd" title="Giọng đọc (V) • đọc lại câu hỏi (R)">🗣</button><button class="ic" id="snd">🔊</button><button class="ic" id="fs">⛶</button></div>
+ <div id="cast">
+  <div class="fig" id="host" title="Bấm để đổi ảnh"><i class="bub"></i><label>🎤 Người hỏi</label><input type="file" accept="image/*" hidden></div>
+  <div class="fig" id="me" title="Bấm để đổi ảnh"><i class="bub"></i><label>🙋 Người trả lời</label><input type="file" accept="image/*" hidden></div>
+ </div>
+ <div id="helps">
+  <button class="help" data-h="5050"><b>50:50</b><small>Loại 2 đáp án</small></button>
+  <button class="help" data-h="class"><i>🏫</i><small>Hỏi cả lớp</small></button>
+  <button class="help" data-h="trust"><i>🤝</i><small>Hỏi người tin tưởng</small></button>
+  <button class="help" data-h="swap"><i>🔄</i><small>Đổi câu hỏi</small></button>
+ </div>
+ <div id="panel"><span id="exp"></span><button class="btn sm" id="next">Tiếp tục ▶</button></div>
+ <div id="qtab"></div><div id="qbox"><div id="qin"></div></div>
+ <div id="answers"></div>
+ <div id="ladder"></div>
+</section>
+<section class="screen" id="end" style="text-align:center;padding-top:70px">
+ <div class="orb" id="eo">🏆</div><h1 style="font-size:90px" id="et"></h1>
+ <div class="big" id="es"></div><p style="font-size:38px;margin:10px" id="em"></p>
+ <div id="wl"></div><button class="btn" id="again">🔁 CHƠI LẠI</button>
+</section>
+<div id="ov"></div><div id="toast"></div>
+</div>
+<script>
+// DỮ LIỆU CÂU HỎI — thay mảng này để sử dụng bộ câu hỏi mới.
+// level: NB (nhận biết) | TH (thông hiểu) | VD (vận dụng); answer là chỉ số đáp án đúng (từ 0).
+const questions = [
+  {"level": "NB", "question": "Em có thể sử dụng phần mềm nào để tạo các tấm thiệp chúc mừng?", "options": ["Phần mềm Paint", "Phần mềm Scratch", "Phần mềm luyện gõ bàn phím", "Phần mềm Google Translate"], "answer": 0, "explanation": "Em cùng tìm hiểu cách tạo những tấm thiệp bằng phần mềm Paint."},
+  {"level": "NB", "question": "Thiệp chúc mừng thường được dùng để gửi đến những ai?", "options": ["Người thân, bạn bè, thầy cô giáo", "Chỉ gửi cho người lạ", "Chỉ gửi cho máy tính", "Chỉ gửi cho người nước ngoài"], "answer": 0, "explanation": "Thiệp chúc mừng thường được dùng để gửi đến người thân, bạn bè, thầy cô giáo."},
+  {"level": "NB", "question": "Thiệp chúc mừng thường được tặng vào những dịp nào?", "options": ["Khi máy tính bị hỏng", "Những dịp vui vẻ, đặc biệt như sinh nhật, ngày Nhà giáo Việt Nam, ngày Tết", "Khi mất kết nối Internet", "Khi tắt máy tính"], "answer": 1, "explanation": "Thiệp chúc mừng thường được tặng vào những dịp vui vẻ, thể hiện tình cảm của người tặng."},
+  {"level": "NB", "question": "Nội dung của tấm thiệp được thể hiện qua các thành phần nào?", "options": ["Âm thanh, video", "Bảng tính, biểu đồ", "Hình ảnh, văn bản", "Thư mục, tệp"], "answer": 2, "explanation": "Nội dung của tấm thiệp được thể hiện qua các thành phần như hình ảnh, văn bản,..."},
+  {"level": "NB", "question": "Thiệp sinh nhật thường có hình ảnh nào sau đây?", "options": ["Hình nến, bánh, bóng bay", "Hình phong bao lì xì", "Hình bục giảng", "Hình con giáp của năm mới"], "answer": 0, "explanation": "Thiệp sinh nhật thường có hình nến, bánh, bóng bay,..."},
+  {"level": "NB", "question": "Thiệp sinh nhật thường có dòng chữ nào?", "options": ["Chúc mừng sinh nhật", "Chúc mừng năm mới", "Chúc mừng ngày Nhà giáo Việt Nam", "Chúc mừng ngày Quốc tế Phụ nữ"], "answer": 0, "explanation": "Thiệp sinh nhật thường có dòng chữ \"Chúc mừng sinh nhật\"."},
+  {"level": "NB", "question": "Thiệp chúc mừng ngày Nhà giáo Việt Nam thường có những thành phần nào?", "options": ["Hình phong bao lì xì", "Hình hoa, những lời tri ân thầy cô giáo", "Hình bánh kem và nến", "Hình con giáp"], "answer": 1, "explanation": "Thiệp chúc mừng ngày Nhà giáo thường có hình hoa, những lời tri ân thầy cô giáo,..."},
+  {"level": "NB", "question": "Thiệp chúc mừng năm mới thường có dòng chữ nào?", "options": ["Chúc mừng năm mới", "Chúc mừng sinh nhật", "Chúc mừng ngày Nhà giáo", "Chúc mừng ngày Quốc tế Phụ nữ"], "answer": 0, "explanation": "Thiệp chúc mừng năm mới thường có hình phong bao lì xì, hình con giáp của năm mới,... và dòng chữ \"Chúc mừng năm mới\"."},
+  {"level": "NB", "question": "Thiệp chúc mừng thể hiện điều gì của người tặng?", "options": ["Sức khoẻ của người tặng", "Tốc độ gõ phím của người tặng", "Dung lượng máy tính của người tặng", "Tình cảm của người tặng"], "answer": 3, "explanation": "Thiệp chúc mừng thường được tặng vào những dịp vui vẻ, thể hiện tình cảm của người tặng."},
+  {"level": "NB", "question": "Để tạo được thiệp chúc mừng phù hợp, em cần xác định điều gì?", "options": ["Chủ đề và những thành phần xuất hiện trong tấm thiệp", "Chỉ cần xác định màu của máy tính", "Chỉ cần xác định tên tệp", "Chỉ cần xác định dung lượng của tệp"], "answer": 0, "explanation": "Để tạo được thiệp chúc mừng phù hợp cần xác định chủ đề và những thành phần xuất hiện trong tấm thiệp."},
+  {"level": "NB", "question": "Tấm thiệp có dòng chữ \"Chào mừng ngày Nhà giáo Việt Nam 20-11\" là thiệp chúc mừng gì?", "options": ["Thiệp chúc mừng ngày Nhà giáo Việt Nam", "Thiệp chúc mừng sinh nhật", "Thiệp chúc mừng năm mới", "Thiệp chúc mừng ngày Quốc tế Phụ nữ"], "answer": 0, "explanation": "Đây là thiệp chúc mừng ngày Nhà giáo Việt Nam."},
+  {"level": "NB", "question": "Tấm thiệp có hình bóng bay, bánh kem và hộp quà là thiệp chúc mừng gì?", "options": ["Thiệp chúc mừng ngày Nhà giáo Việt Nam", "Thiệp chúc mừng sinh nhật", "Thiệp chúc mừng năm mới", "Thiệp chúc mừng ngày Tết"], "answer": 1, "explanation": "Đây là thiệp chúc mừng sinh nhật."},
+  {"level": "NB", "question": "Tấm thiệp có dòng chữ \"Happy new year\" và con số của năm mới là thiệp chúc mừng gì?", "options": ["Thiệp chúc mừng sinh nhật", "Thiệp chúc mừng ngày Nhà giáo Việt Nam", "Thiệp chúc mừng năm mới", "Thiệp chúc mừng ngày Quốc tế Phụ nữ"], "answer": 2, "explanation": "Đây là thiệp chúc mừng năm mới."},
+  {"level": "NB", "question": "Để thực hành tạo thiệp bằng Paint, em tạo tấm thiệp chúc mừng gì?", "options": ["Tấm thiệp chúc mừng sinh nhật", "Tấm thiệp chúc mừng năm mới", "Tấm thiệp chúc mừng ngày Nhà giáo", "Tấm thiệp chúc mừng ngày Quốc tế Phụ nữ"], "answer": 0, "explanation": "Nhiệm vụ là tạo một tấm thiệp chúc mừng sinh nhật."},
+  {"level": "NB", "question": "Tấm thiệp chúc mừng sinh nhật em tạo bằng Paint có những thành phần nào?", "options": ["Bục giảng, bảng đen, phấn trắng", "Màu sắc vui tươi, chùm bóng bay, trái tim trang trí, lời chúc mừng sinh nhật", "Phong bao lì xì, con giáp", "Hoa mai, hoa đào"], "answer": 1, "explanation": "Tấm thiệp có màu sắc vui tươi, chùm bóng bay, trái tim trang trí, lời chúc mừng sinh nhật."},
+  {"level": "NB", "question": "Để tạo khung cho tấm thiệp, em chọn công cụ vẽ hình nào?", "options": ["Công cụ vẽ hình chữ nhật Rectangle", "Công cụ vẽ hình trái tim Heart", "Công cụ viết chữ Text", "Công cụ tô màu Fill"], "answer": 0, "explanation": "Chọn công cụ vẽ hình chữ nhật Rectangle."},
+  {"level": "NB", "question": "Khi tạo khung cho tấm thiệp, hình chữ nhật lớn làm khung được chọn màu gì?", "options": ["Màu đỏ", "Màu xanh lá", "Màu tím nhạt", "Màu vàng"], "answer": 2, "explanation": "Em chọn ô màu tím nhạt để vẽ hình chữ nhật có kích thước lớn làm khung cho tấm thiệp."},
+  {"level": "NB", "question": "Để vẽ hình chữ nhật làm khung thứ nhất, em chọn nét vẽ có độ dày như thế nào?", "options": ["Nét vẽ dày nhất", "Nét vẽ mỏng nhất", "Nét vẽ dày thứ hai", "Nét vẽ nét đứt"], "answer": 0, "explanation": "Em nháy chuột vào mũi tên bên dưới lệnh Size, chọn nét vẽ dày nhất."},
+  {"level": "NB", "question": "Hình chữ nhật màu đỏ bao quanh hình chữ nhật màu tím nhạt được vẽ với nét vẽ như thế nào?", "options": ["Nét vẽ dày nhất", "Nét vẽ dày thứ hai", "Nét vẽ mỏng nhất", "Nét vẽ bằng bút chì"], "answer": 1, "explanation": "Em chọn ô màu đỏ, chọn nét vẽ dày thứ hai rồi kéo thả chuột để vẽ hình chữ nhật màu đỏ."},
+  {"level": "NB", "question": "Để vẽ các trái tim trang trí ở viền khung, em chọn công cụ nào?", "options": ["Công cụ Heart", "Công cụ Rectangle", "Công cụ Text", "Công cụ Select"], "answer": 0, "explanation": "Em chọn công cụ vẽ hình trái tim Heart để vẽ các trái tim trang trí."},
+  {"level": "NB", "question": "Em vẽ bao nhiêu hình trái tim ở viền trên của khung tấm thiệp?", "options": ["Hai hình trái tim", "Ba hình trái tim", "Sáu hình trái tim", "Bốn hình trái tim"], "answer": 3, "explanation": "Vẽ bốn hình trái tim ở viền trên của khung."},
+  {"level": "NB", "question": "Để tạo chùm bóng bay nhiều màu cho tấm thiệp, em dùng công cụ nào để vẽ hình quả bóng bay?", "options": ["Công cụ Oval", "Công cụ Heart", "Công cụ Text", "Công cụ Rectangle"], "answer": 0, "explanation": "Em dùng công cụ Oval để vẽ hình quả bóng bay, sau đó sao chép thành chùm bóng bay nhiều màu."},
+  {"level": "NB", "question": "Em có thể sử dụng các công cụ của phần mềm đồ hoạ để tạo ra sản phẩm nào sau đây?", "options": ["Tấm thiệp sinh nhật có chùm bóng bay và dòng chữ Happy Birthday", "Một cột đèn giao thông", "Một bài trình chiếu", "Một văn bản lời bài hát"], "answer": 0, "explanation": "Tạo tấm thiệp sinh nhật theo gợi ý, có chùm bóng bay và dòng chữ Happy Birthday."},
+  {"level": "NB", "question": "Để viết lời chúc lên tấm thiệp, em chọn công cụ nào?", "options": ["Công cụ viết chữ Text (biểu tượng chữ A)", "Công cụ vẽ hình Heart", "Công cụ tô màu Fill", "Công cụ chọn Select"], "answer": 0, "explanation": "Em chọn công cụ viết chữ Text rồi nháy chuột vào nền tấm thiệp để nhập lời chúc."},
+  {"level": "NB", "question": "Để nhập lời chúc, em nháy chuột vào vị trí nào của tấm thiệp?", "options": ["Thanh tiêu đề của phần mềm", "Nền tấm thiệp", "Hộp màu", "Nút Size"], "answer": 1, "explanation": "Em nháy chuột vào nền tấm thiệp và nhập vào dòng chữ lời chúc."},
+  {"level": "NB", "question": "Dòng chữ lời chúc em nhập vào tấm thiệp sinh nhật bằng công cụ Text là gì?", "options": ["CHÚC MỪNG NĂM MỚI", "CHÀO MỪNG NGÀY NHÀ GIÁO VIỆT NAM", "CHÚC MỪNG SINH NHẬT", "CẢM ƠN THẦY CÔ"], "answer": 2, "explanation": "Em nháy chuột vào nền tấm thiệp và nhập vào dòng chữ CHÚC MỪNG SINH NHẬT."},
+  {"level": "NB", "question": "Khi nhập văn bản bằng công cụ Text, các lệnh định dạng văn bản hiển thị ở đâu?", "options": ["Trên hộp công cụ", "Trên hộp màu", "Trên trang vẽ", "Trên thanh địa chỉ"], "answer": 0, "explanation": "Các lệnh định dạng văn bản sẽ hiển thị trên hộp công cụ khi em nhập văn bản bằng công cụ Text."},
+  {"level": "NB", "question": "Khi nhập xong đoạn văn bản bằng công cụ Text, em cần làm gì?", "options": ["Lưu tệp rồi mới định dạng", "Định dạng ngay cho đoạn văn bản đó", "Tắt phần mềm Paint", "Xoá đoạn văn bản vừa nhập"], "answer": 1, "explanation": "Khi nhập đoạn văn bản xong, em cần định dạng ngay cho đoạn văn bản đó."},
+  {"level": "NB", "question": "Tấm thiệp chúc mừng sinh nhật em tạo bằng Paint được lưu với tên tệp nào?", "options": ["ThiepMungSinhNhat", "BongBay", "ChumBongBay", "TreEmHomNay"], "answer": 0, "explanation": "Em lưu lại tệp với tên ThiepMungSinhNhat."},
+  {"level": "NB", "question": "Để tấm thiệp sinh nhật đẹp và ý nghĩa hơn, em có thể thêm những gì vào tấm thiệp?", "options": ["Lời chúc và các ngôi sao", "Một bài hát", "Một bảng tính", "Một video"], "answer": 0, "explanation": "Thêm lời chúc và các ngôi sao vào tấm thiệp theo gợi ý ."},
+  {"level": "TH", "question": "Mục đích chính của việc sử dụng công cụ Text trong phần mềm đồ họa là gì?", "options": ["Tạo các khối hình họa tiết văn bản nghệ thuật phức tạp có thể tự động biến đổi màu sắc.", "Thêm lời chúc hoặc đoạn thông điệp vào tấm thiệp.", "Thay đổi hình dạng của các đối tượng đồ họa đã vẽ.", "Tạo các đường viền nét đứt bao quanh trang vẽ."], "answer": 1, "explanation": "Công cụ Text (biểu tượng chữ A) được sử dụng để nhập văn bản, như lời chúc, vào bức tranh hoặc tấm thiệp."},
+  {"level": "TH", "question": "Khi tạo khung cho một tấm thiệp, thao tác nào giúp em thay đổi độ dày của đường viền?", "options": ["Nháy chuột vào bảng màu.", "Nháy chuột vào lệnh Size và chọn nét vẽ mong muốn.", "Nháy chuột vào công cụ Tẩy.", "Nháy chuột vào lệnh Fill with color."], "answer": 1, "explanation": "Lệnh Size chứa các tuỳ chọn độ dày khác nhau cho nét vẽ của khung hình."},
+  {"level": "TH", "question": "Vì sao khi muốn sao chép một hình ảnh như quả bóng bay, ta nên vẽ nó ở một vùng trống trên trang vẽ?", "options": ["Để phần mềm tự động nhận diện đó là một đối tượng độc lập và áp dụng các hiệu ứng đồ họa 3D đặc biệt.", "Để dễ dàng khoanh chọn và sao chép mà không bị dính vào các chi tiết của hình khác.", "Để máy tính tiết kiệm được dung lượng khi lưu trữ bức tranh.", "Để nét vẽ của hình ảnh được đậm và sắc nét hơn."], "answer": 1, "explanation": "Vẽ ở vùng trống giúp thao tác khoanh chọn đối tượng bằng công cụ Select chính xác, không cắt lẹm vào họa tiết xung quanh."},
+  {"level": "TH", "question": "Trong quá trình chèn chữ vào thiệp, thời điểm nào là bắt buộc để thay đổi phông chữ và màu sắc cho lời chúc?", "options": ["Bất kỳ lúc nào sau khi đã lưu tệp tin thành công vào trong máy tính và khởi động lại phần mềm.", "Ngay sau khi gõ xong văn bản và chưa nháy chuột ra ngoài khung chữ.", "Sau khi sử dụng công cụ Đổ màu cho toàn bộ nền của tấm thiệp.", "Trước khi bắt đầu mở vùng làm việc mới."], "answer": 1, "explanation": "Trong Paint, khi nháy chuột ra ngoài, văn bản sẽ biến thành hình ảnh cố định và không thể dùng công cụ Text định dạng lại được nữa."},
+  {"level": "TH", "question": "Để vẽ một hình chữ nhật màu đỏ bao quanh một hình chữ nhật màu tím, bước đầu tiên sau khi chọn công cụ vẽ hình chữ nhật là gì?", "options": ["Chọn độ dày của nét vẽ ở mục Size.", "Nhấn giữ phím cách trên bàn phím.", "Nháy chuột chọn màu đỏ trên bảng màu.", "Chọn công cụ sao chép."], "answer": 2, "explanation": "Cần chọn màu đỏ trên bảng màu trước khi thực hiện thao tác kéo thả chuột để vẽ viền ngoài."},
+  {"level": "TH", "question": "Thành phần hình ảnh nào sau đây phù hợp nhất để trang trí cho thiệp chúc mừng sinh nhật?", "options": ["Bánh kem, nến, bóng bay và hộp quà.", "Bó hoa hồng và phấn trắng.", "Hình ảnh ngôi trường và bục giảng.", "Phong bao lì xì và cành mai vàng."], "answer": 0, "explanation": "Bánh kem, nến, bóng bay và hộp quà là những hình ảnh biểu tượng đặc trưng của chủ đề sinh nhật."},
+  {"level": "TH", "question": "Công cụ nào sau đây được dùng để vẽ những quả bóng bay hình bầu dục trong tấm thiệp?", "options": ["Công cụ hình chữ nhật.", "Công cụ đường cong.", "Công cụ hình trái tim.", "Công cụ hình ô-van."], "answer": 3, "explanation": "Công cụ hình ô-van cho phép kéo thả để tạo ra các hình bầu dục làm quả bóng bay dễ dàng."},
+  {"level": "TH", "question": "Lệnh nào sau đây dùng để lưu lại tấm thiệp vừa thiết kế vào máy tính?", "options": ["Mở thẻ File và chọn lệnh Save.", "Mở thẻ View và chọn lệnh Zoom.", "Mở thẻ Home và chọn lệnh Resize.", "Mở thẻ File và chọn lệnh Print."], "answer": 0, "explanation": "Lệnh Save được sử dụng để lưu tệp tin đồ họa đang làm việc thành một file hoàn chỉnh."},
+  {"level": "TH", "question": "Khi muốn viết chữ có màu xanh lá cây, em cần thao tác chọn màu tại vị trí nào trên thanh công cụ?", "options": ["Trong hộp thoại Size của phần mềm.", "Ở ô Color 1.", "Ở ô Color 2.", "Trong mục Brushes."], "answer": 1, "explanation": "Ô Color 1 quy định màu của nét vẽ và đồng thời là màu của văn bản được nhập vào từ bàn phím."},
+  {"level": "TH", "question": "Để tạo các họa tiết hình trái tim nhỏ trang trí viền khung thiệp, em sử dụng công cụ nào?", "options": ["Công cụ Heart trong nhóm hình mẫu.", "Công cụ Pencil.", "Công cụ Brushes.", "Công cụ Text."], "answer": 0, "explanation": "Phần mềm Paint cung cấp sẵn công cụ vẽ hình trái tim nằm trong nhóm các hình mẫu định dạng trước."},
+  {"level": "TH", "question": "Thiệp chúc mừng năm mới thường có những đặc trưng nào sau đây?", "options": ["Hình ảnh người thầy đang giảng bài trên bục giảng.", "Hình ảnh phong bao lì xì và con giáp của năm.", "Hình chiếc bánh kem và nến.", "Bức tranh phong cảnh bãi biển."], "answer": 1, "explanation": "Phong bao lì xì và con giáp là hình ảnh biểu tượng quen thuộc thường thấy vào mỗi dịp Tết."},
+  {"level": "TH", "question": "Thao tác định dạng văn bản trong phần mềm đồ họa có điểm gì giống với phần mềm soạn thảo văn bản?", "options": ["Đều có thể tự động kiểm tra lỗi chính tả của từ tiếng Việt đang gõ theo ngữ pháp.", "Đều cho phép chọn phông chữ, cỡ chữ và kiểu chữ.", "Đều cho phép tạo bảng tính phức tạp ngay trong hộp thoại.", "Đều có thể chèn hiệu ứng chữ nhấp nháy động."], "answer": 1, "explanation": "Hộp công cụ Text trong phần mềm vẽ cung cấp các nút chức năng cơ bản như Font, Size, Bold, Italic tương tự phần mềm soạn thảo."},
+  {"level": "VD", "question": "Nam đang làm thiệp và muốn có 5 quả bóng bay kích thước giống hệt nhau nhưng màu sắc khác nhau. Cách nào sau đây là nhanh và hiệu quả nhất?", "options": ["Sử dụng công cụ hình ô-van để căn chỉnh thật cẩn thận và tự vẽ thủ công từng quả bóng một cho đến khi hoàn thành.", "Vẽ một quả bóng ở vùng trống, dùng lệnh sao chép tạo ra 4 quả nữa rồi đổ màu khác nhau.", "Mở 5 tệp Paint khác nhau để vẽ riêng từng quả rồi ghép lại.", "Chọn 5 màu khác nhau trước, sau đó vẽ đồng loạt."], "answer": 1, "explanation": "Việc sao chép giúp đảm bảo các hình giống hệt nhau tuyệt đối về kích thước, sau đó chỉ cần đổi màu, giúp tiết kiệm thời gian đáng kể."},
+  {"level": "VD", "question": "Lan vừa gõ xong dòng chữ \"Chúc mùng sinh nhật\" và lỡ nháy chuột ra ngoài. Bạn ấy phát hiện chữ \"mùng\" bị sai dấu. Lan nên xử lý thế nào?", "options": ["Nháy đúp chuột vào chữ cái bị sai trên màn hình để hộp thoại văn bản tự động hiện ra và gõ lại dấu.", "Dùng lệnh hoàn tác (Undo) để xóa dòng chữ đó và dùng công cụ Text gõ lại từ đầu.", "Dùng công cụ bút chì để đồ thêm dấu huyền và dùng công cụ chọn cắt bỏ dấu sắc.", "Đổi màu toàn bộ chữ thành màu nền để ẩn lỗi sai."], "answer": 1, "explanation": "Chữ sau khi nháy chuột ra ngoài đã bị chuyển hóa thành hình ảnh đồ họa, không thể sửa text được nữa mà bắt buộc phải hoàn tác và gõ lại."},
+  {"level": "VD", "question": "Minh muốn tạo một khung thiệp với đường viền là những đường nét đứt quãng, nhưng công cụ Rectangle chỉ vẽ nét liền. Minh có thể làm gì để tạo hiệu ứng nét đứt?", "options": ["Dùng công cụ tẩy xóa ngắt quãng trên đường nét liền vừa vẽ.", "Thay đổi phông chữ trong hộp thoại Text thành kiểu nét đứt.", "Dùng lệnh Fill with color đổ màu trắng đè lên viền.", "Tăng độ dày nét vẽ trong mục Size lên mức tối đa."], "answer": 0, "explanation": "Dùng tẩy ngắt các đoạn viền liền màu là một mẹo thủ công hiệu quả để biến đường liền nét thành đường đứt nét trong Paint."},
+  {"level": "VD", "question": "Để tạo một khung thiệp có hai lớp viền bao gồm viền ngoài màu đỏ và viền trong nhỏ hơn màu xanh, trình tự thao tác nào đúng?", "options": ["Vẽ hình chữ nhật màu đỏ trước, sau đó vẽ hình chữ nhật màu xanh lọt vào bên trong.", "Vẽ hai hình chữ nhật giống hệt nhau rồi kéo thu nhỏ một hình lại.", "Vẽ hình chữ nhật màu xanh trước, sau đó dùng lệnh phóng to.", "Dùng công cụ viết chữ để tạo viền ngoài."], "answer": 0, "explanation": "Vẽ khung ngoài trước rồi vẽ khung nhỏ hơn bên trong giúp người dùng dễ dàng căn chỉnh lề và khoảng cách sao cho bố cục cân đối."},
+  {"level": "VD", "question": "Nhìn vào hình ảnh đang thiết kế trên, lỗi kĩ thuật nào khiến người dùng rất khó chỉnh sửa nếu muốn di chuyển dòng chữ sang vị trí khác?", "options": ["Do người dùng chưa tiến hành lưu tệp tin đồ họa vào thư mục hệ thống máy tính nên chức năng chỉnh sửa di chuyển bị hạn chế.", "Dòng chữ và bông hoa đã bị đè lên nhau thành một lớp hình ảnh chung dính liền.", "Dòng chữ đã được thiết lập hiệu ứng nền trong suốt.", "Bông hoa được vẽ bằng nét vẽ quá mờ nhạt."], "answer": 1, "explanation": "Trong Paint, các đối tượng bị đè lên nhau sẽ trộn chung thành một lớp ảnh duy nhất, khi di chuyển chữ sẽ cắt đứt luôn phần hình ảnh bông hoa."},
+  {"level": "VD", "question": "Khi thiết kế thiệp, Mai muốn sao chép một bông hoa. Mai dùng công cụ Select khoanh vùng nhưng khi dán ra, nó mang theo cả một mảng nền màu trắng che khuất họa tiết xung quanh. Mai cần kích hoạt tùy chọn nào để khắc phục?", "options": ["Tùy chọn Transparent selection (Chọn trong suốt).", "Tùy chọn Invert color.", "Tùy chọn Resize.", "Tùy chọn Outline."], "answer": 0, "explanation": "Tùy chọn Transparent selection làm trong suốt màu nền (thường là màu ở ô Color 2), giúp hình được sao chép không bị dính mảng khối trắng đè lên nền."},
+  {"level": "VD", "question": "Cần thiết kế tấm thiệp với lời chúc nằm chính giữa. Khi chèn chữ, vị trí kéo mở hộp thoại Text tốt nhất là ở đâu?", "options": ["Mở ở bên ngoài trang vẽ rồi cắt dán vào.", "Mở trực tiếp tại vị trí chính giữa của tấm thiệp.", "Mở ở góc dưới rồi dùng phím cách đẩy chữ lên giữa.", "Mở đè lên sát mép của chùm bóng bay trên cùng."], "answer": 1, "explanation": "Mở hộp Text ngay tại vị trí cần đặt chữ giúp việc căn chỉnh dễ dàng nhất, tránh việc phải dùng lệnh khoanh vùng di chuyển văn bản làm ảnh hưởng nền."},
+  {"level": "VD", "question": "Một đoạn thông điệp chúc mừng trên thiệp dài 3 dòng. Để các dòng chữ ngắt trang ngay ngắn, em nên sử dụng phím nào trên bàn phím để xuống dòng khi đang gõ?", "options": ["Phím Shift.", "Phím Enter.", "Phím Ctrl.", "Phím Esc."], "answer": 1, "explanation": "Phím Enter dùng để tạo lệnh ngắt dòng mới, giúp thông điệp dài được chia thành nhiều dòng phù hợp với khung giấy thay vì tràn ra ngoài."}
+];
+
+// ===== CẤU HÌNH =====
+const PLAN = ["NB","NB","NB","NB","TH","TH","TH","VD","VD","VD"]; // mức độ theo từng câu
+const MISS = 2; // số lần được phép trả lời sai (sai lần thứ 3 thì kết thúc)
+const SAFE = 5, GIFT_RATE = 0.3, MAX = 10;
+const LV = {NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+
+// ===== KIỂM TRA DỮ LIỆU (handlers theo AGENTS.md) =====
+const okIdx=(a,n)=>Number.isInteger(a)&&a>=0&&a<n;
+const handlers = {
+  multiple:{validate:q=>Array.isArray(q.options)&&q.options.length>=2&&okIdx(q.answer,q.options.length),check:(q,u)=>u===q.answer},
+  truefalse:{validate:q=>Array.isArray(q.options)&&q.options.length===2&&okIdx(q.answer,2),check:(q,u)=>u===q.answer}
+};
+function validQuestions(){
+  const out=[];
+  JSON.parse(JSON.stringify(questions)).forEach((q,i)=>{
+    const t=q.type||"multiple",h=handlers[t];
+    if(!["NB","TH","VD"].includes(q.level)) return console.warn("Câu "+(i+1)+": thiếu hoặc sai mức độ, bỏ qua");
+    if(!h) return console.warn("Câu "+(i+1)+": loại '"+t+"' chưa được hỗ trợ, bỏ qua");
+    if(typeof q.question!=="string"||!h.validate(q)) return console.warn("Câu "+(i+1)+": dữ liệu không hợp lệ, bỏ qua");
+    q.type=t;out.push(q);
+  });
+  return out;
+}
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+// Xáo lựa chọn bằng ánh xạ chỉ số, cập nhật answer (không so sánh chuỗi)
+function shuffleOptions(q){
+  if(q.type!=="multiple") return q;
+  const order=shuf(q.options.map((_,i)=>i));
+  q.options=order.map(i=>q.options[i]);q.answer=order.indexOf(q.answer);return q;
+}
+
+// ===== ÂM THANH (tạo bằng code) =====
+let AC,mute=false;
+function tone(f,d=.2,type="sine",v=.15,delay=0){
+  if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
+const sfx={
+  click:()=>tone(660,.1,"triangle"),
+  lock:()=>{[0,.25,.5,.75].forEach(d=>tone(110,.2,"sawtooth",.12,d))},
+  ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.35,"triangle",.18,i*.12)),
+  bad:()=>[300,220,150].forEach((f,i)=>tone(f,.4,"sawtooth",.15,i*.2)),
+  gift:()=>[784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,"square",.1,i*.09)),
+  tick:()=>tone(900,.05,"square",.06)
+};
+
+// ===== GIỌNG ĐỌC TIẾNG VIỆT =====
+// Ưu tiên giọng tiếng Việt có sẵn trong trình duyệt/hệ điều hành; nếu máy chưa có thì dùng giọng Google (cần Internet).
+let voiceOn=true,viVoice=null,audio=null,ttsId=0,warned=false;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;
+  const v=speechSynthesis.getVoices().filter(x=>/^vi([-_]|$)/i.test(x.lang)||/vietnam|việt/i.test(x.name));
+  viVoice=v.find(x=>/natural|online/i.test(x.name))||v[0]||null;
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim()};
+function chunk(t){
+  const out=[];
+  t.split(/(?<=[.!?;:])\s+/).forEach(x=>{while(x.length>170){let k=x.lastIndexOf(" ",170);if(k<50)k=170;out.push(x.slice(0,k));x=x.slice(k).trim()}if(x)out.push(x)});
+  return out;
+}
+function quiet(){ttsId++;if(audio){audio.pause();audio=null}if(hasTTS)speechSynthesis.cancel()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),7000)}
+function speak(t){
+  if(!voiceOn)return;
+  quiet();const my=ttsId,parts=chunk(plain(t));
+  setTimeout(()=>{
+    if(my!==ttsId)return;
+    pickVoice();
+    if(viVoice){
+      parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);try{u.voice=viVoice}catch(e){}u.lang=viVoice.lang;u.rate=.95;speechSynthesis.speak(u)});
+    }else{
+      if(!warned){warned=true;toast("🗣 Máy chưa có giọng tiếng Việt, đang dùng giọng Google (cần Internet)")}
+      let i=0;const next=()=>{if(my!==ttsId||i>=parts.length)return;audio=new Audio("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(parts[i++]));audio.onended=next;audio.onerror=next;audio.play().catch(()=>next())};next();
+    }
+  },80);
+}
+function readQ(){
+  const q=G.list[G.i],vis=k=>!document.querySelector('.ans[data-k="'+k+'"]').classList.contains("gone");
+  speak("Câu hỏi số "+(G.i+1)+". "+q.question+". "+q.options.map((o,k)=>vis(k)?"Đáp án "+"ABCD"[k]+": "+o:"").join(". "));
+}
+// ===== HIỆU ỨNG NỀN & PHÁO GIẤY =====
+const bg=document.getElementById("bg"),fx=document.getElementById("fx"),bx=bg.getContext("2d"),fc=fx.getContext("2d");
+let stars=[],parts=[];
+function resize(){
+  bg.width=fx.width=innerWidth;bg.height=fx.height=innerHeight;
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform="translate(-50%,-50%) scale("+s+")";
+  stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.6+.1,p:Math.random()*6}));
+}
+function confetti(n=160,x=innerWidth/2,y=innerHeight/2){
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*26,vy:Math.random()*-22-4,g:.5,c:`hsl(${Math.random()*360},90%,60%)`,s:Math.random()*12+6,r:Math.random()*6,l:130});
+}
+function loop(t){
+  bx.clearRect(0,0,bg.width,bg.height);
+  const gr=bx.createRadialGradient(bg.width/2,bg.height*.4,50,bg.width/2,bg.height/2,bg.width*.7);
+  gr.addColorStop(0,"#2a1a8a");gr.addColorStop(.6,"#0a1450");gr.addColorStop(1,"#030618");bx.fillStyle=gr;bx.fillRect(0,0,bg.width,bg.height);
+  for(let i=0;i<6;i++){const W=bg.width,H=bg.height,x=W*(i+.5)/6,sw=Math.sin(t/1800+i*1.3)*W*.12,g2=bx.createLinearGradient(x,0,x+sw,H);g2.addColorStop(0,i%2?"rgba(120,160,255,.28)":"rgba(190,110,255,.26)");g2.addColorStop(1,"rgba(0,0,0,0)");bx.fillStyle=g2;bx.beginPath();bx.moveTo(x-20,0);bx.lineTo(x+20,0);bx.lineTo(x+sw+W*.07,H);bx.lineTo(x+sw-W*.07,H);bx.fill()}
+  for(let k=1;k<=4;k++){bx.strokeStyle="rgba(80,200,255,"+(.55-k*.1)+")";bx.lineWidth=4;bx.beginPath();bx.ellipse(bg.width/2,bg.height*1.02,bg.width*.12*k,bg.height*.035*k,0,0,7);bx.stroke()}
+  stars.forEach(s=>{s.y+=s.s;if(s.y>bg.height)s.y=0;bx.globalAlpha=.5+.5*Math.sin(t/400+s.p);bx.fillStyle="#fff";bx.beginPath();bx.arc(s.x,s.y,s.r,0,7);bx.fill()});
+  bx.globalAlpha=1;
+  fc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=.2;p.l--;fc.save();fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;fc.globalAlpha=Math.min(1,p.l/30);fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore()});
+  requestAnimationFrame(loop);
+}
+
+// ===== TRẠNG THÁI TRÒ CHƠI =====
+const $=id=>document.getElementById(id);
+let G;
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function newGame(){
+  const pool=validQuestions(),by={NB:[],TH:[],VD:[]};
+  pool.forEach(q=>by[q.level].push(q));Object.values(by).forEach(shuf);
+  const need={NB:0,TH:0,VD:0};PLAN.forEach(l=>need[l]++);
+  for(const l in need) if(by[l].length<need[l]){alert("Chưa đủ câu hỏi mức "+LV[l]+" (cần "+need[l]+", có "+by[l].length+").");return}
+  const list=PLAN.map(l=>shuffleOptions(by[l].shift()));
+  G={list,by,i:0,score:0,used:{},state:"idle",sel:-1,wrong:[],correct:0,miss:0};
+  document.querySelectorAll(".help").forEach(h=>h.classList.remove("used"));
+  show("game");renderLadder();loadQ();
+}
+const hearts=()=>{$("lv").textContent="❤️".repeat(Math.max(0,MISS-G.miss))||"—"};
+function renderLadder(){
+  $("ladder").innerHTML=PLAN.map((_,k)=>10-k).map(n=>`<div class="step ${n===SAFE?"safe":""} ${n<=G.i?"done":""} ${n===G.i+1?"now":""}"><i>${n}</i><span>${n===SAFE?"🛡 ":""}${n} điểm</span></div>`).join("");
+}
+function loadQ(){
+  const q=G.list[G.i];G.state="idle";G.sel=-1;
+  $("qin").innerHTML=q.question;$("qin").style.fontSize=(q.question.length>150?44:q.question.length>100?52:60)+"px";$("qtab").textContent="CÂU HỎI SỐ "+(G.i+1)+" • "+LV[q.level].toUpperCase();$("qn").textContent=(G.i+1)+" / "+PLAN.length;
+  $("answers").innerHTML=q.options.map((o,k)=>`<button class="ans ${o.length>95?"xxl":o.length>65?"xl":o.length>38?"long":""}" data-k="${k}"><div class="in"><b>${"ABCD"[k]}.</b><span>${o}</span></div></button>`).join("");
+  $("panel").classList.remove("on");$("game").classList.remove("pan");$("sc").textContent="⭐ "+G.score+"/"+MAX;renderLadder();hearts();
+  cast("host","talk");cast("me","");setTimeout(()=>{if(G.state==="idle")readQ()},700);setTimeout(()=>{if(G.state==="idle")cast("host","")},3500);
+}
+function pick(k){
+  if(G.state!=="idle"&&G.state!=="sel")return;
+  const b=document.querySelector(`.ans[data-k="${k}"]`);if(!b||b.classList.contains("gone"))return;
+  if(G.sel===k)return;
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  G.sel=k;G.state="sel";b.classList.add("sel");sfx.click();cast("me","think");
+  document.querySelectorAll(".cf").forEach(x=>x.remove());b.querySelector(".in").insertAdjacentHTML("beforeend","<span class=\"cf\">✔ XÁC NHẬN</span>");
+}
+function lock(){
+  if(G.state!=="sel")return;G.state="lock";quiet();sfx.lock();document.querySelectorAll(".cf").forEach(x=>x.remove());
+  setTimeout(reveal,2200);
+}
+function reveal(){
+  const q=G.list[G.i],ok=handlers[q.type].check(q,G.sel),A=document.querySelectorAll(".ans");
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  A[q.answer].classList.add("ok");
+  if(ok){G.score=Math.min(MAX,G.score+1);G.correct++;sfx.ok();confetti(120);cast("me","ok");cast("host","ok")}
+  else{cast("me","bad");cast("host","");A[G.sel].classList.add("bad");sfx.bad();G.miss++;G.wrong.push({q:q.question,right:q.options[q.answer],exp:q.explanation})}
+  G.ok=ok;G.state="done";hearts();$("sc").textContent="⭐ "+G.score+"/"+MAX;
+  setTimeout(()=>Math.random()<GIFT_RATE?gift():panel(),1800);
+}
+function panel(){
+  const q=G.list[G.i],last=G.i===PLAN.length-1;
+  const over=G.miss>MISS,left=MISS-G.miss;
+  $("exp").innerHTML=(G.ok?"✅ <b>Chính xác!</b> ":"❌ <b>Chưa đúng.</b> Đáp án: <b>"+"ABCD"[q.answer]+"</b>. "+(over?"Bạn đã sai quá "+MISS+" lần. ":"Bạn còn <b>"+left+"</b> lần được sai. "))+(q.explanation||"");
+  $("next").textContent=(over||last)?"Xem kết quả ▶":"Câu tiếp theo ▶";
+  $("panel").classList.add("on");$("game").classList.add("pan");G.state="panel";speak($("exp").innerHTML);
+}
+function advance(){
+  if(G.state!=="panel")return;quiet();
+  if(G.miss>MISS||G.i===PLAN.length-1)return finish();
+  G.i++;loadQ();
+}
+function finish(){
+  // Mốc an toàn: đã qua câu 5 thì giữ tối thiểu 5 điểm khi trả lời sai
+  let s=G.score;if(G.miss>MISS&&G.i>=SAFE&&s<SAFE)s=SAFE;
+  G.score=s;show("end");exitFs();quiet();speak("Kết thúc trò chơi. Bạn đạt "+s+" điểm trên "+MAX+" điểm.");
+  $("es").textContent=s+"/"+MAX;
+  $("et").textContent=s===MAX?"TRIỆU PHÚ XUẤT SẮC!":s>=8?"Rất xuất sắc!":s>=5?"Làm tốt lắm!":"Cố gắng lên nhé!";
+  $("eo").textContent=s>=8?"🏆":s>=5?"🎉":"💪";
+  $("em").textContent="Trả lời đúng "+G.correct+" câu, sai "+G.miss+" câu"+(s>G.correct?", nhận thêm quà/mốc an toàn":"")+".";
+  $("wl").innerHTML=G.wrong.length?"<b>Câu cần ôn lại:</b><br>"+G.wrong.map(w=>"• "+w.q+" → <b>"+w.right+"</b>").join("<br>"):"";
+  if(s>=5){sfx.ok();[.3,.7,.5].forEach((x,i)=>setTimeout(()=>confetti(150,innerWidth*x,innerHeight*.4),i*500))}
+}
+// ===== QUÀ TẶNG =====
+function overlay(html){$("ov").innerHTML=html;$("ov").classList.add("on")}
+function closeOv(){$("ov").classList.remove("on");$("ov").innerHTML=""}
+function gift(){
+  G.state="gift";overlay('<h2>🎁 Bạn nhận được một hộp quà!</h2><div id="gift">🎁</div><p>Bấm vào hộp quà để mở</p>');
+  $("gift").onclick=()=>{
+    sfx.gift();speak("Chúc mừng! Bạn nhận được một điểm thưởng.");const full=G.score>=MAX;G.score=Math.min(MAX,G.score+1);$("sc").textContent="⭐ "+G.score+"/"+MAX;
+    overlay('<div class="big">+1</div><h2>'+(full?"Điểm đã đạt tối đa 10!":"điểm thưởng!")+'</h2><button class="btn sm" id="okg">Tuyệt vời ▶</button>');
+    confetti(220,innerWidth/2,innerHeight/2);$("okg").onclick=()=>{closeOv();panel()}
+  };
+}
+// ===== TRỢ GIÚP =====
+function help(h){
+  const btn=document.querySelector(`.help[data-h="${h}"]`);
+  if(G.state!=="idle"&&G.state!=="sel"||btn.classList.contains("used"))return;
+  if(h==="5050"){
+    const q=G.list[G.i],w=shuf(q.options.map((_,i)=>i).filter(i=>i!==q.answer)).slice(0,q.options.length-2);
+    w.forEach(i=>document.querySelector(`.ans[data-k="${i}"]`).classList.add("gone"));
+    if(w.includes(G.sel)){G.sel=-1;G.state="idle"}
+    setTimeout(readQ,300);
+  }else if(h==="swap"){
+    const l=G.list[G.i].level,n=G.by[l].shift();
+    if(!n){alert("Hết câu hỏi để đổi!");return}
+    G.list[G.i]=shuffleOptions(n);loadQ();
+  }else return timer(h,btn);
+  btn.classList.add("used");sfx.click();
+}
+function timer(h,btn){
+  const cls=h==="class",prev=G.state;G.state="help";quiet();
+  overlay("<h2>"+(cls?"🏫 Hỏi cả lớp":"🤝 Hỏi người tin tưởng")+"</h2><p>"+(cls?"Cả lớp cùng bàn bạc rồi giơ thẻ A/B/C/D. Đáp án nào nhiều bạn chọn nhất?":"Người chơi chọn một người mình tin tưởng để hỏi ý kiến.")+"</p>"+(cls?"":'<input id="who" placeholder="Tên người được hỏi (không bắt buộc)">')+'<div id="cd">30</div><button class="btn sm" id="stop" style="margin-top:20px">Xong ▶</button>');
+  btn.classList.add("used");let t=30;
+  const iv=setInterval(()=>{t--;$("cd").textContent=t;if(t<=5){$("cd").classList.add("low");sfx.tick()}if(t<=0)end()},1000);
+  function end(){clearInterval(iv);closeOv();G.state=G.sel>=0?"sel":"idle"}
+  $("stop").onclick=end;
+}
+// ===== NHÂN VẬT: người hỏi & người trả lời (bấm vào khung để thay bằng ảnh thật) =====
+const AV=(skin,hair,shirt,body,head)=>`<svg viewBox="0 0 200 220"><path d="M20 220c0-55 35-80 80-80s80 25 80 80z" fill="${shirt}"/><path d="M85 140l15 25 15-25z" fill="#fff"/>${body}<rect x="88" y="115" width="24" height="30" fill="${skin}"/><circle cx="100" cy="85" r="52" fill="${skin}"/><path d="M48 80c0-45 30-62 55-62s50 20 49 62c-10-25-30-35-52-35s-42 10-52 35z" fill="${hair}"/>${head}<circle cx="80" cy="90" r="6" fill="#222"/><circle cx="120" cy="90" r="6" fill="#222"/><path d="M70 76q10-8 20 0M110 76q10-8 20 0" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse class="mouth" cx="100" cy="114" rx="14" ry="7" fill="#7a1f1f"/></svg>`;
+const cast=(w,m)=>{$(w).dataset.m=m};
+[["host",AV("#f1c9a0","#2b2b2b","#1b1b2f",'<path d="M100 152l-22-12v24zM100 152l22-12v24z" fill="#e02b2b"/>',"")],
+ ["me",AV("#e8b98a","#5a2d0c","#2e9d5b","",'<path d="M50 85a50 50 0 0 1 100 0" stroke="#ffb300" stroke-width="8" fill="none"/><rect x="42" y="80" width="14" height="30" rx="6" fill="#ffb300"/><rect x="144" y="80" width="14" height="30" rx="6" fill="#ffb300"/>')]
+].forEach(([id,svg])=>{
+  const f=$(id),inp=f.querySelector("input");f.insertAdjacentHTML("afterbegin",svg+'<img alt="">');
+  f.onclick=e=>{if(e.target!==inp)inp.click()};
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{const im=f.querySelector("img");im.src=r.result;im.style.display="block";f.querySelector("svg").style.display="none"};if(inp.files[0])r.readAsDataURL(inp.files[0])};
+});
+// ===== SỰ KIỆN =====
+const enterFs=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})};
+const exitFs=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})};
+$("go").onclick=()=>{sfx.click();enterFs();newGame()};
+$("again").onclick=()=>{sfx.click();enterFs();newGame()};
+$("next").onclick=advance;
+$("answers").onclick=e=>{if(e.target.closest(".cf"))return lock();const b=e.target.closest(".ans");if(b)pick(+b.dataset.k)};
+document.querySelectorAll(".help").forEach(h=>h.onclick=()=>help(h.dataset.h));
+$("rd").onclick=()=>{voiceOn=!voiceOn;$("rd").classList.toggle("off",!voiceOn);if(!voiceOn)quiet();else if(G&&(G.state==="idle"||G.state==="sel"))readQ()};
+$("snd").onclick=()=>{mute=!mute;$("snd").textContent=mute?"🔇":"🔊"};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$("fs").onclick=fs;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const k=e.key.toLowerCase();
+  if(k==="f")fs();else if(k==="m")$("snd").click();else if(k==="v")$("rd").click();else if(k==="r"&&G&&(G.state==="idle"||G.state==="sel"))readQ();
+  else if("abcd".includes(k)&&k.length===1)pick("abcd".indexOf(k));
+  else if(k==="enter"){if(G&&G.state==="sel")lock();else if(G&&G.state==="panel")advance();else if(!G||$("start").classList.contains("on"))$("go").click()}
+  else if("1234".includes(k)&&G&&$("game").classList.contains("on"))help(["5050","class","trust","swap"][+k-1]);
+});
+addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);show("start");
+</script></body></html>

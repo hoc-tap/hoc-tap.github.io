@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai là triệu phú – Tin học 4 bài 6</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:#050824;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fx{z-index:50}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;z-index:2}
+.screen{position:absolute;inset:0;display:none;padding:40px 60px}
+.screen.on{display:block;animation:fadein .6s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:110px;text-align:center;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 25px #ffb30088)}
+@keyframes shine{to{background-position:300%}}
+.btn{font-size:64px;font-weight:800;font-family:inherit;color:#1a1200;background:linear-gradient(#ffe27a,#ffb300);border:0;border-radius:60px;padding:26px 100px;cursor:pointer;box-shadow:0 0 40px #ffb300aa,0 8px 0 #a56a00;transition:.2s}
+.btn:hover{transform:translateY(-4px) scale(1.05)}
+.btn.sm{font-size:34px;padding:16px 46px}
+#start{text-align:center;padding-top:150px}
+#start p{font-size:38px;margin:30px 0 60px;color:#bcd}
+.orb{font-size:170px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-25px) rotate(6deg)}}
+.rules{display:flex;gap:26px;justify-content:center;margin-bottom:60px}
+.rules{flex-wrap:wrap}.rules div{background:#ffffff14;border:2px solid #ffffff33;border-radius:24px;padding:18px 26px;font-size:28px;backdrop-filter:blur(6px)}
+/* game – giao diện theo mẫu */
+#game{padding:0}
+.pill{display:flex;align-items:center;gap:16px;background:linear-gradient(#10267a,#050f40);border:3px solid #ffd54a;border-radius:34px;padding:10px 30px;box-shadow:0 0 25px #ffb30066}
+.pill small{display:block;font-size:20px;color:#bcd}.pill b{font-size:44px;color:#ffd54a;font-weight:800}.pill .coin{font-size:54px}
+#hud-l{position:absolute;left:60px;top:30px;display:flex;gap:14px}#hud-l .pill{padding:10px 22px}
+#hud-r{position:absolute;right:60px;top:30px;display:flex;gap:12px;align-items:center}
+.ic{width:70px;height:70px;border-radius:50%;border:3px solid #ffd54a;background:#0a1550;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 0 18px #ffb30055}
+#toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#000d;border:2px solid #ffd54a;border-radius:30px;padding:10px 30px;font-size:26px;z-index:30;opacity:0;transition:.4s;pointer-events:none}#toast.on{opacity:1}
+.ic.off{opacity:.45;filter:grayscale(1)}
+.logo{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:8px 80px 14px;border:5px solid #ffd54a;border-radius:90px/60px;background:radial-gradient(#1b3a8f,#050f40);box-shadow:0 0 45px #ffb300aa;text-align:center;line-height:1}
+.logo small{display:block;font-size:32px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 12px #38f}
+.logo b{display:block;font-size:80px;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+#helps{position:absolute;left:320px;top:175px;width:960px;display:flex;gap:16px}
+.help{flex:1;height:160px;border-radius:30px;border:3px solid #6cf;background:radial-gradient(#2a46c0,#0a1550);color:#fff;cursor:pointer;box-shadow:0 0 22px #3af6;transition:.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+.help i{font-style:normal;font-size:56px;line-height:1}.help b{font-size:46px;line-height:1}
+.help small{font-size:20px;font-weight:600;color:#cde;line-height:1.15;padding:4px 8px 0}
+.help:hover:not(.used){transform:scale(1.08);box-shadow:0 0 40px #6cf;border-color:#fff}
+.help.used{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.help.used::after{content:"✕";position:absolute;inset:0;font-size:120px;color:#f55;line-height:160px}
+#qtab{position:absolute;left:800px;transform:translateX(-50%);top:385px;z-index:3;padding:8px 56px;background:linear-gradient(#ffd54a,#e69500);color:#1a1200;font-size:30px;font-weight:900;white-space:nowrap;clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,24px 100%,0 50%)}
+#qbox{position:absolute;left:60px;top:422px;width:1480px;height:290px;padding:4px;background:linear-gradient(#9ef,#38f);clip-path:polygon(62px 0,calc(100% - 62px) 0,100% 50%,calc(100% - 62px) 100%,62px 100%,0 50%);filter:drop-shadow(0 0 20px #38f)}
+#qin{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 110px;font-size:48px;font-weight:700;line-height:1.3;background:linear-gradient(#10267a,#050f40);clip-path:polygon(60px 0,calc(100% - 60px) 0,100% 50%,calc(100% - 60px) 100%,60px 100%,0 50%)}
+#answers{position:absolute;left:60px;top:735px;width:1480px;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.ans{height:135px;padding:3px;background:#6cf;border:0;color:#fff;cursor:pointer;transition:.2s;font-family:inherit;clip-path:polygon(36px 0,calc(100% - 36px) 0,100% 50%,calc(100% - 36px) 100%,36px 100%,0 50%)}
+.ans .in{height:100%;display:flex;align-items:center;gap:18px;padding:0 64px;font-size:46px;font-weight:600;text-align:left;line-height:1.1;background:linear-gradient(#10267a,#050f40);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,34px 100%,0 50%)}
+.ans b{color:#ffb300;font-size:56px}.ans .in>span:first-of-type{flex:1}.cf{margin-left:auto;flex:none;background:#1a1200;color:#ffd54a;border-radius:40px;padding:8px 16px;font-size:21px;font-weight:900;white-space:nowrap;box-shadow:0 0 18px #0008;transition:.2s}.ans.sel .in{padding-right:36px;font-size:38px;line-height:1.05;gap:14px}.ans.sel.long .in{font-size:31px}.ans.xl .in{font-size:29px;line-height:1.05}.ans.xxl .in{font-size:25px;line-height:1.05}.ans.sel.xl .in{font-size:26px}.ans.sel.xxl .in{font-size:22px}.ans.xl b,.ans.xxl b{font-size:44px}.ans.sel.xl .cf,.ans.sel.xxl .cf{font-size:18px;padding:6px 12px}.ans.sel b{font-size:50px}.cf:hover{transform:scale(1.1);background:#000}.ans.long .in{font-size:37px;line-height:1.1}
+.ans:hover:not(:disabled){background:#fff;transform:scale(1.02)}
+.ans:hover:not(:disabled) .in{background:linear-gradient(#1c3fb0,#0a1a70)}
+.ans.sel,.ans.sel:hover{background:#fff;animation:blink .5s infinite alternate}
+.ans.sel .in,.ans.sel:hover .in{background:linear-gradient(#ffd54a,#e69500);color:#1a1200}.ans.sel b{color:#1a1200}
+@keyframes blink{to{filter:brightness(1.35)}}
+.ans.ok{background:#fff;animation:pop .6s,blink .5s infinite alternate}
+.ans.ok .in{background:linear-gradient(#3ddc6b,#0c8a35)}.ans.ok b{color:#fff}
+@keyframes pop{40%{transform:scale(1.1)}}
+.ans.bad{background:#fff;animation:shake .5s}
+.ans.bad .in{background:linear-gradient(#ff5b5b,#a00)}.ans.bad b{color:#fff}
+@keyframes shake{20%,60%{transform:translateX(-18px)}40%,80%{transform:translateX(18px)}}
+@keyframes pulse{to{box-shadow:0 0 50px #ffb300}}
+.ans.gone{visibility:hidden}
+#panel{position:absolute;left:320px;top:165px;width:960px;height:210px;display:none;flex-direction:row;justify-content:center;align-items:center;gap:24px;background:#000c;border:3px solid #ffd54a;border-radius:30px;padding:14px 28px;font-size:25px;z-index:5;animation:fadein .4s}
+#panel.on{display:flex}#panel span{line-height:1.35}
+#game.pan #helps{visibility:hidden}
+#ladder{position:absolute;left:1580px;top:160px;width:280px;height:870px;display:flex;flex-direction:column;gap:8px;padding:14px;background:#050f40cc;border:4px solid #ffd54a;border-radius:30px;box-shadow:0 0 35px #ffb30066}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:40px;font-size:27px;font-weight:700;color:#ffd54a;transition:.4s}
+.step i{width:46px;height:46px;border-radius:12px;border:2px solid #ffd54a;display:grid;place-items:center;font-style:normal;font-size:26px;color:#fff}
+.step span{flex:1;text-align:right}.step.safe{color:#fff}
+.step.done{color:#3f6;background:#3f62}
+.step.now{background:linear-gradient(#ffd54a,#e69500);color:#1a1200;transform:scale(1.06);box-shadow:0 0 30px #ffb300}.step.now i{color:#1a1200;border-color:#1a1200}
+/* overlay */
+#ov{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;text-align:center;padding:60px}
+#ov.on{display:flex;animation:fadein .4s}
+#ov h2{font-size:80px;color:#ffd54a;margin-bottom:20px}
+#ov p{font-size:40px;max-width:1300px;margin-bottom:30px;line-height:1.35}
+#ov input{font-size:38px;font-weight:600;font-family:inherit;padding:12px 28px;border-radius:30px;border:3px solid #6cf;background:#0a1550;color:#fff;text-align:center;margin-bottom:26px}
+#cd{font-size:230px;font-weight:900;color:#fff;text-shadow:0 0 40px #38f;line-height:1}
+#cd.low{color:#f55;animation:pulse .4s infinite alternate}
+.letters{display:flex;gap:30px;margin:10px 0 30px}
+.letters button{width:130px;height:130px;font-size:70px}
+#gift{font-size:300px;cursor:pointer;animation:drop 1s cubic-bezier(.3,1.6,.5,1),wob 1s 1s infinite;filter:drop-shadow(0 0 60px #ff0)}
+@keyframes drop{from{transform:translateY(-900px)}}
+@keyframes wob{25%{transform:rotate(-12deg) scale(1.1)}75%{transform:rotate(12deg) scale(1.1)}}
+.big{font-size:260px;font-weight:900;color:#ffd54a;text-shadow:0 0 50px #ffb300;line-height:1}
+#wl{max-height:250px;overflow:auto;font-size:26px;text-align:left;margin:10px auto 20px;width:1300px;color:#fbb}
+.fig .bub{position:absolute;top:2px;right:8px;font-size:34px;font-style:normal}
+.fig[data-m=talk] .bub::after{content:"💬"}.fig[data-m=think] .bub::after{content:"🤔"}
+.fig[data-m=ok] .bub::after{content:"😄"}.fig[data-m=bad] .bub::after{content:"😢"}
+.fig[data-m=ok]{animation:pop .6s}.fig[data-m=bad]{animation:shake .5s}.fig[data-m=think]{box-shadow:0 0 35px #ffb300}
+.mouth{transform-box:fill-box;transform-origin:center}
+.fig[data-m=talk] .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{to{transform:scaleY(.2)}}
+#cast{position:absolute;inset:0;pointer-events:none}
+.fig{position:absolute;width:230px;height:210px;pointer-events:auto;border:4px solid #6cf;border-radius:26px;background:radial-gradient(#3a58d8,#0a1550);box-shadow:0 0 30px #38f9;cursor:pointer;overflow:hidden;transition:.3s}
+#host{left:60px;top:165px}#me{left:1310px;top:165px}
+.fig:hover{transform:scale(1.04)}
+.fig svg{position:absolute;left:10px;top:14px;width:calc(100% - 20px);height:calc(100% - 54px)}
+.fig img{position:absolute;left:0;top:0;width:100%;height:calc(100% - 38px);object-fit:cover;display:none}
+.fig .bub{font-size:26px}.fig label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:#000b;border:2px solid #ffd54a;border-radius:20px;padding:3px 12px;font-size:17px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<canvas id="bg"></canvas><canvas id="fx"></canvas>
+<div id="stage">
+<section class="screen" id="start">
+ <div class="orb">💎</div>
+ <h1>AI LÀ TRIỆU PHÚ</h1>
+ <p>Tin học 4 – Bài 6: Sử dụng phần mềm khi được phép</p>
+ <div class="rules"><div>🎯 10 câu – tối đa 10 điểm</div><div>❤️ Được sai 2 lần</div><div>🛡 Mốc an toàn câu 5</div><div>🎁 Có thể nhận quà +1 điểm</div><div>💡 4 quyền trợ giúp</div></div>
+ <button class="btn" id="go">▶ BẮT ĐẦU</button>
+ <p style="font-size:24px;margin-top:40px">Phím tắt: Bấm đáp án rồi bấm ✔ XÁC NHẬN (hoặc Enter) • A B C D chọn nhanh • 1–4 trợ giúp • F toàn màn hình • M tắt âm • V bật/tắt giọng đọc • R đọc lại câu hỏi</p>
+</section>
+<section class="screen" id="game">
+ <div id="hud-l"><div class="pill"><span class="coin">🪙</span><div><small>Điểm hiện tại</small><b id="sc">⭐ 0/10</b></div></div><div class="pill"><div><small>Được sai</small><b id="lv">❤️❤️</b></div></div></div>
+ <div class="logo"><small>AI LÀ</small><b>TRIỆU PHÚ</b></div>
+ <div id="hud-r"><div class="pill"><span class="coin">🏆</span><div><small>Câu hỏi số</small><b id="qn">1 / 10</b></div></div><button class="ic" id="rd" title="Giọng đọc (V) • đọc lại câu hỏi (R)">🗣</button><button class="ic" id="snd">🔊</button><button class="ic" id="fs">⛶</button></div>
+ <div id="cast">
+  <div class="fig" id="host" title="Bấm để đổi ảnh"><i class="bub"></i><label>🎤 Người hỏi</label><input type="file" accept="image/*" hidden></div>
+  <div class="fig" id="me" title="Bấm để đổi ảnh"><i class="bub"></i><label>🙋 Người trả lời</label><input type="file" accept="image/*" hidden></div>
+ </div>
+ <div id="helps">
+  <button class="help" data-h="5050"><b>50:50</b><small>Loại 2 đáp án</small></button>
+  <button class="help" data-h="class"><i>🏫</i><small>Hỏi cả lớp</small></button>
+  <button class="help" data-h="trust"><i>🤝</i><small>Hỏi người tin tưởng</small></button>
+  <button class="help" data-h="swap"><i>🔄</i><small>Đổi câu hỏi</small></button>
+ </div>
+ <div id="panel"><span id="exp"></span><button class="btn sm" id="next">Tiếp tục ▶</button></div>
+ <div id="qtab"></div><div id="qbox"><div id="qin"></div></div>
+ <div id="answers"></div>
+ <div id="ladder"></div>
+</section>
+<section class="screen" id="end" style="text-align:center;padding-top:70px">
+ <div class="orb" id="eo">🏆</div><h1 style="font-size:90px" id="et"></h1>
+ <div class="big" id="es"></div><p style="font-size:38px;margin:10px" id="em"></p>
+ <div id="wl"></div><button class="btn" id="again">🔁 CHƠI LẠI</button>
+</section>
+<div id="ov"></div><div id="toast"></div>
+</div>
+<script>
+// DỮ LIỆU CÂU HỎI — thay mảng này để sử dụng bộ câu hỏi mới.
+// level: NB (nhận biết) | TH (thông hiểu) | VD (vận dụng); answer là chỉ số đáp án đúng (từ 0).
+const questions = [
+  {"level": "NB", "question": "Phần mềm được cá nhân hoặc tổ chức sản xuất ra nhằm mục đích gì?", "options": ["Đáp ứng nhu cầu làm việc, học tập hay giải trí của con người", "Làm máy tính nặng hơn", "Thay thế hoàn toàn con người", "Làm hỏng phần cứng"], "answer": 0, "explanation": "Phần mềm được sản xuất để đáp ứng nhu cầu làm việc, học tập hay giải trí của con người."},
+  {"level": "NB", "question": "Có những loại phần mềm nào xét theo quyền sử dụng?", "options": ["Chỉ có phần mềm miễn phí", "Phần mềm miễn phí và phần mềm không miễn phí", "Chỉ có phần mềm không miễn phí", "Chỉ có phần cứng"], "answer": 1, "explanation": "Có phần mềm miễn phí và phần mềm không miễn phí."},
+  {"level": "NB", "question": "Phần mềm miễn phí là phần mềm như thế nào?", "options": ["Phần mềm phải trả tiền mới dùng được", "Phần mềm không có tác giả", "Phần mềm được sử dụng mà không phải trả tiền", "Phần mềm không dùng được"], "answer": 2, "explanation": "Phần mềm miễn phí là phần mềm người dùng không phải trả tiền để sử dụng."},
+  {"level": "NB", "question": "Phần mềm không miễn phí là phần mềm như thế nào?", "options": ["Phần mềm dùng không mất tiền", "Phần mềm không có tên", "Phần mềm chỉ có trên điện thoại", "Phần mềm phải trả phí để được sử dụng"], "answer": 3, "explanation": "Phần mềm không miễn phí là phần mềm người dùng phải trả phí để sử dụng."},
+  {"level": "NB", "question": "Phần mềm PowerPoint do công ty nào sản xuất?", "options": ["Công ty Microsoft", "Công ty Google", "Kĩ sư Kiran", "Công ty Adobe"], "answer": 0, "explanation": "Theo bảng trong bài, PowerPoint là sản phẩm của Công ty Microsoft."},
+  {"level": "NB", "question": "Chức năng của phần mềm PowerPoint là gì?", "options": ["Luyện tập gõ bàn phím", "Tạo bài trình chiếu", "Vẽ tranh", "Duyệt web"], "answer": 1, "explanation": "PowerPoint dùng để tạo bài trình chiếu."},
+  {"level": "NB", "question": "Phần mềm PowerPoint có quyền sử dụng như thế nào?", "options": ["Miễn phí hoàn toàn", "Chỉ dùng trên điện thoại", "Không miễn phí", "Không ai được dùng"], "answer": 2, "explanation": "Theo bảng trong bài, PowerPoint là phần mềm không miễn phí."},
+  {"level": "NB", "question": "Phần mềm Kiran's Typing Tutor có chức năng gì?", "options": ["Tạo bài trình chiếu", "Vẽ tranh", "Chơi nhạc", "Luyện tập gõ bàn phím"], "answer": 3, "explanation": "Kiran's Typing Tutor dùng để luyện tập gõ bàn phím."},
+  {"level": "NB", "question": "Tác giả của phần mềm Kiran's Typing Tutor là ai?", "options": ["Kĩ sư lập trình Kiran người Ấn Độ", "Công ty Microsoft", "Công ty Adobe", "Cô giáo của em"], "answer": 0, "explanation": "Kiran's Typing Tutor do kĩ sư lập trình Kiran người Ấn Độ tạo ra."},
+  {"level": "NB", "question": "Phần mềm Kiran's Typing Tutor có quyền sử dụng như thế nào?", "options": ["Không miễn phí", "Miễn phí", "Chỉ dùng được một ngày", "Phải mua mới dùng được"], "answer": 1, "explanation": "Theo bảng trong bài, Kiran's Typing Tutor là phần mềm miễn phí."},
+  {"level": "NB", "question": "Phần mềm nào sau đây là phần mềm miễn phí?", "options": ["Tutor for Adobe Photoshop", "Basic Math for Kids", "Scratch 3", "123 Numbers: Animals - Learn"], "answer": 2, "explanation": "Scratch 3 là phần mềm miễn phí."},
+  {"level": "NB", "question": "Phần mềm nào sau đây là phần mềm miễn phí?", "options": ["Tux Paint", "Fast Math for Kids", "Tutor for Adobe Photoshop", "Unikey"], "answer": 3, "explanation": "Unikey là phần mềm miễn phí được ghi trong bài."},
+  {"level": "NB", "question": "Phần mềm nào sau đây là phần mềm không miễn phí?", "options": ["Tutor for Adobe Photoshop", "Scratch 3", "Microsoft Edge Browser", "Bé Tô Màu"], "answer": 0, "explanation": "Phần mềm Tutor for Adobe Photoshop có giá 219.900 đ nên không miễn phí."},
+  {"level": "NB", "question": "Phần mềm nào sau đây là phần mềm không miễn phí?", "options": ["Kiran's Typing Tutor", "Basic Math for Kids", "Scratch 3", "Unikey"], "answer": 1, "explanation": "Basic Math for Kids có giá 43.900 đ nên không miễn phí."},
+  {"level": "NB", "question": "Em cần làm gì để biết phần mềm trên cửa hàng ứng dụng có miễn phí hay không?", "options": ["Đoán dựa theo màu biểu tượng", "Hỏi chiếc chuột", "Xem nhãn Miễn phí hoặc giá tiền bên dưới tên phần mềm", "Không cần quan tâm"], "answer": 2, "explanation": "Trên cửa hàng ứng dụng, phần mềm miễn phí được ghi nhãn Miễn phí, phần mềm không miễn phí có ghi giá tiền."},
+  {"level": "NB", "question": "Tác giả của phần mềm có thể là ai?", "options": ["Chỉ là máy tính", "Chỉ là công ty lớn", "Chỉ là học sinh", "Cá nhân hoặc tổ chức"], "answer": 3, "explanation": "Tác giả của phần mềm có thể là cá nhân hoặc tổ chức."},
+  {"level": "NB", "question": "Mỗi phần mềm là gì đối với tác giả của nó?", "options": ["Sản phẩm trí tuệ và là tài sản của tác giả", "Đồ chơi của người dùng", "Tài sản của mọi người", "Một thiết bị phần cứng"], "answer": 0, "explanation": "Mỗi phần mềm là sản phẩm trí tuệ và là tài sản của tác giả."},
+  {"level": "NB", "question": "Ai có quyền cho phép hoặc không cho phép người khác sử dụng phần mềm?", "options": ["Bất kì ai", "Tác giả của phần mềm", "Người bán máy tính", "Bạn bè của em"], "answer": 1, "explanation": "Tác giả có quyền cho phép hoặc không cho phép người khác sử dụng phần mềm."},
+  {"level": "NB", "question": "Phần mềm có bản quyền là phần mềm như thế nào?", "options": ["Phần mềm không có tác giả", "Phần mềm bị lỗi", "Phần mềm đã được tác giả cho phép sử dụng", "Phần mềm tải trái phép"], "answer": 2, "explanation": "Phần mềm đã được tác giả cho phép sử dụng gọi là phần mềm có bản quyền."},
+  {"level": "NB", "question": "Em chỉ được sử dụng phần mềm khi nào?", "options": ["Khi thích dùng", "Khi bạn bè rủ", "Khi tìm thấy trên mạng", "Khi đã được tác giả cho phép"], "answer": 3, "explanation": "Em chỉ được sử dụng phần mềm khi đã được tác giả cho phép."},
+  {"level": "NB", "question": "Phần mềm PowerPoint trên máy tính cô giáo đã mua quyền sử dụng là phần mềm như thế nào?", "options": ["Phần mềm có bản quyền", "Phần mềm không có tác giả", "Phần mềm lậu", "Phần cứng"], "answer": 0, "explanation": "Cô giáo đã mua quyền sử dụng nên đó là phần mềm có bản quyền."},
+  {"level": "NB", "question": "Vì sao Kiran's Typing Tutor là phần mềm có bản quyền?", "options": ["Vì phần mềm này nặng", "Vì tác giả cho phép sử dụng miễn phí", "Vì phần mềm này ở ổ C:", "Vì phần mềm này không có tên"], "answer": 1, "explanation": "Tác giả cho phép sử dụng miễn phí nên đó là phần mềm có bản quyền."},
+  {"level": "NB", "question": "Thông báo Product Activation Failed trong đoạn hội thoại cho biết điều gì?", "options": ["Máy tính bị hỏng chuột", "Màn hình bị vỡ", "Quyền sử dụng phần mềm có bản quyền đã hết hạn", "Bàn phím bị ướt"], "answer": 2, "explanation": "Thông báo này xuất hiện khi phần mềm có bản quyền đã hết hạn."},
+  {"level": "NB", "question": "Khi phần mềm có bản quyền hết hạn, em cần làm gì để tiếp tục sử dụng bình thường?", "options": ["Tìm cách dùng lậu", "Tắt máy tính", "Xoá thư mục", "Trả phí cho nhà sản xuất"], "answer": 3, "explanation": "Cần trả phí cho nhà sản xuất để phần mềm tiếp tục được sử dụng."},
+  {"level": "NB", "question": "Việc dùng trái phép phần mềm có bản quyền là hành động như thế nào?", "options": ["Vi phạm pháp luật", "Không có vấn đề gì", "Được khen thưởng", "Giúp tiết kiệm điện"], "answer": 0, "explanation": "Dùng trái phép phần mềm có bản quyền là vi phạm pháp luật."},
+  {"level": "NB", "question": "Dùng trái phép phần mềm có bản quyền ảnh hưởng đến ai?", "options": ["Không ảnh hưởng đến ai", "Quyền lợi của người làm ra phần mềm", "Chỉ ảnh hưởng chuột máy tính", "Chỉ ảnh hưởng màn hình"], "answer": 1, "explanation": "Dùng trái phép ảnh hưởng đến quyền lợi của người làm ra phần mềm."},
+  {"level": "NB", "question": "Việc dùng phần mềm không có bản quyền còn gây ra điều gì cho máy tính?", "options": ["Máy tính nhanh hơn", "Màn hình sáng hơn", "Mất an toàn thông tin trên máy tính", "Bàn phím bền hơn"], "answer": 2, "explanation": "Dùng phần mềm không có bản quyền có thể gây mất an toàn cho máy tính."},
+  {"level": "NB", "question": "Lí do nào sau đây là lí do nên sử dụng phần mềm có bản quyền?", "options": ["Được xem nhiều quảng cáo", "Phần mềm luôn miễn phí", "Không cần cài đặt", "Được hỗ trợ khi phần mềm gặp sự cố hoặc trục trặc"], "answer": 3, "explanation": "Dùng phần mềm có bản quyền, em có thể được hỗ trợ từ nhà sản xuất khi gặp sự cố."},
+  {"level": "NB", "question": "Lí do nào sau đây là lí do nên sử dụng phần mềm có bản quyền?", "options": ["Bảo vệ quyền lợi của người làm ra sản phẩm có ích cho xã hội", "Để máy tính nặng hơn", "Để tốn nhiều điện hơn", "Để không cần học bài"], "answer": 0, "explanation": "Dùng phần mềm có bản quyền giúp bảo vệ quyền lợi của người làm ra sản phẩm có ích."},
+  {"level": "NB", "question": "Nếu biết bạn đang dùng phần mềm không có bản quyền, em nên nói gì?", "options": ["Khuyên bạn cứ dùng tiếp", "Cho bạn mượn thêm phần mềm lậu", "Khuyên bạn nên dùng phần mềm có bản quyền vì dùng trái phép là vi phạm pháp luật", "Không nói gì và bắt chước bạn"], "answer": 2, "explanation": "Em nên khuyên bạn chỉ dùng phần mềm có bản quyền vì dùng trái phép là vi phạm pháp luật."},
+  {"level": "TH", "question": "Phần mềm được tạo ra nhằm mục đích chính là gì?", "options": ["Để máy tính tự động tạo ra những thông tin mới mà không cần con người điều khiển.", "Để đáp ứng các nhu cầu làm việc, học tập hay giải trí của con người.", "Để thay thế hoàn toàn con người trong mọi công việc hàng ngày.", "Để làm cho máy tính trở nên nặng hơn và tiêu thụ nhiều điện năng hơn."], "answer": 1, "explanation": "Phần mềm do cá nhân, tổ chức tạo ra để phục vụ các nhu cầu thiết thực của con người như làm việc, học tập và giải trí."},
+  {"level": "TH", "question": "Tác giả của một phần mềm máy tính có thể là ai?", "options": ["Bất kì ai biết sử dụng máy tính.", "Những người chịu trách nhiệm bán máy tính cho người sử dụng tại các cửa hàng lớn.", "Cá nhân hoặc tổ chức tạo ra phần mềm đó.", "Người tải phần mềm đó về máy tính."], "answer": 2, "explanation": "Người trực tiếp tạo ra phần mềm (cá nhân hoặc một tổ chức) được công nhận là tác giả và có quyền sở hữu trí tuệ đối với phần mềm đó."},
+  {"level": "TH", "question": "Phần mềm có bản quyền được hiểu là gì?", "options": ["Là phần mềm chỉ được cài đặt trên những chiếc máy tính đắt tiền và hiện đại nhất thế giới.", "Là phần mềm luôn bắt buộc người dùng phải trả một khoản tiền rất lớn.", "Là phần mềm tự động cài đặt vào máy tính mà không cần hỏi ý kiến.", "Là phần mềm đã được tác giả hoặc nhà sản xuất cho phép người dùng sử dụng."], "answer": 3, "explanation": "Bản quyền là quyền của tác giả. Phần mềm có bản quyền nghĩa là phần mềm đã được sự đồng ý, cho phép sử dụng từ chính tác giả làm ra nó."},
+  {"level": "TH", "question": "Hành động nào dưới đây là đúng khi em muốn dùng một phần mềm không miễn phí?", "options": ["Trả phí cho nhà sản xuất để được sử dụng.", "Tìm kiếm các đường dẫn tải bản sao chép trái phép trên mạng Internet để tiết kiệm chi phí mua sắm.", "Mượn đĩa cài đặt của bạn bè và chia sẻ cho nhiều người khác.", "Cài đặt các chương trình bẻ khóa để không bị giới hạn thời gian."], "answer": 0, "explanation": "Với phần mềm không miễn phí, người dùng phải trả tiền mua quyền sử dụng để tuân thủ pháp luật và tôn trọng tác giả."},
+  {"level": "TH", "question": "Việc cố tình bẻ khóa để sử dụng phần mềm thu phí sẽ gây ra hậu quả gì?", "options": ["Giúp nhà sản xuất thu được nhiều lợi nhuận hơn nhờ số lượng người dùng tăng lên đáng kể.", "Vi phạm pháp luật và ảnh hưởng quyền lợi của tác giả.", "Được nhà sản xuất tặng thêm nhiều phần mềm khác.", "Giúp máy tính có thêm nhiều tính năng bảo mật."], "answer": 1, "explanation": "Sử dụng phần mềm bẻ khóa (crack) là hành vi ăn cắp chất xám, vi phạm pháp luật và gây thiệt hại kinh tế cho người sáng tạo."},
+  {"level": "TH", "question": "Đâu là một rủi ro về an toàn khi sử dụng phần mềm không có bản quyền?", "options": ["Người dùng sẽ nhận được sự hỗ trợ kĩ thuật tận tình và miễn phí từ chính những nhà sản xuất phần mềm.", "Máy tính sẽ tự động nâng cấp phần cứng.", "Máy tính có nguy cơ bị nhiễm virus hoặc bị đánh cắp thông tin.", "Tốc độ truy cập mạng sẽ tăng lên nhanh chóng."], "answer": 2, "explanation": "Các phần mềm lậu thường bị kẻ gian cài cắm mã độc, virus nhằm phá hoại thiết bị hoặc đánh cắp dữ liệu cá nhân của người dùng."},
+  {"level": "TH", "question": "Lợi ích của việc dùng phần mềm có bản quyền khi gặp lỗi kĩ thuật là gì?", "options": ["Tự động được đền bù một chiếc máy tính mới với cấu hình mạnh mẽ và hiện đại hơn.", "Phần mềm sẽ tự động sửa chữa mọi lỗi.", "Được cấp quyền truy cập mạng miễn phí.", "Có thể được hỗ trợ từ nhà sản xuất."], "answer": 3, "explanation": "Khi dùng phần mềm chính hãng, người dùng được hưởng quyền lợi chăm sóc khách hàng, hỗ trợ sửa lỗi từ chính đội ngũ kĩ thuật của nhà sản xuất."},
+  {"level": "TH", "question": "Trong số các phần mềm sau, phần mềm nào thường được sử dụng miễn phí?", "options": ["Phần mềm gõ tiếng Việt Unikey.", "Phần mềm tạo bài trình chiếu PowerPoint.", "Phần mềm diệt virus yêu cầu trả phí hàng năm.", "Trò chơi điện tử yêu cầu mua thẻ nạp."], "answer": 0, "explanation": "Unikey là phần mềm gõ tiếng Việt được tác giả cho phép người dùng tải và sử dụng hoàn toàn miễn phí."},
+  {"level": "TH", "question": "Dòng thông báo \"Product Activation Failed\" khi mở một phần mềm có ý nghĩa gì?", "options": ["Máy tính của em đã bị hỏng màn hình.", "Phần mềm có bản quyền nhưng trên máy đã hết hạn sử dụng.", "Phần mềm đang yêu cầu người dùng phải mua một bộ bàn phím và chuột mới để có thể tiếp tục điều khiển.", "Máy tính đang bị mất kết nối mạng."], "answer": 1, "explanation": "Đây là thông báo kích hoạt sản phẩm thất bại, thường xuất hiện khi phần mềm hết hạn dùng thử và yêu cầu người dùng phải trả phí để dùng tiếp."},
+  {"level": "TH", "question": "Ý nghĩa của việc tôn trọng bản quyền phần mềm là gì?", "options": ["Để ngăn chặn tất cả mọi người trên thế giới không được phép tiếp cận với các công nghệ máy tính mới nhất.", "Để làm cho máy tính hoạt động chậm lại.", "Bảo vệ quyền lợi của người làm ra sản phẩm có ích cho xã hội.", "Để thu thập thông tin cá nhân của người mua."], "answer": 2, "explanation": "Trả phí hoặc xin phép sử dụng là cách ghi nhận công sức lao động của tác giả, khuyến khích họ tạo ra nhiều phần mềm tốt hơn."},
+  {"level": "TH", "question": "Một phần mềm miễn phí thì quyền sử dụng thuộc về ai?", "options": ["Của riêng người đã tải nó về.", "Của những người chuyên sửa chữa và bảo hành các thiết bị điện tử, máy tính tại các cửa hàng bán lẻ.", "Không của ai cả.", "Tác giả vẫn có quyền sở hữu, nhưng họ cho phép mọi người dùng không mất tiền."], "answer": 3, "explanation": "Miễn phí chỉ là không thu tiền, còn bản quyền sáng tạo vẫn thuộc về tác giả. Người dùng được dùng theo các điều kiện tác giả cho phép."},
+  {"level": "TH", "question": "Đâu là ví dụ về phần mềm không miễn phí?", "options": ["Phần mềm PowerPoint.", "Phần mềm Scratch 3.", "Trình duyệt web Microsoft Edge.", "Phần mềm Kiran's Typing Tutor."], "answer": 0, "explanation": "Phần mềm trình chiếu PowerPoint do công ty Microsoft sản xuất và người dùng cần phải trả phí để sử dụng bản quyền hợp pháp."},
+  {"level": "VD", "question": "Khi đang dùng máy tính, em thấy thông báo phần mềm diệt virus yêu cầu trả phí để tiếp tục bảo vệ máy tính. Em nên làm gì?", "options": ["Lên mạng tìm kiếm các đoạn mã bẻ khóa của những người không quen biết chia sẻ để dùng tạm nhằm tiết kiệm tiền.", "Xin phép và nhờ bố mẹ mua bản quyền phần mềm đó.", "Cứ để vậy và sử dụng tiếp không cần quan tâm.", "Xóa ngay hệ điều hành của máy tính đi cài lại."], "answer": 1, "explanation": "Phần mềm diệt virus rất quan trọng để bảo vệ máy tính. Khi hết hạn, em cần báo người lớn mua bản quyền chính hãng để đảm bảo an toàn."},
+  {"level": "VD", "question": "Bạn Minh tải một phần mềm học Toán từ một trang web lạ vì không muốn trả 43.900 đồng như trên cửa hàng chính thức. Sau đó, máy tính của Minh liên tục tự tắt nguồn. Nguyên nhân hợp lí nhất là gì?", "options": ["Máy tính của Minh tự động kích hoạt tính năng tiết kiệm năng lượng thông minh do chưa cắm sạc pin vào nguồn điện.", "Phần mềm học Toán quá nặng làm hỏng máy.", "Máy tính bị nhiễm mã độc từ phần mềm sao chép trái phép.", "Máy tính không thể hiển thị các con số."], "answer": 2, "explanation": "Tải phần mềm từ các nguồn không chính thống, né tránh trả phí rất dễ mang theo virus hoặc mã độc làm hỏng hệ thống máy tính."},
+  {"level": "VD", "question": "Anh trai em mua đĩa cài đặt trò chơi có bản quyền với giá 200.000 đồng. Anh ấy muốn sao chép đĩa đó ra làm 10 bản để đem bán lấy tiền. Em sẽ khuyên anh như thế nào?", "options": ["Khuyên anh không làm vậy vì sao chép đem bán là hành vi vi phạm bản quyền.", "Khuyên anh nên bán với giá thật rẻ cho các bạn học sinh trong trường để thu hút được nhiều người mua hơn mỗi ngày.", "Khuyên anh đăng miễn phí lên mạng để cho mọi người tải về.", "Khuyên anh nên đổi trò chơi khác để bán."], "answer": 0, "explanation": "Người mua chỉ có quyền sử dụng, không có quyền sao chép nhân bản để kinh doanh hoặc phân phối khi chưa được tác giả cho phép."},
+  {"level": "VD", "question": "Bạn Lan đang dùng phần mềm trình chiếu làm bài tập thì phần mềm thông báo lỗi và tự thoát. Vì phần mềm này có bản quyền do mẹ Lan mua, Lan nên xử lí thế nào?", "options": ["Yêu cầu mẹ phải lập tức mua một chiếc máy tính xách tay thế hệ mới nhất để chạy các phần mềm đồ họa nặng hơn.", "Nhờ mẹ liên hệ với nhà sản xuất để được hỗ trợ kĩ thuật.", "Nhờ người tải một bản phần mềm bẻ khóa khác thay thế.", "Đập máy tính vì nghĩ máy tính đã bị hỏng hoàn toàn."], "answer": 1, "explanation": "Một trong những quyền lợi của việc mua phần mềm bản quyền là được hỗ trợ sửa lỗi từ nhà sản xuất. Lan nên nhờ mẹ dùng đặc quyền này."},
+  {"level": "VD", "question": "Lớp em dự định làm một đoạn phim ngắn. Các bạn tìm được một phần mềm chỉnh sửa video rất hay nhưng yêu cầu trả phí 100.000 đồng. Lớp không có quỹ, các bạn tính tải bản \"dùng chùa\" (crack). Là lớp trưởng, em sẽ đưa ra quyết định nào?", "options": ["Kêu gọi các bạn góp tiền lại để mua một bộ thiết bị máy quay phim chuyên nghiệp và tự thiết kế phần mềm riêng.", "Đồng ý dùng bản crack vì chỉ dùng một lần.", "Tìm một phần mềm miễn phí khác có chức năng tương tự để sử dụng.", "Hủy bỏ dự án làm phim của lớp."], "answer": 2, "explanation": "Dùng phần mềm bẻ khóa (crack) là vi phạm bản quyền và không an toàn. Giải pháp tốt nhất khi không có tiền là tìm phần mềm miễn phí hợp pháp."},
+  {"level": "VD", "question": "Một bạn khẳng định: \"Phần mềm miễn phí thì không có bản quyền, ai muốn làm gì thì làm\". Khẳng định này đúng hay sai và vì sao?", "options": ["Đúng, vì bất cứ thứ gì trên mạng Internet không bắt người dùng phải trả tiền thì đều thuộc về tài sản chung của toàn nhân loại.", "Đúng, vì không mất tiền mua nên nó không có giá trị pháp lí.", "Sai, vì phần mềm miễn phí chỉ dùng được trên máy tính cũ.", "Sai, vì phần mềm miễn phí vẫn là tài sản của tác giả, người dùng chỉ được dùng theo giới hạn tác giả cho phép."], "answer": 3, "explanation": "Miễn phí không có nghĩa là mất bản quyền. Tác giả vẫn sở hữu nó và có thể quy định người dùng không được bán lại phần mềm đó."},
+  {"level": "VD", "question": "Trong cuộc thi thiết kế bài trình chiếu, ban tổ chức quy định thí sinh chỉ được dùng phần mềm hợp pháp. Thí sinh A dùng phần mềm miễn phí tải từ trang chủ của tác giả. Thí sinh B dùng phần mềm trả phí nhưng tải bản crack để không phải mua. Ai đã vi phạm quy định?", "options": ["Thí sinh B.", "Thí sinh A.", "Cả hai thí sinh.", "Không ai vi phạm."], "answer": 0, "explanation": "Thí sinh B dùng bản crack (bẻ khóa) là vi phạm pháp luật và không có bản quyền hợp pháp, do đó vi phạm quy định cuộc thi."}
+];
+
+// ===== CẤU HÌNH =====
+const PLAN = ["NB","NB","NB","NB","TH","TH","TH","VD","VD","VD"]; // mức độ theo từng câu
+const MISS = 2; // số lần được phép trả lời sai (sai lần thứ 3 thì kết thúc)
+const SAFE = 5, GIFT_RATE = 0.3, MAX = 10;
+const LV = {NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+
+// ===== KIỂM TRA DỮ LIỆU (handlers theo AGENTS.md) =====
+const okIdx=(a,n)=>Number.isInteger(a)&&a>=0&&a<n;
+const handlers = {
+  multiple:{validate:q=>Array.isArray(q.options)&&q.options.length>=2&&okIdx(q.answer,q.options.length),check:(q,u)=>u===q.answer},
+  truefalse:{validate:q=>Array.isArray(q.options)&&q.options.length===2&&okIdx(q.answer,2),check:(q,u)=>u===q.answer}
+};
+function validQuestions(){
+  const out=[];
+  JSON.parse(JSON.stringify(questions)).forEach((q,i)=>{
+    const t=q.type||"multiple",h=handlers[t];
+    if(!["NB","TH","VD"].includes(q.level)) return console.warn("Câu "+(i+1)+": thiếu hoặc sai mức độ, bỏ qua");
+    if(!h) return console.warn("Câu "+(i+1)+": loại '"+t+"' chưa được hỗ trợ, bỏ qua");
+    if(typeof q.question!=="string"||!h.validate(q)) return console.warn("Câu "+(i+1)+": dữ liệu không hợp lệ, bỏ qua");
+    q.type=t;out.push(q);
+  });
+  return out;
+}
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+// Xáo lựa chọn bằng ánh xạ chỉ số, cập nhật answer (không so sánh chuỗi)
+function shuffleOptions(q){
+  if(q.type!=="multiple") return q;
+  const order=shuf(q.options.map((_,i)=>i));
+  q.options=order.map(i=>q.options[i]);q.answer=order.indexOf(q.answer);return q;
+}
+
+// ===== ÂM THANH (tạo bằng code) =====
+let AC,mute=false;
+function tone(f,d=.2,type="sine",v=.15,delay=0){
+  if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
+const sfx={
+  click:()=>tone(660,.1,"triangle"),
+  lock:()=>{[0,.25,.5,.75].forEach(d=>tone(110,.2,"sawtooth",.12,d))},
+  ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.35,"triangle",.18,i*.12)),
+  bad:()=>[300,220,150].forEach((f,i)=>tone(f,.4,"sawtooth",.15,i*.2)),
+  gift:()=>[784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,"square",.1,i*.09)),
+  tick:()=>tone(900,.05,"square",.06)
+};
+
+// ===== GIỌNG ĐỌC TIẾNG VIỆT =====
+// Ưu tiên giọng tiếng Việt có sẵn trong trình duyệt/hệ điều hành; nếu máy chưa có thì dùng giọng Google (cần Internet).
+let voiceOn=true,viVoice=null,audio=null,ttsId=0,warned=false;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;
+  const v=speechSynthesis.getVoices().filter(x=>/^vi([-_]|$)/i.test(x.lang)||/vietnam|việt/i.test(x.name));
+  viVoice=v.find(x=>/natural|online/i.test(x.name))||v[0]||null;
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim()};
+function chunk(t){
+  const out=[];
+  t.split(/(?<=[.!?;:])\s+/).forEach(x=>{while(x.length>170){let k=x.lastIndexOf(" ",170);if(k<50)k=170;out.push(x.slice(0,k));x=x.slice(k).trim()}if(x)out.push(x)});
+  return out;
+}
+function quiet(){ttsId++;if(audio){audio.pause();audio=null}if(hasTTS)speechSynthesis.cancel()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),7000)}
+function speak(t){
+  if(!voiceOn)return;
+  quiet();const my=ttsId,parts=chunk(plain(t));
+  setTimeout(()=>{
+    if(my!==ttsId)return;
+    pickVoice();
+    if(viVoice){
+      parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);try{u.voice=viVoice}catch(e){}u.lang=viVoice.lang;u.rate=.95;speechSynthesis.speak(u)});
+    }else{
+      if(!warned){warned=true;toast("🗣 Máy chưa có giọng tiếng Việt, đang dùng giọng Google (cần Internet)")}
+      let i=0;const next=()=>{if(my!==ttsId||i>=parts.length)return;audio=new Audio("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(parts[i++]));audio.onended=next;audio.onerror=next;audio.play().catch(()=>next())};next();
+    }
+  },80);
+}
+function readQ(){
+  const q=G.list[G.i],vis=k=>!document.querySelector('.ans[data-k="'+k+'"]').classList.contains("gone");
+  speak("Câu hỏi số "+(G.i+1)+". "+q.question+". "+q.options.map((o,k)=>vis(k)?"Đáp án "+"ABCD"[k]+": "+o:"").join(". "));
+}
+// ===== HIỆU ỨNG NỀN & PHÁO GIẤY =====
+const bg=document.getElementById("bg"),fx=document.getElementById("fx"),bx=bg.getContext("2d"),fc=fx.getContext("2d");
+let stars=[],parts=[];
+function resize(){
+  bg.width=fx.width=innerWidth;bg.height=fx.height=innerHeight;
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform="translate(-50%,-50%) scale("+s+")";
+  stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.6+.1,p:Math.random()*6}));
+}
+function confetti(n=160,x=innerWidth/2,y=innerHeight/2){
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*26,vy:Math.random()*-22-4,g:.5,c:`hsl(${Math.random()*360},90%,60%)`,s:Math.random()*12+6,r:Math.random()*6,l:130});
+}
+function loop(t){
+  bx.clearRect(0,0,bg.width,bg.height);
+  const gr=bx.createRadialGradient(bg.width/2,bg.height*.4,50,bg.width/2,bg.height/2,bg.width*.7);
+  gr.addColorStop(0,"#2a1a8a");gr.addColorStop(.6,"#0a1450");gr.addColorStop(1,"#030618");bx.fillStyle=gr;bx.fillRect(0,0,bg.width,bg.height);
+  for(let i=0;i<6;i++){const W=bg.width,H=bg.height,x=W*(i+.5)/6,sw=Math.sin(t/1800+i*1.3)*W*.12,g2=bx.createLinearGradient(x,0,x+sw,H);g2.addColorStop(0,i%2?"rgba(120,160,255,.28)":"rgba(190,110,255,.26)");g2.addColorStop(1,"rgba(0,0,0,0)");bx.fillStyle=g2;bx.beginPath();bx.moveTo(x-20,0);bx.lineTo(x+20,0);bx.lineTo(x+sw+W*.07,H);bx.lineTo(x+sw-W*.07,H);bx.fill()}
+  for(let k=1;k<=4;k++){bx.strokeStyle="rgba(80,200,255,"+(.55-k*.1)+")";bx.lineWidth=4;bx.beginPath();bx.ellipse(bg.width/2,bg.height*1.02,bg.width*.12*k,bg.height*.035*k,0,0,7);bx.stroke()}
+  stars.forEach(s=>{s.y+=s.s;if(s.y>bg.height)s.y=0;bx.globalAlpha=.5+.5*Math.sin(t/400+s.p);bx.fillStyle="#fff";bx.beginPath();bx.arc(s.x,s.y,s.r,0,7);bx.fill()});
+  bx.globalAlpha=1;
+  fc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=.2;p.l--;fc.save();fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;fc.globalAlpha=Math.min(1,p.l/30);fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore()});
+  requestAnimationFrame(loop);
+}
+
+// ===== TRẠNG THÁI TRÒ CHƠI =====
+const $=id=>document.getElementById(id);
+let G;
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function newGame(){
+  const pool=validQuestions(),by={NB:[],TH:[],VD:[]};
+  pool.forEach(q=>by[q.level].push(q));Object.values(by).forEach(shuf);
+  const need={NB:0,TH:0,VD:0};PLAN.forEach(l=>need[l]++);
+  for(const l in need) if(by[l].length<need[l]){alert("Chưa đủ câu hỏi mức "+LV[l]+" (cần "+need[l]+", có "+by[l].length+").");return}
+  const list=PLAN.map(l=>shuffleOptions(by[l].shift()));
+  G={list,by,i:0,score:0,used:{},state:"idle",sel:-1,wrong:[],correct:0,miss:0};
+  document.querySelectorAll(".help").forEach(h=>h.classList.remove("used"));
+  show("game");renderLadder();loadQ();
+}
+const hearts=()=>{$("lv").textContent="❤️".repeat(Math.max(0,MISS-G.miss))||"—"};
+function renderLadder(){
+  $("ladder").innerHTML=PLAN.map((_,k)=>10-k).map(n=>`<div class="step ${n===SAFE?"safe":""} ${n<=G.i?"done":""} ${n===G.i+1?"now":""}"><i>${n}</i><span>${n===SAFE?"🛡 ":""}${n} điểm</span></div>`).join("");
+}
+function loadQ(){
+  const q=G.list[G.i];G.state="idle";G.sel=-1;
+  $("qin").innerHTML=q.question;$("qin").style.fontSize=(q.question.length>150?44:q.question.length>100?52:60)+"px";$("qtab").textContent="CÂU HỎI SỐ "+(G.i+1)+" • "+LV[q.level].toUpperCase();$("qn").textContent=(G.i+1)+" / "+PLAN.length;
+  $("answers").innerHTML=q.options.map((o,k)=>`<button class="ans ${o.length>95?"xxl":o.length>65?"xl":o.length>38?"long":""}" data-k="${k}"><div class="in"><b>${"ABCD"[k]}.</b><span>${o}</span></div></button>`).join("");
+  $("panel").classList.remove("on");$("game").classList.remove("pan");$("sc").textContent="⭐ "+G.score+"/"+MAX;renderLadder();hearts();
+  cast("host","talk");cast("me","");setTimeout(()=>{if(G.state==="idle")readQ()},700);setTimeout(()=>{if(G.state==="idle")cast("host","")},3500);
+}
+function pick(k){
+  if(G.state!=="idle"&&G.state!=="sel")return;
+  const b=document.querySelector(`.ans[data-k="${k}"]`);if(!b||b.classList.contains("gone"))return;
+  if(G.sel===k)return;
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  G.sel=k;G.state="sel";b.classList.add("sel");sfx.click();cast("me","think");
+  document.querySelectorAll(".cf").forEach(x=>x.remove());b.querySelector(".in").insertAdjacentHTML("beforeend","<span class=\"cf\">✔ XÁC NHẬN</span>");
+}
+function lock(){
+  if(G.state!=="sel")return;G.state="lock";quiet();sfx.lock();document.querySelectorAll(".cf").forEach(x=>x.remove());
+  setTimeout(reveal,2200);
+}
+function reveal(){
+  const q=G.list[G.i],ok=handlers[q.type].check(q,G.sel),A=document.querySelectorAll(".ans");
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  A[q.answer].classList.add("ok");
+  if(ok){G.score=Math.min(MAX,G.score+1);G.correct++;sfx.ok();confetti(120);cast("me","ok");cast("host","ok")}
+  else{cast("me","bad");cast("host","");A[G.sel].classList.add("bad");sfx.bad();G.miss++;G.wrong.push({q:q.question,right:q.options[q.answer],exp:q.explanation})}
+  G.ok=ok;G.state="done";hearts();$("sc").textContent="⭐ "+G.score+"/"+MAX;
+  setTimeout(()=>Math.random()<GIFT_RATE?gift():panel(),1800);
+}
+function panel(){
+  const q=G.list[G.i],last=G.i===PLAN.length-1;
+  const over=G.miss>MISS,left=MISS-G.miss;
+  $("exp").innerHTML=(G.ok?"✅ <b>Chính xác!</b> ":"❌ <b>Chưa đúng.</b> Đáp án: <b>"+"ABCD"[q.answer]+"</b>. "+(over?"Bạn đã sai quá "+MISS+" lần. ":"Bạn còn <b>"+left+"</b> lần được sai. "))+(q.explanation||"");
+  $("next").textContent=(over||last)?"Xem kết quả ▶":"Câu tiếp theo ▶";
+  $("panel").classList.add("on");$("game").classList.add("pan");G.state="panel";speak($("exp").innerHTML);
+}
+function advance(){
+  if(G.state!=="panel")return;quiet();
+  if(G.miss>MISS||G.i===PLAN.length-1)return finish();
+  G.i++;loadQ();
+}
+function finish(){
+  // Mốc an toàn: đã qua câu 5 thì giữ tối thiểu 5 điểm khi trả lời sai
+  let s=G.score;if(G.miss>MISS&&G.i>=SAFE&&s<SAFE)s=SAFE;
+  G.score=s;show("end");exitFs();quiet();speak("Kết thúc trò chơi. Bạn đạt "+s+" điểm trên "+MAX+" điểm.");
+  $("es").textContent=s+"/"+MAX;
+  $("et").textContent=s===MAX?"TRIỆU PHÚ XUẤT SẮC!":s>=8?"Rất xuất sắc!":s>=5?"Làm tốt lắm!":"Cố gắng lên nhé!";
+  $("eo").textContent=s>=8?"🏆":s>=5?"🎉":"💪";
+  $("em").textContent="Trả lời đúng "+G.correct+" câu, sai "+G.miss+" câu"+(s>G.correct?", nhận thêm quà/mốc an toàn":"")+".";
+  $("wl").innerHTML=G.wrong.length?"<b>Câu cần ôn lại:</b><br>"+G.wrong.map(w=>"• "+w.q+" → <b>"+w.right+"</b>").join("<br>"):"";
+  if(s>=5){sfx.ok();[.3,.7,.5].forEach((x,i)=>setTimeout(()=>confetti(150,innerWidth*x,innerHeight*.4),i*500))}
+}
+// ===== QUÀ TẶNG =====
+function overlay(html){$("ov").innerHTML=html;$("ov").classList.add("on")}
+function closeOv(){$("ov").classList.remove("on");$("ov").innerHTML=""}
+function gift(){
+  G.state="gift";overlay('<h2>🎁 Bạn nhận được một hộp quà!</h2><div id="gift">🎁</div><p>Bấm vào hộp quà để mở</p>');
+  $("gift").onclick=()=>{
+    sfx.gift();speak("Chúc mừng! Bạn nhận được một điểm thưởng.");const full=G.score>=MAX;G.score=Math.min(MAX,G.score+1);$("sc").textContent="⭐ "+G.score+"/"+MAX;
+    overlay('<div class="big">+1</div><h2>'+(full?"Điểm đã đạt tối đa 10!":"điểm thưởng!")+'</h2><button class="btn sm" id="okg">Tuyệt vời ▶</button>');
+    confetti(220,innerWidth/2,innerHeight/2);$("okg").onclick=()=>{closeOv();panel()}
+  };
+}
+// ===== TRỢ GIÚP =====
+function help(h){
+  const btn=document.querySelector(`.help[data-h="${h}"]`);
+  if(G.state!=="idle"&&G.state!=="sel"||btn.classList.contains("used"))return;
+  if(h==="5050"){
+    const q=G.list[G.i],w=shuf(q.options.map((_,i)=>i).filter(i=>i!==q.answer)).slice(0,q.options.length-2);
+    w.forEach(i=>document.querySelector(`.ans[data-k="${i}"]`).classList.add("gone"));
+    if(w.includes(G.sel)){G.sel=-1;G.state="idle"}
+    setTimeout(readQ,300);
+  }else if(h==="swap"){
+    const l=G.list[G.i].level,n=G.by[l].shift();
+    if(!n){alert("Hết câu hỏi để đổi!");return}
+    G.list[G.i]=shuffleOptions(n);loadQ();
+  }else return timer(h,btn);
+  btn.classList.add("used");sfx.click();
+}
+function timer(h,btn){
+  const cls=h==="class",prev=G.state;G.state="help";quiet();
+  overlay("<h2>"+(cls?"🏫 Hỏi cả lớp":"🤝 Hỏi người tin tưởng")+"</h2><p>"+(cls?"Cả lớp cùng bàn bạc rồi giơ thẻ A/B/C/D. Đáp án nào nhiều bạn chọn nhất?":"Người chơi chọn một người mình tin tưởng để hỏi ý kiến.")+"</p>"+(cls?"":'<input id="who" placeholder="Tên người được hỏi (không bắt buộc)">')+'<div id="cd">30</div><button class="btn sm" id="stop" style="margin-top:20px">Xong ▶</button>');
+  btn.classList.add("used");let t=30;
+  const iv=setInterval(()=>{t--;$("cd").textContent=t;if(t<=5){$("cd").classList.add("low");sfx.tick()}if(t<=0)end()},1000);
+  function end(){clearInterval(iv);closeOv();G.state=G.sel>=0?"sel":"idle"}
+  $("stop").onclick=end;
+}
+// ===== NHÂN VẬT: người hỏi & người trả lời (bấm vào khung để thay bằng ảnh thật) =====
+const AV=(skin,hair,shirt,body,head)=>`<svg viewBox="0 0 200 220"><path d="M20 220c0-55 35-80 80-80s80 25 80 80z" fill="${shirt}"/><path d="M85 140l15 25 15-25z" fill="#fff"/>${body}<rect x="88" y="115" width="24" height="30" fill="${skin}"/><circle cx="100" cy="85" r="52" fill="${skin}"/><path d="M48 80c0-45 30-62 55-62s50 20 49 62c-10-25-30-35-52-35s-42 10-52 35z" fill="${hair}"/>${head}<circle cx="80" cy="90" r="6" fill="#222"/><circle cx="120" cy="90" r="6" fill="#222"/><path d="M70 76q10-8 20 0M110 76q10-8 20 0" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse class="mouth" cx="100" cy="114" rx="14" ry="7" fill="#7a1f1f"/></svg>`;
+const cast=(w,m)=>{$(w).dataset.m=m};
+[["host",AV("#f1c9a0","#2b2b2b","#1b1b2f",'<path d="M100 152l-22-12v24zM100 152l22-12v24z" fill="#e02b2b"/>',"")],
+ ["me",AV("#e8b98a","#5a2d0c","#2e9d5b","",'<path d="M50 85a50 50 0 0 1 100 0" stroke="#ffb300" stroke-width="8" fill="none"/><rect x="42" y="80" width="14" height="30" rx="6" fill="#ffb300"/><rect x="144" y="80" width="14" height="30" rx="6" fill="#ffb300"/>')]
+].forEach(([id,svg])=>{
+  const f=$(id),inp=f.querySelector("input");f.insertAdjacentHTML("afterbegin",svg+'<img alt="">');
+  f.onclick=e=>{if(e.target!==inp)inp.click()};
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{const im=f.querySelector("img");im.src=r.result;im.style.display="block";f.querySelector("svg").style.display="none"};if(inp.files[0])r.readAsDataURL(inp.files[0])};
+});
+// ===== SỰ KIỆN =====
+const enterFs=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})};
+const exitFs=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})};
+$("go").onclick=()=>{sfx.click();enterFs();newGame()};
+$("again").onclick=()=>{sfx.click();enterFs();newGame()};
+$("next").onclick=advance;
+$("answers").onclick=e=>{if(e.target.closest(".cf"))return lock();const b=e.target.closest(".ans");if(b)pick(+b.dataset.k)};
+document.querySelectorAll(".help").forEach(h=>h.onclick=()=>help(h.dataset.h));
+$("rd").onclick=()=>{voiceOn=!voiceOn;$("rd").classList.toggle("off",!voiceOn);if(!voiceOn)quiet();else if(G&&(G.state==="idle"||G.state==="sel"))readQ()};
+$("snd").onclick=()=>{mute=!mute;$("snd").textContent=mute?"🔇":"🔊"};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$("fs").onclick=fs;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const k=e.key.toLowerCase();
+  if(k==="f")fs();else if(k==="m")$("snd").click();else if(k==="v")$("rd").click();else if(k==="r"&&G&&(G.state==="idle"||G.state==="sel"))readQ();
+  else if("abcd".includes(k)&&k.length===1)pick("abcd".indexOf(k));
+  else if(k==="enter"){if(G&&G.state==="sel")lock();else if(G&&G.state==="panel")advance();else if(!G||$("start").classList.contains("on"))$("go").click()}
+  else if("1234".includes(k)&&G&&$("game").classList.contains("on"))help(["5050","class","trust","swap"][+k-1]);
+});
+addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);show("start");
+</script></body></html>

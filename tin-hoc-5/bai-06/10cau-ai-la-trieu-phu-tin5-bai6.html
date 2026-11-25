@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai là triệu phú – Tin học 5 bài 6</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:#050824;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fx{z-index:50}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;z-index:2}
+.screen{position:absolute;inset:0;display:none;padding:40px 60px}
+.screen.on{display:block;animation:fadein .6s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:110px;text-align:center;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 25px #ffb30088)}
+@keyframes shine{to{background-position:300%}}
+.btn{font-size:64px;font-weight:800;font-family:inherit;color:#1a1200;background:linear-gradient(#ffe27a,#ffb300);border:0;border-radius:60px;padding:26px 100px;cursor:pointer;box-shadow:0 0 40px #ffb300aa,0 8px 0 #a56a00;transition:.2s}
+.btn:hover{transform:translateY(-4px) scale(1.05)}
+.btn.sm{font-size:34px;padding:16px 46px}
+#start{text-align:center;padding-top:150px}
+#start p{font-size:38px;margin:30px 0 60px;color:#bcd}
+.orb{font-size:170px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-25px) rotate(6deg)}}
+.rules{display:flex;gap:26px;justify-content:center;margin-bottom:60px}
+.rules{flex-wrap:wrap}.rules div{background:#ffffff14;border:2px solid #ffffff33;border-radius:24px;padding:18px 26px;font-size:28px;backdrop-filter:blur(6px)}
+/* game – giao diện theo mẫu */
+#game{padding:0}
+.pill{display:flex;align-items:center;gap:16px;background:linear-gradient(#10267a,#050f40);border:3px solid #ffd54a;border-radius:34px;padding:10px 30px;box-shadow:0 0 25px #ffb30066}
+.pill small{display:block;font-size:20px;color:#bcd}.pill b{font-size:44px;color:#ffd54a;font-weight:800}.pill .coin{font-size:54px}
+#hud-l{position:absolute;left:60px;top:30px;display:flex;gap:14px}#hud-l .pill{padding:10px 22px}
+#hud-r{position:absolute;right:60px;top:30px;display:flex;gap:12px;align-items:center}
+.ic{width:70px;height:70px;border-radius:50%;border:3px solid #ffd54a;background:#0a1550;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 0 18px #ffb30055}
+#toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#000d;border:2px solid #ffd54a;border-radius:30px;padding:10px 30px;font-size:26px;z-index:30;opacity:0;transition:.4s;pointer-events:none}#toast.on{opacity:1}
+.ic.off{opacity:.45;filter:grayscale(1)}
+.logo{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:8px 80px 14px;border:5px solid #ffd54a;border-radius:90px/60px;background:radial-gradient(#1b3a8f,#050f40);box-shadow:0 0 45px #ffb300aa;text-align:center;line-height:1}
+.logo small{display:block;font-size:32px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 12px #38f}
+.logo b{display:block;font-size:80px;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+#helps{position:absolute;left:320px;top:175px;width:960px;display:flex;gap:16px}
+.help{flex:1;height:160px;border-radius:30px;border:3px solid #6cf;background:radial-gradient(#2a46c0,#0a1550);color:#fff;cursor:pointer;box-shadow:0 0 22px #3af6;transition:.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+.help i{font-style:normal;font-size:56px;line-height:1}.help b{font-size:46px;line-height:1}
+.help small{font-size:20px;font-weight:600;color:#cde;line-height:1.15;padding:4px 8px 0}
+.help:hover:not(.used){transform:scale(1.08);box-shadow:0 0 40px #6cf;border-color:#fff}
+.help.used{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.help.used::after{content:"✕";position:absolute;inset:0;font-size:120px;color:#f55;line-height:160px}
+#qtab{position:absolute;left:800px;transform:translateX(-50%);top:385px;z-index:3;padding:8px 56px;background:linear-gradient(#ffd54a,#e69500);color:#1a1200;font-size:30px;font-weight:900;white-space:nowrap;clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,24px 100%,0 50%)}
+#qbox{position:absolute;left:60px;top:422px;width:1480px;height:290px;padding:4px;background:linear-gradient(#9ef,#38f);clip-path:polygon(62px 0,calc(100% - 62px) 0,100% 50%,calc(100% - 62px) 100%,62px 100%,0 50%);filter:drop-shadow(0 0 20px #38f)}
+#qin{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 110px;font-size:48px;font-weight:700;line-height:1.3;background:linear-gradient(#10267a,#050f40);clip-path:polygon(60px 0,calc(100% - 60px) 0,100% 50%,calc(100% - 60px) 100%,60px 100%,0 50%)}
+#answers{position:absolute;left:60px;top:735px;width:1480px;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.ans{height:135px;padding:3px;background:#6cf;border:0;color:#fff;cursor:pointer;transition:.2s;font-family:inherit;clip-path:polygon(36px 0,calc(100% - 36px) 0,100% 50%,calc(100% - 36px) 100%,36px 100%,0 50%)}
+.ans .in{height:100%;display:flex;align-items:center;gap:18px;padding:0 64px;font-size:46px;font-weight:600;text-align:left;line-height:1.1;background:linear-gradient(#10267a,#050f40);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,34px 100%,0 50%)}
+.ans b{color:#ffb300;font-size:56px}.ans .in>span:first-of-type{flex:1}.cf{margin-left:auto;flex:none;background:#1a1200;color:#ffd54a;border-radius:40px;padding:8px 16px;font-size:21px;font-weight:900;white-space:nowrap;box-shadow:0 0 18px #0008;transition:.2s}.ans.sel .in{padding-right:36px;font-size:38px;line-height:1.05;gap:14px}.ans.sel.long .in{font-size:31px}.ans.xl .in{font-size:29px;line-height:1.05}.ans.xxl .in{font-size:25px;line-height:1.05}.ans.sel.xl .in{font-size:26px}.ans.sel.xxl .in{font-size:22px}.ans.xl b,.ans.xxl b{font-size:44px}.ans.sel.xl .cf,.ans.sel.xxl .cf{font-size:18px;padding:6px 12px}.ans.sel b{font-size:50px}.cf:hover{transform:scale(1.1);background:#000}.ans.long .in{font-size:37px;line-height:1.1}
+.ans:hover:not(:disabled){background:#fff;transform:scale(1.02)}
+.ans:hover:not(:disabled) .in{background:linear-gradient(#1c3fb0,#0a1a70)}
+.ans.sel,.ans.sel:hover{background:#fff;animation:blink .5s infinite alternate}
+.ans.sel .in,.ans.sel:hover .in{background:linear-gradient(#ffd54a,#e69500);color:#1a1200}.ans.sel b{color:#1a1200}
+@keyframes blink{to{filter:brightness(1.35)}}
+.ans.ok{background:#fff;animation:pop .6s,blink .5s infinite alternate}
+.ans.ok .in{background:linear-gradient(#3ddc6b,#0c8a35)}.ans.ok b{color:#fff}
+@keyframes pop{40%{transform:scale(1.1)}}
+.ans.bad{background:#fff;animation:shake .5s}
+.ans.bad .in{background:linear-gradient(#ff5b5b,#a00)}.ans.bad b{color:#fff}
+@keyframes shake{20%,60%{transform:translateX(-18px)}40%,80%{transform:translateX(18px)}}
+@keyframes pulse{to{box-shadow:0 0 50px #ffb300}}
+.ans.gone{visibility:hidden}
+#panel{position:absolute;left:320px;top:165px;width:960px;height:210px;display:none;flex-direction:row;justify-content:center;align-items:center;gap:24px;background:#000c;border:3px solid #ffd54a;border-radius:30px;padding:14px 28px;font-size:25px;z-index:5;animation:fadein .4s}
+#panel.on{display:flex}#panel span{line-height:1.35}
+#game.pan #helps{visibility:hidden}
+#ladder{position:absolute;left:1580px;top:160px;width:280px;height:870px;display:flex;flex-direction:column;gap:8px;padding:14px;background:#050f40cc;border:4px solid #ffd54a;border-radius:30px;box-shadow:0 0 35px #ffb30066}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:40px;font-size:27px;font-weight:700;color:#ffd54a;transition:.4s}
+.step i{width:46px;height:46px;border-radius:12px;border:2px solid #ffd54a;display:grid;place-items:center;font-style:normal;font-size:26px;color:#fff}
+.step span{flex:1;text-align:right}.step.safe{color:#fff}
+.step.done{color:#3f6;background:#3f62}
+.step.now{background:linear-gradient(#ffd54a,#e69500);color:#1a1200;transform:scale(1.06);box-shadow:0 0 30px #ffb300}.step.now i{color:#1a1200;border-color:#1a1200}
+/* overlay */
+#ov{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;text-align:center;padding:60px}
+#ov.on{display:flex;animation:fadein .4s}
+#ov h2{font-size:80px;color:#ffd54a;margin-bottom:20px}
+#ov p{font-size:40px;max-width:1300px;margin-bottom:30px;line-height:1.35}
+#ov input{font-size:38px;font-weight:600;font-family:inherit;padding:12px 28px;border-radius:30px;border:3px solid #6cf;background:#0a1550;color:#fff;text-align:center;margin-bottom:26px}
+#cd{font-size:230px;font-weight:900;color:#fff;text-shadow:0 0 40px #38f;line-height:1}
+#cd.low{color:#f55;animation:pulse .4s infinite alternate}
+.letters{display:flex;gap:30px;margin:10px 0 30px}
+.letters button{width:130px;height:130px;font-size:70px}
+#gift{font-size:300px;cursor:pointer;animation:drop 1s cubic-bezier(.3,1.6,.5,1),wob 1s 1s infinite;filter:drop-shadow(0 0 60px #ff0)}
+@keyframes drop{from{transform:translateY(-900px)}}
+@keyframes wob{25%{transform:rotate(-12deg) scale(1.1)}75%{transform:rotate(12deg) scale(1.1)}}
+.big{font-size:260px;font-weight:900;color:#ffd54a;text-shadow:0 0 50px #ffb300;line-height:1}
+#wl{max-height:250px;overflow:auto;font-size:26px;text-align:left;margin:10px auto 20px;width:1300px;color:#fbb}
+.fig .bub{position:absolute;top:2px;right:8px;font-size:34px;font-style:normal}
+.fig[data-m=talk] .bub::after{content:"💬"}.fig[data-m=think] .bub::after{content:"🤔"}
+.fig[data-m=ok] .bub::after{content:"😄"}.fig[data-m=bad] .bub::after{content:"😢"}
+.fig[data-m=ok]{animation:pop .6s}.fig[data-m=bad]{animation:shake .5s}.fig[data-m=think]{box-shadow:0 0 35px #ffb300}
+.mouth{transform-box:fill-box;transform-origin:center}
+.fig[data-m=talk] .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{to{transform:scaleY(.2)}}
+#cast{position:absolute;inset:0;pointer-events:none}
+.fig{position:absolute;width:230px;height:210px;pointer-events:auto;border:4px solid #6cf;border-radius:26px;background:radial-gradient(#3a58d8,#0a1550);box-shadow:0 0 30px #38f9;cursor:pointer;overflow:hidden;transition:.3s}
+#host{left:60px;top:165px}#me{left:1310px;top:165px}
+.fig:hover{transform:scale(1.04)}
+.fig svg{position:absolute;left:10px;top:14px;width:calc(100% - 20px);height:calc(100% - 54px)}
+.fig img{position:absolute;left:0;top:0;width:100%;height:calc(100% - 38px);object-fit:cover;display:none}
+.fig .bub{font-size:26px}.fig label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:#000b;border:2px solid #ffd54a;border-radius:20px;padding:3px 12px;font-size:17px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<canvas id="bg"></canvas><canvas id="fx"></canvas>
+<div id="stage">
+<section class="screen" id="start">
+ <div class="orb">💎</div>
+ <h1>AI LÀ TRIỆU PHÚ</h1>
+ <p>Tin học 5 – Bài 6: Định dạng kí tự và bố trí hình ảnh trong văn bản</p>
+ <div class="rules"><div>🎯 10 câu – tối đa 10 điểm</div><div>❤️ Được sai 2 lần</div><div>🛡 Mốc an toàn câu 5</div><div>🎁 Có thể nhận quà +1 điểm</div><div>💡 4 quyền trợ giúp</div></div>
+ <button class="btn" id="go">▶ BẮT ĐẦU</button>
+ <p style="font-size:24px;margin-top:40px">Phím tắt: Bấm đáp án rồi bấm ✔ XÁC NHẬN (hoặc Enter) • A B C D chọn nhanh • 1–4 trợ giúp • F toàn màn hình • M tắt âm • V bật/tắt giọng đọc • R đọc lại câu hỏi</p>
+</section>
+<section class="screen" id="game">
+ <div id="hud-l"><div class="pill"><span class="coin">🪙</span><div><small>Điểm hiện tại</small><b id="sc">⭐ 0/10</b></div></div><div class="pill"><div><small>Được sai</small><b id="lv">❤️❤️</b></div></div></div>
+ <div class="logo"><small>AI LÀ</small><b>TRIỆU PHÚ</b></div>
+ <div id="hud-r"><div class="pill"><span class="coin">🏆</span><div><small>Câu hỏi số</small><b id="qn">1 / 10</b></div></div><button class="ic" id="rd" title="Giọng đọc (V) • đọc lại câu hỏi (R)">🗣</button><button class="ic" id="snd">🔊</button><button class="ic" id="fs">⛶</button></div>
+ <div id="cast">
+  <div class="fig" id="host" title="Bấm để đổi ảnh"><i class="bub"></i><label>🎤 Người hỏi</label><input type="file" accept="image/*" hidden></div>
+  <div class="fig" id="me" title="Bấm để đổi ảnh"><i class="bub"></i><label>🙋 Người trả lời</label><input type="file" accept="image/*" hidden></div>
+ </div>
+ <div id="helps">
+  <button class="help" data-h="5050"><b>50:50</b><small>Loại 2 đáp án</small></button>
+  <button class="help" data-h="class"><i>🏫</i><small>Hỏi cả lớp</small></button>
+  <button class="help" data-h="trust"><i>🤝</i><small>Hỏi người tin tưởng</small></button>
+  <button class="help" data-h="swap"><i>🔄</i><small>Đổi câu hỏi</small></button>
+ </div>
+ <div id="panel"><span id="exp"></span><button class="btn sm" id="next">Tiếp tục ▶</button></div>
+ <div id="qtab"></div><div id="qbox"><div id="qin"></div></div>
+ <div id="answers"></div>
+ <div id="ladder"></div>
+</section>
+<section class="screen" id="end" style="text-align:center;padding-top:70px">
+ <div class="orb" id="eo">🏆</div><h1 style="font-size:90px" id="et"></h1>
+ <div class="big" id="es"></div><p style="font-size:38px;margin:10px" id="em"></p>
+ <div id="wl"></div><button class="btn" id="again">🔁 CHƠI LẠI</button>
+</section>
+<div id="ov"></div><div id="toast"></div>
+</div>
+<script>
+// DỮ LIỆU CÂU HỎI — thay mảng này để sử dụng bộ câu hỏi mới.
+// level: NB (nhận biết) | TH (thông hiểu) | VD (vận dụng); answer là chỉ số đáp án đúng (từ 0).
+const questions = [
+  {"level": "NB", "question": "Khi bạn An và bạn Minh góp ý về cách trình bày văn bản hướng dẫn làm món ăn, văn bản đó hướng dẫn làm món gì?", "options": ["Kem cầu vồng hoa quả", "Bánh bông lan trái cây", "Sinh tố xoài", "Chè trái cây"], "answer": 0, "explanation": "Văn bản dùng để thực hành là hướng dẫn cách làm Kem cầu vồng hoa quả."},
+  {"level": "NB", "question": "Văn bản hướng dẫn cách làm Kem cầu vồng hoa quả được trình bày bằng phần mềm nào?", "options": ["Phần mềm trình chiếu", "Phần mềm soạn thảo văn bản", "Phần mềm luyện gõ bàn phím", "Phần mềm Scratch"], "answer": 1, "explanation": "Nội dung hướng dẫn cách làm kem được trình bày bằng phần mềm soạn thảo văn bản."},
+  {"level": "NB", "question": "Nguyên liệu nào sau đây có trong công thức làm Kem cầu vồng hoa quả?", "options": ["Thanh long", "Thịt bò", "Bột mì", "Cà chua"], "answer": 0, "explanation": "Nguyên liệu gồm xoài, nho xanh, thanh long, dưa hấu, sữa chua."},
+  {"level": "NB", "question": "Dụng cụ cần có để làm Kem cầu vồng hoa quả là gì?", "options": ["1 cốc cao", "1 chiếc nồi lớn", "1 chiếc chảo", "1 chiếc rổ"], "answer": 0, "explanation": "Dụng cụ cần có là 1 cốc cao."},
+  {"level": "NB", "question": "Bước cuối cùng trong hướng dẫn làm Kem cầu vồng hoa quả là gì?", "options": ["Làm sạch trái cây", "Cho sữa chua vào đáy cốc", "Đưa cốc kem vào ngăn đá tủ lạnh", "Nho cắt đôi, các loại hoa quả khác cắt thành miếng vừa ăn"], "answer": 2, "explanation": "Đưa cốc kem vào ngăn đá tủ lạnh."},
+  {"level": "NB", "question": "Để các tiêu đề nổi bật hơn thì văn bản dễ đọc hơn. Đây là góp ý của bạn nào?", "options": ["Bạn An", "Bạn Minh", "Bạn Khoa", "Cô giáo"], "answer": 0, "explanation": "Góp ý của An là các tiêu đề nổi bật thì văn bản dễ đọc hơn."},
+  {"level": "NB", "question": "Minh mong muốn thay đổi điều gì ở văn bản Kem cầu vồng hoa quả?", "options": ["Xoá hết các tiêu đề", "Ảnh đặt bên phải chữ thì văn bản đẹp hơn", "Bỏ hình ảnh cốc kem", "Đổi tên loại kem"], "answer": 1, "explanation": "Góp ý của Minh là ảnh đặt bên phải chữ thì văn bản đẹp hơn."},
+  {"level": "NB", "question": "Để văn bản dễ đọc và dễ ghi nhớ, em có thể thực hiện các thao tác nào?", "options": ["Các thao tác định dạng kí tự", "Xoá toàn bộ văn bản", "Tắt máy tính", "Đổi tên tệp văn bản"], "answer": 0, "explanation": "Để văn bản dễ đọc và dễ ghi nhớ, em có thể thực hiện các thao tác định dạng kí tự cho văn bản."},
+  {"level": "NB", "question": "Sau khi chèn hình ảnh minh hoạ vào văn bản, để văn bản được trình bày đẹp hơn em có thể làm gì?", "options": ["Xoá hình ảnh", "Thu nhỏ hình ảnh bằng hạt đậu", "Di chuyển hình ảnh đến vị trí hợp lí", "Chuyển hình ảnh sang tệp khác"], "answer": 2, "explanation": "Em có thể di chuyển hình ảnh đến vị trí hợp lí để văn bản được trình bày đẹp hơn."},
+  {"level": "NB", "question": "Các lệnh định dạng kí tự nằm trong nhóm lệnh nào của dải lệnh Home?", "options": ["Nhóm lệnh Font", "Nhóm lệnh Clipboard", "Nhóm lệnh Paragraph", "Nhóm lệnh Styles"], "answer": 0, "explanation": "Em sử dụng các lệnh trong nhóm lệnh Font của dải lệnh Home để định dạng kí tự."},
+  {"level": "NB", "question": "Các lệnh B, I, U trong nhóm lệnh Font dùng để chọn thuộc tính nào của kí tự?", "options": ["Phông chữ", "Cỡ chữ", "Màu chữ", "Kiểu chữ (đậm, nghiêng, gạch chân)"], "answer": 3, "explanation": "Các lệnh B, I, U dùng để chọn kiểu chữ: đậm, nghiêng, gạch chân."},
+  {"level": "NB", "question": "Nháy chuột vào lệnh chữ I trong nhóm lệnh Font sẽ làm cho chữ như thế nào?", "options": ["Chữ nghiêng", "Chữ đậm", "Chữ gạch chân", "Chữ đổi màu đỏ"], "answer": 0, "explanation": "Lệnh I (Italic) dùng để chọn kiểu chữ nghiêng."},
+  {"level": "NB", "question": "Nháy chuột vào lệnh chữ B trong nhóm lệnh Font sẽ làm cho chữ như thế nào?", "options": ["Chữ nghiêng", "Chữ đậm", "Chữ gạch chân", "Chữ nhỏ lại"], "answer": 1, "explanation": "Lệnh B (Bold) dùng để chọn kiểu chữ đậm."},
+  {"level": "NB", "question": "Để thay đổi cách bố trí hình ảnh trong văn bản, em chọn hình ảnh rồi nháy chuột vào lệnh nào xuất hiện bên cạnh hình ảnh?", "options": ["Lệnh Layout Options", "Lệnh Font Color", "Lệnh Save", "Lệnh Bold"], "answer": 0, "explanation": "Khi chọn hình ảnh, lệnh Layout Options xuất hiện ở bên cạnh hình ảnh; nháy chuột vào lệnh này để chọn cách bố trí."},
+  {"level": "NB", "question": "Trong bảng chọn cách bố trí hình ảnh, cách bố trí Square có đặc điểm gì?", "options": ["Văn bản dàn xung quanh hình ảnh", "Hình ảnh nằm trên cùng một dòng với chữ", "Hình ảnh bị xoá khỏi văn bản", "Hình ảnh nằm ngoài trang văn bản"], "answer": 0, "explanation": "Square là cách bố trí văn bản dàn xung quanh hình ảnh."},
+  {"level": "NB", "question": "Tệp văn bản công thức làm kem em cần mở để định dạng kí tự có tên là gì?", "options": ["ChuyenThamQuan", "MeCung", "CongThucLamKem", "ThongtinCuocthi"], "answer": 2, "explanation": "Em mở tệp CongThucLamKem và thực hiện các công việc định dạng."},
+  {"level": "NB", "question": "Khi định dạng văn bản hướng dẫn làm Kem cầu vồng hoa quả, tiêu đề \"Kem cầu vồng hoa quả\" được định dạng phông chữ nào?", "options": ["Tahoma", "Verdana", "Arial", "Calibri"], "answer": 0, "explanation": "Tiêu đề có phông chữ Tahoma, cỡ chữ 16, màu xanh, kiểu chữ đậm."},
+  {"level": "NB", "question": "Khi định dạng văn bản hướng dẫn làm Kem cầu vồng hoa quả, tiêu đề \"Kem cầu vồng hoa quả\" có cỡ chữ bao nhiêu?", "options": ["12", "16", "14", "18"], "answer": 1, "explanation": "Tiêu đề có phông chữ Tahoma, cỡ chữ 16, màu xanh, kiểu chữ đậm."},
+  {"level": "NB", "question": "Khi định dạng văn bản hướng dẫn làm Kem cầu vồng hoa quả, tiêu đề \"Kem cầu vồng hoa quả\" có màu gì?", "options": ["Màu tím (Purple)", "Màu đỏ", "Màu xanh (Blue)", "Màu vàng"], "answer": 2, "explanation": "Em nháy chuột vào lệnh màu chữ và chọn màu xanh Blue cho tiêu đề."},
+  {"level": "NB", "question": "Khi định dạng văn bản hướng dẫn làm Kem cầu vồng hoa quả, tiêu đề \"Kem cầu vồng hoa quả\" có kiểu chữ nào?", "options": ["Kiểu chữ đậm", "Kiểu chữ nghiêng", "Kiểu chữ gạch chân", "Kiểu chữ thường"], "answer": 0, "explanation": "Tiêu đề có phông chữ Tahoma, cỡ chữ 16, màu xanh, kiểu chữ đậm."},
+  {"level": "NB", "question": "Khi định dạng văn bản hướng dẫn làm Kem cầu vồng hoa quả, phần nội dung văn bản có phông chữ nào?", "options": ["Tahoma", "Arial", "Times New Roman", "Verdana"], "answer": 3, "explanation": "Phần nội dung văn bản có phông chữ Verdana, cỡ chữ 12."},
+  {"level": "NB", "question": "Khi định dạng văn bản hướng dẫn làm Kem cầu vồng hoa quả, phần nội dung văn bản có cỡ chữ bao nhiêu?", "options": ["12", "10", "14", "16"], "answer": 0, "explanation": "Phần nội dung văn bản có phông chữ Verdana, cỡ chữ 12."},
+  {"level": "NB", "question": "Các đầu mục Nguyên liệu, Dụng cụ, Hướng dẫn được định dạng màu gì?", "options": ["Màu tím (Purple)", "Màu xanh (Blue)", "Màu đỏ", "Màu vàng"], "answer": 0, "explanation": "Em nháy chuột vào lệnh màu chữ và chọn màu tím Purple cho các đầu mục."},
+  {"level": "NB", "question": "Các đầu mục Nguyên liệu, Dụng cụ, Hướng dẫn được định dạng kiểu chữ nào?", "options": ["Chỉ kiểu chữ gạch chân", "Kiểu chữ đậm, nghiêng", "Chỉ kiểu chữ thường", "Chỉ kiểu chữ đậm"], "answer": 1, "explanation": "Các đầu mục có phông chữ Verdana, cỡ chữ 12, kiểu chữ đậm, nghiêng, màu tím."},
+  {"level": "NB", "question": "Khi định dạng toàn bộ văn bản, thao tác đầu tiên em cần làm là gì?", "options": ["Chọn toàn bộ văn bản", "Chọn màu chữ", "Lưu tệp", "Chèn hình ảnh"], "answer": 0, "explanation": "Em chọn toàn bộ văn bản."},
+  {"level": "NB", "question": "Sau khi định dạng xong, để lưu tệp em nháy chuột vào nút lệnh nào?", "options": ["Nút lệnh chữ B", "Nút lệnh chữ I", "Nút lệnh hình đĩa mềm (Save)", "Nút lệnh chữ A gạch màu"], "answer": 2, "explanation": "Em nháy chuột vào nút lệnh hình đĩa mềm để lưu tệp."},
+  {"level": "NB", "question": "Khi chọn hình ảnh, dùng lệnh Layout Options rồi kéo thả chuột trong văn bản, em thay đổi điều gì của hình ảnh?", "options": ["Vị trí của hình ảnh", "Phông chữ của hình ảnh", "Màu chữ của hình ảnh", "Tên tệp của hình ảnh"], "answer": 0, "explanation": "Thay đổi vị trí của hình ảnh."},
+  {"level": "NB", "question": "Khi định dạng văn bản lịch trình chuyến đi tham quan, tiêu đề \"Lịch trình chuyến đi tham quan\" cần định dạng phông chữ và cỡ chữ nào?", "options": ["Phông chữ Arial, cỡ chữ 15", "Phông chữ Tahoma, cỡ chữ 16", "Phông chữ Verdana, cỡ chữ 12", "Phông chữ Arial, cỡ chữ 10"], "answer": 0, "explanation": "Tiêu đề Lịch trình chuyến đi tham quan có phông chữ Arial, cỡ chữ 15, kiểu chữ đậm, màu đỏ."},
+  {"level": "NB", "question": "Khi định dạng văn bản lịch trình chuyến đi tham quan, các mốc thời gian cần định dạng như thế nào?", "options": ["Kiểu chữ đậm và nghiêng, màu xanh", "Kiểu chữ gạch chân, màu đỏ", "Kiểu chữ thường, màu tím", "Kiểu chữ đậm, màu vàng"], "answer": 0, "explanation": "Các mốc thời gian được định dạng kiểu chữ đậm và nghiêng, màu xanh."},
+  {"level": "NB", "question": "Để đưa hình ảnh đến vị trí mới trong văn bản, em làm thế nào?", "options": ["Nhấn phím Delete rồi chèn lại", "Nháy chuột vào nút lệnh chữ B", "Nháy chuột vào hình ảnh, nhấn giữ và di chuyển chuột", "Nhấn phím Enter nhiều lần"], "answer": 2, "explanation": "Em nháy chuột vào hình ảnh, nhấn giữ và di chuyển chuột để đưa ảnh đến vị trí mới."},
+  {"level": "TH", "question": "Để thay đổi màu sắc cho một đoạn văn bản, em cần sử dụng lệnh nào trong nhóm lệnh Font trên thanh công cụ?", "options": ["Nháy chuột vào biểu tượng chữ A có gạch chân màu.", "Nháy chuột vào biểu tượng chữ B in đậm.", "Nháy chuột vào biểu tượng chữ I in nghiêng.", "Nháy chuột vào biểu tượng cây bút dạ quang tô sáng nền chữ."], "answer": 0, "explanation": "Biểu tượng chữ A có gạch chân màu (Font Color) dùng để thay đổi màu sắc của kí tự được chọn."},
+  {"level": "TH", "question": "Nhóm lệnh Font dùng để định dạng kí tự nằm ở dải lệnh nào trên thanh công cụ?", "options": ["Dải lệnh Insert", "Dải lệnh Home", "Dải lệnh Layout", "Dải lệnh View"], "answer": 1, "explanation": "Nhóm lệnh Font chứa các công cụ định dạng kí tự như phông, cỡ, kiểu, màu chữ nằm trong dải lệnh Home."},
+  {"level": "TH", "question": "Khi muốn phần văn bản được gạch chân bên dưới, em sẽ nháy chuột vào biểu tượng lệnh nào?", "options": ["Biểu tượng chữ U", "Biểu tượng chữ B", "Biểu tượng chữ I", "Biểu tượng chữ A"], "answer": 0, "explanation": "Biểu tượng chữ U (Underline) có chức năng tạo đường gạch chân dưới các kí tự văn bản được chọn."},
+  {"level": "TH", "question": "Thao tác đầu tiên bắt buộc phải làm trước khi định dạng phông chữ, kiểu chữ hay màu chữ cho một đoạn văn bản là gì?", "options": ["Nháy chuột chọn lệnh phông chữ mong muốn trên thanh công cụ.", "Chọn (bôi đen) phần văn bản cần được định dạng.", "Lưu lại tệp văn bản để tránh mất dữ liệu đang làm dở.", "Mở bảng chọn màu sắc và chọn màu phù hợp với văn bản."], "answer": 1, "explanation": "Máy tính cần biết người dùng muốn áp dụng định dạng cho đoạn văn bản nào nên thao tác bôi đen luôn phải thực hiện đầu tiên."},
+  {"level": "TH", "question": "Biểu tượng hình ô vuông có các đường kẻ ngang chạy bao quanh (Square) trong hộp thoại Layout Options có ý nghĩa gì đối với hình ảnh?", "options": ["Hình ảnh nằm hoàn toàn độc lập và che khuất nội dung văn bản.", "Hình ảnh nằm chung trên cùng một dòng với các kí tự.", "Văn bản sẽ tự động dàn đều xung quanh bốn cạnh của hình ảnh.", "Hình ảnh sẽ tự động được canh giữa trang giấy mà không cần dùng phím khoảng trắng để đẩy vào giữa."], "answer": 2, "explanation": "Chế độ Square giúp văn bản dàn bao quanh hình ảnh, tạo bố cục gọn gàng."},
+  {"level": "TH", "question": "Mục đích chính của việc định dạng kí tự trong phần mềm soạn thảo là gì?", "options": ["Giúp máy tính xử lí văn bản nhanh hơn và hạn chế lỗi.", "Giúp văn bản đẹp hơn, dễ đọc và dễ ghi nhớ.", "Giúp tự động sửa lỗi sai chính tả khi gõ tiếng Việt.", "Giúp chèn được nhiều hình ảnh kích thước lớn mà không làm nặng máy hay treo phần mềm trong lúc soạn thảo."], "answer": 1, "explanation": "Định dạng kí tự làm nổi bật thông tin quan trọng, cải thiện hình thức thẩm mĩ giúp người đọc dễ tiếp nhận."},
+  {"level": "TH", "question": "Để thay đổi cách bố trí của một hình ảnh đã chèn vào văn bản, bước đầu tiên em cần làm gì?", "options": ["Nháy đúp chuột vào dải lệnh Home.", "Nháy chuột chọn hình ảnh đó.", "Nháy chuột vào lệnh phông chữ.", "Bôi đen toàn bộ đoạn văn bản."], "answer": 1, "explanation": "Cần chọn đối tượng (hình ảnh) để làm xuất hiện nút lệnh Layout Options thao tác với ảnh."},
+  {"level": "TH", "question": "Khái niệm \"Phông chữ\" dùng để chỉ điều gì của kí tự?", "options": ["Độ lớn nhỏ của kí tự đó.", "Kiểu dáng nét chữ của kí tự đó.", "Màu sắc hiển thị của kí tự.", "Độ nghiêng của kí tự trên dòng."], "answer": 1, "explanation": "Phông chữ quy định kiểu dáng, đường nét thiết kế của các kí tự (ví dụ: Tahoma, Verdana)."},
+  {"level": "TH", "question": "Khi nháy chuột vào ô chứa tên \"Calibri (Body)\", em đang thực hiện thay đổi thuộc tính nào?", "options": ["Cỡ chữ", "Phông chữ", "Kiểu chữ", "Màu chữ"], "answer": 1, "explanation": "Ô chứa các tên như Calibri, Tahoma, Verdana là công cụ lựa chọn phông chữ."},
+  {"level": "TH", "question": "Nút lệnh Layout Options sẽ tự động xuất hiện ở vị trí nào khi em chọn một hình ảnh?", "options": ["Ở góc trên cùng bên trái màn hình.", "Ở bên cạnh hình ảnh đó.", "Ở dưới cùng của trang văn bản.", "Ẩn bên trong dải lệnh Insert nên phải bấm vào dải lệnh đó để tìm kiếm."], "answer": 1, "explanation": "Nút lệnh Layout Options luôn xuất hiện trôi nổi ngay bên cạnh hình ảnh đang được chọn."},
+  {"level": "TH", "question": "Trong hộp thoại Font, ô chứa các con số như 11, 12, 14, 16 có chức năng gì?", "options": ["Đánh số thứ tự đầu dòng.", "Thay đổi phông chữ.", "Thay đổi cỡ chữ.", "Đếm số lượng kí tự."], "answer": 2, "explanation": "Ô chứa các con số là công cụ Font Size dùng để điều chỉnh độ lớn (cỡ chữ)."},
+  {"level": "TH", "question": "Lệnh \"In Line with Text\" có đặc điểm bố trí hình ảnh như thế nào?", "options": ["Hình ảnh nằm trôi nổi trên các dòng chữ.", "Hình ảnh nằm sau lưng các dòng chữ.", "Hình ảnh nằm trên cùng một dòng văn bản như một kí tự thông thường.", "Hình ảnh tự động thu nhỏ lại bằng hạt đậu để chèn khít vào khoảng trống của một dòng chữ bất kì."], "answer": 2, "explanation": "Đây là chế độ mặc định xử lí hình ảnh giống như một kí tự văn bản nằm xen kẽ trên dòng chữ."},
+  {"level": "VD", "question": "Bạn An muốn dòng tiêu đề \"Kem cầu vồng hoa quả\" vừa in đậm vừa in nghiêng. An cần bôi đen dòng tiêu đề và thực hiện thao tác nào tiếp theo?", "options": ["Nháy chuột vào lệnh chữ B, sau đó nháy chuột tiếp vào lệnh chữ I.", "Chỉ nháy chuột vào lệnh chữ B vì máy tính tự động in nghiêng tiêu đề.", "Nháy chuột vào lệnh chữ B, sau đó nháy chuột vào lệnh chữ U để gạch chân.", "Nháy chuột vào lệnh chữ I, sau đó đổi phông chữ sang Tahoma để chữ tự động in đậm và phóng to lên."], "answer": 0, "explanation": "Các kiểu chữ có thể kết hợp với nhau trên cùng một đoạn văn bản bằng cách nháy chuột chọn đồng thời các lệnh tương ứng."},
+  {"level": "VD", "question": "Khoa gõ xong một đoạn văn và muốn đổi kích thước chữ lớn hơn. Khoa đã chọn số 16 trong ô cỡ chữ nhưng văn bản không thay đổi. Lỗi sai của Khoa là gì?", "options": ["Khoa chưa lưu tệp tin trước khi đổi.", "Khoa chưa bật tính năng chỉnh sửa.", "Khoa chưa bôi đen đoạn văn bản cần thay đổi.", "Khoa chọn nhầm chế độ in đậm thay vì đổi cỡ chữ."], "answer": 2, "explanation": "Nếu không bôi đen chọn phần văn bản, phần mềm sẽ không áp dụng lệnh thay đổi cỡ chữ cho đoạn đó."},
+  {"level": "VD", "question": "Khi đang soạn thảo, em bôi đen một câu văn và nháy chuột vào biểu tượng chữ U, sau đó nháy tiếp vào biểu tượng chữ A có gạch màu đỏ. Câu văn sẽ hiển thị thế nào?", "options": ["Chữ in đậm và màu đỏ.", "Chữ được gạch chân và có màu đỏ.", "Chữ in nghiêng và màu đỏ.", "Chữ màu đỏ và nền màu vàng."], "answer": 1, "explanation": "Lệnh U dùng để gạch chân và lệnh A gạch đỏ dùng để đổi màu chữ thành đỏ."},
+  {"level": "VD", "question": "Trong văn bản hướng dẫn làm kem, phương án định dạng nào giúp phần tiêu đề \"Nguyên liệu\" nổi bật nhất so với nội dung chi tiết?", "options": ["Chỉnh cỡ chữ của phần nội dung chi tiết to hơn.", "Đổi màu tiêu đề giống màu của nội dung.", "Đổi phông chữ, tăng cỡ chữ, in đậm và đổi màu sắc khác biệt.", "Xoá hết khoảng trắng để toàn bộ văn bản dính sát vào nhau tiết kiệm tối đa diện tích trang."], "answer": 2, "explanation": "Sử dụng kết hợp phông chữ, cỡ chữ lớn, in đậm và màu sắc khác tạo độ tương phản mạnh giúp tiêu đề nổi bật rõ."},
+  {"level": "VD", "question": "Minh chèn ảnh một cốc kem vào văn bản nhưng ảnh đẩy chữ xuống dưới để lại khoảng trống lớn bên phải. Để chữ lấp đầy sát bên phải ảnh, Minh nên dùng tuỳ chọn nào?", "options": ["In Line with Text", "Square", "Top and Bottom", "Thêm hàng chục dấu cách khoảng trắng để đẩy chữ lên nằm kế bên hình ảnh một cách thủ công."], "answer": 1, "explanation": "Chế độ Square cho phép văn bản dàn đều xung quanh và lấp đầy khoảng trống cạnh hình ảnh."},
+  {"level": "VD", "question": "Để định dạng phần mốc thời gian \"Từ 7h30 - 8h00\" thành in đậm, in nghiêng và có màu xanh, em làm theo thứ tự nào?", "options": ["Bôi đen văn bản, nháy B, nháy I, nháy chọn màu xanh ở biểu tượng chữ A.", "Nháy B, nháy I, nháy U rồi bôi đen văn bản.", "Bôi đen văn bản, nháy B, nháy U, nháy chọn màu xanh.", "Nháy chọn màu xanh ở biểu tượng chữ A, nháy I, nháy U và hệ thống máy tính sẽ tự động nhận diện đoạn chữ để làm."], "answer": 0, "explanation": "Bắt buộc bôi đen văn bản trước, sau đó lần lượt chọn các lệnh đậm (B), nghiêng (I) và đổi màu chữ (A)."},
+  {"level": "VD", "question": "Bạn Lan chèn một ảnh và đã chọn chế độ Square. Bây giờ Lan muốn đưa hình ảnh sang góc phải của trang giấy. Thao tác tiếp theo là gì?", "options": ["Xóa ảnh và chèn lại ở góc phải.", "Nháy chuột vào ảnh, nhấn giữ và kéo thả chuột đến vị trí bên phải.", "Nháy đúp chuột vào vị trí góc phải màn hình.", "Phải dùng phần mềm chỉnh ảnh khác để cắt và ghép lại vào Word."], "answer": 1, "explanation": "Khi đã chọn chế độ Square, ta có thể tự do di chuyển ảnh đến bất kì đâu trên trang bằng cách kéo thả chuột."},
+  {"level": "VD", "question": "Khi nhận được yêu cầu định dạng tiêu đề với \"Phông chữ Tahoma, cỡ chữ 16, màu xanh, kiểu chữ đậm\", em KHÔNG dùng nút lệnh nào dưới đây?", "options": ["Nút lệnh hình chữ U.", "Nút lệnh hình chữ B.", "Nút lệnh biểu tượng chữ A gạch màu.", "Hộp chọn tên phông chữ."], "answer": 0, "explanation": "Yêu cầu không nhắc đến kiểu chữ gạch chân nên không cần dùng đến nút lệnh U."}
+];
+
+// ===== CẤU HÌNH =====
+const PLAN = ["NB","NB","NB","NB","TH","TH","TH","VD","VD","VD"]; // mức độ theo từng câu
+const MISS = 2; // số lần được phép trả lời sai (sai lần thứ 3 thì kết thúc)
+const SAFE = 5, GIFT_RATE = 0.3, MAX = 10;
+const LV = {NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+
+// ===== KIỂM TRA DỮ LIỆU (handlers theo AGENTS.md) =====
+const okIdx=(a,n)=>Number.isInteger(a)&&a>=0&&a<n;
+const handlers = {
+  multiple:{validate:q=>Array.isArray(q.options)&&q.options.length>=2&&okIdx(q.answer,q.options.length),check:(q,u)=>u===q.answer},
+  truefalse:{validate:q=>Array.isArray(q.options)&&q.options.length===2&&okIdx(q.answer,2),check:(q,u)=>u===q.answer}
+};
+function validQuestions(){
+  const out=[];
+  JSON.parse(JSON.stringify(questions)).forEach((q,i)=>{
+    const t=q.type||"multiple",h=handlers[t];
+    if(!["NB","TH","VD"].includes(q.level)) return console.warn("Câu "+(i+1)+": thiếu hoặc sai mức độ, bỏ qua");
+    if(!h) return console.warn("Câu "+(i+1)+": loại '"+t+"' chưa được hỗ trợ, bỏ qua");
+    if(typeof q.question!=="string"||!h.validate(q)) return console.warn("Câu "+(i+1)+": dữ liệu không hợp lệ, bỏ qua");
+    q.type=t;out.push(q);
+  });
+  return out;
+}
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+// Xáo lựa chọn bằng ánh xạ chỉ số, cập nhật answer (không so sánh chuỗi)
+function shuffleOptions(q){
+  if(q.type!=="multiple") return q;
+  const order=shuf(q.options.map((_,i)=>i));
+  q.options=order.map(i=>q.options[i]);q.answer=order.indexOf(q.answer);return q;
+}
+
+// ===== ÂM THANH (tạo bằng code) =====
+let AC,mute=false;
+function tone(f,d=.2,type="sine",v=.15,delay=0){
+  if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
+const sfx={
+  click:()=>tone(660,.1,"triangle"),
+  lock:()=>{[0,.25,.5,.75].forEach(d=>tone(110,.2,"sawtooth",.12,d))},
+  ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.35,"triangle",.18,i*.12)),
+  bad:()=>[300,220,150].forEach((f,i)=>tone(f,.4,"sawtooth",.15,i*.2)),
+  gift:()=>[784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,"square",.1,i*.09)),
+  tick:()=>tone(900,.05,"square",.06)
+};
+
+// ===== GIỌNG ĐỌC TIẾNG VIỆT =====
+// Ưu tiên giọng tiếng Việt có sẵn trong trình duyệt/hệ điều hành; nếu máy chưa có thì dùng giọng Google (cần Internet).
+let voiceOn=true,viVoice=null,audio=null,ttsId=0,warned=false;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;
+  const v=speechSynthesis.getVoices().filter(x=>/^vi([-_]|$)/i.test(x.lang)||/vietnam|việt/i.test(x.name));
+  viVoice=v.find(x=>/natural|online/i.test(x.name))||v[0]||null;
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim()};
+function chunk(t){
+  const out=[];
+  t.split(/(?<=[.!?;:])\s+/).forEach(x=>{while(x.length>170){let k=x.lastIndexOf(" ",170);if(k<50)k=170;out.push(x.slice(0,k));x=x.slice(k).trim()}if(x)out.push(x)});
+  return out;
+}
+function quiet(){ttsId++;if(audio){audio.pause();audio=null}if(hasTTS)speechSynthesis.cancel()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),7000)}
+function speak(t){
+  if(!voiceOn)return;
+  quiet();const my=ttsId,parts=chunk(plain(t));
+  setTimeout(()=>{
+    if(my!==ttsId)return;
+    pickVoice();
+    if(viVoice){
+      parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);try{u.voice=viVoice}catch(e){}u.lang=viVoice.lang;u.rate=.95;speechSynthesis.speak(u)});
+    }else{
+      if(!warned){warned=true;toast("🗣 Máy chưa có giọng tiếng Việt, đang dùng giọng Google (cần Internet)")}
+      let i=0;const next=()=>{if(my!==ttsId||i>=parts.length)return;audio=new Audio("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(parts[i++]));audio.onended=next;audio.onerror=next;audio.play().catch(()=>next())};next();
+    }
+  },80);
+}
+function readQ(){
+  const q=G.list[G.i],vis=k=>!document.querySelector('.ans[data-k="'+k+'"]').classList.contains("gone");
+  speak("Câu hỏi số "+(G.i+1)+". "+q.question+". "+q.options.map((o,k)=>vis(k)?"Đáp án "+"ABCD"[k]+": "+o:"").join(". "));
+}
+// ===== HIỆU ỨNG NỀN & PHÁO GIẤY =====
+const bg=document.getElementById("bg"),fx=document.getElementById("fx"),bx=bg.getContext("2d"),fc=fx.getContext("2d");
+let stars=[],parts=[];
+function resize(){
+  bg.width=fx.width=innerWidth;bg.height=fx.height=innerHeight;
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform="translate(-50%,-50%) scale("+s+")";
+  stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.6+.1,p:Math.random()*6}));
+}
+function confetti(n=160,x=innerWidth/2,y=innerHeight/2){
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*26,vy:Math.random()*-22-4,g:.5,c:`hsl(${Math.random()*360},90%,60%)`,s:Math.random()*12+6,r:Math.random()*6,l:130});
+}
+function loop(t){
+  bx.clearRect(0,0,bg.width,bg.height);
+  const gr=bx.createRadialGradient(bg.width/2,bg.height*.4,50,bg.width/2,bg.height/2,bg.width*.7);
+  gr.addColorStop(0,"#2a1a8a");gr.addColorStop(.6,"#0a1450");gr.addColorStop(1,"#030618");bx.fillStyle=gr;bx.fillRect(0,0,bg.width,bg.height);
+  for(let i=0;i<6;i++){const W=bg.width,H=bg.height,x=W*(i+.5)/6,sw=Math.sin(t/1800+i*1.3)*W*.12,g2=bx.createLinearGradient(x,0,x+sw,H);g2.addColorStop(0,i%2?"rgba(120,160,255,.28)":"rgba(190,110,255,.26)");g2.addColorStop(1,"rgba(0,0,0,0)");bx.fillStyle=g2;bx.beginPath();bx.moveTo(x-20,0);bx.lineTo(x+20,0);bx.lineTo(x+sw+W*.07,H);bx.lineTo(x+sw-W*.07,H);bx.fill()}
+  for(let k=1;k<=4;k++){bx.strokeStyle="rgba(80,200,255,"+(.55-k*.1)+")";bx.lineWidth=4;bx.beginPath();bx.ellipse(bg.width/2,bg.height*1.02,bg.width*.12*k,bg.height*.035*k,0,0,7);bx.stroke()}
+  stars.forEach(s=>{s.y+=s.s;if(s.y>bg.height)s.y=0;bx.globalAlpha=.5+.5*Math.sin(t/400+s.p);bx.fillStyle="#fff";bx.beginPath();bx.arc(s.x,s.y,s.r,0,7);bx.fill()});
+  bx.globalAlpha=1;
+  fc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=.2;p.l--;fc.save();fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;fc.globalAlpha=Math.min(1,p.l/30);fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore()});
+  requestAnimationFrame(loop);
+}
+
+// ===== TRẠNG THÁI TRÒ CHƠI =====
+const $=id=>document.getElementById(id);
+let G;
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function newGame(){
+  const pool=validQuestions(),by={NB:[],TH:[],VD:[]};
+  pool.forEach(q=>by[q.level].push(q));Object.values(by).forEach(shuf);
+  const need={NB:0,TH:0,VD:0};PLAN.forEach(l=>need[l]++);
+  for(const l in need) if(by[l].length<need[l]){alert("Chưa đủ câu hỏi mức "+LV[l]+" (cần "+need[l]+", có "+by[l].length+").");return}
+  const list=PLAN.map(l=>shuffleOptions(by[l].shift()));
+  G={list,by,i:0,score:0,used:{},state:"idle",sel:-1,wrong:[],correct:0,miss:0};
+  document.querySelectorAll(".help").forEach(h=>h.classList.remove("used"));
+  show("game");renderLadder();loadQ();
+}
+const hearts=()=>{$("lv").textContent="❤️".repeat(Math.max(0,MISS-G.miss))||"—"};
+function renderLadder(){
+  $("ladder").innerHTML=PLAN.map((_,k)=>10-k).map(n=>`<div class="step ${n===SAFE?"safe":""} ${n<=G.i?"done":""} ${n===G.i+1?"now":""}"><i>${n}</i><span>${n===SAFE?"🛡 ":""}${n} điểm</span></div>`).join("");
+}
+function loadQ(){
+  const q=G.list[G.i];G.state="idle";G.sel=-1;
+  $("qin").innerHTML=q.question;$("qin").style.fontSize=(q.question.length>150?44:q.question.length>100?52:60)+"px";$("qtab").textContent="CÂU HỎI SỐ "+(G.i+1)+" • "+LV[q.level].toUpperCase();$("qn").textContent=(G.i+1)+" / "+PLAN.length;
+  $("answers").innerHTML=q.options.map((o,k)=>`<button class="ans ${o.length>95?"xxl":o.length>65?"xl":o.length>38?"long":""}" data-k="${k}"><div class="in"><b>${"ABCD"[k]}.</b><span>${o}</span></div></button>`).join("");
+  $("panel").classList.remove("on");$("game").classList.remove("pan");$("sc").textContent="⭐ "+G.score+"/"+MAX;renderLadder();hearts();
+  cast("host","talk");cast("me","");setTimeout(()=>{if(G.state==="idle")readQ()},700);setTimeout(()=>{if(G.state==="idle")cast("host","")},3500);
+}
+function pick(k){
+  if(G.state!=="idle"&&G.state!=="sel")return;
+  const b=document.querySelector(`.ans[data-k="${k}"]`);if(!b||b.classList.contains("gone"))return;
+  if(G.sel===k)return;
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  G.sel=k;G.state="sel";b.classList.add("sel");sfx.click();cast("me","think");
+  document.querySelectorAll(".cf").forEach(x=>x.remove());b.querySelector(".in").insertAdjacentHTML("beforeend","<span class=\"cf\">✔ XÁC NHẬN</span>");
+}
+function lock(){
+  if(G.state!=="sel")return;G.state="lock";quiet();sfx.lock();document.querySelectorAll(".cf").forEach(x=>x.remove());
+  setTimeout(reveal,2200);
+}
+function reveal(){
+  const q=G.list[G.i],ok=handlers[q.type].check(q,G.sel),A=document.querySelectorAll(".ans");
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  A[q.answer].classList.add("ok");
+  if(ok){G.score=Math.min(MAX,G.score+1);G.correct++;sfx.ok();confetti(120);cast("me","ok");cast("host","ok")}
+  else{cast("me","bad");cast("host","");A[G.sel].classList.add("bad");sfx.bad();G.miss++;G.wrong.push({q:q.question,right:q.options[q.answer],exp:q.explanation})}
+  G.ok=ok;G.state="done";hearts();$("sc").textContent="⭐ "+G.score+"/"+MAX;
+  setTimeout(()=>Math.random()<GIFT_RATE?gift():panel(),1800);
+}
+function panel(){
+  const q=G.list[G.i],last=G.i===PLAN.length-1;
+  const over=G.miss>MISS,left=MISS-G.miss;
+  $("exp").innerHTML=(G.ok?"✅ <b>Chính xác!</b> ":"❌ <b>Chưa đúng.</b> Đáp án: <b>"+"ABCD"[q.answer]+"</b>. "+(over?"Bạn đã sai quá "+MISS+" lần. ":"Bạn còn <b>"+left+"</b> lần được sai. "))+(q.explanation||"");
+  $("next").textContent=(over||last)?"Xem kết quả ▶":"Câu tiếp theo ▶";
+  $("panel").classList.add("on");$("game").classList.add("pan");G.state="panel";speak($("exp").innerHTML);
+}
+function advance(){
+  if(G.state!=="panel")return;quiet();
+  if(G.miss>MISS||G.i===PLAN.length-1)return finish();
+  G.i++;loadQ();
+}
+function finish(){
+  // Mốc an toàn: đã qua câu 5 thì giữ tối thiểu 5 điểm khi trả lời sai
+  let s=G.score;if(G.miss>MISS&&G.i>=SAFE&&s<SAFE)s=SAFE;
+  G.score=s;show("end");exitFs();quiet();speak("Kết thúc trò chơi. Bạn đạt "+s+" điểm trên "+MAX+" điểm.");
+  $("es").textContent=s+"/"+MAX;
+  $("et").textContent=s===MAX?"TRIỆU PHÚ XUẤT SẮC!":s>=8?"Rất xuất sắc!":s>=5?"Làm tốt lắm!":"Cố gắng lên nhé!";
+  $("eo").textContent=s>=8?"🏆":s>=5?"🎉":"💪";
+  $("em").textContent="Trả lời đúng "+G.correct+" câu, sai "+G.miss+" câu"+(s>G.correct?", nhận thêm quà/mốc an toàn":"")+".";
+  $("wl").innerHTML=G.wrong.length?"<b>Câu cần ôn lại:</b><br>"+G.wrong.map(w=>"• "+w.q+" → <b>"+w.right+"</b>").join("<br>"):"";
+  if(s>=5){sfx.ok();[.3,.7,.5].forEach((x,i)=>setTimeout(()=>confetti(150,innerWidth*x,innerHeight*.4),i*500))}
+}
+// ===== QUÀ TẶNG =====
+function overlay(html){$("ov").innerHTML=html;$("ov").classList.add("on")}
+function closeOv(){$("ov").classList.remove("on");$("ov").innerHTML=""}
+function gift(){
+  G.state="gift";overlay('<h2>🎁 Bạn nhận được một hộp quà!</h2><div id="gift">🎁</div><p>Bấm vào hộp quà để mở</p>');
+  $("gift").onclick=()=>{
+    sfx.gift();speak("Chúc mừng! Bạn nhận được một điểm thưởng.");const full=G.score>=MAX;G.score=Math.min(MAX,G.score+1);$("sc").textContent="⭐ "+G.score+"/"+MAX;
+    overlay('<div class="big">+1</div><h2>'+(full?"Điểm đã đạt tối đa 10!":"điểm thưởng!")+'</h2><button class="btn sm" id="okg">Tuyệt vời ▶</button>');
+    confetti(220,innerWidth/2,innerHeight/2);$("okg").onclick=()=>{closeOv();panel()}
+  };
+}
+// ===== TRỢ GIÚP =====
+function help(h){
+  const btn=document.querySelector(`.help[data-h="${h}"]`);
+  if(G.state!=="idle"&&G.state!=="sel"||btn.classList.contains("used"))return;
+  if(h==="5050"){
+    const q=G.list[G.i],w=shuf(q.options.map((_,i)=>i).filter(i=>i!==q.answer)).slice(0,q.options.length-2);
+    w.forEach(i=>document.querySelector(`.ans[data-k="${i}"]`).classList.add("gone"));
+    if(w.includes(G.sel)){G.sel=-1;G.state="idle"}
+    setTimeout(readQ,300);
+  }else if(h==="swap"){
+    const l=G.list[G.i].level,n=G.by[l].shift();
+    if(!n){alert("Hết câu hỏi để đổi!");return}
+    G.list[G.i]=shuffleOptions(n);loadQ();
+  }else return timer(h,btn);
+  btn.classList.add("used");sfx.click();
+}
+function timer(h,btn){
+  const cls=h==="class",prev=G.state;G.state="help";quiet();
+  overlay("<h2>"+(cls?"🏫 Hỏi cả lớp":"🤝 Hỏi người tin tưởng")+"</h2><p>"+(cls?"Cả lớp cùng bàn bạc rồi giơ thẻ A/B/C/D. Đáp án nào nhiều bạn chọn nhất?":"Người chơi chọn một người mình tin tưởng để hỏi ý kiến.")+"</p>"+(cls?"":'<input id="who" placeholder="Tên người được hỏi (không bắt buộc)">')+'<div id="cd">30</div><button class="btn sm" id="stop" style="margin-top:20px">Xong ▶</button>');
+  btn.classList.add("used");let t=30;
+  const iv=setInterval(()=>{t--;$("cd").textContent=t;if(t<=5){$("cd").classList.add("low");sfx.tick()}if(t<=0)end()},1000);
+  function end(){clearInterval(iv);closeOv();G.state=G.sel>=0?"sel":"idle"}
+  $("stop").onclick=end;
+}
+// ===== NHÂN VẬT: người hỏi & người trả lời (bấm vào khung để thay bằng ảnh thật) =====
+const AV=(skin,hair,shirt,body,head)=>`<svg viewBox="0 0 200 220"><path d="M20 220c0-55 35-80 80-80s80 25 80 80z" fill="${shirt}"/><path d="M85 140l15 25 15-25z" fill="#fff"/>${body}<rect x="88" y="115" width="24" height="30" fill="${skin}"/><circle cx="100" cy="85" r="52" fill="${skin}"/><path d="M48 80c0-45 30-62 55-62s50 20 49 62c-10-25-30-35-52-35s-42 10-52 35z" fill="${hair}"/>${head}<circle cx="80" cy="90" r="6" fill="#222"/><circle cx="120" cy="90" r="6" fill="#222"/><path d="M70 76q10-8 20 0M110 76q10-8 20 0" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse class="mouth" cx="100" cy="114" rx="14" ry="7" fill="#7a1f1f"/></svg>`;
+const cast=(w,m)=>{$(w).dataset.m=m};
+[["host",AV("#f1c9a0","#2b2b2b","#1b1b2f",'<path d="M100 152l-22-12v24zM100 152l22-12v24z" fill="#e02b2b"/>',"")],
+ ["me",AV("#e8b98a","#5a2d0c","#2e9d5b","",'<path d="M50 85a50 50 0 0 1 100 0" stroke="#ffb300" stroke-width="8" fill="none"/><rect x="42" y="80" width="14" height="30" rx="6" fill="#ffb300"/><rect x="144" y="80" width="14" height="30" rx="6" fill="#ffb300"/>')]
+].forEach(([id,svg])=>{
+  const f=$(id),inp=f.querySelector("input");f.insertAdjacentHTML("afterbegin",svg+'<img alt="">');
+  f.onclick=e=>{if(e.target!==inp)inp.click()};
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{const im=f.querySelector("img");im.src=r.result;im.style.display="block";f.querySelector("svg").style.display="none"};if(inp.files[0])r.readAsDataURL(inp.files[0])};
+});
+// ===== SỰ KIỆN =====
+const enterFs=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})};
+const exitFs=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})};
+$("go").onclick=()=>{sfx.click();enterFs();newGame()};
+$("again").onclick=()=>{sfx.click();enterFs();newGame()};
+$("next").onclick=advance;
+$("answers").onclick=e=>{if(e.target.closest(".cf"))return lock();const b=e.target.closest(".ans");if(b)pick(+b.dataset.k)};
+document.querySelectorAll(".help").forEach(h=>h.onclick=()=>help(h.dataset.h));
+$("rd").onclick=()=>{voiceOn=!voiceOn;$("rd").classList.toggle("off",!voiceOn);if(!voiceOn)quiet();else if(G&&(G.state==="idle"||G.state==="sel"))readQ()};
+$("snd").onclick=()=>{mute=!mute;$("snd").textContent=mute?"🔇":"🔊"};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$("fs").onclick=fs;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const k=e.key.toLowerCase();
+  if(k==="f")fs();else if(k==="m")$("snd").click();else if(k==="v")$("rd").click();else if(k==="r"&&G&&(G.state==="idle"||G.state==="sel"))readQ();
+  else if("abcd".includes(k)&&k.length===1)pick("abcd".indexOf(k));
+  else if(k==="enter"){if(G&&G.state==="sel")lock();else if(G&&G.state==="panel")advance();else if(!G||$("start").classList.contains("on"))$("go").click()}
+  else if("1234".includes(k)&&G&&$("game").classList.contains("on"))help(["5050","class","trust","swap"][+k-1]);
+});
+addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);show("start");
+</script></body></html>

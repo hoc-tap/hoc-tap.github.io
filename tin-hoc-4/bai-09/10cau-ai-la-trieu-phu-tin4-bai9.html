@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai là triệu phú – Tin học 4 bài 9</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:#050824;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fx{z-index:50}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;z-index:2}
+.screen{position:absolute;inset:0;display:none;padding:40px 60px}
+.screen.on{display:block;animation:fadein .6s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:110px;text-align:center;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 25px #ffb30088)}
+@keyframes shine{to{background-position:300%}}
+.btn{font-size:64px;font-weight:800;font-family:inherit;color:#1a1200;background:linear-gradient(#ffe27a,#ffb300);border:0;border-radius:60px;padding:26px 100px;cursor:pointer;box-shadow:0 0 40px #ffb300aa,0 8px 0 #a56a00;transition:.2s}
+.btn:hover{transform:translateY(-4px) scale(1.05)}
+.btn.sm{font-size:34px;padding:16px 46px}
+#start{text-align:center;padding-top:150px}
+#start p{font-size:38px;margin:30px 0 60px;color:#bcd}
+.orb{font-size:170px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-25px) rotate(6deg)}}
+.rules{display:flex;gap:26px;justify-content:center;margin-bottom:60px}
+.rules{flex-wrap:wrap}.rules div{background:#ffffff14;border:2px solid #ffffff33;border-radius:24px;padding:18px 26px;font-size:28px;backdrop-filter:blur(6px)}
+/* game – giao diện theo mẫu */
+#game{padding:0}
+.pill{display:flex;align-items:center;gap:16px;background:linear-gradient(#10267a,#050f40);border:3px solid #ffd54a;border-radius:34px;padding:10px 30px;box-shadow:0 0 25px #ffb30066}
+.pill small{display:block;font-size:20px;color:#bcd}.pill b{font-size:44px;color:#ffd54a;font-weight:800}.pill .coin{font-size:54px}
+#hud-l{position:absolute;left:60px;top:30px;display:flex;gap:14px}#hud-l .pill{padding:10px 22px}
+#hud-r{position:absolute;right:60px;top:30px;display:flex;gap:12px;align-items:center}
+.ic{width:70px;height:70px;border-radius:50%;border:3px solid #ffd54a;background:#0a1550;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 0 18px #ffb30055}
+#toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#000d;border:2px solid #ffd54a;border-radius:30px;padding:10px 30px;font-size:26px;z-index:30;opacity:0;transition:.4s;pointer-events:none}#toast.on{opacity:1}
+.ic.off{opacity:.45;filter:grayscale(1)}
+.logo{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:8px 80px 14px;border:5px solid #ffd54a;border-radius:90px/60px;background:radial-gradient(#1b3a8f,#050f40);box-shadow:0 0 45px #ffb300aa;text-align:center;line-height:1}
+.logo small{display:block;font-size:32px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 12px #38f}
+.logo b{display:block;font-size:80px;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+#helps{position:absolute;left:320px;top:175px;width:960px;display:flex;gap:16px}
+.help{flex:1;height:160px;border-radius:30px;border:3px solid #6cf;background:radial-gradient(#2a46c0,#0a1550);color:#fff;cursor:pointer;box-shadow:0 0 22px #3af6;transition:.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+.help i{font-style:normal;font-size:56px;line-height:1}.help b{font-size:46px;line-height:1}
+.help small{font-size:20px;font-weight:600;color:#cde;line-height:1.15;padding:4px 8px 0}
+.help:hover:not(.used){transform:scale(1.08);box-shadow:0 0 40px #6cf;border-color:#fff}
+.help.used{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.help.used::after{content:"✕";position:absolute;inset:0;font-size:120px;color:#f55;line-height:160px}
+#qtab{position:absolute;left:800px;transform:translateX(-50%);top:385px;z-index:3;padding:8px 56px;background:linear-gradient(#ffd54a,#e69500);color:#1a1200;font-size:30px;font-weight:900;white-space:nowrap;clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,24px 100%,0 50%)}
+#qbox{position:absolute;left:60px;top:422px;width:1480px;height:290px;padding:4px;background:linear-gradient(#9ef,#38f);clip-path:polygon(62px 0,calc(100% - 62px) 0,100% 50%,calc(100% - 62px) 100%,62px 100%,0 50%);filter:drop-shadow(0 0 20px #38f)}
+#qin{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 110px;font-size:48px;font-weight:700;line-height:1.3;background:linear-gradient(#10267a,#050f40);clip-path:polygon(60px 0,calc(100% - 60px) 0,100% 50%,calc(100% - 60px) 100%,60px 100%,0 50%)}
+#answers{position:absolute;left:60px;top:735px;width:1480px;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.ans{height:135px;padding:3px;background:#6cf;border:0;color:#fff;cursor:pointer;transition:.2s;font-family:inherit;clip-path:polygon(36px 0,calc(100% - 36px) 0,100% 50%,calc(100% - 36px) 100%,36px 100%,0 50%)}
+.ans .in{height:100%;display:flex;align-items:center;gap:18px;padding:0 64px;font-size:46px;font-weight:600;text-align:left;line-height:1.1;background:linear-gradient(#10267a,#050f40);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,34px 100%,0 50%)}
+.ans b{color:#ffb300;font-size:56px}.ans .in>span:first-of-type{flex:1}.cf{margin-left:auto;flex:none;background:#1a1200;color:#ffd54a;border-radius:40px;padding:8px 16px;font-size:21px;font-weight:900;white-space:nowrap;box-shadow:0 0 18px #0008;transition:.2s}.ans.sel .in{padding-right:36px;font-size:38px;line-height:1.05;gap:14px}.ans.sel.long .in{font-size:31px}.ans.xl .in{font-size:29px;line-height:1.05}.ans.xxl .in{font-size:25px;line-height:1.05}.ans.sel.xl .in{font-size:26px}.ans.sel.xxl .in{font-size:22px}.ans.xl b,.ans.xxl b{font-size:44px}.ans.sel.xl .cf,.ans.sel.xxl .cf{font-size:18px;padding:6px 12px}.ans.sel b{font-size:50px}.cf:hover{transform:scale(1.1);background:#000}.ans.long .in{font-size:37px;line-height:1.1}
+.ans:hover:not(:disabled){background:#fff;transform:scale(1.02)}
+.ans:hover:not(:disabled) .in{background:linear-gradient(#1c3fb0,#0a1a70)}
+.ans.sel,.ans.sel:hover{background:#fff;animation:blink .5s infinite alternate}
+.ans.sel .in,.ans.sel:hover .in{background:linear-gradient(#ffd54a,#e69500);color:#1a1200}.ans.sel b{color:#1a1200}
+@keyframes blink{to{filter:brightness(1.35)}}
+.ans.ok{background:#fff;animation:pop .6s,blink .5s infinite alternate}
+.ans.ok .in{background:linear-gradient(#3ddc6b,#0c8a35)}.ans.ok b{color:#fff}
+@keyframes pop{40%{transform:scale(1.1)}}
+.ans.bad{background:#fff;animation:shake .5s}
+.ans.bad .in{background:linear-gradient(#ff5b5b,#a00)}.ans.bad b{color:#fff}
+@keyframes shake{20%,60%{transform:translateX(-18px)}40%,80%{transform:translateX(18px)}}
+@keyframes pulse{to{box-shadow:0 0 50px #ffb300}}
+.ans.gone{visibility:hidden}
+#panel{position:absolute;left:320px;top:165px;width:960px;height:210px;display:none;flex-direction:row;justify-content:center;align-items:center;gap:24px;background:#000c;border:3px solid #ffd54a;border-radius:30px;padding:14px 28px;font-size:25px;z-index:5;animation:fadein .4s}
+#panel.on{display:flex}#panel span{line-height:1.35}
+#game.pan #helps{visibility:hidden}
+#ladder{position:absolute;left:1580px;top:160px;width:280px;height:870px;display:flex;flex-direction:column;gap:8px;padding:14px;background:#050f40cc;border:4px solid #ffd54a;border-radius:30px;box-shadow:0 0 35px #ffb30066}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:40px;font-size:27px;font-weight:700;color:#ffd54a;transition:.4s}
+.step i{width:46px;height:46px;border-radius:12px;border:2px solid #ffd54a;display:grid;place-items:center;font-style:normal;font-size:26px;color:#fff}
+.step span{flex:1;text-align:right}.step.safe{color:#fff}
+.step.done{color:#3f6;background:#3f62}
+.step.now{background:linear-gradient(#ffd54a,#e69500);color:#1a1200;transform:scale(1.06);box-shadow:0 0 30px #ffb300}.step.now i{color:#1a1200;border-color:#1a1200}
+/* overlay */
+#ov{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;text-align:center;padding:60px}
+#ov.on{display:flex;animation:fadein .4s}
+#ov h2{font-size:80px;color:#ffd54a;margin-bottom:20px}
+#ov p{font-size:40px;max-width:1300px;margin-bottom:30px;line-height:1.35}
+#ov input{font-size:38px;font-weight:600;font-family:inherit;padding:12px 28px;border-radius:30px;border:3px solid #6cf;background:#0a1550;color:#fff;text-align:center;margin-bottom:26px}
+#cd{font-size:230px;font-weight:900;color:#fff;text-shadow:0 0 40px #38f;line-height:1}
+#cd.low{color:#f55;animation:pulse .4s infinite alternate}
+.letters{display:flex;gap:30px;margin:10px 0 30px}
+.letters button{width:130px;height:130px;font-size:70px}
+#gift{font-size:300px;cursor:pointer;animation:drop 1s cubic-bezier(.3,1.6,.5,1),wob 1s 1s infinite;filter:drop-shadow(0 0 60px #ff0)}
+@keyframes drop{from{transform:translateY(-900px)}}
+@keyframes wob{25%{transform:rotate(-12deg) scale(1.1)}75%{transform:rotate(12deg) scale(1.1)}}
+.big{font-size:260px;font-weight:900;color:#ffd54a;text-shadow:0 0 50px #ffb300;line-height:1}
+#wl{max-height:250px;overflow:auto;font-size:26px;text-align:left;margin:10px auto 20px;width:1300px;color:#fbb}
+.fig .bub{position:absolute;top:2px;right:8px;font-size:34px;font-style:normal}
+.fig[data-m=talk] .bub::after{content:"💬"}.fig[data-m=think] .bub::after{content:"🤔"}
+.fig[data-m=ok] .bub::after{content:"😄"}.fig[data-m=bad] .bub::after{content:"😢"}
+.fig[data-m=ok]{animation:pop .6s}.fig[data-m=bad]{animation:shake .5s}.fig[data-m=think]{box-shadow:0 0 35px #ffb300}
+.mouth{transform-box:fill-box;transform-origin:center}
+.fig[data-m=talk] .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{to{transform:scaleY(.2)}}
+#cast{position:absolute;inset:0;pointer-events:none}
+.fig{position:absolute;width:230px;height:210px;pointer-events:auto;border:4px solid #6cf;border-radius:26px;background:radial-gradient(#3a58d8,#0a1550);box-shadow:0 0 30px #38f9;cursor:pointer;overflow:hidden;transition:.3s}
+#host{left:60px;top:165px}#me{left:1310px;top:165px}
+.fig:hover{transform:scale(1.04)}
+.fig svg{position:absolute;left:10px;top:14px;width:calc(100% - 20px);height:calc(100% - 54px)}
+.fig img{position:absolute;left:0;top:0;width:100%;height:calc(100% - 38px);object-fit:cover;display:none}
+.fig .bub{font-size:26px}.fig label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:#000b;border:2px solid #ffd54a;border-radius:20px;padding:3px 12px;font-size:17px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<canvas id="bg"></canvas><canvas id="fx"></canvas>
+<div id="stage">
+<section class="screen" id="start">
+ <div class="orb">💎</div>
+ <h1>AI LÀ TRIỆU PHÚ</h1>
+ <p>Tin học 4 – Bài 9: Hiệu ứng chuyển trang</p>
+ <div class="rules"><div>🎯 10 câu – tối đa 10 điểm</div><div>❤️ Được sai 2 lần</div><div>🛡 Mốc an toàn câu 5</div><div>🎁 Có thể nhận quà +1 điểm</div><div>💡 4 quyền trợ giúp</div></div>
+ <button class="btn" id="go">▶ BẮT ĐẦU</button>
+ <p style="font-size:24px;margin-top:40px">Phím tắt: Bấm đáp án rồi bấm ✔ XÁC NHẬN (hoặc Enter) • A B C D chọn nhanh • 1–4 trợ giúp • F toàn màn hình • M tắt âm • V bật/tắt giọng đọc • R đọc lại câu hỏi</p>
+</section>
+<section class="screen" id="game">
+ <div id="hud-l"><div class="pill"><span class="coin">🪙</span><div><small>Điểm hiện tại</small><b id="sc">⭐ 0/10</b></div></div><div class="pill"><div><small>Được sai</small><b id="lv">❤️❤️</b></div></div></div>
+ <div class="logo"><small>AI LÀ</small><b>TRIỆU PHÚ</b></div>
+ <div id="hud-r"><div class="pill"><span class="coin">🏆</span><div><small>Câu hỏi số</small><b id="qn">1 / 10</b></div></div><button class="ic" id="rd" title="Giọng đọc (V) • đọc lại câu hỏi (R)">🗣</button><button class="ic" id="snd">🔊</button><button class="ic" id="fs">⛶</button></div>
+ <div id="cast">
+  <div class="fig" id="host" title="Bấm để đổi ảnh"><i class="bub"></i><label>🎤 Người hỏi</label><input type="file" accept="image/*" hidden></div>
+  <div class="fig" id="me" title="Bấm để đổi ảnh"><i class="bub"></i><label>🙋 Người trả lời</label><input type="file" accept="image/*" hidden></div>
+ </div>
+ <div id="helps">
+  <button class="help" data-h="5050"><b>50:50</b><small>Loại 2 đáp án</small></button>
+  <button class="help" data-h="class"><i>🏫</i><small>Hỏi cả lớp</small></button>
+  <button class="help" data-h="trust"><i>🤝</i><small>Hỏi người tin tưởng</small></button>
+  <button class="help" data-h="swap"><i>🔄</i><small>Đổi câu hỏi</small></button>
+ </div>
+ <div id="panel"><span id="exp"></span><button class="btn sm" id="next">Tiếp tục ▶</button></div>
+ <div id="qtab"></div><div id="qbox"><div id="qin"></div></div>
+ <div id="answers"></div>
+ <div id="ladder"></div>
+</section>
+<section class="screen" id="end" style="text-align:center;padding-top:70px">
+ <div class="orb" id="eo">🏆</div><h1 style="font-size:90px" id="et"></h1>
+ <div class="big" id="es"></div><p style="font-size:38px;margin:10px" id="em"></p>
+ <div id="wl"></div><button class="btn" id="again">🔁 CHƠI LẠI</button>
+</section>
+<div id="ov"></div><div id="toast"></div>
+</div>
+<script>
+// DỮ LIỆU CÂU HỎI — thay mảng này để sử dụng bộ câu hỏi mới.
+// level: NB (nhận biết) | TH (thông hiểu) | VD (vận dụng); answer là chỉ số đáp án đúng (từ 0).
+const questions = [
+  {"level": "NB", "question": "Hiệu ứng chuyển trang là gì?", "options": ["Cách thức trang chiếu xuất hiện khi trình chiếu", "Cách đổi màu chữ", "Cách lưu tệp", "Cách tắt máy tính"], "answer": 0, "explanation": "Hiệu ứng chuyển trang là cách thức trang chiếu xuất hiện khi trình chiếu."},
+  {"level": "NB", "question": "Thêm hiệu ứng chuyển trang giúp bài trình chiếu như thế nào?", "options": ["Khó xem hơn", "Ấn tượng và hấp dẫn hơn", "Bị mất nội dung", "Nặng hơn"], "answer": 1, "explanation": "Hiệu ứng chuyển trang giúp bài trình chiếu ấn tượng và hấp dẫn hơn."},
+  {"level": "NB", "question": "Các nút lệnh của hiệu ứng chuyển trang nằm trên dải lệnh nào?", "options": ["Dải lệnh Home", "Dải lệnh Insert", "Dải lệnh Transitions", "Dải lệnh Design"], "answer": 2, "explanation": "Hiệu ứng chuyển trang nằm trên dải lệnh Transitions."},
+  {"level": "NB", "question": "Nhóm lệnh nào chứa các hiệu ứng chuyển trang?", "options": ["Nhóm lệnh Font", "Nhóm lệnh Paragraph", "Nhóm lệnh Clipboard", "Nhóm lệnh Transition to This Slide"], "answer": 3, "explanation": "Các hiệu ứng nằm trong nhóm lệnh Transition to This Slide của dải lệnh Transitions."},
+  {"level": "NB", "question": "Bước đầu tiên để tạo hiệu ứng chuyển trang là gì?", "options": ["Chọn trang chiếu muốn tạo hiệu ứng", "Lưu tệp", "Thoát phần mềm", "Xoá trang chiếu"], "answer": 0, "explanation": "Bước 1 là chọn trang chiếu muốn tạo hiệu ứng."},
+  {"level": "NB", "question": "Bước thứ hai để tạo hiệu ứng chuyển trang là gì?", "options": ["Gõ tên tệp", "Chọn một hiệu ứng chuyển trang trên dải lệnh Transitions", "Chọn lệnh Copy", "Tắt màn hình"], "answer": 1, "explanation": "Bước 2 là chọn một hiệu ứng chuyển trang trên dải lệnh Transitions."},
+  {"level": "NB", "question": "Hiệu ứng chuyển trang được đặt cho đối tượng nào?", "options": ["Một dòng chữ", "Một hình ảnh", "Từng trang chiếu", "Một ổ đĩa"], "answer": 2, "explanation": "Hiệu ứng chuyển trang được đặt cho từng trang chiếu."},
+  {"level": "NB", "question": "Mỗi trang chiếu sử dụng được bao nhiêu kiểu hiệu ứng chuyển trang?", "options": ["Hai kiểu", "Ba kiểu", "Nhiều kiểu cùng lúc", "Một kiểu hiệu ứng duy nhất"], "answer": 3, "explanation": "Mỗi trang chiếu chỉ sử dụng được một kiểu hiệu ứng duy nhất."},
+  {"level": "NB", "question": "Trong một bài trình chiếu có thể có những hiệu ứng chuyển trang như thế nào?", "options": ["Nhiều hiệu ứng khác nhau", "Chỉ một hiệu ứng", "Không có hiệu ứng", "Chỉ hiệu ứng Push"], "answer": 0, "explanation": "Trong một bài trình chiếu có thể có nhiều hiệu ứng chuyển trang khác nhau."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Bold", "Push", "Bullets", "Rename"], "answer": 1, "explanation": "Push là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Copy", "Save", "Flip", "Open"], "answer": 2, "explanation": "Flip là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Paste", "Delete", "Rename", "Shape"], "answer": 3, "explanation": "Shape là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Box", "Font", "Bullets", "Home"], "answer": 0, "explanation": "Box là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Underline", "Wipe", "Italic", "Copy"], "answer": 1, "explanation": "Wipe là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Rename", "Delete", "Rotate", "Bullets"], "answer": 2, "explanation": "Rotate là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Save", "Font", "Paste", "Zoom"], "answer": 3, "explanation": "Zoom là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Hiệu ứng nào sau đây là hiệu ứng chuyển trang?", "options": ["Pan", "Bold", "Open", "Underline"], "answer": 0, "explanation": "Pan là một hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Em chọn hiệu ứng nào để bỏ hiệu ứng chuyển trang?", "options": ["Push", "None", "Flip", "Zoom"], "answer": 1, "explanation": "Em chọn None để bỏ hiệu ứng chuyển trang."},
+  {"level": "NB", "question": "Khi không thấy hiệu ứng cần chọn trên dải lệnh Transitions, em làm thế nào?", "options": ["Nhấn phím Enter", "Tắt máy tính", "Nháy chuột vào nút mũi tên để xuất hiện danh sách hiệu ứng", "Xoá trang chiếu"], "answer": 2, "explanation": "Em nháy chuột vào nút mũi tên để xuất hiện danh sách các hiệu ứng."},
+  {"level": "NB", "question": "Để trình chiếu và xem các hiệu ứng chuyển trang, em nhấn phím nào?", "options": ["Phím F1", "Phím Tab", "Phím Esc", "Phím F5"], "answer": 3, "explanation": "Em nhấn phím F5 để trình chiếu."},
+  {"level": "NB", "question": "Ngoài nhấn phím F5, em còn có thể làm gì để trình chiếu?", "options": ["Nháy chuột vào nút lệnh trình chiếu", "Nháy chuột vào nút X", "Nhấn phím Shift", "Nháy chuột vào nút Save"], "answer": 0, "explanation": "Em có thể nháy chuột vào nút lệnh trình chiếu để xem hiệu ứng."},
+  {"level": "NB", "question": "Để lưu tệp sau khi thêm hiệu ứng, em nháy chuột vào nút lệnh nào?", "options": ["Nút lệnh Open", "Nút lệnh Save hình đĩa mềm", "Nút lệnh Copy", "Nút lệnh None"], "answer": 1, "explanation": "Em nháy chuột vào nút lệnh Save để lưu tệp."},
+  {"level": "NB", "question": "Để mở tệp trình chiếu đã lưu, em chọn lệnh nào trong bảng chọn File?", "options": ["Save", "Paste", "Open", "Print"], "answer": 2, "explanation": "Em chọn lệnh Open trong bảng chọn File để mở tệp."},
+  {"level": "NB", "question": "Trong bài thực hành, trang 1 dùng hiệu ứng chuyển trang nào?", "options": ["Flip", "Shape", "Box", "Push"], "answer": 3, "explanation": "Theo bài thực hành, trang 1 dùng hiệu ứng Push."},
+  {"level": "NB", "question": "Trong bài thực hành, trang 2 dùng hiệu ứng chuyển trang nào?", "options": ["Flip", "Push", "Shape", "Box"], "answer": 0, "explanation": "Theo bài thực hành, trang 2 dùng hiệu ứng Flip."},
+  {"level": "NB", "question": "Trong bài thực hành, trang 3 dùng hiệu ứng chuyển trang nào?", "options": ["Push", "Shape", "Flip", "Box"], "answer": 1, "explanation": "Theo bài thực hành, trang 3 dùng hiệu ứng Shape."},
+  {"level": "NB", "question": "Trong bài thực hành, trang 4 dùng hiệu ứng chuyển trang nào?", "options": ["Push", "Flip", "Box", "Shape"], "answer": 2, "explanation": "Theo bài thực hành, trang 4 dùng hiệu ứng Box."},
+  {"level": "NB", "question": "Nút lệnh Effect Options dùng để làm gì?", "options": ["Đổi màu chữ", "Lưu tệp", "Thoát phần mềm", "Chọn hướng xuất hiện hoặc tuỳ chọn của hiệu ứng"], "answer": 3, "explanation": "Effect Options giúp chọn hướng xuất hiện hoặc tuỳ chọn chi tiết của hiệu ứng."},
+  {"level": "NB", "question": "Trước khi chọn hiệu ứng chuyển trang, em cần chọn gì?", "options": ["Trang chiếu cần tạo hiệu ứng", "Một phông chữ", "Một ổ đĩa", "Một thư mục"], "answer": 0, "explanation": "Em cần chọn trang chiếu cần tạo hiệu ứng trước."},
+  {"level": "NB", "question": "Hiệu ứng chuyển trang xuất hiện vào lúc nào?", "options": ["Khi tắt máy tính", "Khi gõ chữ", "Khi trình chiếu chuyển từ trang này sang trang khác", "Khi lưu tệp"], "answer": 2, "explanation": "Hiệu ứng chuyển trang xuất hiện khi trình chiếu chuyển từ trang chiếu này sang trang chiếu khác."},
+  {"level": "TH", "question": "Phát biểu nào sau đây mô tả đúng nhất về khái niệm hiệu ứng chuyển trang trong phần mềm trình chiếu?", "options": ["Là hiệu ứng làm cho các hình ảnh, chữ và bảng biểu bay lượn bên trong một trang chiếu.", "Là cách thức trang chiếu xuất hiện khi chuyển từ trang chiếu này sang trang chiếu khác khi trình chiếu.", "Là cách thức xuất hiện của từng dòng văn bản khi người dùng nháy chuột khi trình chiếu.", "Là tính năng tự động thay đổi màu nền và phông chữ của toàn bộ bài trình chiếu để làm cho các trang chiếu trở nên sinh động và cuốn hút hơn đối với người xem."], "answer": 1, "explanation": "Hiệu ứng chuyển trang là cách thức trang chiếu xuất hiện khi trình chiếu từ trang này sang trang khác."},
+  {"level": "TH", "question": "Khi thiết kế bài trình chiếu, học sinh muốn tạo hiệu ứng chuyển trang cho trang chiếu đang chọn thì cần truy cập vào dải lệnh nào?", "options": ["Home", "Design", "Transitions", "Animations"], "answer": 2, "explanation": "Dải lệnh Transitions chứa các công cụ và lệnh phục vụ tạo hiệu ứng chuyển trang cho bài trình chiếu."},
+  {"level": "TH", "question": "Giả sử một trang chiếu đang sử dụng hiệu ứng chuyển trang Push. Nếu người dùng chọn hiệu ứng Fade cho chính trang chiếu đó thì kết quả sẽ như thế nào?", "options": ["Trang chiếu sẽ giữ nguyên hiệu ứng Push và không tiếp nhận hiệu ứng Fade.", "Trang chiếu sẽ áp dụng đồng thời cả hai hiệu ứng Push và Fade cùng lúc.", "Phần mềm trình chiếu sẽ báo lỗi hệ thống và tự động đóng tệp trình chiếu đang mở để đảm bảo an toàn dữ liệu.", "Hiệu ứng Fade sẽ thay thế hoàn toàn cho hiệu ứng Push trên trang chiếu đó."], "answer": 3, "explanation": "Mỗi trang chiếu chỉ có thể sử dụng duy nhất một kiểu hiệu ứng chuyển trang tại một thời điểm, do đó hiệu ứng mới được chọn sẽ thay thế hiệu ứng cũ."},
+  {"level": "TH", "question": "Trong dải lệnh Transitions, nút lệnh None có chức năng gì đối với trang chiếu đang chọn?", "options": ["Bỏ hiệu ứng chuyển trang", "Đặt lại thời gian trình chiếu", "Bỏ toàn bộ chữ trên trang", "Xóa trang chiếu khỏi bài"], "answer": 0, "explanation": "Chọn nút lệnh None trên dải lệnh Transitions có tác dụng hủy bỏ (loại bỏ) hiệu ứng chuyển trang đã cài đặt cho trang chiếu đó."},
+  {"level": "TH", "question": "Phát biểu nào sau đây là ĐÚNG khi nói về việc cài đặt hiệu ứng chuyển trang cho các trang chiếu trong một bài trình chiếu?", "options": ["Tất cả các trang chiếu trong bài bắt buộc phải dùng chung một kiểu hiệu ứng.", "Có thể chọn các kiểu hiệu ứng chuyển trang khác nhau cho từng trang chiếu.", "Một trang chiếu có thể cài đặt cùng lúc ba kiểu hiệu ứng chuyển trang khác nhau.", "Hiệu ứng chuyển trang chỉ có thể cài đặt cho trang chiếu đầu tiên của bài trình chiếu để tạo sự chú ý ban đầu và không thể cài đặt cho các trang chiếu tiếp theo."], "answer": 1, "explanation": "Trong một bài trình chiếu, người dùng có thể linh hoạt đặt các kiểu hiệu ứng chuyển trang khác nhau cho mỗi trang chiếu."},
+  {"level": "TH", "question": "Trên dải lệnh Transitions, nút lệnh Effect Options có chức năng gì?", "options": ["Đổi màu nền cho toàn bộ bài trình chiếu", "Thêm nhạc nền tự động cho bài trình chiếu", "Chọn các hướng xuất hiện hoặc tùy chọn chi tiết của hiệu ứng đó", "Thay đổi kích thước phông chữ trên trang"], "answer": 2, "explanation": "Nút lệnh Effect Options được dùng để tùy chỉnh hướng xuất hiện hoặc các chi tiết hiển thị của hiệu ứng chuyển trang đã chọn."},
+  {"level": "TH", "question": "Để xem các hiệu ứng chuyển trang hoạt động như thế nào trên toàn màn hình, học sinh cần chuyển sang chế độ nào?", "options": ["Chế độ soạn thảo văn bản", "Chế độ thiết kế giao diện", "Chế độ xem trước trang in", "Chế độ trình chiếu"], "answer": 3, "explanation": "Chế độ trình chiếu (Slide Show) hiển thị toàn bộ trang chiếu lên màn hình lớn và kích hoạt các hiệu ứng hoạt động."},
+  {"level": "TH", "question": "Trong quy trình tạo hiệu ứng chuyển trang cho một trang chiếu, thao tác nào cần được thực hiện ĐẦU TIÊN?", "options": ["Chọn trang chiếu muốn tạo hiệu ứng", "Nháy chuột chọn hiệu ứng trên dải lệnh Transitions", "Nhấn phím F5 để trình chiếu thử", "Nháy chuột chọn dải lệnh Animations"], "answer": 0, "explanation": "Thao tác đầu tiên luôn là chọn trang chiếu muốn tạo hiệu ứng, sau đó mới truy cập dải lệnh Transitions để chọn kiểu hiệu ứng."},
+  {"level": "TH", "question": "Sự khác biệt căn bản giữa hiệu ứng trong dải lệnh Transitions và hiệu ứng trong dải lệnh Animations là gì?", "options": ["Transitions dùng để chèn hình ảnh, còn Animations dùng để chèn các đoạn văn bản nghệ thuật vào trang chiếu.", "Transitions tạo hiệu ứng cho trang chiếu xuất hiện, còn Animations tạo hiệu ứng cho các đối tượng trên trang chiếu.", "Transitions chỉ hoạt động khi nhấn phím F5, còn Animations giúp bài trình chiếu tự động chạy mà không cần sử dụng bất kỳ thao tác nháy chuột nào từ người dùng.", "Transitions dùng để thay đổi màu sắc của trang chiếu, còn Animations dùng để lưu tệp trình chiếu."], "answer": 1, "explanation": "Transitions là hiệu ứng chuyển trang (toàn bộ trang chiếu), trong khi Animations là hiệu ứng cho các đối tượng (văn bản, hình ảnh) bên trong trang chiếu."},
+  {"level": "TH", "question": "Nhóm lệnh chứa các biểu tượng hiệu ứng chuyển trang như Fade, Push, Wipe trên dải lệnh Transitions có tên là gì?", "options": ["Timing", "Preview", "Transition to This Slide", "Slide Show"], "answer": 2, "explanation": "Các mẫu hiệu ứng chuyển trang nằm trong nhóm lệnh Transition to This Slide trên dải lệnh Transitions."},
+  {"level": "TH", "question": "Khi nháy chuột vào nút biểu tượng mũi tên xuống (More) ở góc dưới nhóm lệnh Transition to This Slide, màn hình sẽ hiển thị thông tin gì?", "options": ["Danh sách các phông chữ có thể dùng", "Bảng màu nền dành cho trang chiếu", "Cửa sổ quản lý các tệp đã lưu", "Danh sách đầy đủ tất cả các kiểu hiệu ứng chuyển trang"], "answer": 3, "explanation": "Nút biểu tượng mũi tên xuống (More) giúp mở rộng và hiển thị đầy đủ danh sách các kiểu hiệu ứng chuyển trang có sẵn."},
+  {"level": "TH", "question": "Phím tắt nào trên bàn phím được sử dụng để bắt đầu trình chiếu bài bài trình chiếu từ trang chiếu đầu tiên?", "options": ["F5", "F1", "F12", "Enter"], "answer": 0, "explanation": "Phím F5 là phím tắt dùng để khởi động chế độ trình chiếu từ trang chiếu đầu tiên."},
+  {"level": "VD", "question": "Học sinh mở bài trình chiếu gồm 4 trang, chọn Trang 2, mở dải lệnh Transitions và chọn hiệu ứng Push. Hiện tượng gì sẽ xảy ra khi trình chiếu bài học?", "options": ["Tất cả 4 trang chiếu đều xuất hiện với hiệu ứng Push.", "Chỉ Trang 2 xuất hiện với hiệu ứng Push khi chuyển từ Trang 1 sang Trang 2.", "Trang 1 và Trang 2 xuất hiện với hiệu ứng Push.", "Toàn bộ các đối tượng hình ảnh và văn bản bên trong Trang 2 sẽ tự động chuyển động theo dạng Push liên tục mà không dừng lại trong suốt quá trình thuyết trình."], "answer": 1, "explanation": "Vì chỉ chọn Trang 2 để đặt hiệu ứng Push nên hiệu ứng này chỉ diễn ra khi chuyển tiếp từ Trang 1 sang Trang 2."},
+  {"level": "VD", "question": "Bạn Bình muốn chọn hiệu ứng chuyển trang cho Trang 3 nhưng khi quan sát màn hình, bạn không thấy nhóm biểu tượng hiệu ứng đâu. Bạn Bình cần nháy chuột vào đâu để hiển thị danh sách hiệu ứng?", "options": ["Dải lệnh Home", "Tổ hợp phím Ctrl + S", "Dải lệnh Transitions", "Biểu tượng đĩa mềm"], "answer": 2, "explanation": "Bình cần nháy chọn dải lệnh Transitions để màn hình hiển thị nhóm lệnh chứa các biểu tượng hiệu ứng chuyển trang."},
+  {"level": "VD", "question": "Bạn Thảo muốn cài đặt hiệu ứng Wipe cho Trang 1, hiệu ứng Fade cho Trang 2 và hiệu ứng Zoom cho Trang 3 trong cùng một bài trình chiếu. Thảo cần thực hiện các thao tác nào?", "options": ["Chọn tất cả các trang chiếu cùng lúc rồi nháy chọn lần lượt các hiệu ứng Wipe, Fade, Zoom.", "Chọn Trang 1, áp dụng hiệu ứng Wipe rồi phần mềm sẽ tự động gán Fade cho Trang 2 và Zoom cho Trang 3.", "Chọn dải lệnh Design, nháy chọn mẫu giao diện có sẵn thì các trang chiếu sẽ tự động nhận các hiệu ứng Wipe, Fade và Zoom theo đúng thứ tự mong muốn.", "Chọn lần lượt từng trang chiếu và chọn hiệu ứng tương ứng cho trang đó trên dải lệnh Transitions."], "answer": 3, "explanation": "Để đặt các hiệu ứng khác nhau cho các trang chiếu, phải chọn từng trang chiếu một và gán hiệu ứng tương ứng cho trang đó."},
+  {"level": "VD", "question": "Trong lúc kiểm tra bài trình chiếu, Nam phát hiện Trang 4 có hiệu ứng chuyển trang không phù hợp và muốn hủy bỏ hiệu ứng của riêng Trang 4 này. Nam cần thực hiện các bước nào?", "options": ["Chọn Trang 4 -> chọn dải lệnh Transitions -> chọn None", "Chọn Trang 4 -> nhấn phím Delete trên bàn phím", "Chọn Trang 4 -> chọn dải lệnh Home -> chọn Cut", "Chọn Trang 4 -> chọn dải lệnh Transitions -> chọn F5"], "answer": 0, "explanation": "Để bỏ hiệu ứng chuyển trang của một trang cụ thể, ta chọn trang đó, vào dải lệnh Transitions và chọn kiểu hiệu ứng None."},
+  {"level": "VD", "question": "Một học sinh chọn Trang 1, vào dải lệnh Transitions chọn hiệu ứng Shape. Ngay sau đó học sinh lại chọn hiệu ứng Box cho Trang 1 rồi nhấn phím F5 để trình chiếu. Kết quả xuất hiện trên Trang 1 là gì?", "options": ["Cả hai hiệu ứng Shape và Box cùng xuất hiện đồng thời", "Chỉ có hiệu ứng Box xuất hiện", "Chỉ có hiệu ứng Shape xuất hiện", "Trang 1 xuất hiện bình thường không có hiệu ứng"], "answer": 1, "explanation": "Mỗi trang chiếu chỉ giữ một kiểu hiệu ứng duy nhất tại một thời điểm. Thao tác chọn hiệu ứng Box sau cùng đã đè lên và thay thế hiệu ứng Shape chọn trước đó."},
+  {"level": "VD", "question": "Bạn Tuấn đã chọn hiệu ứng Wipe cho Trang 2. Tuấn muốn thay đổi để hiệu ứng Wipe quét từ trái sang phải thay vì quét từ dưới lên trên. Tuấn cần sử dụng nút lệnh nào?", "options": ["Reorder Animation trên dải lệnh Animations", "Reset trên dải lệnh Home", "Effect Options trên dải lệnh Transitions", "Slide Master trên dải lệnh View"], "answer": 2, "explanation": "Nút lệnh Effect Options trên dải lệnh Transitions cho phép người dùng đổi hướng quét (từ trái sang, từ phải sang,...) cho hiệu ứng chuyển trang đã chọn."},
+  {"level": "VD", "question": "Sau khi hoàn thành việc chèn các hiệu ứng chuyển trang sinh động cho toàn bộ bài thuyết trình, thao tác nào dưới đây giúp học sinh lưu lại kết quả bài làm để không bị mất dữ liệu khi tắt máy?", "options": ["Nhấn phím F5 trên bàn phím", "Nháy chuột chọn dải lệnh Transitions", "Nháy đúp chuột vào trang chiếu thứ nhất", "Nháy chuột vào nút lệnh Save (hoặc nhấn tổ hợp phím Ctrl + S)"], "answer": 3, "explanation": "Nút lệnh Save (hoặc tổ hợp phím Ctrl + S) có chức năng lưu lại toàn bộ các chỉnh sửa đã làm vào tệp trình chiếu."},
+  {"level": "VD", "question": "Một bài trình chiếu gồm 3 trang. Học sinh cài hiệu ứng Fade cho Trang 1, hiệu ứng Push cho Trang 2, còn Trang 3 giữ nguyên không thao tác gì. Khi nhấn F5 trình chiếu từ Trang 1 đến Trang 3, Trang 3 sẽ xuất hiện như thế nào?", "options": ["Trang 3 xuất hiện bình thường (không có hiệu ứng chuyển trang).", "Trang 3 tự động xuất hiện với hiệu ứng Push giống Trang 2.", "Màn hình báo lỗi hệ thống và dừng trình chiếu ngay tại Trang 2.", "Trang 3 tự động áp dụng hiệu ứng Fade của Trang 1 do quy định mặc định của phần mềm trình chiếu khi người dùng bỏ trống không cài đặt hiệu ứng."], "answer": 0, "explanation": "Trang chiếu không cài đặt hiệu ứng chuyển trang sẽ hiển thị bình thường khi chuyển tiếp đến trang đó (không có hiệu ứng chuyển trang)."}
+];
+
+// ===== CẤU HÌNH =====
+const PLAN = ["NB","NB","NB","NB","TH","TH","TH","VD","VD","VD"]; // mức độ theo từng câu
+const MISS = 2; // số lần được phép trả lời sai (sai lần thứ 3 thì kết thúc)
+const SAFE = 5, GIFT_RATE = 0.3, MAX = 10;
+const LV = {NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+
+// ===== KIỂM TRA DỮ LIỆU (handlers theo AGENTS.md) =====
+const okIdx=(a,n)=>Number.isInteger(a)&&a>=0&&a<n;
+const handlers = {
+  multiple:{validate:q=>Array.isArray(q.options)&&q.options.length>=2&&okIdx(q.answer,q.options.length),check:(q,u)=>u===q.answer},
+  truefalse:{validate:q=>Array.isArray(q.options)&&q.options.length===2&&okIdx(q.answer,2),check:(q,u)=>u===q.answer}
+};
+function validQuestions(){
+  const out=[];
+  JSON.parse(JSON.stringify(questions)).forEach((q,i)=>{
+    const t=q.type||"multiple",h=handlers[t];
+    if(!["NB","TH","VD"].includes(q.level)) return console.warn("Câu "+(i+1)+": thiếu hoặc sai mức độ, bỏ qua");
+    if(!h) return console.warn("Câu "+(i+1)+": loại '"+t+"' chưa được hỗ trợ, bỏ qua");
+    if(typeof q.question!=="string"||!h.validate(q)) return console.warn("Câu "+(i+1)+": dữ liệu không hợp lệ, bỏ qua");
+    q.type=t;out.push(q);
+  });
+  return out;
+}
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+// Xáo lựa chọn bằng ánh xạ chỉ số, cập nhật answer (không so sánh chuỗi)
+function shuffleOptions(q){
+  if(q.type!=="multiple") return q;
+  const order=shuf(q.options.map((_,i)=>i));
+  q.options=order.map(i=>q.options[i]);q.answer=order.indexOf(q.answer);return q;
+}
+
+// ===== ÂM THANH (tạo bằng code) =====
+let AC,mute=false;
+function tone(f,d=.2,type="sine",v=.15,delay=0){
+  if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
+const sfx={
+  click:()=>tone(660,.1,"triangle"),
+  lock:()=>{[0,.25,.5,.75].forEach(d=>tone(110,.2,"sawtooth",.12,d))},
+  ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.35,"triangle",.18,i*.12)),
+  bad:()=>[300,220,150].forEach((f,i)=>tone(f,.4,"sawtooth",.15,i*.2)),
+  gift:()=>[784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,"square",.1,i*.09)),
+  tick:()=>tone(900,.05,"square",.06)
+};
+
+// ===== GIỌNG ĐỌC TIẾNG VIỆT =====
+// Ưu tiên giọng tiếng Việt có sẵn trong trình duyệt/hệ điều hành; nếu máy chưa có thì dùng giọng Google (cần Internet).
+let voiceOn=true,viVoice=null,audio=null,ttsId=0,warned=false;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;
+  const v=speechSynthesis.getVoices().filter(x=>/^vi([-_]|$)/i.test(x.lang)||/vietnam|việt/i.test(x.name));
+  viVoice=v.find(x=>/natural|online/i.test(x.name))||v[0]||null;
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim()};
+function chunk(t){
+  const out=[];
+  t.split(/(?<=[.!?;:])\s+/).forEach(x=>{while(x.length>170){let k=x.lastIndexOf(" ",170);if(k<50)k=170;out.push(x.slice(0,k));x=x.slice(k).trim()}if(x)out.push(x)});
+  return out;
+}
+function quiet(){ttsId++;if(audio){audio.pause();audio=null}if(hasTTS)speechSynthesis.cancel()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),7000)}
+function speak(t){
+  if(!voiceOn)return;
+  quiet();const my=ttsId,parts=chunk(plain(t));
+  setTimeout(()=>{
+    if(my!==ttsId)return;
+    pickVoice();
+    if(viVoice){
+      parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);try{u.voice=viVoice}catch(e){}u.lang=viVoice.lang;u.rate=.95;speechSynthesis.speak(u)});
+    }else{
+      if(!warned){warned=true;toast("🗣 Máy chưa có giọng tiếng Việt, đang dùng giọng Google (cần Internet)")}
+      let i=0;const next=()=>{if(my!==ttsId||i>=parts.length)return;audio=new Audio("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(parts[i++]));audio.onended=next;audio.onerror=next;audio.play().catch(()=>next())};next();
+    }
+  },80);
+}
+function readQ(){
+  const q=G.list[G.i],vis=k=>!document.querySelector('.ans[data-k="'+k+'"]').classList.contains("gone");
+  speak("Câu hỏi số "+(G.i+1)+". "+q.question+". "+q.options.map((o,k)=>vis(k)?"Đáp án "+"ABCD"[k]+": "+o:"").join(". "));
+}
+// ===== HIỆU ỨNG NỀN & PHÁO GIẤY =====
+const bg=document.getElementById("bg"),fx=document.getElementById("fx"),bx=bg.getContext("2d"),fc=fx.getContext("2d");
+let stars=[],parts=[];
+function resize(){
+  bg.width=fx.width=innerWidth;bg.height=fx.height=innerHeight;
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform="translate(-50%,-50%) scale("+s+")";
+  stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.6+.1,p:Math.random()*6}));
+}
+function confetti(n=160,x=innerWidth/2,y=innerHeight/2){
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*26,vy:Math.random()*-22-4,g:.5,c:`hsl(${Math.random()*360},90%,60%)`,s:Math.random()*12+6,r:Math.random()*6,l:130});
+}
+function loop(t){
+  bx.clearRect(0,0,bg.width,bg.height);
+  const gr=bx.createRadialGradient(bg.width/2,bg.height*.4,50,bg.width/2,bg.height/2,bg.width*.7);
+  gr.addColorStop(0,"#2a1a8a");gr.addColorStop(.6,"#0a1450");gr.addColorStop(1,"#030618");bx.fillStyle=gr;bx.fillRect(0,0,bg.width,bg.height);
+  for(let i=0;i<6;i++){const W=bg.width,H=bg.height,x=W*(i+.5)/6,sw=Math.sin(t/1800+i*1.3)*W*.12,g2=bx.createLinearGradient(x,0,x+sw,H);g2.addColorStop(0,i%2?"rgba(120,160,255,.28)":"rgba(190,110,255,.26)");g2.addColorStop(1,"rgba(0,0,0,0)");bx.fillStyle=g2;bx.beginPath();bx.moveTo(x-20,0);bx.lineTo(x+20,0);bx.lineTo(x+sw+W*.07,H);bx.lineTo(x+sw-W*.07,H);bx.fill()}
+  for(let k=1;k<=4;k++){bx.strokeStyle="rgba(80,200,255,"+(.55-k*.1)+")";bx.lineWidth=4;bx.beginPath();bx.ellipse(bg.width/2,bg.height*1.02,bg.width*.12*k,bg.height*.035*k,0,0,7);bx.stroke()}
+  stars.forEach(s=>{s.y+=s.s;if(s.y>bg.height)s.y=0;bx.globalAlpha=.5+.5*Math.sin(t/400+s.p);bx.fillStyle="#fff";bx.beginPath();bx.arc(s.x,s.y,s.r,0,7);bx.fill()});
+  bx.globalAlpha=1;
+  fc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=.2;p.l--;fc.save();fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;fc.globalAlpha=Math.min(1,p.l/30);fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore()});
+  requestAnimationFrame(loop);
+}
+
+// ===== TRẠNG THÁI TRÒ CHƠI =====
+const $=id=>document.getElementById(id);
+let G;
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function newGame(){
+  const pool=validQuestions(),by={NB:[],TH:[],VD:[]};
+  pool.forEach(q=>by[q.level].push(q));Object.values(by).forEach(shuf);
+  const need={NB:0,TH:0,VD:0};PLAN.forEach(l=>need[l]++);
+  for(const l in need) if(by[l].length<need[l]){alert("Chưa đủ câu hỏi mức "+LV[l]+" (cần "+need[l]+", có "+by[l].length+").");return}
+  const list=PLAN.map(l=>shuffleOptions(by[l].shift()));
+  G={list,by,i:0,score:0,used:{},state:"idle",sel:-1,wrong:[],correct:0,miss:0};
+  document.querySelectorAll(".help").forEach(h=>h.classList.remove("used"));
+  show("game");renderLadder();loadQ();
+}
+const hearts=()=>{$("lv").textContent="❤️".repeat(Math.max(0,MISS-G.miss))||"—"};
+function renderLadder(){
+  $("ladder").innerHTML=PLAN.map((_,k)=>10-k).map(n=>`<div class="step ${n===SAFE?"safe":""} ${n<=G.i?"done":""} ${n===G.i+1?"now":""}"><i>${n}</i><span>${n===SAFE?"🛡 ":""}${n} điểm</span></div>`).join("");
+}
+function loadQ(){
+  const q=G.list[G.i];G.state="idle";G.sel=-1;
+  $("qin").innerHTML=q.question;$("qin").style.fontSize=(q.question.length>150?44:q.question.length>100?52:60)+"px";$("qtab").textContent="CÂU HỎI SỐ "+(G.i+1)+" • "+LV[q.level].toUpperCase();$("qn").textContent=(G.i+1)+" / "+PLAN.length;
+  $("answers").innerHTML=q.options.map((o,k)=>`<button class="ans ${o.length>95?"xxl":o.length>65?"xl":o.length>38?"long":""}" data-k="${k}"><div class="in"><b>${"ABCD"[k]}.</b><span>${o}</span></div></button>`).join("");
+  $("panel").classList.remove("on");$("game").classList.remove("pan");$("sc").textContent="⭐ "+G.score+"/"+MAX;renderLadder();hearts();
+  cast("host","talk");cast("me","");setTimeout(()=>{if(G.state==="idle")readQ()},700);setTimeout(()=>{if(G.state==="idle")cast("host","")},3500);
+}
+function pick(k){
+  if(G.state!=="idle"&&G.state!=="sel")return;
+  const b=document.querySelector(`.ans[data-k="${k}"]`);if(!b||b.classList.contains("gone"))return;
+  if(G.sel===k)return;
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  G.sel=k;G.state="sel";b.classList.add("sel");sfx.click();cast("me","think");
+  document.querySelectorAll(".cf").forEach(x=>x.remove());b.querySelector(".in").insertAdjacentHTML("beforeend","<span class=\"cf\">✔ XÁC NHẬN</span>");
+}
+function lock(){
+  if(G.state!=="sel")return;G.state="lock";quiet();sfx.lock();document.querySelectorAll(".cf").forEach(x=>x.remove());
+  setTimeout(reveal,2200);
+}
+function reveal(){
+  const q=G.list[G.i],ok=handlers[q.type].check(q,G.sel),A=document.querySelectorAll(".ans");
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  A[q.answer].classList.add("ok");
+  if(ok){G.score=Math.min(MAX,G.score+1);G.correct++;sfx.ok();confetti(120);cast("me","ok");cast("host","ok")}
+  else{cast("me","bad");cast("host","");A[G.sel].classList.add("bad");sfx.bad();G.miss++;G.wrong.push({q:q.question,right:q.options[q.answer],exp:q.explanation})}
+  G.ok=ok;G.state="done";hearts();$("sc").textContent="⭐ "+G.score+"/"+MAX;
+  setTimeout(()=>Math.random()<GIFT_RATE?gift():panel(),1800);
+}
+function panel(){
+  const q=G.list[G.i],last=G.i===PLAN.length-1;
+  const over=G.miss>MISS,left=MISS-G.miss;
+  $("exp").innerHTML=(G.ok?"✅ <b>Chính xác!</b> ":"❌ <b>Chưa đúng.</b> Đáp án: <b>"+"ABCD"[q.answer]+"</b>. "+(over?"Bạn đã sai quá "+MISS+" lần. ":"Bạn còn <b>"+left+"</b> lần được sai. "))+(q.explanation||"");
+  $("next").textContent=(over||last)?"Xem kết quả ▶":"Câu tiếp theo ▶";
+  $("panel").classList.add("on");$("game").classList.add("pan");G.state="panel";speak($("exp").innerHTML);
+}
+function advance(){
+  if(G.state!=="panel")return;quiet();
+  if(G.miss>MISS||G.i===PLAN.length-1)return finish();
+  G.i++;loadQ();
+}
+function finish(){
+  // Mốc an toàn: đã qua câu 5 thì giữ tối thiểu 5 điểm khi trả lời sai
+  let s=G.score;if(G.miss>MISS&&G.i>=SAFE&&s<SAFE)s=SAFE;
+  G.score=s;show("end");exitFs();quiet();speak("Kết thúc trò chơi. Bạn đạt "+s+" điểm trên "+MAX+" điểm.");
+  $("es").textContent=s+"/"+MAX;
+  $("et").textContent=s===MAX?"TRIỆU PHÚ XUẤT SẮC!":s>=8?"Rất xuất sắc!":s>=5?"Làm tốt lắm!":"Cố gắng lên nhé!";
+  $("eo").textContent=s>=8?"🏆":s>=5?"🎉":"💪";
+  $("em").textContent="Trả lời đúng "+G.correct+" câu, sai "+G.miss+" câu"+(s>G.correct?", nhận thêm quà/mốc an toàn":"")+".";
+  $("wl").innerHTML=G.wrong.length?"<b>Câu cần ôn lại:</b><br>"+G.wrong.map(w=>"• "+w.q+" → <b>"+w.right+"</b>").join("<br>"):"";
+  if(s>=5){sfx.ok();[.3,.7,.5].forEach((x,i)=>setTimeout(()=>confetti(150,innerWidth*x,innerHeight*.4),i*500))}
+}
+// ===== QUÀ TẶNG =====
+function overlay(html){$("ov").innerHTML=html;$("ov").classList.add("on")}
+function closeOv(){$("ov").classList.remove("on");$("ov").innerHTML=""}
+function gift(){
+  G.state="gift";overlay('<h2>🎁 Bạn nhận được một hộp quà!</h2><div id="gift">🎁</div><p>Bấm vào hộp quà để mở</p>');
+  $("gift").onclick=()=>{
+    sfx.gift();speak("Chúc mừng! Bạn nhận được một điểm thưởng.");const full=G.score>=MAX;G.score=Math.min(MAX,G.score+1);$("sc").textContent="⭐ "+G.score+"/"+MAX;
+    overlay('<div class="big">+1</div><h2>'+(full?"Điểm đã đạt tối đa 10!":"điểm thưởng!")+'</h2><button class="btn sm" id="okg">Tuyệt vời ▶</button>');
+    confetti(220,innerWidth/2,innerHeight/2);$("okg").onclick=()=>{closeOv();panel()}
+  };
+}
+// ===== TRỢ GIÚP =====
+function help(h){
+  const btn=document.querySelector(`.help[data-h="${h}"]`);
+  if(G.state!=="idle"&&G.state!=="sel"||btn.classList.contains("used"))return;
+  if(h==="5050"){
+    const q=G.list[G.i],w=shuf(q.options.map((_,i)=>i).filter(i=>i!==q.answer)).slice(0,q.options.length-2);
+    w.forEach(i=>document.querySelector(`.ans[data-k="${i}"]`).classList.add("gone"));
+    if(w.includes(G.sel)){G.sel=-1;G.state="idle"}
+    setTimeout(readQ,300);
+  }else if(h==="swap"){
+    const l=G.list[G.i].level,n=G.by[l].shift();
+    if(!n){alert("Hết câu hỏi để đổi!");return}
+    G.list[G.i]=shuffleOptions(n);loadQ();
+  }else return timer(h,btn);
+  btn.classList.add("used");sfx.click();
+}
+function timer(h,btn){
+  const cls=h==="class",prev=G.state;G.state="help";quiet();
+  overlay("<h2>"+(cls?"🏫 Hỏi cả lớp":"🤝 Hỏi người tin tưởng")+"</h2><p>"+(cls?"Cả lớp cùng bàn bạc rồi giơ thẻ A/B/C/D. Đáp án nào nhiều bạn chọn nhất?":"Người chơi chọn một người mình tin tưởng để hỏi ý kiến.")+"</p>"+(cls?"":'<input id="who" placeholder="Tên người được hỏi (không bắt buộc)">')+'<div id="cd">30</div><button class="btn sm" id="stop" style="margin-top:20px">Xong ▶</button>');
+  btn.classList.add("used");let t=30;
+  const iv=setInterval(()=>{t--;$("cd").textContent=t;if(t<=5){$("cd").classList.add("low");sfx.tick()}if(t<=0)end()},1000);
+  function end(){clearInterval(iv);closeOv();G.state=G.sel>=0?"sel":"idle"}
+  $("stop").onclick=end;
+}
+// ===== NHÂN VẬT: người hỏi & người trả lời (bấm vào khung để thay bằng ảnh thật) =====
+const AV=(skin,hair,shirt,body,head)=>`<svg viewBox="0 0 200 220"><path d="M20 220c0-55 35-80 80-80s80 25 80 80z" fill="${shirt}"/><path d="M85 140l15 25 15-25z" fill="#fff"/>${body}<rect x="88" y="115" width="24" height="30" fill="${skin}"/><circle cx="100" cy="85" r="52" fill="${skin}"/><path d="M48 80c0-45 30-62 55-62s50 20 49 62c-10-25-30-35-52-35s-42 10-52 35z" fill="${hair}"/>${head}<circle cx="80" cy="90" r="6" fill="#222"/><circle cx="120" cy="90" r="6" fill="#222"/><path d="M70 76q10-8 20 0M110 76q10-8 20 0" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse class="mouth" cx="100" cy="114" rx="14" ry="7" fill="#7a1f1f"/></svg>`;
+const cast=(w,m)=>{$(w).dataset.m=m};
+[["host",AV("#f1c9a0","#2b2b2b","#1b1b2f",'<path d="M100 152l-22-12v24zM100 152l22-12v24z" fill="#e02b2b"/>',"")],
+ ["me",AV("#e8b98a","#5a2d0c","#2e9d5b","",'<path d="M50 85a50 50 0 0 1 100 0" stroke="#ffb300" stroke-width="8" fill="none"/><rect x="42" y="80" width="14" height="30" rx="6" fill="#ffb300"/><rect x="144" y="80" width="14" height="30" rx="6" fill="#ffb300"/>')]
+].forEach(([id,svg])=>{
+  const f=$(id),inp=f.querySelector("input");f.insertAdjacentHTML("afterbegin",svg+'<img alt="">');
+  f.onclick=e=>{if(e.target!==inp)inp.click()};
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{const im=f.querySelector("img");im.src=r.result;im.style.display="block";f.querySelector("svg").style.display="none"};if(inp.files[0])r.readAsDataURL(inp.files[0])};
+});
+// ===== SỰ KIỆN =====
+const enterFs=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})};
+const exitFs=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})};
+$("go").onclick=()=>{sfx.click();enterFs();newGame()};
+$("again").onclick=()=>{sfx.click();enterFs();newGame()};
+$("next").onclick=advance;
+$("answers").onclick=e=>{if(e.target.closest(".cf"))return lock();const b=e.target.closest(".ans");if(b)pick(+b.dataset.k)};
+document.querySelectorAll(".help").forEach(h=>h.onclick=()=>help(h.dataset.h));
+$("rd").onclick=()=>{voiceOn=!voiceOn;$("rd").classList.toggle("off",!voiceOn);if(!voiceOn)quiet();else if(G&&(G.state==="idle"||G.state==="sel"))readQ()};
+$("snd").onclick=()=>{mute=!mute;$("snd").textContent=mute?"🔇":"🔊"};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$("fs").onclick=fs;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const k=e.key.toLowerCase();
+  if(k==="f")fs();else if(k==="m")$("snd").click();else if(k==="v")$("rd").click();else if(k==="r"&&G&&(G.state==="idle"||G.state==="sel"))readQ();
+  else if("abcd".includes(k)&&k.length===1)pick("abcd".indexOf(k));
+  else if(k==="enter"){if(G&&G.state==="sel")lock();else if(G&&G.state==="panel")advance();else if(!G||$("start").classList.contains("on"))$("go").click()}
+  else if("1234".includes(k)&&G&&$("game").classList.contains("on"))help(["5050","class","trust","swap"][+k-1]);
+});
+addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);show("start");
+</script></body></html>

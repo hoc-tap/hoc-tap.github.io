@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai là triệu phú – Tin học 4 bài 8</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:#050824;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fx{z-index:50}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;z-index:2}
+.screen{position:absolute;inset:0;display:none;padding:40px 60px}
+.screen.on{display:block;animation:fadein .6s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:110px;text-align:center;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 25px #ffb30088)}
+@keyframes shine{to{background-position:300%}}
+.btn{font-size:64px;font-weight:800;font-family:inherit;color:#1a1200;background:linear-gradient(#ffe27a,#ffb300);border:0;border-radius:60px;padding:26px 100px;cursor:pointer;box-shadow:0 0 40px #ffb300aa,0 8px 0 #a56a00;transition:.2s}
+.btn:hover{transform:translateY(-4px) scale(1.05)}
+.btn.sm{font-size:34px;padding:16px 46px}
+#start{text-align:center;padding-top:150px}
+#start p{font-size:38px;margin:30px 0 60px;color:#bcd}
+.orb{font-size:170px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-25px) rotate(6deg)}}
+.rules{display:flex;gap:26px;justify-content:center;margin-bottom:60px}
+.rules{flex-wrap:wrap}.rules div{background:#ffffff14;border:2px solid #ffffff33;border-radius:24px;padding:18px 26px;font-size:28px;backdrop-filter:blur(6px)}
+/* game – giao diện theo mẫu */
+#game{padding:0}
+.pill{display:flex;align-items:center;gap:16px;background:linear-gradient(#10267a,#050f40);border:3px solid #ffd54a;border-radius:34px;padding:10px 30px;box-shadow:0 0 25px #ffb30066}
+.pill small{display:block;font-size:20px;color:#bcd}.pill b{font-size:44px;color:#ffd54a;font-weight:800}.pill .coin{font-size:54px}
+#hud-l{position:absolute;left:60px;top:30px;display:flex;gap:14px}#hud-l .pill{padding:10px 22px}
+#hud-r{position:absolute;right:60px;top:30px;display:flex;gap:12px;align-items:center}
+.ic{width:70px;height:70px;border-radius:50%;border:3px solid #ffd54a;background:#0a1550;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 0 18px #ffb30055}
+#toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#000d;border:2px solid #ffd54a;border-radius:30px;padding:10px 30px;font-size:26px;z-index:30;opacity:0;transition:.4s;pointer-events:none}#toast.on{opacity:1}
+.ic.off{opacity:.45;filter:grayscale(1)}
+.logo{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:8px 80px 14px;border:5px solid #ffd54a;border-radius:90px/60px;background:radial-gradient(#1b3a8f,#050f40);box-shadow:0 0 45px #ffb300aa;text-align:center;line-height:1}
+.logo small{display:block;font-size:32px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 12px #38f}
+.logo b{display:block;font-size:80px;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+#helps{position:absolute;left:320px;top:175px;width:960px;display:flex;gap:16px}
+.help{flex:1;height:160px;border-radius:30px;border:3px solid #6cf;background:radial-gradient(#2a46c0,#0a1550);color:#fff;cursor:pointer;box-shadow:0 0 22px #3af6;transition:.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+.help i{font-style:normal;font-size:56px;line-height:1}.help b{font-size:46px;line-height:1}
+.help small{font-size:20px;font-weight:600;color:#cde;line-height:1.15;padding:4px 8px 0}
+.help:hover:not(.used){transform:scale(1.08);box-shadow:0 0 40px #6cf;border-color:#fff}
+.help.used{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.help.used::after{content:"✕";position:absolute;inset:0;font-size:120px;color:#f55;line-height:160px}
+#qtab{position:absolute;left:800px;transform:translateX(-50%);top:385px;z-index:3;padding:8px 56px;background:linear-gradient(#ffd54a,#e69500);color:#1a1200;font-size:30px;font-weight:900;white-space:nowrap;clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,24px 100%,0 50%)}
+#qbox{position:absolute;left:60px;top:422px;width:1480px;height:290px;padding:4px;background:linear-gradient(#9ef,#38f);clip-path:polygon(62px 0,calc(100% - 62px) 0,100% 50%,calc(100% - 62px) 100%,62px 100%,0 50%);filter:drop-shadow(0 0 20px #38f)}
+#qin{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 110px;font-size:48px;font-weight:700;line-height:1.3;background:linear-gradient(#10267a,#050f40);clip-path:polygon(60px 0,calc(100% - 60px) 0,100% 50%,calc(100% - 60px) 100%,60px 100%,0 50%)}
+#answers{position:absolute;left:60px;top:735px;width:1480px;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.ans{height:135px;padding:3px;background:#6cf;border:0;color:#fff;cursor:pointer;transition:.2s;font-family:inherit;clip-path:polygon(36px 0,calc(100% - 36px) 0,100% 50%,calc(100% - 36px) 100%,36px 100%,0 50%)}
+.ans .in{height:100%;display:flex;align-items:center;gap:18px;padding:0 64px;font-size:46px;font-weight:600;text-align:left;line-height:1.1;background:linear-gradient(#10267a,#050f40);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,34px 100%,0 50%)}
+.ans b{color:#ffb300;font-size:56px}.ans .in>span:first-of-type{flex:1}.cf{margin-left:auto;flex:none;background:#1a1200;color:#ffd54a;border-radius:40px;padding:8px 16px;font-size:21px;font-weight:900;white-space:nowrap;box-shadow:0 0 18px #0008;transition:.2s}.ans.sel .in{padding-right:36px;font-size:38px;line-height:1.05;gap:14px}.ans.sel.long .in{font-size:31px}.ans.xl .in{font-size:29px;line-height:1.05}.ans.xxl .in{font-size:25px;line-height:1.05}.ans.sel.xl .in{font-size:26px}.ans.sel.xxl .in{font-size:22px}.ans.xl b,.ans.xxl b{font-size:44px}.ans.sel.xl .cf,.ans.sel.xxl .cf{font-size:18px;padding:6px 12px}.ans.sel b{font-size:50px}.cf:hover{transform:scale(1.1);background:#000}.ans.long .in{font-size:37px;line-height:1.1}
+.ans:hover:not(:disabled){background:#fff;transform:scale(1.02)}
+.ans:hover:not(:disabled) .in{background:linear-gradient(#1c3fb0,#0a1a70)}
+.ans.sel,.ans.sel:hover{background:#fff;animation:blink .5s infinite alternate}
+.ans.sel .in,.ans.sel:hover .in{background:linear-gradient(#ffd54a,#e69500);color:#1a1200}.ans.sel b{color:#1a1200}
+@keyframes blink{to{filter:brightness(1.35)}}
+.ans.ok{background:#fff;animation:pop .6s,blink .5s infinite alternate}
+.ans.ok .in{background:linear-gradient(#3ddc6b,#0c8a35)}.ans.ok b{color:#fff}
+@keyframes pop{40%{transform:scale(1.1)}}
+.ans.bad{background:#fff;animation:shake .5s}
+.ans.bad .in{background:linear-gradient(#ff5b5b,#a00)}.ans.bad b{color:#fff}
+@keyframes shake{20%,60%{transform:translateX(-18px)}40%,80%{transform:translateX(18px)}}
+@keyframes pulse{to{box-shadow:0 0 50px #ffb300}}
+.ans.gone{visibility:hidden}
+#panel{position:absolute;left:320px;top:165px;width:960px;height:210px;display:none;flex-direction:row;justify-content:center;align-items:center;gap:24px;background:#000c;border:3px solid #ffd54a;border-radius:30px;padding:14px 28px;font-size:25px;z-index:5;animation:fadein .4s}
+#panel.on{display:flex}#panel span{line-height:1.35}
+#game.pan #helps{visibility:hidden}
+#ladder{position:absolute;left:1580px;top:160px;width:280px;height:870px;display:flex;flex-direction:column;gap:8px;padding:14px;background:#050f40cc;border:4px solid #ffd54a;border-radius:30px;box-shadow:0 0 35px #ffb30066}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:40px;font-size:27px;font-weight:700;color:#ffd54a;transition:.4s}
+.step i{width:46px;height:46px;border-radius:12px;border:2px solid #ffd54a;display:grid;place-items:center;font-style:normal;font-size:26px;color:#fff}
+.step span{flex:1;text-align:right}.step.safe{color:#fff}
+.step.done{color:#3f6;background:#3f62}
+.step.now{background:linear-gradient(#ffd54a,#e69500);color:#1a1200;transform:scale(1.06);box-shadow:0 0 30px #ffb300}.step.now i{color:#1a1200;border-color:#1a1200}
+/* overlay */
+#ov{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;text-align:center;padding:60px}
+#ov.on{display:flex;animation:fadein .4s}
+#ov h2{font-size:80px;color:#ffd54a;margin-bottom:20px}
+#ov p{font-size:40px;max-width:1300px;margin-bottom:30px;line-height:1.35}
+#ov input{font-size:38px;font-weight:600;font-family:inherit;padding:12px 28px;border-radius:30px;border:3px solid #6cf;background:#0a1550;color:#fff;text-align:center;margin-bottom:26px}
+#cd{font-size:230px;font-weight:900;color:#fff;text-shadow:0 0 40px #38f;line-height:1}
+#cd.low{color:#f55;animation:pulse .4s infinite alternate}
+.letters{display:flex;gap:30px;margin:10px 0 30px}
+.letters button{width:130px;height:130px;font-size:70px}
+#gift{font-size:300px;cursor:pointer;animation:drop 1s cubic-bezier(.3,1.6,.5,1),wob 1s 1s infinite;filter:drop-shadow(0 0 60px #ff0)}
+@keyframes drop{from{transform:translateY(-900px)}}
+@keyframes wob{25%{transform:rotate(-12deg) scale(1.1)}75%{transform:rotate(12deg) scale(1.1)}}
+.big{font-size:260px;font-weight:900;color:#ffd54a;text-shadow:0 0 50px #ffb300;line-height:1}
+#wl{max-height:250px;overflow:auto;font-size:26px;text-align:left;margin:10px auto 20px;width:1300px;color:#fbb}
+.fig .bub{position:absolute;top:2px;right:8px;font-size:34px;font-style:normal}
+.fig[data-m=talk] .bub::after{content:"💬"}.fig[data-m=think] .bub::after{content:"🤔"}
+.fig[data-m=ok] .bub::after{content:"😄"}.fig[data-m=bad] .bub::after{content:"😢"}
+.fig[data-m=ok]{animation:pop .6s}.fig[data-m=bad]{animation:shake .5s}.fig[data-m=think]{box-shadow:0 0 35px #ffb300}
+.mouth{transform-box:fill-box;transform-origin:center}
+.fig[data-m=talk] .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{to{transform:scaleY(.2)}}
+#cast{position:absolute;inset:0;pointer-events:none}
+.fig{position:absolute;width:230px;height:210px;pointer-events:auto;border:4px solid #6cf;border-radius:26px;background:radial-gradient(#3a58d8,#0a1550);box-shadow:0 0 30px #38f9;cursor:pointer;overflow:hidden;transition:.3s}
+#host{left:60px;top:165px}#me{left:1310px;top:165px}
+.fig:hover{transform:scale(1.04)}
+.fig svg{position:absolute;left:10px;top:14px;width:calc(100% - 20px);height:calc(100% - 54px)}
+.fig img{position:absolute;left:0;top:0;width:100%;height:calc(100% - 38px);object-fit:cover;display:none}
+.fig .bub{font-size:26px}.fig label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:#000b;border:2px solid #ffd54a;border-radius:20px;padding:3px 12px;font-size:17px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<canvas id="bg"></canvas><canvas id="fx"></canvas>
+<div id="stage">
+<section class="screen" id="start">
+ <div class="orb">💎</div>
+ <h1>AI LÀ TRIỆU PHÚ</h1>
+ <p>Tin học 4 – Bài 8: Định dạng văn bản trên trang chiếu</p>
+ <div class="rules"><div>🎯 10 câu – tối đa 10 điểm</div><div>❤️ Được sai 2 lần</div><div>🛡 Mốc an toàn câu 5</div><div>🎁 Có thể nhận quà +1 điểm</div><div>💡 4 quyền trợ giúp</div></div>
+ <button class="btn" id="go">▶ BẮT ĐẦU</button>
+ <p style="font-size:24px;margin-top:40px">Phím tắt: Bấm đáp án rồi bấm ✔ XÁC NHẬN (hoặc Enter) • A B C D chọn nhanh • 1–4 trợ giúp • F toàn màn hình • M tắt âm • V bật/tắt giọng đọc • R đọc lại câu hỏi</p>
+</section>
+<section class="screen" id="game">
+ <div id="hud-l"><div class="pill"><span class="coin">🪙</span><div><small>Điểm hiện tại</small><b id="sc">⭐ 0/10</b></div></div><div class="pill"><div><small>Được sai</small><b id="lv">❤️❤️</b></div></div></div>
+ <div class="logo"><small>AI LÀ</small><b>TRIỆU PHÚ</b></div>
+ <div id="hud-r"><div class="pill"><span class="coin">🏆</span><div><small>Câu hỏi số</small><b id="qn">1 / 10</b></div></div><button class="ic" id="rd" title="Giọng đọc (V) • đọc lại câu hỏi (R)">🗣</button><button class="ic" id="snd">🔊</button><button class="ic" id="fs">⛶</button></div>
+ <div id="cast">
+  <div class="fig" id="host" title="Bấm để đổi ảnh"><i class="bub"></i><label>🎤 Người hỏi</label><input type="file" accept="image/*" hidden></div>
+  <div class="fig" id="me" title="Bấm để đổi ảnh"><i class="bub"></i><label>🙋 Người trả lời</label><input type="file" accept="image/*" hidden></div>
+ </div>
+ <div id="helps">
+  <button class="help" data-h="5050"><b>50:50</b><small>Loại 2 đáp án</small></button>
+  <button class="help" data-h="class"><i>🏫</i><small>Hỏi cả lớp</small></button>
+  <button class="help" data-h="trust"><i>🤝</i><small>Hỏi người tin tưởng</small></button>
+  <button class="help" data-h="swap"><i>🔄</i><small>Đổi câu hỏi</small></button>
+ </div>
+ <div id="panel"><span id="exp"></span><button class="btn sm" id="next">Tiếp tục ▶</button></div>
+ <div id="qtab"></div><div id="qbox"><div id="qin"></div></div>
+ <div id="answers"></div>
+ <div id="ladder"></div>
+</section>
+<section class="screen" id="end" style="text-align:center;padding-top:70px">
+ <div class="orb" id="eo">🏆</div><h1 style="font-size:90px" id="et"></h1>
+ <div class="big" id="es"></div><p style="font-size:38px;margin:10px" id="em"></p>
+ <div id="wl"></div><button class="btn" id="again">🔁 CHƠI LẠI</button>
+</section>
+<div id="ov"></div><div id="toast"></div>
+</div>
+<script>
+// DỮ LIỆU CÂU HỎI — thay mảng này để sử dụng bộ câu hỏi mới.
+// level: NB (nhận biết) | TH (thông hiểu) | VD (vận dụng); answer là chỉ số đáp án đúng (từ 0).
+const questions = [
+  {"level": "NB", "question": "Để trang chiếu dễ đọc, dễ nhớ và đẹp hơn, em có thể làm gì với văn bản?", "options": ["Định dạng phông chữ, kiểu chữ, màu chữ và cỡ chữ", "Xoá hết văn bản", "Tắt phần mềm trình chiếu", "Đổi tên tệp"], "answer": 0, "explanation": "Em có thể thay đổi phông chữ, kiểu chữ, màu chữ và cỡ chữ để trang chiếu đẹp hơn."},
+  {"level": "NB", "question": "Các nút lệnh định dạng phông chữ, kiểu chữ, màu chữ, cỡ chữ nằm trong nhóm lệnh nào?", "options": ["Nhóm lệnh Paragraph", "Nhóm lệnh Font", "Nhóm lệnh Slides", "Nhóm lệnh Clipboard"], "answer": 1, "explanation": "Các nút lệnh định dạng chữ nằm trong nhóm lệnh Font của dải lệnh Home."},
+  {"level": "NB", "question": "Nhóm lệnh Font nằm trong dải lệnh nào?", "options": ["Dải lệnh Insert", "Dải lệnh Review", "Dải lệnh Home", "Dải lệnh View"], "answer": 2, "explanation": "Nhóm lệnh Font nằm trong dải lệnh Home."},
+  {"level": "NB", "question": "Nút lệnh Bullets dùng để làm gì?", "options": ["Đổi màu chữ", "Đổi cỡ chữ", "Lưu tệp", "Định dạng dấu đầu dòng"], "answer": 3, "explanation": "Nút lệnh Bullets dùng để định dạng gạch đầu dòng."},
+  {"level": "NB", "question": "Nút lệnh Bullets nằm trong nhóm lệnh nào?", "options": ["Nhóm lệnh Paragraph", "Nhóm lệnh Font", "Nhóm lệnh Slides", "Nhóm lệnh Clipboard"], "answer": 0, "explanation": "Nút lệnh Bullets nằm trong nhóm lệnh Paragraph của dải lệnh Home."},
+  {"level": "NB", "question": "Trước khi định dạng văn bản, em cần làm gì?", "options": ["Xoá phần văn bản", "Chọn phần văn bản cần định dạng", "Tắt máy tính", "Đổi tên tệp"], "answer": 1, "explanation": "Em cần chọn phần văn bản trước, sau đó chọn nút lệnh định dạng."},
+  {"level": "NB", "question": "Để chọn phần văn bản, em có thể thao tác như thế nào?", "options": ["Nhấn phím Caps Lock", "Nháy chuột vào nút X", "Kéo thả chuột từ đầu đến cuối phần văn bản", "Nhấn phím Esc"], "answer": 2, "explanation": "Em đặt con trỏ ở đầu rồi kéo thả chuột đến cuối phần văn bản."},
+  {"level": "NB", "question": "Nút lệnh B dùng để định dạng kiểu chữ nào?", "options": ["Kiểu chữ nghiêng", "Kiểu chữ gạch chân", "Màu chữ", "Kiểu chữ đậm"], "answer": 3, "explanation": "Nút lệnh B định dạng kiểu chữ đậm."},
+  {"level": "NB", "question": "Nút lệnh I dùng để định dạng kiểu chữ nào?", "options": ["Kiểu chữ nghiêng", "Kiểu chữ đậm", "Kiểu chữ gạch chân", "Cỡ chữ"], "answer": 0, "explanation": "Nút lệnh I định dạng kiểu chữ nghiêng."},
+  {"level": "NB", "question": "Nút lệnh U dùng để định dạng kiểu chữ nào?", "options": ["Kiểu chữ đậm", "Kiểu chữ gạch chân", "Kiểu chữ nghiêng", "Gạch đầu dòng"], "answer": 1, "explanation": "Nút lệnh U định dạng kiểu chữ gạch chân."},
+  {"level": "NB", "question": "Nút lệnh có hình chữ A gạch màu đỏ phía dưới dùng để định dạng gì?", "options": ["Cỡ chữ", "Phông chữ", "Màu chữ", "Gạch đầu dòng"], "answer": 2, "explanation": "Nút lệnh có chữ A gạch màu dùng để chọn màu chữ."},
+  {"level": "NB", "question": "Ô hiển thị số như 14, 24 dùng để thay đổi gì?", "options": ["Màu chữ", "Phông chữ", "Kiểu chữ đậm", "Cỡ chữ"], "answer": 3, "explanation": "Ô hiển thị số dùng để thay đổi cỡ chữ."},
+  {"level": "NB", "question": "Ô hiển thị tên như Arial, Times New Roman dùng để thay đổi gì?", "options": ["Phông chữ", "Cỡ chữ", "Màu chữ", "Gạch đầu dòng"], "answer": 0, "explanation": "Ô hiển thị tên như Arial, Times New Roman dùng để chọn phông chữ."},
+  {"level": "NB", "question": "Em dùng nút lệnh nào để có kiểu chữ đậm và nghiêng cho cụm từ?", "options": ["Nút lệnh B và U", "Nút lệnh B và I", "Nút lệnh I và U", "Nút lệnh U và A"], "answer": 1, "explanation": "Kiểu đậm dùng nút B, kiểu nghiêng dùng nút I."},
+  {"level": "NB", "question": "Em nháy chuột vào đâu để chọn các định dạng thích hợp cho nút lệnh?", "options": ["Nút X", "Nút Save", "Nút mũi tên bên phải nút lệnh", "Nút Minimize"], "answer": 2, "explanation": "Em nháy chuột vào nút mũi tên bên phải nút lệnh rồi chọn định dạng thích hợp."},
+  {"level": "NB", "question": "Để bỏ định dạng chữ đậm đã chọn, em làm thế nào?", "options": ["Nhấn phím Enter", "Nháy chuột vào nút X", "Nhấn phím Tab", "Nháy chuột vào nút lệnh B một lần nữa"], "answer": 3, "explanation": "Em nháy chuột vào nút lệnh tương ứng một lần nữa để bỏ định dạng."},
+  {"level": "NB", "question": "Em dùng lệnh nào để bỏ dấu đầu dòng đã chọn?", "options": ["Lệnh None", "Lệnh Open", "Lệnh Save", "Lệnh Copy"], "answer": 0, "explanation": "Em dùng lệnh None để bỏ dấu đầu dòng đã chọn."},
+  {"level": "NB", "question": "Để định dạng gạch đầu dòng, bước đầu tiên em làm gì?", "options": ["Lưu tệp", "Chọn phần văn bản cần định dạng", "Thoát phần mềm", "Xoá văn bản"], "answer": 1, "explanation": "Bước đầu tiên là chọn phần văn bản cần định dạng."},
+  {"level": "NB", "question": "Để mở một tệp trình chiếu đã lưu, em chọn lệnh nào trong bảng chọn File?", "options": ["Save", "Close", "Open", "Print"], "answer": 2, "explanation": "Em chọn lệnh Open trong bảng chọn File để mở tệp."},
+  {"level": "NB", "question": "Trong cửa sổ Open, sau khi chọn tệp em nháy chuột vào nút nào để mở?", "options": ["Nút lệnh Cancel", "Nút lệnh Tools", "Nút lệnh Copy", "Nút lệnh Open"], "answer": 3, "explanation": "Em nháy chuột vào nút lệnh Open để mở tệp."},
+  {"level": "NB", "question": "Để lưu tệp sau khi định dạng, em nháy chuột vào nút lệnh nào?", "options": ["Nút lệnh hình đĩa mềm (Save)", "Nút lệnh B", "Nút lệnh Bullets", "Nút lệnh U"], "answer": 0, "explanation": "Em nháy chuột vào nút lệnh Save để lưu tệp."},
+  {"level": "NB", "question": "Để thoát khỏi phần mềm trình chiếu, em nháy chuột vào nút nào?", "options": ["Nút Save", "Nút dấu X", "Nút Bullets", "Nút B"], "answer": 1, "explanation": "Em nháy chuột vào nút dấu X để thoát khỏi phần mềm."},
+  {"level": "NB", "question": "Việc định dạng văn bản trên trang chiếu nhằm mục đích gì?", "options": ["Làm bài khó đọc hơn", "Làm mất nội dung", "Trình bày bài trình chiếu rõ ràng và đẹp hơn", "Làm máy tính chạy chậm"], "answer": 2, "explanation": "Định dạng giúp bài trình chiếu rõ ràng và đẹp hơn."},
+  {"level": "NB", "question": "Để tiêu đề trang chiếu đẹp và dễ đọc hơn, em nên làm gì?", "options": ["Xoá hết tiêu đề", "Dùng chữ rất nhỏ cùng màu nền", "Để trang chiếu trống", "Dùng kiểu chữ đậm, nghiêng và màu chữ nổi bật"], "answer": 3, "explanation": "Định dạng chữ đậm, nghiêng và màu nổi bật giúp tiêu đề dễ đọc và đẹp hơn."},
+  {"level": "NB", "question": "Công cụ gạch đầu dòng giúp văn bản như thế nào?", "options": ["Các ý được trình bày rõ ràng, dễ theo dõi", "Chữ to hơn", "Chữ đổi màu", "Chữ biến mất"], "answer": 0, "explanation": "Gạch đầu dòng giúp các ý trên trang chiếu rõ ràng, dễ theo dõi."},
+  {"level": "NB", "question": "Để đổi phông chữ thành Times New Roman cho tiêu đề, em chọn phần nào?", "options": ["Ô tên tệp", "Ô phông chữ trong nhóm lệnh Font", "Thanh địa chỉ", "Nút Start"], "answer": 1, "explanation": "Phông chữ được chọn ở ô phông chữ trong nhóm lệnh Font."},
+  {"level": "NB", "question": "Để cỡ chữ lớn hơn cho tiêu đề, em sẽ thay đổi số nào ở ô cỡ chữ?", "options": ["Chọn số nhỏ hơn", "Xoá số", "Chọn số lớn hơn", "Gõ chữ"], "answer": 2, "explanation": "Số càng lớn thì chữ càng to."},
+  {"level": "NB", "question": "Để tiêu đề có phông Times New Roman, cỡ chữ 60, kiểu chữ đậm và nghiêng, em cần làm gì?", "options": ["Chọn phông Arial, cỡ 30, nháy nút U", "Chọn phông Times New Roman, cỡ 60, nháy nút U", "Chọn phông Arial, cỡ 60, nháy nút B và nút I", "Chọn phông Times New Roman, cỡ 60, nháy nút B và nút I"], "answer": 3, "explanation": "Cần chọn đúng phông chữ, cỡ chữ và các nút B (đậm), I (nghiêng)."},
+  {"level": "NB", "question": "Để danh sách địa danh có phông Arial, cỡ chữ 30 và gạch đầu dòng, em làm thế nào?", "options": ["Chọn phần văn bản, chọn phông Arial, cỡ 30 rồi chọn nút Bullets", "Chỉ chọn nút Bullets", "Chọn phông Arial, cỡ 30 rồi nháy nút B", "Chọn cỡ 60 rồi nháy nút U"], "answer": 0, "explanation": "Em chọn phần văn bản, định dạng phông, cỡ chữ rồi chọn nút Bullets để có gạch đầu dòng."},
+  {"level": "NB", "question": "Em có thể thay đổi những gì của văn bản trên trang chiếu?", "options": ["Chỉ thay đổi tên tệp", "Chỉ thay đổi tên máy tính", "Phông chữ, kiểu chữ, cỡ chữ, màu chữ và dấu đầu dòng", "Chỉ thay đổi màn hình"], "answer": 2, "explanation": "Em có thể thay đổi phông chữ, kiểu chữ, cỡ chữ, màu chữ và định dạng dấu đầu dòng."},
+  {"level": "TH", "question": "Mục đích chính của việc thay đổi phông chữ, màu chữ và cỡ chữ trên trang chiếu là gì?", "options": ["Giúp trang chiếu hiển thị nhiều hình ảnh động và âm thanh sinh động hơn.", "Làm cho văn bản trên trang chiếu trở nên dễ đọc, dễ nhớ và đẹp mắt hơn.", "Giúp máy tính lưu trữ tệp trình chiếu với dung lượng nhỏ hơn để chạy nhanh hơn khi thuyết trình trên lớp.", "Làm cho phần mềm trình chiếu tự động tìm kiếm thông tin trên mạng."], "answer": 1, "explanation": "Việc định dạng giúp văn bản trình bày rõ ràng, mang tính thẩm mỹ cao, từ đó người xem dễ dàng tiếp nhận thông tin."},
+  {"level": "TH", "question": "Nút lệnh tạo danh sách gạch đầu dòng (Bullets) nằm trong nhóm lệnh nào trên thanh công cụ?", "options": ["Nhóm lệnh Font của dải lệnh Home.", "Nhóm lệnh Clipboard của dải lệnh Insert.", "Nhóm lệnh Paragraph của dải lệnh Home.", "Nhóm lệnh Slides của dải lệnh Animations vì nó tạo ra các chấm tròn chuyển động liên tục."], "answer": 2, "explanation": "Công cụ Bullets dùng để định dạng đoạn văn, do đó nó được đặt trong nhóm Paragraph (Đoạn văn)."},
+  {"level": "TH", "question": "Trước khi muốn định dạng bất kỳ một phần văn bản nào trên trang chiếu, thao tác bắt buộc đầu tiên em phải làm là gì?", "options": ["Nháy đúp chuột vào giữa màn hình.", "Nháy chuột vào nút lưu tệp trước để không bị mất dữ liệu trong quá trình thay đổi kiểu chữ.", "Thay đổi màu nền của toàn bộ trang chiếu.", "Chọn phần văn bản cần định dạng."], "answer": 3, "explanation": "Máy tính cần biết em muốn thay đổi đoạn chữ nào trước khi áp dụng các lệnh định dạng lên chúng."},
+  {"level": "TH", "question": "Chữ cái nào trên thanh công cụ đại diện cho chức năng làm cho nét chữ trở nên đậm hơn bình thường?", "options": ["Chữ B", "Chữ I", "Chữ U", "Chữ A"], "answer": 0, "explanation": "Biểu tượng chữ B (viết tắt của Bold) dùng để định dạng kiểu chữ đậm."},
+  {"level": "VD", "question": "Bạn An muốn tiêu đề \"Quê hương\" nổi bật bằng cách vừa in đậm vừa in nghiêng. Sau khi bôi đen tiêu đề, bạn ấy cần nháy chuột vào những nút lệnh nào?", "options": ["Nút lệnh B và U", "Nút lệnh B và I", "Nút lệnh I và U", "Nút lệnh B và A"], "answer": 1, "explanation": "Nút B dùng để in đậm và nút I dùng để in nghiêng văn bản."},
+  {"level": "TH", "question": "Để bỏ đi các dấu chấm tròn ở đầu các dòng văn bản đã tạo trước đó, em cần chọn lệnh nào trong danh sách của nút lệnh Bullets?", "options": ["Lệnh Clear", "Lệnh Delete", "Lệnh None", "Lệnh Remove vì đây là lệnh chuyên dùng để xóa toàn bộ các định dạng đã được áp dụng trước đó trên trang chiếu."], "answer": 2, "explanation": "Lệnh None trong danh sách Bullets có chức năng hủy bỏ đánh dấu đầu dòng của đoạn văn đang chọn."},
+  {"level": "VD", "question": "Hoa đã nháy chuột vào nút màu chữ (chữ A có gạch đỏ bên dưới) nhưng dòng chữ \"Sông Hương\" trên trang chiếu vẫn giữ nguyên màu đen. Nguyên nhân chủ yếu nào dẫn đến tình trạng này?", "options": ["Phần mềm trình chiếu của Hoa đang bị lỗi không thể kết nối với hệ thống bảng màu của máy tính.", "Máy tính không hỗ trợ hiển thị màu đỏ cho phông chữ hiện tại.", "Hoa chưa nhấn nút lưu lại tệp văn bản.", "Hoa chưa bôi đen phần văn bản \"Sông Hương\" trước khi chọn màu."], "answer": 3, "explanation": "Nguyên tắc cơ bản khi định dạng là phải chọn (bôi đen) đối tượng cần thay đổi trước khi bấm nút lệnh."},
+  {"level": "TH", "question": "Nút lệnh có biểu tượng chữ \"I\" in nghiêng dùng để làm gì khi soạn thảo văn bản trên trang chiếu?", "options": ["Làm cho các chữ cái ngả nghiêng sang bên phải.", "Tạo ra đường gạch ngang ở giữa các chữ cái.", "Giúp các chữ cái được tạo bóng mờ phía sau để tăng thêm hiệu ứng không gian ba chiều cho văn bản.", "Tự động viết hoa chữ cái đầu tiên của câu."], "answer": 0, "explanation": "Nút lệnh I (Italic) có tác dụng định dạng đoạn chữ được chọn thành kiểu in nghiêng."},
+  {"level": "TH", "question": "Khi muốn có một đường kẻ mảnh nằm ngay bên dưới dòng tiêu đề, em sẽ sử dụng nút lệnh mang biểu tượng nào?", "options": ["Chữ A có gạch màu.", "Chữ U có gạch chân.", "Chữ B in đậm nét.", "Nút gạch đầu dòng."], "answer": 1, "explanation": "Chữ U (Underline) là nút lệnh chuyên dùng để tạo đường gạch chân dưới đoạn văn bản."},
+  {"level": "VD", "question": "Trên thanh công cụ định dạng, ô cỡ chữ đang hiển thị số 14. Nếu em nháy chuột vào mũi tên nhỏ cạnh số 14 và chọn số 24, điều gì sẽ xảy ra với văn bản đang được chọn?", "options": ["Kiểu chữ sẽ đổi sang phông chữ thứ 24 trong danh sách.", "Văn bản sẽ tự động chia thành 24 dòng bằng nhau để phù hợp với kích thước hiển thị trên màn hình trình chiếu.", "Chữ sẽ phóng to lên do cỡ chữ tăng từ 14 lên 24.", "Sẽ có 24 khoảng trắng được chèn vào giữa các từ."], "answer": 2, "explanation": "Nút lệnh hiển thị số dùng để thay đổi kích thước chữ. Số càng lớn, chữ hiển thị càng to."},
+  {"level": "TH", "question": "Thao tác nào đúng nhất để chọn (bôi đen) một cụm từ trên trang chiếu?", "options": ["Đặt con trỏ chuột ở cuối dòng rồi nhấn phím mũi tên đi xuống.", "Nháy chuột liên tục nhiều lần vào một khoảng trắng bất kỳ trên màn hình cho đến khi toàn bộ chữ chuyển sang màu xanh.", "Di chuyển chuột một vòng tròn bao quanh cụm từ đó.", "Kéo thả chuột từ chữ cái đầu tiên đến chữ cái cuối cùng của cụm từ."], "answer": 3, "explanation": "Thao tác kéo thả chuột qua phần văn bản là cách chuẩn xác để chọn đoạn văn bản cần định dạng."},
+  {"level": "VD", "question": "Để chuyển dòng chữ \"Lớp 4A\" đang từ cỡ chữ 20 sang cỡ chữ 30, em thực hiện theo trình tự nào dưới đây là đúng nhất?", "options": ["Bôi đen chữ \"Lớp 4A\" -> Nháy chuột vào mũi tên ở ô cỡ chữ -> Chọn số 30.", "Chọn cỡ chữ 30 -> Nhập chữ \"Lớp 4A\".", "Xóa chữ \"Lớp 4A\" đi -> Chọn cỡ chữ 30 -> Viết lại chữ \"Lớp 4A\".", "Bôi đen chữ \"Lớp 4A\" -> Nháy chuột vào ô vuông hiển thị tên phông chữ -> Tìm số 30 và nhấn chuột vào đó."], "answer": 0, "explanation": "Cần bôi đen văn bản trước, sau đó tìm đúng vị trí công cụ thay đổi cỡ chữ (ô chứa số) để điều chỉnh."},
+  {"level": "TH", "question": "Để mở một bài trình chiếu có tên \"Canh dep que huong\" đã lưu trên máy tính, em sẽ vào bảng chọn File và nháy chuột vào lệnh nào?", "options": ["Lệnh Save", "Lệnh Open", "Lệnh New", "Lệnh Close"], "answer": 1, "explanation": "Lệnh Open (Mở) có chức năng tìm và mở các tệp tin đã được lưu sẵn trong máy tính."},
+  {"level": "VD", "question": "Đang dùng phông chữ Calibri, bạn Minh muốn đổi sang phông chữ Times New Roman. Bạn ấy cần tìm kiếm tên phông chữ mới ở khu vực nào trên thanh công cụ?", "options": ["Ô chứa con số chỉ kích thước của chữ.", "Bảng danh sách các biểu tượng hình học nằm ở góc bên phải của màn hình vì phông chữ cũng là một dạng hình vẽ đặc biệt.", "Ô chữ nhật chứa dòng chữ \"Calibri\" nằm trong nhóm lệnh Font.", "Nút lệnh có hình bảng pha màu."], "answer": 2, "explanation": "Ô hiển thị tên phông chữ hiện tại chính là nơi cho phép bấm vào để chọn một phông chữ khác từ danh sách thả xuống."},
+  {"level": "TH", "question": "Nút lệnh dùng để thay đổi màu cho các chữ cái có đặc điểm nhận dạng như thế nào trên thanh công cụ?", "options": ["Có hình một cây bút vẽ và một hộp mực màu đen.", "Có hình chiếc đũa thần lấp lánh xung quanh chuyên dùng để biến đổi toàn bộ màu sắc của trang chiếu một cách tự động.", "Có hình một thùng sơn đang đổ mực ra ngoài.", "Có hình chữ A kèm một thanh màu (thường là màu đỏ) ngay bên dưới."], "answer": 3, "explanation": "Biểu tượng chữ A với dải màu bên dưới đại diện cho lệnh Font Color (Đổi màu chữ)."},
+  {"level": "VD", "question": "Trang chiếu của bạn Khoa có tiêu đề \"Đồi Vọng Cảnh\" màu xanh lá, in nghiêng và có gạch chân. Bạn ấy CHẮC CHẮN KHÔNG sử dụng nút lệnh nào trong quá trình định dạng tiêu đề này?", "options": ["Nút lệnh chữ B.", "Nút lệnh chữ I.", "Nút lệnh chữ U.", "Nút lệnh chữ A có vạch màu bên dưới."], "answer": 0, "explanation": "Tiêu đề không được in đậm, nên bạn Khoa không cần sử dụng nút lệnh chữ B."},
+  {"level": "TH", "question": "Để lưu lại những thay đổi vừa làm với tệp trình chiếu, em thường sử dụng biểu tượng nào ở góc trên cùng bên trái của cửa sổ phần mềm?", "options": ["Biểu tượng hình dấu X màu đỏ.", "Biểu tượng hình chiếc đĩa mềm.", "Biểu tượng hình ngôi nhà nhỏ đại diện cho trang chủ của máy tính để đưa mọi dữ liệu trở về trạng thái an toàn nhất.", "Biểu tượng thư mục mở."], "answer": 1, "explanation": "Biểu tượng chiếc đĩa mềm là nút lệnh Save, có chức năng lưu trữ lại các chỉnh sửa của tệp."},
+  {"level": "VD", "question": "Khi trình bày danh sách tên 5 cây cầu nổi tiếng trên một trang chiếu, công cụ nào sẽ giúp danh sách đó trông rõ ràng, mạch lạc và dễ phân biệt từng dòng nhất?", "options": ["Nút lệnh in nghiêng tất cả các tên cầu.", "Nút lệnh tô màu đỏ cho chữ đầu tiên.", "Nút lệnh gạch đầu dòng (Bullets) cho từng tên cầu.", "Nút lệnh thay đổi kích thước chữ của cây cầu thứ nhất to gấp đôi kích thước chữ của cây cầu thứ hai để tạo điểm nhấn đặc biệt."], "answer": 2, "explanation": "Công cụ Bullets tạo ra các dấu đầu dòng, giúp phân chia các mục trong một danh sách một cách rõ ràng và khoa học."},
+  {"level": "TH", "question": "Trong phần mềm trình chiếu, nhóm lệnh Font chứa các công cụ dùng để làm gì?", "options": ["Chèn hình ảnh và video.", "Thiết lập các hiệu ứng chuyển động cho văn bản bay lượn từ ngoài vào trong trang chiếu một cách bắt mắt.", "Lưu trữ tệp tin vào máy tính.", "Định dạng chữ viết (phông chữ, kiểu, cỡ, màu)."], "answer": 3, "explanation": "\"Font\" mang ý nghĩa là phông chữ, nhóm này tập trung tất cả các lệnh liên quan đến việc thay đổi hình thức của chữ viết."},
+  {"level": "VD", "question": "An đang viết nội dung về ba ngọn núi đẹp, bạn ấy muốn mỗi tên núi nằm trên một dòng riêng biệt, có một dấu chấm vuông đằng trước và chữ được in nghiêng. An cần kết hợp sử dụng hai công cụ nào?", "options": ["Công cụ Bullets và nút lệnh chữ I.", "Công cụ Bullets và nút lệnh chữ U.", "Nút lệnh chữ B và nút lệnh chữ I.", "Nút lệnh đổi màu chữ và nút lệnh đổi phông chữ sang định dạng đặc biệt có chứa các hình học sinh động để làm dấu đầu dòng."], "answer": 0, "explanation": "Dấu chấm vuông đằng trước dòng dùng công cụ Bullets, chữ in nghiêng dùng nút lệnh chữ I."}
+];
+
+// ===== CẤU HÌNH =====
+const PLAN = ["NB","NB","NB","NB","TH","TH","TH","VD","VD","VD"]; // mức độ theo từng câu
+const MISS = 2; // số lần được phép trả lời sai (sai lần thứ 3 thì kết thúc)
+const SAFE = 5, GIFT_RATE = 0.3, MAX = 10;
+const LV = {NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+
+// ===== KIỂM TRA DỮ LIỆU (handlers theo AGENTS.md) =====
+const okIdx=(a,n)=>Number.isInteger(a)&&a>=0&&a<n;
+const handlers = {
+  multiple:{validate:q=>Array.isArray(q.options)&&q.options.length>=2&&okIdx(q.answer,q.options.length),check:(q,u)=>u===q.answer},
+  truefalse:{validate:q=>Array.isArray(q.options)&&q.options.length===2&&okIdx(q.answer,2),check:(q,u)=>u===q.answer}
+};
+function validQuestions(){
+  const out=[];
+  JSON.parse(JSON.stringify(questions)).forEach((q,i)=>{
+    const t=q.type||"multiple",h=handlers[t];
+    if(!["NB","TH","VD"].includes(q.level)) return console.warn("Câu "+(i+1)+": thiếu hoặc sai mức độ, bỏ qua");
+    if(!h) return console.warn("Câu "+(i+1)+": loại '"+t+"' chưa được hỗ trợ, bỏ qua");
+    if(typeof q.question!=="string"||!h.validate(q)) return console.warn("Câu "+(i+1)+": dữ liệu không hợp lệ, bỏ qua");
+    q.type=t;out.push(q);
+  });
+  return out;
+}
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+// Xáo lựa chọn bằng ánh xạ chỉ số, cập nhật answer (không so sánh chuỗi)
+function shuffleOptions(q){
+  if(q.type!=="multiple") return q;
+  const order=shuf(q.options.map((_,i)=>i));
+  q.options=order.map(i=>q.options[i]);q.answer=order.indexOf(q.answer);return q;
+}
+
+// ===== ÂM THANH (tạo bằng code) =====
+let AC,mute=false;
+function tone(f,d=.2,type="sine",v=.15,delay=0){
+  if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
+const sfx={
+  click:()=>tone(660,.1,"triangle"),
+  lock:()=>{[0,.25,.5,.75].forEach(d=>tone(110,.2,"sawtooth",.12,d))},
+  ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.35,"triangle",.18,i*.12)),
+  bad:()=>[300,220,150].forEach((f,i)=>tone(f,.4,"sawtooth",.15,i*.2)),
+  gift:()=>[784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,"square",.1,i*.09)),
+  tick:()=>tone(900,.05,"square",.06)
+};
+
+// ===== GIỌNG ĐỌC TIẾNG VIỆT =====
+// Ưu tiên giọng tiếng Việt có sẵn trong trình duyệt/hệ điều hành; nếu máy chưa có thì dùng giọng Google (cần Internet).
+let voiceOn=true,viVoice=null,audio=null,ttsId=0,warned=false;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;
+  const v=speechSynthesis.getVoices().filter(x=>/^vi([-_]|$)/i.test(x.lang)||/vietnam|việt/i.test(x.name));
+  viVoice=v.find(x=>/natural|online/i.test(x.name))||v[0]||null;
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim()};
+function chunk(t){
+  const out=[];
+  t.split(/(?<=[.!?;:])\s+/).forEach(x=>{while(x.length>170){let k=x.lastIndexOf(" ",170);if(k<50)k=170;out.push(x.slice(0,k));x=x.slice(k).trim()}if(x)out.push(x)});
+  return out;
+}
+function quiet(){ttsId++;if(audio){audio.pause();audio=null}if(hasTTS)speechSynthesis.cancel()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),7000)}
+function speak(t){
+  if(!voiceOn)return;
+  quiet();const my=ttsId,parts=chunk(plain(t));
+  setTimeout(()=>{
+    if(my!==ttsId)return;
+    pickVoice();
+    if(viVoice){
+      parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);try{u.voice=viVoice}catch(e){}u.lang=viVoice.lang;u.rate=.95;speechSynthesis.speak(u)});
+    }else{
+      if(!warned){warned=true;toast("🗣 Máy chưa có giọng tiếng Việt, đang dùng giọng Google (cần Internet)")}
+      let i=0;const next=()=>{if(my!==ttsId||i>=parts.length)return;audio=new Audio("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(parts[i++]));audio.onended=next;audio.onerror=next;audio.play().catch(()=>next())};next();
+    }
+  },80);
+}
+function readQ(){
+  const q=G.list[G.i],vis=k=>!document.querySelector('.ans[data-k="'+k+'"]').classList.contains("gone");
+  speak("Câu hỏi số "+(G.i+1)+". "+q.question+". "+q.options.map((o,k)=>vis(k)?"Đáp án "+"ABCD"[k]+": "+o:"").join(". "));
+}
+// ===== HIỆU ỨNG NỀN & PHÁO GIẤY =====
+const bg=document.getElementById("bg"),fx=document.getElementById("fx"),bx=bg.getContext("2d"),fc=fx.getContext("2d");
+let stars=[],parts=[];
+function resize(){
+  bg.width=fx.width=innerWidth;bg.height=fx.height=innerHeight;
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform="translate(-50%,-50%) scale("+s+")";
+  stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.6+.1,p:Math.random()*6}));
+}
+function confetti(n=160,x=innerWidth/2,y=innerHeight/2){
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*26,vy:Math.random()*-22-4,g:.5,c:`hsl(${Math.random()*360},90%,60%)`,s:Math.random()*12+6,r:Math.random()*6,l:130});
+}
+function loop(t){
+  bx.clearRect(0,0,bg.width,bg.height);
+  const gr=bx.createRadialGradient(bg.width/2,bg.height*.4,50,bg.width/2,bg.height/2,bg.width*.7);
+  gr.addColorStop(0,"#2a1a8a");gr.addColorStop(.6,"#0a1450");gr.addColorStop(1,"#030618");bx.fillStyle=gr;bx.fillRect(0,0,bg.width,bg.height);
+  for(let i=0;i<6;i++){const W=bg.width,H=bg.height,x=W*(i+.5)/6,sw=Math.sin(t/1800+i*1.3)*W*.12,g2=bx.createLinearGradient(x,0,x+sw,H);g2.addColorStop(0,i%2?"rgba(120,160,255,.28)":"rgba(190,110,255,.26)");g2.addColorStop(1,"rgba(0,0,0,0)");bx.fillStyle=g2;bx.beginPath();bx.moveTo(x-20,0);bx.lineTo(x+20,0);bx.lineTo(x+sw+W*.07,H);bx.lineTo(x+sw-W*.07,H);bx.fill()}
+  for(let k=1;k<=4;k++){bx.strokeStyle="rgba(80,200,255,"+(.55-k*.1)+")";bx.lineWidth=4;bx.beginPath();bx.ellipse(bg.width/2,bg.height*1.02,bg.width*.12*k,bg.height*.035*k,0,0,7);bx.stroke()}
+  stars.forEach(s=>{s.y+=s.s;if(s.y>bg.height)s.y=0;bx.globalAlpha=.5+.5*Math.sin(t/400+s.p);bx.fillStyle="#fff";bx.beginPath();bx.arc(s.x,s.y,s.r,0,7);bx.fill()});
+  bx.globalAlpha=1;
+  fc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=.2;p.l--;fc.save();fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;fc.globalAlpha=Math.min(1,p.l/30);fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore()});
+  requestAnimationFrame(loop);
+}
+
+// ===== TRẠNG THÁI TRÒ CHƠI =====
+const $=id=>document.getElementById(id);
+let G;
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function newGame(){
+  const pool=validQuestions(),by={NB:[],TH:[],VD:[]};
+  pool.forEach(q=>by[q.level].push(q));Object.values(by).forEach(shuf);
+  const need={NB:0,TH:0,VD:0};PLAN.forEach(l=>need[l]++);
+  for(const l in need) if(by[l].length<need[l]){alert("Chưa đủ câu hỏi mức "+LV[l]+" (cần "+need[l]+", có "+by[l].length+").");return}
+  const list=PLAN.map(l=>shuffleOptions(by[l].shift()));
+  G={list,by,i:0,score:0,used:{},state:"idle",sel:-1,wrong:[],correct:0,miss:0};
+  document.querySelectorAll(".help").forEach(h=>h.classList.remove("used"));
+  show("game");renderLadder();loadQ();
+}
+const hearts=()=>{$("lv").textContent="❤️".repeat(Math.max(0,MISS-G.miss))||"—"};
+function renderLadder(){
+  $("ladder").innerHTML=PLAN.map((_,k)=>10-k).map(n=>`<div class="step ${n===SAFE?"safe":""} ${n<=G.i?"done":""} ${n===G.i+1?"now":""}"><i>${n}</i><span>${n===SAFE?"🛡 ":""}${n} điểm</span></div>`).join("");
+}
+function loadQ(){
+  const q=G.list[G.i];G.state="idle";G.sel=-1;
+  $("qin").innerHTML=q.question;$("qin").style.fontSize=(q.question.length>150?44:q.question.length>100?52:60)+"px";$("qtab").textContent="CÂU HỎI SỐ "+(G.i+1)+" • "+LV[q.level].toUpperCase();$("qn").textContent=(G.i+1)+" / "+PLAN.length;
+  $("answers").innerHTML=q.options.map((o,k)=>`<button class="ans ${o.length>95?"xxl":o.length>65?"xl":o.length>38?"long":""}" data-k="${k}"><div class="in"><b>${"ABCD"[k]}.</b><span>${o}</span></div></button>`).join("");
+  $("panel").classList.remove("on");$("game").classList.remove("pan");$("sc").textContent="⭐ "+G.score+"/"+MAX;renderLadder();hearts();
+  cast("host","talk");cast("me","");setTimeout(()=>{if(G.state==="idle")readQ()},700);setTimeout(()=>{if(G.state==="idle")cast("host","")},3500);
+}
+function pick(k){
+  if(G.state!=="idle"&&G.state!=="sel")return;
+  const b=document.querySelector(`.ans[data-k="${k}"]`);if(!b||b.classList.contains("gone"))return;
+  if(G.sel===k)return;
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  G.sel=k;G.state="sel";b.classList.add("sel");sfx.click();cast("me","think");
+  document.querySelectorAll(".cf").forEach(x=>x.remove());b.querySelector(".in").insertAdjacentHTML("beforeend","<span class=\"cf\">✔ XÁC NHẬN</span>");
+}
+function lock(){
+  if(G.state!=="sel")return;G.state="lock";quiet();sfx.lock();document.querySelectorAll(".cf").forEach(x=>x.remove());
+  setTimeout(reveal,2200);
+}
+function reveal(){
+  const q=G.list[G.i],ok=handlers[q.type].check(q,G.sel),A=document.querySelectorAll(".ans");
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  A[q.answer].classList.add("ok");
+  if(ok){G.score=Math.min(MAX,G.score+1);G.correct++;sfx.ok();confetti(120);cast("me","ok");cast("host","ok")}
+  else{cast("me","bad");cast("host","");A[G.sel].classList.add("bad");sfx.bad();G.miss++;G.wrong.push({q:q.question,right:q.options[q.answer],exp:q.explanation})}
+  G.ok=ok;G.state="done";hearts();$("sc").textContent="⭐ "+G.score+"/"+MAX;
+  setTimeout(()=>Math.random()<GIFT_RATE?gift():panel(),1800);
+}
+function panel(){
+  const q=G.list[G.i],last=G.i===PLAN.length-1;
+  const over=G.miss>MISS,left=MISS-G.miss;
+  $("exp").innerHTML=(G.ok?"✅ <b>Chính xác!</b> ":"❌ <b>Chưa đúng.</b> Đáp án: <b>"+"ABCD"[q.answer]+"</b>. "+(over?"Bạn đã sai quá "+MISS+" lần. ":"Bạn còn <b>"+left+"</b> lần được sai. "))+(q.explanation||"");
+  $("next").textContent=(over||last)?"Xem kết quả ▶":"Câu tiếp theo ▶";
+  $("panel").classList.add("on");$("game").classList.add("pan");G.state="panel";speak($("exp").innerHTML);
+}
+function advance(){
+  if(G.state!=="panel")return;quiet();
+  if(G.miss>MISS||G.i===PLAN.length-1)return finish();
+  G.i++;loadQ();
+}
+function finish(){
+  // Mốc an toàn: đã qua câu 5 thì giữ tối thiểu 5 điểm khi trả lời sai
+  let s=G.score;if(G.miss>MISS&&G.i>=SAFE&&s<SAFE)s=SAFE;
+  G.score=s;show("end");exitFs();quiet();speak("Kết thúc trò chơi. Bạn đạt "+s+" điểm trên "+MAX+" điểm.");
+  $("es").textContent=s+"/"+MAX;
+  $("et").textContent=s===MAX?"TRIỆU PHÚ XUẤT SẮC!":s>=8?"Rất xuất sắc!":s>=5?"Làm tốt lắm!":"Cố gắng lên nhé!";
+  $("eo").textContent=s>=8?"🏆":s>=5?"🎉":"💪";
+  $("em").textContent="Trả lời đúng "+G.correct+" câu, sai "+G.miss+" câu"+(s>G.correct?", nhận thêm quà/mốc an toàn":"")+".";
+  $("wl").innerHTML=G.wrong.length?"<b>Câu cần ôn lại:</b><br>"+G.wrong.map(w=>"• "+w.q+" → <b>"+w.right+"</b>").join("<br>"):"";
+  if(s>=5){sfx.ok();[.3,.7,.5].forEach((x,i)=>setTimeout(()=>confetti(150,innerWidth*x,innerHeight*.4),i*500))}
+}
+// ===== QUÀ TẶNG =====
+function overlay(html){$("ov").innerHTML=html;$("ov").classList.add("on")}
+function closeOv(){$("ov").classList.remove("on");$("ov").innerHTML=""}
+function gift(){
+  G.state="gift";overlay('<h2>🎁 Bạn nhận được một hộp quà!</h2><div id="gift">🎁</div><p>Bấm vào hộp quà để mở</p>');
+  $("gift").onclick=()=>{
+    sfx.gift();speak("Chúc mừng! Bạn nhận được một điểm thưởng.");const full=G.score>=MAX;G.score=Math.min(MAX,G.score+1);$("sc").textContent="⭐ "+G.score+"/"+MAX;
+    overlay('<div class="big">+1</div><h2>'+(full?"Điểm đã đạt tối đa 10!":"điểm thưởng!")+'</h2><button class="btn sm" id="okg">Tuyệt vời ▶</button>');
+    confetti(220,innerWidth/2,innerHeight/2);$("okg").onclick=()=>{closeOv();panel()}
+  };
+}
+// ===== TRỢ GIÚP =====
+function help(h){
+  const btn=document.querySelector(`.help[data-h="${h}"]`);
+  if(G.state!=="idle"&&G.state!=="sel"||btn.classList.contains("used"))return;
+  if(h==="5050"){
+    const q=G.list[G.i],w=shuf(q.options.map((_,i)=>i).filter(i=>i!==q.answer)).slice(0,q.options.length-2);
+    w.forEach(i=>document.querySelector(`.ans[data-k="${i}"]`).classList.add("gone"));
+    if(w.includes(G.sel)){G.sel=-1;G.state="idle"}
+    setTimeout(readQ,300);
+  }else if(h==="swap"){
+    const l=G.list[G.i].level,n=G.by[l].shift();
+    if(!n){alert("Hết câu hỏi để đổi!");return}
+    G.list[G.i]=shuffleOptions(n);loadQ();
+  }else return timer(h,btn);
+  btn.classList.add("used");sfx.click();
+}
+function timer(h,btn){
+  const cls=h==="class",prev=G.state;G.state="help";quiet();
+  overlay("<h2>"+(cls?"🏫 Hỏi cả lớp":"🤝 Hỏi người tin tưởng")+"</h2><p>"+(cls?"Cả lớp cùng bàn bạc rồi giơ thẻ A/B/C/D. Đáp án nào nhiều bạn chọn nhất?":"Người chơi chọn một người mình tin tưởng để hỏi ý kiến.")+"</p>"+(cls?"":'<input id="who" placeholder="Tên người được hỏi (không bắt buộc)">')+'<div id="cd">30</div><button class="btn sm" id="stop" style="margin-top:20px">Xong ▶</button>');
+  btn.classList.add("used");let t=30;
+  const iv=setInterval(()=>{t--;$("cd").textContent=t;if(t<=5){$("cd").classList.add("low");sfx.tick()}if(t<=0)end()},1000);
+  function end(){clearInterval(iv);closeOv();G.state=G.sel>=0?"sel":"idle"}
+  $("stop").onclick=end;
+}
+// ===== NHÂN VẬT: người hỏi & người trả lời (bấm vào khung để thay bằng ảnh thật) =====
+const AV=(skin,hair,shirt,body,head)=>`<svg viewBox="0 0 200 220"><path d="M20 220c0-55 35-80 80-80s80 25 80 80z" fill="${shirt}"/><path d="M85 140l15 25 15-25z" fill="#fff"/>${body}<rect x="88" y="115" width="24" height="30" fill="${skin}"/><circle cx="100" cy="85" r="52" fill="${skin}"/><path d="M48 80c0-45 30-62 55-62s50 20 49 62c-10-25-30-35-52-35s-42 10-52 35z" fill="${hair}"/>${head}<circle cx="80" cy="90" r="6" fill="#222"/><circle cx="120" cy="90" r="6" fill="#222"/><path d="M70 76q10-8 20 0M110 76q10-8 20 0" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse class="mouth" cx="100" cy="114" rx="14" ry="7" fill="#7a1f1f"/></svg>`;
+const cast=(w,m)=>{$(w).dataset.m=m};
+[["host",AV("#f1c9a0","#2b2b2b","#1b1b2f",'<path d="M100 152l-22-12v24zM100 152l22-12v24z" fill="#e02b2b"/>',"")],
+ ["me",AV("#e8b98a","#5a2d0c","#2e9d5b","",'<path d="M50 85a50 50 0 0 1 100 0" stroke="#ffb300" stroke-width="8" fill="none"/><rect x="42" y="80" width="14" height="30" rx="6" fill="#ffb300"/><rect x="144" y="80" width="14" height="30" rx="6" fill="#ffb300"/>')]
+].forEach(([id,svg])=>{
+  const f=$(id),inp=f.querySelector("input");f.insertAdjacentHTML("afterbegin",svg+'<img alt="">');
+  f.onclick=e=>{if(e.target!==inp)inp.click()};
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{const im=f.querySelector("img");im.src=r.result;im.style.display="block";f.querySelector("svg").style.display="none"};if(inp.files[0])r.readAsDataURL(inp.files[0])};
+});
+// ===== SỰ KIỆN =====
+const enterFs=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})};
+const exitFs=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})};
+$("go").onclick=()=>{sfx.click();enterFs();newGame()};
+$("again").onclick=()=>{sfx.click();enterFs();newGame()};
+$("next").onclick=advance;
+$("answers").onclick=e=>{if(e.target.closest(".cf"))return lock();const b=e.target.closest(".ans");if(b)pick(+b.dataset.k)};
+document.querySelectorAll(".help").forEach(h=>h.onclick=()=>help(h.dataset.h));
+$("rd").onclick=()=>{voiceOn=!voiceOn;$("rd").classList.toggle("off",!voiceOn);if(!voiceOn)quiet();else if(G&&(G.state==="idle"||G.state==="sel"))readQ()};
+$("snd").onclick=()=>{mute=!mute;$("snd").textContent=mute?"🔇":"🔊"};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$("fs").onclick=fs;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const k=e.key.toLowerCase();
+  if(k==="f")fs();else if(k==="m")$("snd").click();else if(k==="v")$("rd").click();else if(k==="r"&&G&&(G.state==="idle"||G.state==="sel"))readQ();
+  else if("abcd".includes(k)&&k.length===1)pick("abcd".indexOf(k));
+  else if(k==="enter"){if(G&&G.state==="sel")lock();else if(G&&G.state==="panel")advance();else if(!G||$("start").classList.contains("on"))$("go").click()}
+  else if("1234".includes(k)&&G&&$("game").classList.contains("on"))help(["5050","class","trust","swap"][+k-1]);
+});
+addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);show("start");
+</script></body></html>

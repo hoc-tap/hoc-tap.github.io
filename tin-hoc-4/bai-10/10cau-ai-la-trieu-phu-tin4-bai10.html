@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai là triệu phú – Tin học 4 bài 10</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:#050824;font-family:"Segoe UI",Arial,sans-serif;color:#fff;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#fx{z-index:50}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;z-index:2}
+.screen{position:absolute;inset:0;display:none;padding:40px 60px}
+.screen.on{display:block;animation:fadein .6s}
+@keyframes fadein{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+h1{font-size:110px;text-align:center;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite;filter:drop-shadow(0 0 25px #ffb30088)}
+@keyframes shine{to{background-position:300%}}
+.btn{font-size:64px;font-weight:800;font-family:inherit;color:#1a1200;background:linear-gradient(#ffe27a,#ffb300);border:0;border-radius:60px;padding:26px 100px;cursor:pointer;box-shadow:0 0 40px #ffb300aa,0 8px 0 #a56a00;transition:.2s}
+.btn:hover{transform:translateY(-4px) scale(1.05)}
+.btn.sm{font-size:34px;padding:16px 46px}
+#start{text-align:center;padding-top:150px}
+#start p{font-size:38px;margin:30px 0 60px;color:#bcd}
+.orb{font-size:170px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-25px) rotate(6deg)}}
+.rules{display:flex;gap:26px;justify-content:center;margin-bottom:60px}
+.rules{flex-wrap:wrap}.rules div{background:#ffffff14;border:2px solid #ffffff33;border-radius:24px;padding:18px 26px;font-size:28px;backdrop-filter:blur(6px)}
+/* game – giao diện theo mẫu */
+#game{padding:0}
+.pill{display:flex;align-items:center;gap:16px;background:linear-gradient(#10267a,#050f40);border:3px solid #ffd54a;border-radius:34px;padding:10px 30px;box-shadow:0 0 25px #ffb30066}
+.pill small{display:block;font-size:20px;color:#bcd}.pill b{font-size:44px;color:#ffd54a;font-weight:800}.pill .coin{font-size:54px}
+#hud-l{position:absolute;left:60px;top:30px;display:flex;gap:14px}#hud-l .pill{padding:10px 22px}
+#hud-r{position:absolute;right:60px;top:30px;display:flex;gap:12px;align-items:center}
+.ic{width:70px;height:70px;border-radius:50%;border:3px solid #ffd54a;background:#0a1550;color:#fff;font-size:30px;cursor:pointer;box-shadow:0 0 18px #ffb30055}
+#toast{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#000d;border:2px solid #ffd54a;border-radius:30px;padding:10px 30px;font-size:26px;z-index:30;opacity:0;transition:.4s;pointer-events:none}#toast.on{opacity:1}
+.ic.off{opacity:.45;filter:grayscale(1)}
+.logo{position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:8px 80px 14px;border:5px solid #ffd54a;border-radius:90px/60px;background:radial-gradient(#1b3a8f,#050f40);box-shadow:0 0 45px #ffb300aa;text-align:center;line-height:1}
+.logo small{display:block;font-size:32px;font-weight:900;letter-spacing:10px;color:#fff;text-shadow:0 0 12px #38f}
+.logo b{display:block;font-size:80px;font-weight:900;background:linear-gradient(90deg,#ffd54a,#fff,#ffb300,#ffd54a);background-size:300%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+#helps{position:absolute;left:320px;top:175px;width:960px;display:flex;gap:16px}
+.help{flex:1;height:160px;border-radius:30px;border:3px solid #6cf;background:radial-gradient(#2a46c0,#0a1550);color:#fff;cursor:pointer;box-shadow:0 0 22px #3af6;transition:.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:inherit}
+.help i{font-style:normal;font-size:56px;line-height:1}.help b{font-size:46px;line-height:1}
+.help small{font-size:20px;font-weight:600;color:#cde;line-height:1.15;padding:4px 8px 0}
+.help:hover:not(.used){transform:scale(1.08);box-shadow:0 0 40px #6cf;border-color:#fff}
+.help.used{filter:grayscale(1) brightness(.5);cursor:not-allowed}
+.help.used::after{content:"✕";position:absolute;inset:0;font-size:120px;color:#f55;line-height:160px}
+#qtab{position:absolute;left:800px;transform:translateX(-50%);top:385px;z-index:3;padding:8px 56px;background:linear-gradient(#ffd54a,#e69500);color:#1a1200;font-size:30px;font-weight:900;white-space:nowrap;clip-path:polygon(24px 0,calc(100% - 24px) 0,100% 50%,calc(100% - 24px) 100%,24px 100%,0 50%)}
+#qbox{position:absolute;left:60px;top:422px;width:1480px;height:290px;padding:4px;background:linear-gradient(#9ef,#38f);clip-path:polygon(62px 0,calc(100% - 62px) 0,100% 50%,calc(100% - 62px) 100%,62px 100%,0 50%);filter:drop-shadow(0 0 20px #38f)}
+#qin{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 110px;font-size:48px;font-weight:700;line-height:1.3;background:linear-gradient(#10267a,#050f40);clip-path:polygon(60px 0,calc(100% - 60px) 0,100% 50%,calc(100% - 60px) 100%,60px 100%,0 50%)}
+#answers{position:absolute;left:60px;top:735px;width:1480px;display:grid;grid-template-columns:1fr 1fr;gap:20px 26px}
+.ans{height:135px;padding:3px;background:#6cf;border:0;color:#fff;cursor:pointer;transition:.2s;font-family:inherit;clip-path:polygon(36px 0,calc(100% - 36px) 0,100% 50%,calc(100% - 36px) 100%,36px 100%,0 50%)}
+.ans .in{height:100%;display:flex;align-items:center;gap:18px;padding:0 64px;font-size:46px;font-weight:600;text-align:left;line-height:1.1;background:linear-gradient(#10267a,#050f40);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 50%,calc(100% - 34px) 100%,34px 100%,0 50%)}
+.ans b{color:#ffb300;font-size:56px}.ans .in>span:first-of-type{flex:1}.cf{margin-left:auto;flex:none;background:#1a1200;color:#ffd54a;border-radius:40px;padding:8px 16px;font-size:21px;font-weight:900;white-space:nowrap;box-shadow:0 0 18px #0008;transition:.2s}.ans.sel .in{padding-right:36px;font-size:38px;line-height:1.05;gap:14px}.ans.sel.long .in{font-size:31px}.ans.xl .in{font-size:29px;line-height:1.05}.ans.xxl .in{font-size:25px;line-height:1.05}.ans.sel.xl .in{font-size:26px}.ans.sel.xxl .in{font-size:22px}.ans.xl b,.ans.xxl b{font-size:44px}.ans.sel.xl .cf,.ans.sel.xxl .cf{font-size:18px;padding:6px 12px}.ans.sel b{font-size:50px}.cf:hover{transform:scale(1.1);background:#000}.ans.long .in{font-size:37px;line-height:1.1}
+.ans:hover:not(:disabled){background:#fff;transform:scale(1.02)}
+.ans:hover:not(:disabled) .in{background:linear-gradient(#1c3fb0,#0a1a70)}
+.ans.sel,.ans.sel:hover{background:#fff;animation:blink .5s infinite alternate}
+.ans.sel .in,.ans.sel:hover .in{background:linear-gradient(#ffd54a,#e69500);color:#1a1200}.ans.sel b{color:#1a1200}
+@keyframes blink{to{filter:brightness(1.35)}}
+.ans.ok{background:#fff;animation:pop .6s,blink .5s infinite alternate}
+.ans.ok .in{background:linear-gradient(#3ddc6b,#0c8a35)}.ans.ok b{color:#fff}
+@keyframes pop{40%{transform:scale(1.1)}}
+.ans.bad{background:#fff;animation:shake .5s}
+.ans.bad .in{background:linear-gradient(#ff5b5b,#a00)}.ans.bad b{color:#fff}
+@keyframes shake{20%,60%{transform:translateX(-18px)}40%,80%{transform:translateX(18px)}}
+@keyframes pulse{to{box-shadow:0 0 50px #ffb300}}
+.ans.gone{visibility:hidden}
+#panel{position:absolute;left:320px;top:165px;width:960px;height:210px;display:none;flex-direction:row;justify-content:center;align-items:center;gap:24px;background:#000c;border:3px solid #ffd54a;border-radius:30px;padding:14px 28px;font-size:25px;z-index:5;animation:fadein .4s}
+#panel.on{display:flex}#panel span{line-height:1.35}
+#game.pan #helps{visibility:hidden}
+#ladder{position:absolute;left:1580px;top:160px;width:280px;height:870px;display:flex;flex-direction:column;gap:8px;padding:14px;background:#050f40cc;border:4px solid #ffd54a;border-radius:30px;box-shadow:0 0 35px #ffb30066}
+.step{flex:1;display:flex;align-items:center;gap:10px;padding:0 14px;border-radius:40px;font-size:27px;font-weight:700;color:#ffd54a;transition:.4s}
+.step i{width:46px;height:46px;border-radius:12px;border:2px solid #ffd54a;display:grid;place-items:center;font-style:normal;font-size:26px;color:#fff}
+.step span{flex:1;text-align:right}.step.safe{color:#fff}
+.step.done{color:#3f6;background:#3f62}
+.step.now{background:linear-gradient(#ffd54a,#e69500);color:#1a1200;transform:scale(1.06);box-shadow:0 0 30px #ffb300}.step.now i{color:#1a1200;border-color:#1a1200}
+/* overlay */
+#ov{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;flex-direction:column;z-index:20;text-align:center;padding:60px}
+#ov.on{display:flex;animation:fadein .4s}
+#ov h2{font-size:80px;color:#ffd54a;margin-bottom:20px}
+#ov p{font-size:40px;max-width:1300px;margin-bottom:30px;line-height:1.35}
+#ov input{font-size:38px;font-weight:600;font-family:inherit;padding:12px 28px;border-radius:30px;border:3px solid #6cf;background:#0a1550;color:#fff;text-align:center;margin-bottom:26px}
+#cd{font-size:230px;font-weight:900;color:#fff;text-shadow:0 0 40px #38f;line-height:1}
+#cd.low{color:#f55;animation:pulse .4s infinite alternate}
+.letters{display:flex;gap:30px;margin:10px 0 30px}
+.letters button{width:130px;height:130px;font-size:70px}
+#gift{font-size:300px;cursor:pointer;animation:drop 1s cubic-bezier(.3,1.6,.5,1),wob 1s 1s infinite;filter:drop-shadow(0 0 60px #ff0)}
+@keyframes drop{from{transform:translateY(-900px)}}
+@keyframes wob{25%{transform:rotate(-12deg) scale(1.1)}75%{transform:rotate(12deg) scale(1.1)}}
+.big{font-size:260px;font-weight:900;color:#ffd54a;text-shadow:0 0 50px #ffb300;line-height:1}
+#wl{max-height:250px;overflow:auto;font-size:26px;text-align:left;margin:10px auto 20px;width:1300px;color:#fbb}
+.fig .bub{position:absolute;top:2px;right:8px;font-size:34px;font-style:normal}
+.fig[data-m=talk] .bub::after{content:"💬"}.fig[data-m=think] .bub::after{content:"🤔"}
+.fig[data-m=ok] .bub::after{content:"😄"}.fig[data-m=bad] .bub::after{content:"😢"}
+.fig[data-m=ok]{animation:pop .6s}.fig[data-m=bad]{animation:shake .5s}.fig[data-m=think]{box-shadow:0 0 35px #ffb300}
+.mouth{transform-box:fill-box;transform-origin:center}
+.fig[data-m=talk] .mouth{animation:talk .25s infinite alternate}
+@keyframes talk{to{transform:scaleY(.2)}}
+#cast{position:absolute;inset:0;pointer-events:none}
+.fig{position:absolute;width:230px;height:210px;pointer-events:auto;border:4px solid #6cf;border-radius:26px;background:radial-gradient(#3a58d8,#0a1550);box-shadow:0 0 30px #38f9;cursor:pointer;overflow:hidden;transition:.3s}
+#host{left:60px;top:165px}#me{left:1310px;top:165px}
+.fig:hover{transform:scale(1.04)}
+.fig svg{position:absolute;left:10px;top:14px;width:calc(100% - 20px);height:calc(100% - 54px)}
+.fig img{position:absolute;left:0;top:0;width:100%;height:calc(100% - 38px);object-fit:cover;display:none}
+.fig .bub{font-size:26px}.fig label{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:#000b;border:2px solid #ffd54a;border-radius:20px;padding:3px 12px;font-size:17px;font-weight:700;white-space:nowrap}
+</style></head><body>
+<canvas id="bg"></canvas><canvas id="fx"></canvas>
+<div id="stage">
+<section class="screen" id="start">
+ <div class="orb">💎</div>
+ <h1>AI LÀ TRIỆU PHÚ</h1>
+ <p>Tin học 4 – Bài 10: Phần mềm soạn thảo văn bản</p>
+ <div class="rules"><div>🎯 10 câu – tối đa 10 điểm</div><div>❤️ Được sai 2 lần</div><div>🛡 Mốc an toàn câu 5</div><div>🎁 Có thể nhận quà +1 điểm</div><div>💡 4 quyền trợ giúp</div></div>
+ <button class="btn" id="go">▶ BẮT ĐẦU</button>
+ <p style="font-size:24px;margin-top:40px">Phím tắt: Bấm đáp án rồi bấm ✔ XÁC NHẬN (hoặc Enter) • A B C D chọn nhanh • 1–4 trợ giúp • F toàn màn hình • M tắt âm • V bật/tắt giọng đọc • R đọc lại câu hỏi</p>
+</section>
+<section class="screen" id="game">
+ <div id="hud-l"><div class="pill"><span class="coin">🪙</span><div><small>Điểm hiện tại</small><b id="sc">⭐ 0/10</b></div></div><div class="pill"><div><small>Được sai</small><b id="lv">❤️❤️</b></div></div></div>
+ <div class="logo"><small>AI LÀ</small><b>TRIỆU PHÚ</b></div>
+ <div id="hud-r"><div class="pill"><span class="coin">🏆</span><div><small>Câu hỏi số</small><b id="qn">1 / 10</b></div></div><button class="ic" id="rd" title="Giọng đọc (V) • đọc lại câu hỏi (R)">🗣</button><button class="ic" id="snd">🔊</button><button class="ic" id="fs">⛶</button></div>
+ <div id="cast">
+  <div class="fig" id="host" title="Bấm để đổi ảnh"><i class="bub"></i><label>🎤 Người hỏi</label><input type="file" accept="image/*" hidden></div>
+  <div class="fig" id="me" title="Bấm để đổi ảnh"><i class="bub"></i><label>🙋 Người trả lời</label><input type="file" accept="image/*" hidden></div>
+ </div>
+ <div id="helps">
+  <button class="help" data-h="5050"><b>50:50</b><small>Loại 2 đáp án</small></button>
+  <button class="help" data-h="class"><i>🏫</i><small>Hỏi cả lớp</small></button>
+  <button class="help" data-h="trust"><i>🤝</i><small>Hỏi người tin tưởng</small></button>
+  <button class="help" data-h="swap"><i>🔄</i><small>Đổi câu hỏi</small></button>
+ </div>
+ <div id="panel"><span id="exp"></span><button class="btn sm" id="next">Tiếp tục ▶</button></div>
+ <div id="qtab"></div><div id="qbox"><div id="qin"></div></div>
+ <div id="answers"></div>
+ <div id="ladder"></div>
+</section>
+<section class="screen" id="end" style="text-align:center;padding-top:70px">
+ <div class="orb" id="eo">🏆</div><h1 style="font-size:90px" id="et"></h1>
+ <div class="big" id="es"></div><p style="font-size:38px;margin:10px" id="em"></p>
+ <div id="wl"></div><button class="btn" id="again">🔁 CHƠI LẠI</button>
+</section>
+<div id="ov"></div><div id="toast"></div>
+</div>
+<script>
+// DỮ LIỆU CÂU HỎI — thay mảng này để sử dụng bộ câu hỏi mới.
+// level: NB (nhận biết) | TH (thông hiểu) | VD (vận dụng); answer là chỉ số đáp án đúng (từ 0).
+const questions = [
+  {"level": "NB", "question": "Phần mềm nào sau đây là phần mềm soạn thảo văn bản?", "options": ["Microsoft Word", "Microsoft PowerPoint", "Paint", "Unikey"], "answer": 0, "explanation": "Word là phần mềm soạn thảo văn bản."},
+  {"level": "NB", "question": "Biểu tượng của phần mềm soạn thảo văn bản Word có chữ gì?", "options": ["Chữ P màu cam", "Chữ W màu xanh dương", "Chữ E màu đỏ", "Chữ X màu xanh lá"], "answer": 1, "explanation": "Biểu tượng Word có chữ W màu xanh dương."},
+  {"level": "NB", "question": "Khi cần viết một bài văn hay một lá thư, em nên dùng phần mềm nào?", "options": ["Phần mềm trình chiếu", "Phần mềm luyện gõ bàn phím", "Phần mềm soạn thảo văn bản", "Phần mềm vẽ tranh"], "answer": 2, "explanation": "Viết bài văn, lá thư cần trình bày thông tin chi tiết nên dùng phần mềm soạn thảo văn bản."},
+  {"level": "NB", "question": "Văn bản trên bài trình chiếu thường cần như thế nào?", "options": ["Rất dài", "Không có chữ", "Chỉ có số", "Ngắn gọn, cô đọng"], "answer": 3, "explanation": "Văn bản của bài trình chiếu cần ngắn gọn, cô đọng để người nghe dễ nắm bắt."},
+  {"level": "NB", "question": "Để khởi động phần mềm Word, em làm thế nào?", "options": ["Nháy đúp chuột vào biểu tượng Word trên màn hình nền", "Nhấn phím Enter", "Rút dây chuột", "Tắt màn hình"], "answer": 0, "explanation": "Em nháy đúp chuột vào biểu tượng của phần mềm trên màn hình nền."},
+  {"level": "NB", "question": "Phần mềm soạn thảo văn bản giúp em làm gì?", "options": ["Chỉ vẽ tranh", "Gõ, chỉnh sửa, trình bày và lưu văn bản", "Chỉ chơi trò chơi", "Chỉ nghe nhạc"], "answer": 1, "explanation": "Phần mềm soạn thảo văn bản giúp em gõ, chỉnh sửa, trình bày và lưu văn bản."},
+  {"level": "NB", "question": "Phần nào của màn hình Word dùng để gõ văn bản?", "options": ["Dải lệnh", "Thanh tiêu đề", "Vùng soạn thảo", "Nút X"], "answer": 2, "explanation": "Em gõ văn bản vào vùng soạn thảo."},
+  {"level": "NB", "question": "Phần nào của màn hình Word chứa các nút lệnh?", "options": ["Vùng soạn thảo", "Con trỏ soạn thảo", "Thanh cuộn", "Dải lệnh"], "answer": 3, "explanation": "Các nút lệnh nằm trên dải lệnh."},
+  {"level": "NB", "question": "Vạch đứng nhấp nháy trong vùng soạn thảo gọi là gì?", "options": ["Con trỏ soạn thảo", "Con trỏ chuột", "Dải lệnh", "Thanh địa chỉ"], "answer": 0, "explanation": "Vạch đứng nhấp nháy trong vùng soạn thảo là con trỏ soạn thảo."},
+  {"level": "NB", "question": "Khi em gõ phím, kí tự xuất hiện ở đâu?", "options": ["Ở góc màn hình", "Tại vị trí con trỏ soạn thảo", "Ở thanh địa chỉ", "Ở nút X"], "answer": 1, "explanation": "Kí tự xuất hiện tại vị trí con trỏ soạn thảo."},
+  {"level": "NB", "question": "Sau khi gõ một kí tự, con trỏ soạn thảo dịch chuyển như thế nào?", "options": ["Dịch về bên trái", "Biến mất", "Dịch về bên phải của kí tự", "Dịch lên trên"], "answer": 2, "explanation": "Con trỏ soạn thảo dịch về bên phải của kí tự vừa gõ."},
+  {"level": "NB", "question": "Để xoá kí tự ở bên phải con trỏ soạn thảo, em nhấn phím nào?", "options": ["Phím Backspace", "Phím Enter", "Phím Shift", "Phím Delete"], "answer": 3, "explanation": "Phím Delete xoá kí tự ở bên phải con trỏ soạn thảo."},
+  {"level": "NB", "question": "Để xoá kí tự ở bên trái con trỏ soạn thảo, em nhấn phím nào?", "options": ["Phím Backspace", "Phím Delete", "Phím Enter", "Phím Tab"], "answer": 0, "explanation": "Phím Backspace xoá kí tự ở bên trái con trỏ soạn thảo."},
+  {"level": "NB", "question": "Để xoá một phần văn bản, trước tiên em cần làm gì?", "options": ["Lưu tệp", "Chọn phần văn bản đó", "Thoát phần mềm", "Nhấn phím Enter"], "answer": 1, "explanation": "Em cần chọn phần văn bản đó rồi nhấn phím Delete hoặc Backspace."},
+  {"level": "NB", "question": "Sau khi chọn phần văn bản, em nhấn phím nào để xoá?", "options": ["Phím Enter", "Phím Shift", "Phím Delete hoặc phím Backspace", "Phím Tab"], "answer": 2, "explanation": "Em nhấn phím Delete hoặc Backspace để xoá phần văn bản đã chọn."},
+  {"level": "NB", "question": "Khi gõ xong đoạn văn bản, em phát hiện gõ sai chữ thì làm gì?", "options": ["Bỏ qua lỗi", "Tắt máy tính", "Xoá cả máy tính", "Di chuyển con trỏ đến vị trí sai, xoá và gõ lại cho đúng"], "answer": 3, "explanation": "Em di chuyển con trỏ soạn thảo đến vị trí sai để xoá kí tự và gõ lại."},
+  {"level": "NB", "question": "Để xuống dòng và chuyển sang đoạn văn bản mới, em nhấn phím nào?", "options": ["Phím Enter", "Phím Shift", "Phím Delete", "Phím Esc"], "answer": 0, "explanation": "Em nhấn phím Enter để xuống dòng và chuyển sang đoạn mới."},
+  {"level": "NB", "question": "Để gõ chữ hoa, em làm thế nào?", "options": ["Nhấn phím Enter", "Nhấn giữ phím Shift đồng thời gõ phím chữ", "Nhấn phím Tab", "Nhấn phím Esc"], "answer": 1, "explanation": "Em nhấn giữ phím Shift đồng thời gõ phím chữ để có chữ hoa."},
+  {"level": "NB", "question": "Để lưu văn bản, em chọn lệnh nào trong bảng chọn File?", "options": ["Open", "Close", "Save", "Print"], "answer": 2, "explanation": "Em chọn lệnh Save trong bảng chọn File để lưu văn bản."},
+  {"level": "NB", "question": "Khi chọn lệnh Save lần đầu, cửa sổ nào hiện ra?", "options": ["Cửa sổ Paint", "Cửa sổ Chrome", "Cửa sổ Copy", "Cửa sổ Save As"], "answer": 3, "explanation": "Cửa sổ Save As hiện ra khi lưu tệp lần đầu."},
+  {"level": "NB", "question": "Mặc định, máy tính lấy gì trong văn bản làm tên tệp?", "options": ["Các chữ đầu tiên trong văn bản", "Ngày tháng hiện tại", "Tên của em", "Tên ổ đĩa"], "answer": 0, "explanation": "Máy tính mặc định lấy các chữ đầu tiên trong văn bản làm tên tệp."},
+  {"level": "NB", "question": "Em có thể gõ tên nào để lưu tệp văn bản về Cây gạo?", "options": ["Cay Gao@@", "CayGao", "Cây gạo.....", "Văn bản"], "answer": 1, "explanation": "Theo bài học, em có thể gõ tên CayGao để lưu tệp."},
+  {"level": "NB", "question": "Để đóng và thoát khỏi phần mềm Word, em nháy chuột vào nút nào?", "options": ["Nút Save", "Nút Backspace", "Nút dấu X ở góc trên bên phải", "Nút Enter"], "answer": 2, "explanation": "Em nháy vào nút X ở góc trên bên phải để đóng và thoát khỏi phần mềm."},
+  {"level": "NB", "question": "Biểu tượng nào là biểu tượng của phần mềm soạn thảo văn bản?", "options": ["Biểu tượng có chữ P màu cam", "Biểu tượng trình duyệt Chrome", "Biểu tượng bàn tay gõ phím", "Biểu tượng có chữ W màu xanh"], "answer": 3, "explanation": "Biểu tượng có chữ W màu xanh là của Word."},
+  {"level": "NB", "question": "Biểu tượng có chữ P màu cam là biểu tượng của phần mềm nào?", "options": ["Phần mềm trình chiếu PowerPoint", "Phần mềm soạn thảo Word", "Trình duyệt web", "Phần mềm vẽ"], "answer": 0, "explanation": "Chữ P màu cam là biểu tượng của PowerPoint."},
+  {"level": "NB", "question": "Phần mềm soạn thảo văn bản nào được dùng trong bài học?", "options": ["Microsoft Edge", "Microsoft Word", "Kiran's Typing Tutor", "Scratch"], "answer": 1, "explanation": "Bài học sử dụng phần mềm Microsoft Word."},
+  {"level": "NB", "question": "Trong phần mềm soạn thảo văn bản, em có thể làm việc nào sau đây?", "options": ["Khám phá thế giới tự nhiên", "Chơi trò chơi", "Gõ và chỉnh sửa văn bản", "Xem phim"], "answer": 2, "explanation": "Em có thể gõ và chỉnh sửa văn bản."},
+  {"level": "NB", "question": "Em nháy chuột vào vùng soạn thảo để làm gì trước khi gõ?", "options": ["Đóng phần mềm", "Xoá văn bản", "Lưu tệp", "Chắc chắn con trỏ soạn thảo đang nhấp nháy"], "answer": 3, "explanation": "Em nháy chuột vào vùng soạn thảo để chắc chắn con trỏ đang nhấp nháy."},
+  {"level": "NB", "question": "Các phần mềm soạn thảo văn bản đều có điểm chung nào?", "options": ["Gõ, chỉnh sửa, trình bày và lưu văn bản", "Chơi trò chơi", "Vẽ tranh", "Nghe nhạc"], "answer": 0, "explanation": "Các phần mềm soạn thảo văn bản đều giúp gõ, chỉnh sửa, trình bày và lưu văn bản."},
+  {"level": "NB", "question": "Sau khi gõ xong đoạn văn bản, em nên làm gì để không bị mất nội dung?", "options": ["Tắt máy tính ngay", "Xoá văn bản", "Lưu văn bản vào thư mục của em", "Đổi tên ổ đĩa"], "answer": 2, "explanation": "Em cần lưu văn bản vào thư mục của mình để không bị mất nội dung."},
+  {"level": "TH", "question": "Khi cần trình bày thông tin chi tiết như viết một lá thư hay làm một bài văn, em nên sử dụng phần mềm nào?", "options": ["Phần mềm trình chiếu", "Phần mềm soạn thảo văn bản", "Phần mềm luyện gõ bàn phím", "Phần mềm vẽ tranh"], "answer": 1, "explanation": "Phần mềm soạn thảo văn bản được thiết kế đặc biệt với vùng soạn thảo rộng, phù hợp để gõ, trình bày và lưu trữ các văn bản có nội dung dài và chi tiết."},
+  {"level": "TH", "question": "Biểu tượng của phần mềm soạn thảo văn bản Word có đặc điểm gì giúp em dễ dàng nhận biết trên màn hình máy tính?", "options": ["Có chữ P màu cam nổi bật để thay thế chữ viết thông thường", "Có hình chiếc bút và bảng màu", "Có chữ W màu xanh dương", "Có hình một bức thư đang mở"], "answer": 2, "explanation": "Biểu tượng của phần mềm Word luôn có hình chữ W đặc trưng màu xanh dương."},
+  {"level": "TH", "question": "Vạch đứng nhấp nháy trong vùng soạn thảo văn bản có chức năng gì?", "options": ["Hiển thị thông báo lỗi khi em gõ sai một từ bất kì trên màn hình.", "Quét và kiểm tra lỗi chính tả toàn bộ đoạn văn.", "Đánh dấu dòng văn bản đã được lưu tự động.", "Đánh dấu vị trí mà kí tự sẽ xuất hiện khi em gõ phím."], "answer": 3, "explanation": "Con trỏ soạn thảo nhấp nháy đóng vai trò định vị, cho biết kí tự tiếp theo người dùng gõ từ bàn phím sẽ hiển thị ở đâu."},
+  {"level": "TH", "question": "Trên màn hình làm việc của phần mềm soạn thảo văn bản, nơi chứa các lệnh để trình bày chữ được gọi là gì?", "options": ["Dải lệnh", "Vùng soạn thảo", "Con trỏ soạn thảo", "Thanh trạng thái"], "answer": 0, "explanation": "Dải lệnh là khu vực nằm phía trên cùng của màn hình, chứa các công cụ như Font, Paragraph dùng để chỉnh sửa và định dạng văn bản."},
+  {"level": "TH", "question": "Khi em gõ một kí tự từ bàn phím, con trỏ soạn thảo sẽ dịch chuyển theo hướng nào?", "options": ["Dịch về bên trái của kí tự", "Dịch về bên phải của kí tự", "Nhảy xuống đầu dòng tiếp theo", "Đứng yên tại vị trí ban đầu"], "answer": 1, "explanation": "Sau khi một kí tự được gõ ra, con trỏ soạn thảo sẽ tự động lùi sang phải một bước để nhường chỗ trống cho kí tự tiếp theo xuất hiện."},
+  {"level": "TH", "question": "Phím Backspace dùng để xoá kí tự ở vị trí nào so với con trỏ soạn thảo?", "options": ["Bên phải", "Bên trên", "Bên trái", "Bên dưới"], "answer": 2, "explanation": "Phím Backspace có chức năng lùi lại và xoá đi kí tự nằm ngay liền kề phía bên trái của con trỏ soạn thảo."},
+  {"level": "TH", "question": "Phím Delete dùng để xoá kí tự ở vị trí nào so với con trỏ soạn thảo?", "options": ["Bên trái", "Bên trên", "Ở dòng dưới cùng", "Bên phải"], "answer": 3, "explanation": "Trái ngược với Backspace, phím Delete sẽ tiến tới và xoá đi kí tự nằm ngay liền kề phía bên phải của con trỏ soạn thảo."},
+  {"level": "TH", "question": "Để xoá đi một phần văn bản đã được chọn, em có thể sử dụng phím nào sau đây?", "options": ["Phím Delete hoặc phím Backspace", "Phím Shift hoặc phím Ctrl kết hợp thao tác chuột", "Phím Enter", "Phím Caps Lock"], "answer": 0, "explanation": "Khi một đoạn văn bản đã được bôi đen, việc nhấn phím Delete hay Backspace đều mang lại hiệu quả như nhau là xoá toàn bộ đoạn văn bản đó."},
+  {"level": "TH", "question": "Để gõ được chữ in hoa trong phần mềm soạn thảo, em cần nhấn giữ phím nào đồng thời với phím chữ cái?", "options": ["Phím Enter", "Phím Shift", "Phím Ctrl", "Phím Delete"], "answer": 1, "explanation": "Thao tác nhấn giữ phím Shift kết hợp gõ một phím chữ cái bất kì sẽ cho ra kết quả là chữ cái đó được viết in hoa."},
+  {"level": "TH", "question": "Thao tác nào giúp em kết thúc một đoạn văn bản và chuyển xuống dòng để bắt đầu đoạn mới?", "options": ["Nhấn phím Shift nhiều lần liên tục cho đến khi xuống dòng", "Nhấn phím Backspace", "Nhấn phím Enter", "Nháy đúp chuột"], "answer": 2, "explanation": "Phím Enter phát ra lệnh ngắt dòng, đưa con trỏ soạn thảo xuống dòng mới để người dùng bắt đầu một đoạn văn bản mới."},
+  {"level": "TH", "question": "Để lưu tệp văn bản mới tạo, em cần chọn lệnh Save nằm ở đâu trên màn hình?", "options": ["Bảng chọn Home", "Bảng chọn Insert", "Bảng chọn View", "Bảng chọn File"], "answer": 3, "explanation": "Lệnh Save có biểu tượng hình chiếc đĩa mềm, luôn được lưu trữ bên trong bảng chọn File của phần mềm soạn thảo văn bản."},
+  {"level": "TH", "question": "Khi em chọn lệnh lưu tệp mà không gõ tên mới, máy tính sẽ mặc định đặt tên tệp như thế nào?", "options": ["Tự động lấy các chữ đầu tiên trong văn bản làm tên tệp.", "Tự động tạo một chuỗi kí tự ngẫu nhiên bao gồm cả chữ số và kí hiệu đặc biệt để bảo mật.", "Đặt tên là Document1 và khoá không cho phép em thay đổi sau này.", "Hiển thị thông báo lỗi và yêu cầu phải nhập tên thủ công."], "answer": 0, "explanation": "Theo mặc định thông minh của phần mềm, nếu người dùng bỏ qua bước đặt tên, máy tính sẽ tự động trích xuất những cụm từ đầu tiên xuất hiện trong nội dung văn bản để làm tên lưu tệp."},
+  {"level": "VD", "question": "Trên màn hình đang hiển thị dòng chữ \"Cảnh ddepj quê em\" và con trỏ soạn thảo đang nằm giữa chữ \"e\" và chữ \"p\". Nếu em nhấn phím Backspace một lần, kết quả thu được là gì?", "options": ["Cảnh ddej quê em", "Cảnh ddpj quê em", "Cảnh ddep quê em", "Cảnh depj quê em"], "answer": 1, "explanation": "Phím Backspace xoá kí tự ngay bên trái con trỏ. Kí tự bên trái là chữ \"e\", nên chữ \"e\" bị xoá đi, để lại kết quả \"Cảnh ddpj quê em\"."},
+  {"level": "VD", "question": "Trên màn hình đang hiển thị dòng chữ \"Cảnh ddepj quê em\" và con trỏ soạn thảo đang nằm giữa chữ \"e\" và chữ \"p\". Nếu em nhấn phím Delete một lần, kết quả thu được là gì?", "options": ["Cảnh ddpj quê em", "Cảnh depj quê em", "Cảnh ddej quê em", "Cảnh ddep quê em"], "answer": 2, "explanation": "Phím Delete xoá kí tự ngay bên phải con trỏ. Kí tự bên phải là chữ \"p\", nên chữ \"p\" bị xoá đi, để lại kết quả \"Cảnh ddej quê em\"."},
+  {"level": "VD", "question": "An đang soạn thảo đoạn văn tả cảnh đẹp quê hương và vô tình gõ sai một câu dài ở giữa đoạn. Cách nào sau đây giúp An xoá câu đó đi nhanh nhất?", "options": ["Nhấn giữ phím Backspace liên tục từ cuối đoạn văn bản lên đến tận chỗ bị sai.", "Tắt phần mềm đi không lưu lại và mở lên gõ lại toàn bộ từ đầu cho chính xác.", "Đặt con trỏ ở cuối câu bị sai và nháy đúp chuột để phần mềm tự động xoá.", "Chọn phần văn bản bị sai rồi nhấn phím Delete hoặc Backspace."], "answer": 3, "explanation": "Để xoá nhanh một đoạn nội dung lớn, thao tác bôi đen chọn vùng văn bản đó rồi nhấn Delete hoặc Backspace sẽ xoá sạch tất cả trong một lần bấm, tiết kiệm thời gian hơn xoá từng chữ."},
+  {"level": "VD", "question": "Trong lúc làm bài tập, Lan muốn gõ tiêu đề \"CÂY GẠO\" hoàn toàn bằng chữ in hoa. Em hãy hướng dẫn thao tác chính xác nhất cho Lan.", "options": ["Nhấn giữ phím Shift đồng thời gõ lần lượt các chữ cái.", "Gõ xong các chữ cái bình thường rồi dùng chuột phóng to cỡ chữ lên mức tối đa để tạo thành chữ in hoa.", "Nhấn phím Enter trước khi gõ từng chữ cái.", "Nhấn đúp chuột vào vùng soạn thảo để kích hoạt chế độ viết hoa."], "answer": 0, "explanation": "Phím Shift có chức năng chuyển đổi tạm thời sang chế độ viết hoa khi được nhấn giữ kết hợp với việc gõ phím chữ cái."},
+  {"level": "VD", "question": "Tuấn hoàn thành bài văn miêu tả con lợn con dài 10 dòng trên phần mềm trình chiếu PowerPoint, nhưng chữ bị quá nhỏ và tràn ra khỏi trang. Theo em, Tuấn đã gặp lỗi gì?", "options": ["Tuấn thao tác sai, đáng lẽ phải dùng phần mềm trình chiếu nhưng bật chế độ xoá phông nền để chữ to hơn.", "Tuấn đã dùng sai phần mềm, nên chuyển sang soạn thảo bài văn trên phần mềm Word.", "Tuấn chưa dùng phím Enter để xuống dòng liên tục nhằm tạo thêm khoảng trống cho các chữ cái.", "Tuấn đã gõ sai chính tả nên máy tính tự động thu nhỏ các chữ lại để cảnh báo lỗi."], "answer": 1, "explanation": "Bài văn dài có nhiều thông tin chi tiết cần không gian định dạng lớn, do đó phần mềm xử lí văn bản chuyên dụng như Word là lựa chọn duy nhất phù hợp để giải quyết tình trạng chữ tràn trang."},
+  {"level": "VD", "question": "Bình mở phần mềm lên để gõ bài thơ \"Trăng ơi... từ đâu đến?\". Khi gõ xong khổ thơ đầu, Bình muốn bắt đầu khổ thơ thứ hai ở ngay bên dưới. Bình cần thao tác thế nào với bàn phím?", "options": ["Nhấn phím cách liên tục cho đến khi con trỏ tự động nhảy xuống dòng dưới để viết tiếp.", "Nhấn phím Delete để đẩy con trỏ soạn thảo sang vị trí dòng tiếp theo.", "Nhấn phím Enter một lần để xuống dòng.", "Nhấn phím Shift đồng thời nhấn phím mũi tên hướng xuống."], "answer": 2, "explanation": "Khi gõ thơ, người dùng bắt buộc phải dùng phím Enter để kết thúc một dòng hoặc một khổ thơ và chuyển xuống dòng tiếp theo một cách chuẩn xác."},
+  {"level": "VD", "question": "Khi kết thúc buổi học, giáo viên yêu cầu lưu bài thơ vừa gõ với tên \"Bai_tap\". Nam vào File chọn Save nhưng lại quên gõ tên và bấm lưu luôn. Tệp văn bản của Nam mang tên nào dưới đây?", "options": ["Bai_tap", "Không có tên", "Document1", "Trăng ơi... từ đâu đến"], "answer": 3, "explanation": "Do Nam không can thiệp đặt tên \"Bai_tap\", phần mềm tự động lấy cụm từ đầu tiên trong nội dung bài thơ (\"Trăng ơi... từ đâu đến?\") để làm tên tệp lưu trữ."},
+  {"level": "VD", "question": "Đang gõ văn bản, Hồng nhận thấy con trỏ soạn thảo nằm ngay sau chữ \"n\" trong từ \"Bản\". Hồng bấm phím Backspace thì chữ \"n\" biến mất, sau đó Hồng lại bấm nhầm phím Delete. Hiện tượng gì sẽ xảy ra tiếp theo?", "options": ["Kí tự nằm ngay bên phải con trỏ soạn thảo sẽ bị xoá đi.", "Chữ \"n\" vừa bị xoá sẽ tự động xuất hiện trở lại trên màn hình do hệ thống phát hiện lỗi.", "Toàn bộ chữ \"Bản\" sẽ bị xoá sạch khỏi màn hình làm việc để nhập lại từ đầu.", "Con trỏ soạn thảo sẽ ngay lập tức nhảy xuống dòng cuối cùng của văn bản."], "answer": 0, "explanation": "Sau khi sử dụng Backspace, vị trí của con trỏ thay đổi nhưng tác dụng của phím Delete vẫn không thay đổi, nó sẽ tiếp tục thực thi lệnh xoá kí tự nằm ở vị trí ngay bên phải con trỏ hiện tại."}
+];
+
+// ===== CẤU HÌNH =====
+const PLAN = ["NB","NB","NB","NB","TH","TH","TH","VD","VD","VD"]; // mức độ theo từng câu
+const MISS = 2; // số lần được phép trả lời sai (sai lần thứ 3 thì kết thúc)
+const SAFE = 5, GIFT_RATE = 0.3, MAX = 10;
+const LV = {NB:"Nhận biết",TH:"Thông hiểu",VD:"Vận dụng"};
+
+// ===== KIỂM TRA DỮ LIỆU (handlers theo AGENTS.md) =====
+const okIdx=(a,n)=>Number.isInteger(a)&&a>=0&&a<n;
+const handlers = {
+  multiple:{validate:q=>Array.isArray(q.options)&&q.options.length>=2&&okIdx(q.answer,q.options.length),check:(q,u)=>u===q.answer},
+  truefalse:{validate:q=>Array.isArray(q.options)&&q.options.length===2&&okIdx(q.answer,2),check:(q,u)=>u===q.answer}
+};
+function validQuestions(){
+  const out=[];
+  JSON.parse(JSON.stringify(questions)).forEach((q,i)=>{
+    const t=q.type||"multiple",h=handlers[t];
+    if(!["NB","TH","VD"].includes(q.level)) return console.warn("Câu "+(i+1)+": thiếu hoặc sai mức độ, bỏ qua");
+    if(!h) return console.warn("Câu "+(i+1)+": loại '"+t+"' chưa được hỗ trợ, bỏ qua");
+    if(typeof q.question!=="string"||!h.validate(q)) return console.warn("Câu "+(i+1)+": dữ liệu không hợp lệ, bỏ qua");
+    q.type=t;out.push(q);
+  });
+  return out;
+}
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+// Xáo lựa chọn bằng ánh xạ chỉ số, cập nhật answer (không so sánh chuỗi)
+function shuffleOptions(q){
+  if(q.type!=="multiple") return q;
+  const order=shuf(q.options.map((_,i)=>i));
+  q.options=order.map(i=>q.options[i]);q.answer=order.indexOf(q.answer);return q;
+}
+
+// ===== ÂM THANH (tạo bằng code) =====
+let AC,mute=false;
+function tone(f,d=.2,type="sine",v=.15,delay=0){
+  if(mute)return;try{AC=AC||new AudioContext();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+delay;
+  o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}
+}
+const sfx={
+  click:()=>tone(660,.1,"triangle"),
+  lock:()=>{[0,.25,.5,.75].forEach(d=>tone(110,.2,"sawtooth",.12,d))},
+  ok:()=>[523,659,784,1047].forEach((f,i)=>tone(f,.35,"triangle",.18,i*.12)),
+  bad:()=>[300,220,150].forEach((f,i)=>tone(f,.4,"sawtooth",.15,i*.2)),
+  gift:()=>[784,988,1175,1568,1976].forEach((f,i)=>tone(f,.3,"square",.1,i*.09)),
+  tick:()=>tone(900,.05,"square",.06)
+};
+
+// ===== GIỌNG ĐỌC TIẾNG VIỆT =====
+// Ưu tiên giọng tiếng Việt có sẵn trong trình duyệt/hệ điều hành; nếu máy chưa có thì dùng giọng Google (cần Internet).
+let voiceOn=true,viVoice=null,audio=null,ttsId=0,warned=false;
+const hasTTS="speechSynthesis" in window;
+function pickVoice(){
+  if(!hasTTS)return;
+  const v=speechSynthesis.getVoices().filter(x=>/^vi([-_]|$)/i.test(x.lang)||/vietnam|việt/i.test(x.name));
+  viVoice=v.find(x=>/natural|online/i.test(x.name))||v[0]||null;
+}
+if(hasTTS){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return d.textContent.replace(/\s+/g," ").trim()};
+function chunk(t){
+  const out=[];
+  t.split(/(?<=[.!?;:])\s+/).forEach(x=>{while(x.length>170){let k=x.lastIndexOf(" ",170);if(k<50)k=170;out.push(x.slice(0,k));x=x.slice(k).trim()}if(x)out.push(x)});
+  return out;
+}
+function quiet(){ttsId++;if(audio){audio.pause();audio=null}if(hasTTS)speechSynthesis.cancel()}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),7000)}
+function speak(t){
+  if(!voiceOn)return;
+  quiet();const my=ttsId,parts=chunk(plain(t));
+  setTimeout(()=>{
+    if(my!==ttsId)return;
+    pickVoice();
+    if(viVoice){
+      parts.forEach(x=>{const u=new SpeechSynthesisUtterance(x);try{u.voice=viVoice}catch(e){}u.lang=viVoice.lang;u.rate=.95;speechSynthesis.speak(u)});
+    }else{
+      if(!warned){warned=true;toast("🗣 Máy chưa có giọng tiếng Việt, đang dùng giọng Google (cần Internet)")}
+      let i=0;const next=()=>{if(my!==ttsId||i>=parts.length)return;audio=new Audio("https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q="+encodeURIComponent(parts[i++]));audio.onended=next;audio.onerror=next;audio.play().catch(()=>next())};next();
+    }
+  },80);
+}
+function readQ(){
+  const q=G.list[G.i],vis=k=>!document.querySelector('.ans[data-k="'+k+'"]').classList.contains("gone");
+  speak("Câu hỏi số "+(G.i+1)+". "+q.question+". "+q.options.map((o,k)=>vis(k)?"Đáp án "+"ABCD"[k]+": "+o:"").join(". "));
+}
+// ===== HIỆU ỨNG NỀN & PHÁO GIẤY =====
+const bg=document.getElementById("bg"),fx=document.getElementById("fx"),bx=bg.getContext("2d"),fc=fx.getContext("2d");
+let stars=[],parts=[];
+function resize(){
+  bg.width=fx.width=innerWidth;bg.height=fx.height=innerHeight;
+  const s=Math.min(innerWidth/1920,innerHeight/1080);
+  stage.style.transform="translate(-50%,-50%) scale("+s+")";
+  stars=Array.from({length:150},()=>({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:Math.random()*2+.5,s:Math.random()*.6+.1,p:Math.random()*6}));
+}
+function confetti(n=160,x=innerWidth/2,y=innerHeight/2){
+  for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*26,vy:Math.random()*-22-4,g:.5,c:`hsl(${Math.random()*360},90%,60%)`,s:Math.random()*12+6,r:Math.random()*6,l:130});
+}
+function loop(t){
+  bx.clearRect(0,0,bg.width,bg.height);
+  const gr=bx.createRadialGradient(bg.width/2,bg.height*.4,50,bg.width/2,bg.height/2,bg.width*.7);
+  gr.addColorStop(0,"#2a1a8a");gr.addColorStop(.6,"#0a1450");gr.addColorStop(1,"#030618");bx.fillStyle=gr;bx.fillRect(0,0,bg.width,bg.height);
+  for(let i=0;i<6;i++){const W=bg.width,H=bg.height,x=W*(i+.5)/6,sw=Math.sin(t/1800+i*1.3)*W*.12,g2=bx.createLinearGradient(x,0,x+sw,H);g2.addColorStop(0,i%2?"rgba(120,160,255,.28)":"rgba(190,110,255,.26)");g2.addColorStop(1,"rgba(0,0,0,0)");bx.fillStyle=g2;bx.beginPath();bx.moveTo(x-20,0);bx.lineTo(x+20,0);bx.lineTo(x+sw+W*.07,H);bx.lineTo(x+sw-W*.07,H);bx.fill()}
+  for(let k=1;k<=4;k++){bx.strokeStyle="rgba(80,200,255,"+(.55-k*.1)+")";bx.lineWidth=4;bx.beginPath();bx.ellipse(bg.width/2,bg.height*1.02,bg.width*.12*k,bg.height*.035*k,0,0,7);bx.stroke()}
+  stars.forEach(s=>{s.y+=s.s;if(s.y>bg.height)s.y=0;bx.globalAlpha=.5+.5*Math.sin(t/400+s.p);bx.fillStyle="#fff";bx.beginPath();bx.arc(s.x,s.y,s.r,0,7);bx.fill()});
+  bx.globalAlpha=1;
+  fc.clearRect(0,0,fx.width,fx.height);
+  parts=parts.filter(p=>p.l>0);
+  parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.vx*=.99;p.r+=.2;p.l--;fc.save();fc.translate(p.x,p.y);fc.rotate(p.r);fc.fillStyle=p.c;fc.globalAlpha=Math.min(1,p.l/30);fc.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);fc.restore()});
+  requestAnimationFrame(loop);
+}
+
+// ===== TRẠNG THÁI TRÒ CHƠI =====
+const $=id=>document.getElementById(id);
+let G;
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function newGame(){
+  const pool=validQuestions(),by={NB:[],TH:[],VD:[]};
+  pool.forEach(q=>by[q.level].push(q));Object.values(by).forEach(shuf);
+  const need={NB:0,TH:0,VD:0};PLAN.forEach(l=>need[l]++);
+  for(const l in need) if(by[l].length<need[l]){alert("Chưa đủ câu hỏi mức "+LV[l]+" (cần "+need[l]+", có "+by[l].length+").");return}
+  const list=PLAN.map(l=>shuffleOptions(by[l].shift()));
+  G={list,by,i:0,score:0,used:{},state:"idle",sel:-1,wrong:[],correct:0,miss:0};
+  document.querySelectorAll(".help").forEach(h=>h.classList.remove("used"));
+  show("game");renderLadder();loadQ();
+}
+const hearts=()=>{$("lv").textContent="❤️".repeat(Math.max(0,MISS-G.miss))||"—"};
+function renderLadder(){
+  $("ladder").innerHTML=PLAN.map((_,k)=>10-k).map(n=>`<div class="step ${n===SAFE?"safe":""} ${n<=G.i?"done":""} ${n===G.i+1?"now":""}"><i>${n}</i><span>${n===SAFE?"🛡 ":""}${n} điểm</span></div>`).join("");
+}
+function loadQ(){
+  const q=G.list[G.i];G.state="idle";G.sel=-1;
+  $("qin").innerHTML=q.question;$("qin").style.fontSize=(q.question.length>150?44:q.question.length>100?52:60)+"px";$("qtab").textContent="CÂU HỎI SỐ "+(G.i+1)+" • "+LV[q.level].toUpperCase();$("qn").textContent=(G.i+1)+" / "+PLAN.length;
+  $("answers").innerHTML=q.options.map((o,k)=>`<button class="ans ${o.length>95?"xxl":o.length>65?"xl":o.length>38?"long":""}" data-k="${k}"><div class="in"><b>${"ABCD"[k]}.</b><span>${o}</span></div></button>`).join("");
+  $("panel").classList.remove("on");$("game").classList.remove("pan");$("sc").textContent="⭐ "+G.score+"/"+MAX;renderLadder();hearts();
+  cast("host","talk");cast("me","");setTimeout(()=>{if(G.state==="idle")readQ()},700);setTimeout(()=>{if(G.state==="idle")cast("host","")},3500);
+}
+function pick(k){
+  if(G.state!=="idle"&&G.state!=="sel")return;
+  const b=document.querySelector(`.ans[data-k="${k}"]`);if(!b||b.classList.contains("gone"))return;
+  if(G.sel===k)return;
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  G.sel=k;G.state="sel";b.classList.add("sel");sfx.click();cast("me","think");
+  document.querySelectorAll(".cf").forEach(x=>x.remove());b.querySelector(".in").insertAdjacentHTML("beforeend","<span class=\"cf\">✔ XÁC NHẬN</span>");
+}
+function lock(){
+  if(G.state!=="sel")return;G.state="lock";quiet();sfx.lock();document.querySelectorAll(".cf").forEach(x=>x.remove());
+  setTimeout(reveal,2200);
+}
+function reveal(){
+  const q=G.list[G.i],ok=handlers[q.type].check(q,G.sel),A=document.querySelectorAll(".ans");
+  document.querySelectorAll(".ans").forEach(x=>x.classList.remove("sel"));
+  A[q.answer].classList.add("ok");
+  if(ok){G.score=Math.min(MAX,G.score+1);G.correct++;sfx.ok();confetti(120);cast("me","ok");cast("host","ok")}
+  else{cast("me","bad");cast("host","");A[G.sel].classList.add("bad");sfx.bad();G.miss++;G.wrong.push({q:q.question,right:q.options[q.answer],exp:q.explanation})}
+  G.ok=ok;G.state="done";hearts();$("sc").textContent="⭐ "+G.score+"/"+MAX;
+  setTimeout(()=>Math.random()<GIFT_RATE?gift():panel(),1800);
+}
+function panel(){
+  const q=G.list[G.i],last=G.i===PLAN.length-1;
+  const over=G.miss>MISS,left=MISS-G.miss;
+  $("exp").innerHTML=(G.ok?"✅ <b>Chính xác!</b> ":"❌ <b>Chưa đúng.</b> Đáp án: <b>"+"ABCD"[q.answer]+"</b>. "+(over?"Bạn đã sai quá "+MISS+" lần. ":"Bạn còn <b>"+left+"</b> lần được sai. "))+(q.explanation||"");
+  $("next").textContent=(over||last)?"Xem kết quả ▶":"Câu tiếp theo ▶";
+  $("panel").classList.add("on");$("game").classList.add("pan");G.state="panel";speak($("exp").innerHTML);
+}
+function advance(){
+  if(G.state!=="panel")return;quiet();
+  if(G.miss>MISS||G.i===PLAN.length-1)return finish();
+  G.i++;loadQ();
+}
+function finish(){
+  // Mốc an toàn: đã qua câu 5 thì giữ tối thiểu 5 điểm khi trả lời sai
+  let s=G.score;if(G.miss>MISS&&G.i>=SAFE&&s<SAFE)s=SAFE;
+  G.score=s;show("end");exitFs();quiet();speak("Kết thúc trò chơi. Bạn đạt "+s+" điểm trên "+MAX+" điểm.");
+  $("es").textContent=s+"/"+MAX;
+  $("et").textContent=s===MAX?"TRIỆU PHÚ XUẤT SẮC!":s>=8?"Rất xuất sắc!":s>=5?"Làm tốt lắm!":"Cố gắng lên nhé!";
+  $("eo").textContent=s>=8?"🏆":s>=5?"🎉":"💪";
+  $("em").textContent="Trả lời đúng "+G.correct+" câu, sai "+G.miss+" câu"+(s>G.correct?", nhận thêm quà/mốc an toàn":"")+".";
+  $("wl").innerHTML=G.wrong.length?"<b>Câu cần ôn lại:</b><br>"+G.wrong.map(w=>"• "+w.q+" → <b>"+w.right+"</b>").join("<br>"):"";
+  if(s>=5){sfx.ok();[.3,.7,.5].forEach((x,i)=>setTimeout(()=>confetti(150,innerWidth*x,innerHeight*.4),i*500))}
+}
+// ===== QUÀ TẶNG =====
+function overlay(html){$("ov").innerHTML=html;$("ov").classList.add("on")}
+function closeOv(){$("ov").classList.remove("on");$("ov").innerHTML=""}
+function gift(){
+  G.state="gift";overlay('<h2>🎁 Bạn nhận được một hộp quà!</h2><div id="gift">🎁</div><p>Bấm vào hộp quà để mở</p>');
+  $("gift").onclick=()=>{
+    sfx.gift();speak("Chúc mừng! Bạn nhận được một điểm thưởng.");const full=G.score>=MAX;G.score=Math.min(MAX,G.score+1);$("sc").textContent="⭐ "+G.score+"/"+MAX;
+    overlay('<div class="big">+1</div><h2>'+(full?"Điểm đã đạt tối đa 10!":"điểm thưởng!")+'</h2><button class="btn sm" id="okg">Tuyệt vời ▶</button>');
+    confetti(220,innerWidth/2,innerHeight/2);$("okg").onclick=()=>{closeOv();panel()}
+  };
+}
+// ===== TRỢ GIÚP =====
+function help(h){
+  const btn=document.querySelector(`.help[data-h="${h}"]`);
+  if(G.state!=="idle"&&G.state!=="sel"||btn.classList.contains("used"))return;
+  if(h==="5050"){
+    const q=G.list[G.i],w=shuf(q.options.map((_,i)=>i).filter(i=>i!==q.answer)).slice(0,q.options.length-2);
+    w.forEach(i=>document.querySelector(`.ans[data-k="${i}"]`).classList.add("gone"));
+    if(w.includes(G.sel)){G.sel=-1;G.state="idle"}
+    setTimeout(readQ,300);
+  }else if(h==="swap"){
+    const l=G.list[G.i].level,n=G.by[l].shift();
+    if(!n){alert("Hết câu hỏi để đổi!");return}
+    G.list[G.i]=shuffleOptions(n);loadQ();
+  }else return timer(h,btn);
+  btn.classList.add("used");sfx.click();
+}
+function timer(h,btn){
+  const cls=h==="class",prev=G.state;G.state="help";quiet();
+  overlay("<h2>"+(cls?"🏫 Hỏi cả lớp":"🤝 Hỏi người tin tưởng")+"</h2><p>"+(cls?"Cả lớp cùng bàn bạc rồi giơ thẻ A/B/C/D. Đáp án nào nhiều bạn chọn nhất?":"Người chơi chọn một người mình tin tưởng để hỏi ý kiến.")+"</p>"+(cls?"":'<input id="who" placeholder="Tên người được hỏi (không bắt buộc)">')+'<div id="cd">30</div><button class="btn sm" id="stop" style="margin-top:20px">Xong ▶</button>');
+  btn.classList.add("used");let t=30;
+  const iv=setInterval(()=>{t--;$("cd").textContent=t;if(t<=5){$("cd").classList.add("low");sfx.tick()}if(t<=0)end()},1000);
+  function end(){clearInterval(iv);closeOv();G.state=G.sel>=0?"sel":"idle"}
+  $("stop").onclick=end;
+}
+// ===== NHÂN VẬT: người hỏi & người trả lời (bấm vào khung để thay bằng ảnh thật) =====
+const AV=(skin,hair,shirt,body,head)=>`<svg viewBox="0 0 200 220"><path d="M20 220c0-55 35-80 80-80s80 25 80 80z" fill="${shirt}"/><path d="M85 140l15 25 15-25z" fill="#fff"/>${body}<rect x="88" y="115" width="24" height="30" fill="${skin}"/><circle cx="100" cy="85" r="52" fill="${skin}"/><path d="M48 80c0-45 30-62 55-62s50 20 49 62c-10-25-30-35-52-35s-42 10-52 35z" fill="${hair}"/>${head}<circle cx="80" cy="90" r="6" fill="#222"/><circle cx="120" cy="90" r="6" fill="#222"/><path d="M70 76q10-8 20 0M110 76q10-8 20 0" stroke="#222" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse class="mouth" cx="100" cy="114" rx="14" ry="7" fill="#7a1f1f"/></svg>`;
+const cast=(w,m)=>{$(w).dataset.m=m};
+[["host",AV("#f1c9a0","#2b2b2b","#1b1b2f",'<path d="M100 152l-22-12v24zM100 152l22-12v24z" fill="#e02b2b"/>',"")],
+ ["me",AV("#e8b98a","#5a2d0c","#2e9d5b","",'<path d="M50 85a50 50 0 0 1 100 0" stroke="#ffb300" stroke-width="8" fill="none"/><rect x="42" y="80" width="14" height="30" rx="6" fill="#ffb300"/><rect x="144" y="80" width="14" height="30" rx="6" fill="#ffb300"/>')]
+].forEach(([id,svg])=>{
+  const f=$(id),inp=f.querySelector("input");f.insertAdjacentHTML("afterbegin",svg+'<img alt="">');
+  f.onclick=e=>{if(e.target!==inp)inp.click()};
+  inp.onchange=()=>{const r=new FileReader();r.onload=()=>{const im=f.querySelector("img");im.src=r.result;im.style.display="block";f.querySelector("svg").style.display="none"};if(inp.files[0])r.readAsDataURL(inp.files[0])};
+});
+// ===== SỰ KIỆN =====
+const enterFs=()=>{if(!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(()=>{})};
+const exitFs=()=>{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})};
+$("go").onclick=()=>{sfx.click();enterFs();newGame()};
+$("again").onclick=()=>{sfx.click();enterFs();newGame()};
+$("next").onclick=advance;
+$("answers").onclick=e=>{if(e.target.closest(".cf"))return lock();const b=e.target.closest(".ans");if(b)pick(+b.dataset.k)};
+document.querySelectorAll(".help").forEach(h=>h.onclick=()=>help(h.dataset.h));
+$("rd").onclick=()=>{voiceOn=!voiceOn;$("rd").classList.toggle("off",!voiceOn);if(!voiceOn)quiet();else if(G&&(G.state==="idle"||G.state==="sel"))readQ()};
+$("snd").onclick=()=>{mute=!mute;$("snd").textContent=mute?"🔇":"🔊"};
+const fs=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();
+$("fs").onclick=fs;
+addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT")return;
+  const k=e.key.toLowerCase();
+  if(k==="f")fs();else if(k==="m")$("snd").click();else if(k==="v")$("rd").click();else if(k==="r"&&G&&(G.state==="idle"||G.state==="sel"))readQ();
+  else if("abcd".includes(k)&&k.length===1)pick("abcd".indexOf(k));
+  else if(k==="enter"){if(G&&G.state==="sel")lock();else if(G&&G.state==="panel")advance();else if(!G||$("start").classList.contains("on"))$("go").click()}
+  else if("1234".includes(k)&&G&&$("game").classList.contains("on"))help(["5050","class","trust","swap"][+k-1]);
+});
+addEventListener("resize",resize);
+resize();requestAnimationFrame(loop);show("start");
+</script></body></html>
